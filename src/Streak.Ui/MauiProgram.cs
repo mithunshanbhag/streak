@@ -4,9 +4,11 @@ namespace Streak.Ui;
 
 public static class MauiProgram
 {
-    public static MauiApp CreateMauiApp() =>
-        MauiApp.CreateBuilder()
+    public static MauiApp CreateMauiApp()
+    {
+        return MauiApp.CreateBuilder()
             .ConfigureApp()
             .ConfigureServices()
             .Build();
+    }
 }
