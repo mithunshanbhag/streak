@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="src/Streak.Ui/Streak.Ui.csproj" Id="da3954af-1ebb-498c-8f4e-cf080479ffe4">
+    <Deploy Solution="Debug|*" />
+  </Project>
+</Solution>
