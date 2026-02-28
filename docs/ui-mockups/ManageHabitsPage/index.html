@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=393, initial-scale=1.0">
+    <title>Streak – Manage Habits Page Mockup</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- ===== Phone Frame ===== -->
+<div class="phone-frame">
+
+    <!-- App Bar -->
+    <header class="app-bar">
+        <div class="app-bar__left">
+            <button class="app-bar__btn" aria-label="Back" title="Back">
+                <span class="material-icons">arrow_back</span>
+            </button>
+            <span class="app-bar__title">Manage Habits</span>
+        </div>
+        <div class="app-bar__actions">
+            <button class="app-bar__btn" id="appBarAddBtn" aria-label="Add habit" title="Add Habit">
+                <span class="material-icons">add</span>
+            </button>
+            <button class="app-bar__btn" aria-label="Settings" title="Settings">
+                <span class="material-icons">settings</span>
+            </button>
+            <a class="app-bar__btn" href="https://github.com/mithunshanbhag/streak" target="_blank" rel="noopener noreferrer" aria-label="GitHub" title="GitHub">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+            </a>
+        </div>
+    </header>
+
+    <!-- ===== Populated State ===== -->
+    <main class="content" id="content-populated">
+
+        <!-- Habit rows -->
+        <div class="habit-row" data-name="Meditate" data-emoji="🧘">
+            <span class="habit-row__drag"><span class="material-icons">drag_indicator</span></span>
+            <span class="habit-row__emoji">🧘</span>
+            <span class="habit-row__name">Meditate</span>
+            <button class="habit-row__action habit-row__action--edit" aria-label="Edit Meditate" title="Edit">
+                <span class="material-icons">edit</span>
+            </button>
+            <button class="habit-row__action habit-row__action--delete" aria-label="Delete Meditate" title="Delete">
+                <span class="material-icons">delete</span>
+            </button>
+        </div>
+
+        <div class="habit-row" data-name="Read" data-emoji="📖">
+            <span class="habit-row__drag"><span class="material-icons">drag_indicator</span></span>
+            <span class="habit-row__emoji">📖</span>
+            <span class="habit-row__name">Read</span>
+            <button class="habit-row__action habit-row__action--edit" aria-label="Edit Read" title="Edit">
+                <span class="material-icons">edit</span>
+            </button>
+            <button class="habit-row__action habit-row__action--delete" aria-label="Delete Read" title="Delete">
+                <span class="material-icons">delete</span>
+            </button>
+        </div>
+
+        <div class="habit-row" data-name="Exercise" data-emoji="💪">
+            <span class="habit-row__drag"><span class="material-icons">drag_indicator</span></span>
+            <span class="habit-row__emoji">💪</span>
+            <span class="habit-row__name">Exercise</span>
+            <button class="habit-row__action habit-row__action--edit" aria-label="Edit Exercise" title="Edit">
+                <span class="material-icons">edit</span>
+            </button>
+            <button class="habit-row__action habit-row__action--delete" aria-label="Delete Exercise" title="Delete">
+                <span class="material-icons">delete</span>
+            </button>
+        </div>
+
+        <div class="habit-row" data-name="Run" data-emoji="🏃">
+            <span class="habit-row__drag"><span class="material-icons">drag_indicator</span></span>
+            <span class="habit-row__emoji">🏃</span>
+            <span class="habit-row__name">Run</span>
+            <button class="habit-row__action habit-row__action--edit" aria-label="Edit Run" title="Edit">
+                <span class="material-icons">edit</span>
+            </button>
+            <button class="habit-row__action habit-row__action--delete" aria-label="Delete Run" title="Delete">
+                <span class="material-icons">delete</span>
+            </button>
+        </div>
+
+        <!-- Add Habit button -->
+        <button class="add-habit-btn" id="addHabitBtn">
+            <span class="material-icons">add</span>
+            Add Habit
+        </button>
+    </main>
+
+    <!-- ===== Empty State (hidden by default) ===== -->
+    <main class="content" id="content-empty" style="display: none;">
+        <div class="empty-state">
+            <div class="empty-state__emoji">🌱</div>
+            <p class="empty-state__text">You haven't added any habits yet.</p>
+            <button class="add-habit-btn" id="addHabitBtnEmpty">
+                <span class="material-icons">add</span>
+                Add Habit
+            </button>
+        </div>
+    </main>
+
+</div><!-- /phone-frame -->
+
+<!-- ===== Add / Edit Habit Dialog ===== -->
+<div class="dialog-backdrop" id="addEditBackdrop">
+    <div class="dialog">
+        <h2 class="dialog__title" id="addEditTitle">Add Habit</h2>
+        <div class="text-field">
+            <input type="text" class="text-field__input" id="habitNameInput" placeholder=" " autocomplete="off">
+            <label class="text-field__label" for="habitNameInput">Name</label>
+        </div>
+        <div class="text-field text-field--small">
+            <input type="text" class="text-field__input" id="habitEmojiInput" placeholder=" " autocomplete="off">
+            <label class="text-field__label" for="habitEmojiInput">Emoji</label>
+        </div>
+        <div class="dialog__actions">
+            <button class="btn-text" id="addEditCancel">Cancel</button>
+            <button class="btn-contained" id="addEditSave">Save</button>
+        </div>
+    </div>
+</div>
+
+<!-- ===== Delete Confirmation Dialog ===== -->
+<div class="dialog-backdrop" id="deleteBackdrop">
+    <div class="dialog">
+        <h2 class="dialog__title">Delete Habit</h2>
+        <p class="dialog__message" id="deleteMessage">Delete 'Meditate'? All checkin history for this habit will be permanently lost.</p>
+        <div class="dialog__actions">
+            <button class="btn-text" id="deleteCancel">Cancel</button>
+            <button class="btn-contained btn-contained--danger" id="deleteConfirm">Delete</button>
+        </div>
+    </div>
+</div>
+
+<!-- ===== State Toggle (dev helper) ===== -->
+<div class="state-toggle">
+    <label for="emptyToggle">Empty state</label>
+    <input type="checkbox" id="emptyToggle">
+</div>
+
+<script>
+    // DOM references
+    var contentPopulated = document.getElementById('content-populated');
+    var contentEmpty = document.getElementById('content-empty');
+    var emptyToggle = document.getElementById('emptyToggle');
+
+    var addEditBackdrop = document.getElementById('addEditBackdrop');
+    var addEditTitle = document.getElementById('addEditTitle');
+    var habitNameInput = document.getElementById('habitNameInput');
+    var habitEmojiInput = document.getElementById('habitEmojiInput');
+    var addEditCancel = document.getElementById('addEditCancel');
+    var addEditSave = document.getElementById('addEditSave');
+
+    var deleteBackdrop = document.getElementById('deleteBackdrop');
+    var deleteMessage = document.getElementById('deleteMessage');
+    var deleteCancel = document.getElementById('deleteCancel');
+    var deleteConfirm = document.getElementById('deleteConfirm');
+
+    // === Toggle empty / populated state ===
+    emptyToggle.addEventListener('change', function () {
+        if (emptyToggle.checked) {
+            contentPopulated.style.display = 'none';
+            contentEmpty.style.display = 'flex';
+        } else {
+            contentPopulated.style.display = 'flex';
+            contentEmpty.style.display = 'none';
+        }
+    });
+
+    // === Open Add Habit dialog ===
+    function openAddDialog() {
+        addEditTitle.textContent = 'Add Habit';
+        habitNameInput.value = '';
+        habitEmojiInput.value = '';
+        addEditBackdrop.classList.add('dialog-backdrop--open');
+    }
+
+    document.getElementById('addHabitBtn').addEventListener('click', openAddDialog);
+    document.getElementById('addHabitBtnEmpty').addEventListener('click', openAddDialog);
+    document.getElementById('appBarAddBtn').addEventListener('click', openAddDialog);
+
+    // === Close Add/Edit dialog ===
+    function closeAddEditDialog() {
+        addEditBackdrop.classList.remove('dialog-backdrop--open');
+    }
+
+    addEditCancel.addEventListener('click', closeAddEditDialog);
+    addEditSave.addEventListener('click', closeAddEditDialog);
+
+    // === Edit buttons ===
+    document.querySelectorAll('.habit-row__action--edit').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            var row = btn.closest('.habit-row');
+            var name = row.getAttribute('data-name');
+            var emoji = row.getAttribute('data-emoji');
+            addEditTitle.textContent = 'Edit Habit';
+            habitNameInput.value = name;
+            habitEmojiInput.value = emoji;
+            addEditBackdrop.classList.add('dialog-backdrop--open');
+        });
+    });
+
+    // === Delete buttons ===
+    document.querySelectorAll('.habit-row__action--delete').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            var row = btn.closest('.habit-row');
+            var name = row.getAttribute('data-name');
+            deleteMessage.textContent = "Delete '" + name + "'? All checkin history for this habit will be permanently lost.";
+            deleteBackdrop.classList.add('dialog-backdrop--open');
+        });
+    });
+
+    // === Close Delete dialog ===
+    function closeDeleteDialog() {
+        deleteBackdrop.classList.remove('dialog-backdrop--open');
+    }
+
+    deleteCancel.addEventListener('click', closeDeleteDialog);
+    deleteConfirm.addEventListener('click', closeDeleteDialog);
+
+    // === Close dialogs on backdrop click ===
+    addEditBackdrop.addEventListener('click', function (e) {
+        if (e.target === addEditBackdrop) closeAddEditDialog();
+    });
+    deleteBackdrop.addEventListener('click', function (e) {
+        if (e.target === deleteBackdrop) closeDeleteDialog();
+    });
+</script>
+
+</body>
+</html>

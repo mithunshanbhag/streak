@@ -1,0 +1,401 @@
+/* ===== Reset & Base ===== */
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Roboto', sans-serif;
+    background: #E0E0E0;
+    display: flex;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 24px 0;
+}
+
+/* ===== Phone Frame ===== */
+.phone-frame {
+    width: 393px;
+    min-height: 700px;
+    background: #FFFFFF;
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+/* ===== App Bar ===== */
+.app-bar {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 48px;
+    padding: 0 12px;
+    background: #6200EE;
+    color: #FFFFFF;
+    flex-shrink: 0;
+}
+
+.app-bar__left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.app-bar__btn {
+    background: none;
+    border: none;
+    color: #FFFFFF;
+    cursor: pointer;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s;
+    text-decoration: none;
+}
+
+.app-bar__btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.app-bar__btn .material-icons {
+    font-size: 24px;
+}
+
+.app-bar__title {
+    font-size: 20px;
+    font-weight: 500;
+    letter-spacing: 0.25px;
+    white-space: nowrap;
+}
+
+.app-bar__actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* GitHub SVG icon sizing */
+.app-bar__btn svg {
+    width: 22px;
+    height: 22px;
+    fill: #FFFFFF;
+}
+
+/* ===== Content Area ===== */
+.content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    background: #FFFFFF;
+}
+
+/* ===== Habit Row ===== */
+.habit-row {
+    display: flex;
+    align-items: center;
+    height: 56px;
+    padding: 0 16px;
+    border-bottom: 1px solid #E0E0E0;
+}
+
+.habit-row__drag {
+    color: #9E9E9E;
+    cursor: grab;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    flex-shrink: 0;
+    margin-right: 8px;
+}
+
+.habit-row__drag .material-icons {
+    font-size: 24px;
+}
+
+.habit-row__drag:active {
+    cursor: grabbing;
+}
+
+.habit-row__emoji {
+    font-size: 24px;
+    width: 32px;
+    flex-shrink: 0;
+    text-align: center;
+    line-height: 1;
+    margin-right: 12px;
+}
+
+.habit-row__name {
+    flex: 1;
+    font-size: 14px;
+    font-weight: 400;
+    color: #000000;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.habit-row__action {
+    background: none;
+    border: none;
+    cursor: pointer;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: background 0.15s;
+}
+
+.habit-row__action:hover {
+    background: rgba(0, 0, 0, 0.06);
+}
+
+.habit-row__action .material-icons {
+    font-size: 22px;
+}
+
+.habit-row__action--edit .material-icons {
+    color: #9E9E9E;
+}
+
+.habit-row__action--delete .material-icons {
+    color: #F44336;
+}
+
+/* ===== Add Habit Button ===== */
+.add-habit-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: calc(100% - 32px);
+    margin: 16px auto;
+    padding: 10px 20px;
+    border: 2px solid #6200EE;
+    border-radius: 4px;
+    background: transparent;
+    color: #6200EE;
+    font-family: 'Roboto', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.add-habit-btn:hover {
+    background: rgba(98, 0, 238, 0.08);
+}
+
+.add-habit-btn .material-icons {
+    font-size: 18px;
+}
+
+/* ===== Empty State ===== */
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    padding: 48px 24px;
+    text-align: center;
+}
+
+.empty-state__emoji {
+    font-size: 64px;
+    margin-bottom: 16px;
+}
+
+.empty-state__text {
+    font-size: 14px;
+    color: #000000;
+    margin-bottom: 24px;
+    line-height: 1.5;
+}
+
+/* ===== Modal Backdrop ===== */
+.dialog-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 100;
+    justify-content: center;
+    align-items: center;
+}
+
+.dialog-backdrop--open {
+    display: flex;
+}
+
+/* ===== Dialog ===== */
+.dialog {
+    background: #FFFFFF;
+    border-radius: 16px;
+    padding: 24px;
+    width: 320px;
+    max-width: 90vw;
+    box-shadow: 0 11px 15px -7px rgba(0, 0, 0, 0.2),
+                0 24px 38px 3px rgba(0, 0, 0, 0.14),
+                0 9px 46px 8px rgba(0, 0, 0, 0.12);
+}
+
+.dialog__title {
+    font-size: 20px;
+    font-weight: 500;
+    color: #000000;
+    margin-bottom: 20px;
+}
+
+/* ===== Material Text Field ===== */
+.text-field {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.text-field__input {
+    width: 100%;
+    font-family: 'Roboto', sans-serif;
+    font-size: 14px;
+    color: #000000;
+    padding: 20px 0 6px;
+    border: none;
+    border-bottom: 1px solid #9E9E9E;
+    outline: none;
+    background: transparent;
+    transition: border-color 0.2s;
+}
+
+.text-field__input:focus {
+    border-bottom: 2px solid #6200EE;
+    padding-bottom: 5px;
+}
+
+.text-field__label {
+    position: absolute;
+    left: 0;
+    top: 20px;
+    font-size: 14px;
+    color: #9E9E9E;
+    pointer-events: none;
+    transition: all 0.2s ease;
+}
+
+.text-field__input:focus ~ .text-field__label,
+.text-field__input:not(:placeholder-shown) ~ .text-field__label {
+    top: 2px;
+    font-size: 12px;
+    color: #6200EE;
+}
+
+.text-field--small {
+    max-width: 140px;
+}
+
+/* ===== Dialog Actions ===== */
+.dialog__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 24px;
+}
+
+.btn-text {
+    background: none;
+    border: none;
+    color: #6200EE;
+    font-family: 'Roboto', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    cursor: pointer;
+    padding: 8px 16px;
+    border-radius: 4px;
+    transition: background 0.15s;
+}
+
+.btn-text:hover {
+    background: rgba(98, 0, 238, 0.08);
+}
+
+.btn-contained {
+    background: #6200EE;
+    border: none;
+    color: #FFFFFF;
+    font-family: 'Roboto', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    cursor: pointer;
+    padding: 8px 20px;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    transition: background 0.15s, box-shadow 0.15s;
+}
+
+.btn-contained:hover {
+    background: #5000D4;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
+}
+
+.btn-contained--danger {
+    background: #F44336;
+}
+
+.btn-contained--danger:hover {
+    background: #D32F2F;
+}
+
+/* ===== Delete Dialog ===== */
+.dialog__message {
+    font-size: 14px;
+    color: #000000;
+    line-height: 1.6;
+    margin-bottom: 4px;
+}
+
+/* ===== State Toggle Control ===== */
+.state-toggle {
+    position: fixed;
+    bottom: 16px;
+    right: 16px;
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #333;
+    color: #FFF;
+    padding: 8px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-family: 'Roboto', sans-serif;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.state-toggle label {
+    cursor: pointer;
+    user-select: none;
+}
+
+.state-toggle input[type="checkbox"] {
+    cursor: pointer;
+}
