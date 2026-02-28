@@ -65,6 +65,7 @@ I prefer to host my apps and related infra on Azure using serverless/PaaS. This 
   /src
     /MyApp.Api
     /MyApp.Application
+    /MyApp.Core
     /MyApp.Domain
     /MyApp.Infrastructure
   ```
@@ -73,7 +74,7 @@ I prefer to host my apps and related infra on Azure using serverless/PaaS. This 
 
 - If you encounter any ambiguities or have questions about the specifications, please ask for clarification before proceeding with the implementation.
 
-- Please follow the guidelines in the `/.github/skills/ui-development/SKILL.md` file when implementing the UI.
+- Please follow the guidelines in the `/.github/skills/development/SKILL.md` file when implementing the code, creating features or fixing bugs.
 
 - Do not declare success until you've actually verified that the changes work. Verification can be done by:
   - Running the application and testing the feature visually. OR
