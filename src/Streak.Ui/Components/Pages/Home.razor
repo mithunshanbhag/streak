@@ -1,5 +1,147 @@
 ﻿@page "/"
+@using Streak.Ui.Constants
+@using Streak.Ui.Models.ViewModels.InputModels
+@using Streak.Ui.Models.ViewModels.ResultModels
+@using Streak.Ui.Services.Interfaces
+@inject ICoreAppService CoreAppService
+@inject NavigationManager NavigationManager
+@inject ISnackbar Snackbar
 
-<h1>Hello, world!</h1>
+@if (_isLoading)
+{
+    <div class="loading-container">
+        <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+    </div>
+}
+else if (_habits.Count == 0)
+{
+    <div class="empty-state">
+        <div class="empty-state-emoji">🌱</div>
+        <MudText Typo="Typo.body1" Align="Align.Center">
+            No habits yet. Tap <strong>+</strong> to add your first one!
+        </MudText>
+        <MudButton Variant="Variant.Outlined"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.Add"
+                   OnClick="NavigateToManageHabits">
+            Add Habit
+        </MudButton>
+    </div>
+}
+else
+{
+    <div class="habit-list">
+        @foreach (var habit in _habits)
+        {
+            <MudPaper Class="@GetHabitCardClass(habit)" Elevation="1">
+                <div class="habit-card-row">
+                    <span class="habit-emoji">@GetDisplayEmoji(habit.Emoji)</span>
+                    <MudText Typo="Typo.body1" Class="habit-name">@habit.Name</MudText>
 
-Welcome to your new app.
+                    <MudButton Variant="Variant.Text"
+                               Color="Color.Inherit"
+                               Class="@GetStreakBadgeClass(habit.CurrentStreak)"
+                               OnClick="@(() => NavigateToTrends(habit.Id))">
+                        @GetStreakBadgeText(habit.CurrentStreak)
+                    </MudButton>
+
+                    <MudToggleIconButton Toggled="@habit.IsCheckedInToday"
+                                         ToggledChanged="@((bool _) => ToggleCheckinAsync(habit.Id))"
+                                         Icon="@Icons.Material.Filled.RadioButtonUnchecked"
+                                         ToggledIcon="@Icons.Material.Filled.CheckCircle"
+                                         Color="Color.Default"
+                                         ToggledColor="Color.Success" />
+                </div>
+            </MudPaper>
+        }
+    </div>
+}
+
+@code
+{
+    private IReadOnlyList<HabitViewModel> _habits = [];
+    private bool _isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadHabitsAsync();
+    }
+
+    private async Task LoadHabitsAsync()
+    {
+        _isLoading = true;
+        try
+        {
+            _habits = await CoreAppService.GetHabitsAsync();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private async Task ToggleCheckinAsync(string habitId)
+    {
+        try
+        {
+            await CoreAppService.ToggleTodayCheckinAsync(new HabitToggleCheckinInputModel
+            {
+                HabitId = habitId
+            });
+
+            _habits = await CoreAppService.GetHabitsAsync();
+        }
+        catch (FluentValidation.ValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+    }
+
+    private void NavigateToManageHabits()
+    {
+        NavigationManager.NavigateTo(RouteConstants.ManageHabits);
+    }
+
+    private void NavigateToTrends(string habitId)
+    {
+        NavigationManager.NavigateTo(RouteConstants.GetTrendsRoute(habitId));
+    }
+
+    private static string GetDisplayEmoji(string? emoji)
+    {
+        return string.IsNullOrWhiteSpace(emoji) ? "●" : emoji;
+    }
+
+    private static string GetStreakBadgeText(int streak)
+    {
+        return streak switch
+        {
+            >= 7 => $"🔥 {streak}",
+            > 0 => $"😎 {streak}",
+            _ => "0"
+        };
+    }
+
+    private static string GetStreakBadgeClass(int streak)
+    {
+        return streak switch
+        {
+            >= 7 => "streak-badge streak-badge-fire",
+            > 0 => "streak-badge streak-badge-cool",
+            _ => "streak-badge streak-badge-zero"
+        };
+    }
+
+    private static string GetHabitCardClass(HabitViewModel habit)
+    {
+        return habit.IsCheckedInToday ? "habit-card habit-card-done" : "habit-card";
+    }
+}

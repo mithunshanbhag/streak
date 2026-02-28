@@ -1,0 +1,310 @@
+@page "/manage-habits"
+@using Microsoft.AspNetCore.Components.Web
+@using Streak.Ui.Constants
+@using Streak.Ui.Models.ViewModels.InputModels
+@using Streak.Ui.Models.ViewModels.ResultModels
+@using Streak.Ui.Services.Interfaces
+@inject ICoreAppService CoreAppService
+@inject ISnackbar Snackbar
+
+@if (_isLoading)
+{
+    <div class="loading-container">
+        <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+    </div>
+}
+else
+{
+    <div class="manage-habits-page">
+        @if (_habits.Count == 0)
+        {
+            <div class="empty-state">
+                <div class="empty-state-emoji">🌱</div>
+                <MudText Typo="Typo.body1">You haven't added any habits yet.</MudText>
+            </div>
+        }
+        else
+        {
+            <div class="habit-rows">
+                @foreach (var habit in _habits)
+                {
+                    <MudPaper Class="habit-row" Elevation="0"
+                              draggable="true"
+                              @ondragstart="@((DragEventArgs _) => OnDragStart(habit.Id))"
+                              @ondragover:preventDefault="true"
+                              @ondrop="@((DragEventArgs _) => OnDropAsync(habit.Id))">
+                        <MudIcon Icon="@Icons.Material.Filled.DragIndicator" Class="habit-drag-handle" />
+                        <span class="habit-emoji">@GetDisplayEmoji(habit.Emoji)</span>
+                        <MudText Typo="Typo.body1" Class="habit-name">@habit.Name</MudText>
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                       Color="Color.Default"
+                                       OnClick="@(() => OpenEditHabitDialog(habit))" />
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                       Color="Color.Error"
+                                       OnClick="@(() => OpenDeleteDialog(habit))" />
+                    </MudPaper>
+                }
+            </div>
+        }
+
+        <MudTooltip Text="Maximum 6 habits reached" Disabled="@(!IsHabitLimitReached)">
+            <span class="add-habit-wrapper">
+                <MudButton Variant="Variant.Outlined"
+                           Color="Color.Primary"
+                           Disabled="@IsHabitLimitReached"
+                           StartIcon="@Icons.Material.Filled.Add"
+                           OnClick="OpenAddHabitDialog"
+                           Class="add-habit-button">
+                    Add Habit
+                </MudButton>
+            </span>
+        </MudTooltip>
+    </div>
+}
+
+<MudDialog @bind-Visible="_isHabitDialogOpen">
+    <TitleContent>
+        <MudText Typo="Typo.h6">@_habitDialogTitle</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudTextField @bind-Value="_habitName"
+                      Label="Name"
+                      Immediate="true"
+                      Required="true"
+                      MaxLength="@CoreConstants.HabitNameMaxLength" />
+        <MudTextField @bind-Value="_habitEmoji"
+                      Label="Emoji"
+                      Immediate="true"
+                      MaxLength="4"
+                      Class="emoji-field" />
+        @if (!string.IsNullOrWhiteSpace(_habitDialogError))
+        {
+            <MudText Typo="Typo.caption" Color="Color.Error">@_habitDialogError</MudText>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Text" Color="Color.Primary" OnClick="CloseHabitDialog">Cancel</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveHabitAsync">Save</MudButton>
+    </DialogActions>
+</MudDialog>
+
+<MudDialog @bind-Visible="_isDeleteDialogOpen">
+    <TitleContent>
+        <MudText Typo="Typo.h6">Delete Habit</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudText Typo="Typo.body2">
+            Delete '@(_habitToDelete?.Name)'? All checkin history for this habit will be permanently lost.
+        </MudText>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Text" Color="Color.Primary" OnClick="CloseDeleteDialog">Cancel</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Error" OnClick="DeleteHabitAsync">Delete</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code
+{
+    private List<HabitViewModel> _habits = [];
+    private bool _isLoading = true;
+
+    private bool _isHabitDialogOpen;
+    private string _habitDialogTitle = "Add Habit";
+    private string _habitName = string.Empty;
+    private string _habitEmoji = string.Empty;
+    private string? _editingHabitId;
+    private string? _habitDialogError;
+
+    private bool _isDeleteDialogOpen;
+    private HabitViewModel? _habitToDelete;
+
+    private string? _draggedHabitId;
+
+    private bool IsHabitLimitReached => _habits.Count >= CoreConstants.MaxHabitCount;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadHabitsAsync();
+    }
+
+    private async Task LoadHabitsAsync()
+    {
+        _isLoading = true;
+        try
+        {
+            _habits = (await CoreAppService.GetHabitsAsync()).ToList();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private void OpenAddHabitDialog()
+    {
+        if (IsHabitLimitReached)
+            return;
+
+        _habitDialogTitle = "Add Habit";
+        _habitName = string.Empty;
+        _habitEmoji = string.Empty;
+        _editingHabitId = null;
+        _habitDialogError = null;
+        _isHabitDialogOpen = true;
+    }
+
+    private void OpenEditHabitDialog(HabitViewModel habit)
+    {
+        _habitDialogTitle = "Edit Habit";
+        _habitName = habit.Name;
+        _habitEmoji = habit.Emoji ?? string.Empty;
+        _editingHabitId = habit.Id;
+        _habitDialogError = null;
+        _isHabitDialogOpen = true;
+    }
+
+    private void CloseHabitDialog()
+    {
+        _isHabitDialogOpen = false;
+    }
+
+    private async Task SaveHabitAsync()
+    {
+        var normalizedName = _habitName.Trim();
+        if (string.IsNullOrWhiteSpace(normalizedName))
+        {
+            _habitDialogError = "Habit name is required.";
+            return;
+        }
+
+        if (normalizedName.Length is < CoreConstants.HabitNameMinLength or > CoreConstants.HabitNameMaxLength)
+        {
+            _habitDialogError = $"Habit name must be between {CoreConstants.HabitNameMinLength} and {CoreConstants.HabitNameMaxLength} characters.";
+            return;
+        }
+
+        if (_habits.Any(x => x.Id != _editingHabitId && string.Equals(x.Name, normalizedName, StringComparison.OrdinalIgnoreCase)))
+        {
+            _habitDialogError = "A habit with this name already exists.";
+            return;
+        }
+
+        try
+        {
+            if (string.IsNullOrWhiteSpace(_editingHabitId))
+            {
+                await CoreAppService.CreateHabitAsync(new HabitCreateInputModel
+                {
+                    Name = normalizedName,
+                    Emoji = NormalizeEmoji(_habitEmoji)
+                });
+            }
+            else
+            {
+                await CoreAppService.UpdateHabitAsync(new HabitUpdateInputModel
+                {
+                    HabitId = _editingHabitId,
+                    Name = normalizedName,
+                    Emoji = NormalizeEmoji(_habitEmoji)
+                });
+            }
+
+            _isHabitDialogOpen = false;
+            await LoadHabitsAsync();
+        }
+        catch (FluentValidation.ValidationException ex)
+        {
+            _habitDialogError = ex.Message;
+        }
+        catch (Exception ex)
+        {
+            _habitDialogError = ex.Message;
+        }
+    }
+
+    private void OpenDeleteDialog(HabitViewModel habit)
+    {
+        _habitToDelete = habit;
+        _isDeleteDialogOpen = true;
+    }
+
+    private void CloseDeleteDialog()
+    {
+        _isDeleteDialogOpen = false;
+        _habitToDelete = null;
+    }
+
+    private async Task DeleteHabitAsync()
+    {
+        if (_habitToDelete is null)
+            return;
+
+        try
+        {
+            await CoreAppService.DeleteHabitAsync(_habitToDelete.Id);
+            _isDeleteDialogOpen = false;
+            _habitToDelete = null;
+            await LoadHabitsAsync();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+    }
+
+    private void OnDragStart(string habitId)
+    {
+        _draggedHabitId = habitId;
+    }
+
+    private async Task OnDropAsync(string targetHabitId)
+    {
+        if (string.IsNullOrWhiteSpace(_draggedHabitId) || _draggedHabitId == targetHabitId)
+            return;
+
+        var sourceIndex = _habits.FindIndex(x => x.Id == _draggedHabitId);
+        var targetIndex = _habits.FindIndex(x => x.Id == targetHabitId);
+        if (sourceIndex < 0 || targetIndex < 0)
+            return;
+
+        var draggedHabit = _habits[sourceIndex];
+        _habits.RemoveAt(sourceIndex);
+        if (sourceIndex < targetIndex)
+            targetIndex--;
+
+        _habits.Insert(targetIndex, draggedHabit);
+
+        try
+        {
+            var updatedHabits = await CoreAppService.UpdateHabitOrderAsync(new HabitOrderUpdateInputModel
+            {
+                HabitIdsInOrder = _habits.Select(x => x.Id).ToList()
+            });
+
+            _habits = updatedHabits.ToList();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+            await LoadHabitsAsync();
+        }
+        finally
+        {
+            _draggedHabitId = null;
+        }
+    }
+
+    private static string GetDisplayEmoji(string? emoji)
+    {
+        return string.IsNullOrWhiteSpace(emoji) ? "●" : emoji;
+    }
+
+    private static string? NormalizeEmoji(string? emoji)
+    {
+        return string.IsNullOrWhiteSpace(emoji) ? null : emoji.Trim();
+    }
+}

@@ -1,93 +1,62 @@
-# @REPLACE_PROJECT_NAME@
+# Streak
 
-This GitHub project template includes the following files and directories:
+[![Build](https://img.shields.io/badge/build-placeholder-lightgrey)](#build-and-run-locally)
+[![Tests](https://img.shields.io/badge/tests-placeholder-lightgrey)](#run-tests)
+[![Coverage](https://img.shields.io/badge/coverage-placeholder-lightgrey)](#run-tests)
 
-```text
-.
-├── (📁) .github
-│   ├── (📁) ISSUE_TEMPLATE
-│   │   ├── (📃) bug_report.yml
-│   │   ├── (📃) config.yml
-│   │   ├── (📃) documentation.yml
-│   │   ├── (📃) feature_request.yml
-|   |── (📁) prompts
-|   |── (📁) skills
-│   │   ├── (📁) documentation
-│   │   ├── (📁) test-automation
-│   │   ├── (📁) ui-development
-│   │   ├── (📁) ui-mockup
-|   |── (📁) workflows
-│   │   ├── (📃) close-inactive-issues.yml
-│   │   ├── (📃) deploy-template.yml
-│   │   ├── (📃) deploy.yml
-│   |── (📃) copilot-instructions.md
-│   |── (📃) PULL_REQUEST_TEMPLATE.md
-├── (📁) docs
-|   |── (📁) assets
-|   |── (📁) specs
-|   |── (📁) ui-mockups
-|   |── (📁) user-manual
-├── (📁) infra
-│   |── (📃) createExtensionResources.bicep
-│   |── (📃) createResourceGroups.bicep
-│   |── (📃) createResources.bicep
-├── (📁) samples
-├── (📁) scripts
-├── (📁) src
-├── (📁) tests
-├── (📃) .editorconfig
-├── (📃) .gitignore
-├── (📃) CODE_OF_CONDUCT.md
-├── (📃) CONTRIBUTING.md
-├── (📃) LICENSE
-├── (📃) README.md
-├── (📃) run-local.ps1
-├── (📃) SECURITY.md
-```
+Streak is a .NET MAUI + Blazor habit tracking app for Android with local SQLite storage, focused on quick daily check-ins, streak visibility, habit management, and reminder settings.
 
-@REPLACE_WITH_STATUS_BADGES@
+![Screenshot / GIF placeholder](https://via.placeholder.com/960x540.png?text=Streak+App+Screenshot+or+GIF)
 
-## How to install?
+## Installation
 
-@TODO: Add installation instructions here.
+1. Install **.NET 10 SDK**.
+2. Install MAUI Android workload (for app run): `dotnet workload install maui-android`.
+3. From repo root, restore dependencies: `dotnet restore .\Streak.slnx`.
 
-## How to use?
+## Usage
 
-## How to build and run locally?
+After launching the app on Android/emulator:
+- Add, edit, delete, and reorder habits on **Manage Habits**.
+- Toggle today’s check-in on **Home**.
+- Open **Trends** for streak count + heatmap.
+- Configure reminder enable/time in **Settings**.
 
-@TODO: Add instructions to build and run the project locally.
+## Build and run locally
 
-## Contents
+Use the convenience script from repo root:
 
-- Changelog file
-- CI/CD configuration files
-- Dependency management files
-- Build scripts
-- Environment setup instructions
-- Usage instructions
-- FAQ section
-- Community guidelines
-- License badges
-- Project status badges
-- Contribution guidelines
-- Code style guidelines
-- Deployment instructions
-- Performance benchmarks
-- API documentation
-- Architecture diagrams
+- Build + generate local SQLite db: `pwsh .\run-local.ps1 -Task build`
+- Run unit tests: `pwsh .\run-local.ps1 -Task test`
+- Run app on Android target: `pwsh .\run-local.ps1 -Task run`
+- Build + test: `pwsh .\run-local.ps1 -Task all`
 
-## AI Readiness
+Equivalent direct commands:
 
-### Custom Agents
+- `dotnet build .\tests\Streak.Ui.UnitTests\Streak.Ui.UnitTests.csproj -c Debug`
+- `dotnet test .\tests\Streak.Ui.UnitTests\Streak.Ui.UnitTests.csproj -c Debug --no-build`
+- `dotnet build -t:Run .\src\Streak.Ui\Streak.Ui.csproj -f net10.0-android -c Debug`
 
+## Run tests
 
+From repo root:
 
-### Custom Instructions
+1. `dotnet build .\tests\Streak.Ui.UnitTests\Streak.Ui.UnitTests.csproj -c Debug`
+2. `dotnet test .\tests\Streak.Ui.UnitTests\Streak.Ui.UnitTests.csproj -c Debug --no-build`
 
-### AGENTS.md
+## SQLite SQL-first + scaffolding workflow
 
-### Prompts
+- SQL schema: `src\Streak.Ui\Repositories\Implementations\Sqlite\streak-schema.sql`
+- DbContext: `src\Streak.Ui\Repositories\Implementations\Sqlite\StreakDbContext.cs`
+- Scaffolded entities: `src\Streak.Ui\Repositories\Implementations\Sqlite\Entities\`
+- SQLite generation script: `src\Streak.Ui\Repositories\Implementations\Sqlite\CreateLocalSqliteDb.ps1`
 
-### Skills
+Workflow when schema changes:
 
-### Memory
+1. Update `streak-schema.sql`.
+2. Regenerate db file from SQL schema:
+   - `pwsh .\src\Streak.Ui\Repositories\Implementations\Sqlite\CreateLocalSqliteDb.ps1`
+3. Regenerate EF Core model (DbContext + Entities):
+   - Install EF tool (once): `dotnet tool install --global dotnet-ef --version 10.*`
+   - From `src\Streak.Ui`, run:
+   - `dotnet ef dbcontext scaffold "Data Source=Repositories\Implementations\Sqlite\streak.local.db" Microsoft.EntityFrameworkCore.Sqlite --context StreakDbContext --context-dir Repositories\Implementations\Sqlite --output-dir Repositories\Implementations\Sqlite\Entities --force --no-onconfiguring`

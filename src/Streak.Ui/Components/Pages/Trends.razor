@@ -1,0 +1,212 @@
+@page "/trends/{HabitId}"
+@using System.Globalization
+@using Streak.Ui.Constants
+@using Streak.Ui.Models.ViewModels.InputModels
+@using Streak.Ui.Models.ViewModels.ResultModels
+@using Streak.Ui.Services.Interfaces
+@inject ICoreAppService CoreAppService
+@inject ISnackbar Snackbar
+
+@if (_isLoading)
+{
+    <div class="loading-container">
+        <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+    </div>
+}
+else if (_trend is null)
+{
+    <MudAlert Severity="Severity.Warning">
+        Unable to load trend data for this habit.
+    </MudAlert>
+}
+else
+{
+    <div class="trends-page">
+        <MudPaper Class="streak-counter" Elevation="1">
+            <div class="streak-number-row">
+                <MudText Typo="Typo.h3">@_trend.CurrentStreak</MudText>
+                @if (_trend.CurrentStreak > 0)
+                {
+                    <span class="streak-emoji">@GetStreakEmoji(_trend.CurrentStreak)</span>
+                }
+            </div>
+            <MudText Typo="Typo.caption" Class="streak-label">@GetStreakLabel(_trend.CurrentStreak)</MudText>
+        </MudPaper>
+
+        <MudPaper Class="heatmap-card" Elevation="1">
+            <MudText Typo="Typo.subtitle2" Class="heatmap-title">Activity — Last 90 Days</MudText>
+            <div class="heatmap-scroll">
+                <div class="heatmap-shell">
+                    <div class="heatmap-month-row">
+                        <div class="day-label-spacer"></div>
+                        <div class="month-track" style="@($"width: {HeatmapWidth}px;")">
+                            @foreach (var monthLabel in _monthLabels)
+                            {
+                                <span class="month-label" style="@($"left: {monthLabel.ColumnIndex * HeatmapCellStep}px;")">@monthLabel.Label</span>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="heatmap-grid">
+                        <div class="day-labels">
+                            @foreach (var label in DayLabels)
+                            {
+                                <span class="day-label">@label</span>
+                            }
+                        </div>
+                        <div class="week-columns">
+                            @foreach (var week in _weeks)
+                            {
+                                <div class="week-column">
+                                    @foreach (var day in week)
+                                    {
+                                        @if (day is null)
+                                        {
+                                            <div class="heatmap-cell heatmap-cell-empty"></div>
+                                        }
+                                        else
+                                        {
+                                            <MudTooltip Text="@GetDayTooltip(day!)">
+                                                <div class="@GetHeatmapCellClass(day!)"></div>
+                                            </MudTooltip>
+                                        }
+                                    }
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </MudPaper>
+    </div>
+}
+
+@code
+{
+    [Parameter]
+    public string HabitId { get; set; } = string.Empty;
+
+    [CascadingParameter]
+    private MainLayout? MainLayout { get; set; }
+
+    private HabitTrendViewModel? _trend;
+    private bool _isLoading = true;
+    private readonly List<List<HabitTrendDayViewModel?>> _weeks = [];
+    private readonly List<MonthLabelViewModel> _monthLabels = [];
+
+    private static readonly string[] DayLabels = ["M", "", "W", "", "F", "", ""];
+    private const int HeatmapCellStep = 16;
+    private int HeatmapWidth => _weeks.Count * HeatmapCellStep;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await LoadTrendsAsync();
+    }
+
+    private async Task LoadTrendsAsync()
+    {
+        _isLoading = true;
+        _trend = null;
+        _weeks.Clear();
+        _monthLabels.Clear();
+
+        try
+        {
+            _trend = await CoreAppService.GetHabitTrendsAsync(new HabitTrendQueryInputModel
+            {
+                HabitId = HabitId,
+                Days = CoreConstants.MinimumTrendDays
+            });
+
+            BuildHeatmap();
+            MainLayout?.SetPageTitle(GetHabitTitle(_trend));
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private void BuildHeatmap()
+    {
+        if (_trend is null || _trend.Days.Count == 0)
+            return;
+
+        var orderedDays = _trend.Days.OrderBy(x => x.Date).ToList();
+        var leadingDays = ((int)orderedDays[0].Date.DayOfWeek + 6) % 7;
+
+        var paddedDays = new List<HabitTrendDayViewModel?>();
+        paddedDays.AddRange(Enumerable.Repeat<HabitTrendDayViewModel?>(null, leadingDays));
+        paddedDays.AddRange(orderedDays);
+
+        while (paddedDays.Count % 7 != 0)
+            paddedDays.Add(null);
+
+        for (var i = 0; i < paddedDays.Count; i += 7)
+        {
+            _weeks.Add(paddedDays.Skip(i).Take(7).ToList());
+        }
+
+        int? lastMonth = null;
+        for (var weekIndex = 0; weekIndex < _weeks.Count; weekIndex++)
+        {
+            var firstDay = _weeks[weekIndex].FirstOrDefault(x => x is not null);
+            if (firstDay is null || firstDay.Date.Month == lastMonth)
+                continue;
+
+            _monthLabels.Add(new MonthLabelViewModel
+            {
+                ColumnIndex = weekIndex,
+                Label = firstDay.Date.ToString("MMM", CultureInfo.InvariantCulture)
+            });
+
+            lastMonth = firstDay.Date.Month;
+        }
+    }
+
+    private static string GetStreakLabel(int currentStreak)
+    {
+        if (currentStreak == 0)
+            return "No active streak";
+
+        return currentStreak == 1 ? "day streak" : "days streak";
+    }
+
+    private static string GetStreakEmoji(int currentStreak)
+    {
+        return currentStreak >= 7 ? "🔥" : "😎";
+    }
+
+    private static string GetHeatmapCellClass(HabitTrendDayViewModel day)
+    {
+        var className = day.IsDone ? "heatmap-cell heatmap-cell-done" : "heatmap-cell heatmap-cell-missed";
+        if (day.Date == DateOnly.FromDateTime(DateTime.Today))
+            className += " heatmap-cell-today";
+
+        return className;
+    }
+
+    private static string GetDayTooltip(HabitTrendDayViewModel day)
+    {
+        var status = day.IsDone ? "Done ✅" : "Missed";
+        return $"{day.Date:MMM d} — {status}";
+    }
+
+    private static string GetHabitTitle(HabitTrendViewModel trend)
+    {
+        return string.IsNullOrWhiteSpace(trend.HabitEmoji)
+            ? trend.HabitName
+            : $"{trend.HabitEmoji} {trend.HabitName}";
+    }
+
+    private sealed class MonthLabelViewModel
+    {
+        public int ColumnIndex { get; set; }
+
+        public string Label { get; set; } = string.Empty;
+    }
+}

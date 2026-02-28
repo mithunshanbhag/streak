@@ -1,19 +1,15 @@
-﻿namespace Streak.Ui.Models;
+﻿using Streak.Ui.Models.ViewModels.ResultModels;
+using Streak.Ui.Repositories.Implementations.Sqlite.Entities;
+
+namespace Streak.Ui.Models;
 
 public class MapperProfile : Profile
 {
     public MapperProfile()
     {
-        #region DTO (API/REST model) to ViewModel conversion
+        CreateMap<Habit, HabitViewModel>();
 
-        // @TODO: Add your mappings here
-
-        #endregion
-
-        #region ViewModel to DTO (API/REST model) conversion
-
-        // @TODO: Add your mappings here
-
-        #endregion
+        CreateMap<AppSetting, ReminderSettingsViewModel>()
+            .ForMember(x => x.IsReminderEnabled, opt => opt.MapFrom(src => src.IsReminderEnabled == 1));
     }
 }

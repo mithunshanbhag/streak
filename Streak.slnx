@@ -1,4 +1,7 @@
 <Solution>
+  <Folder Name="/tests/">
+    <Project Path="tests/Streak.Ui.UnitTests/Streak.Ui.UnitTests.csproj" />
+  </Folder>
   <Project Path="src/Streak.Ui/Streak.Ui.csproj" Id="da3954af-1ebb-498c-8f4e-cf080479ffe4">
     <Deploy Solution="Debug|*" />
   </Project>

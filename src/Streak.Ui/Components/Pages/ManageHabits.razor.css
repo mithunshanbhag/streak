@@ -1,0 +1,62 @@
+.loading-container {
+    display: flex;
+    justify-content: center;
+    padding: 3rem 0;
+}
+
+.manage-habits-page {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.habit-rows {
+    display: flex;
+    flex-direction: column;
+}
+
+.habit-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 56px;
+    border-bottom: 1px solid var(--mud-palette-lines-default);
+    padding: 0 8px;
+}
+
+.habit-drag-handle {
+    color: var(--mud-palette-text-secondary);
+    cursor: grab;
+}
+
+.habit-emoji {
+    width: 32px;
+    text-align: center;
+    font-size: 1.25rem;
+}
+
+.habit-name {
+    flex: 1;
+}
+
+.add-habit-wrapper {
+    display: block;
+}
+
+.add-habit-button {
+    width: 100%;
+}
+
+.empty-state {
+    min-height: 45vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    text-align: center;
+}
+
+.empty-state-emoji {
+    font-size: 4rem;
+}
