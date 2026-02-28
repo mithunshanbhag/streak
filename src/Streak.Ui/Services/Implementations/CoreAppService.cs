@@ -1,9 +1,9 @@
 using System.Globalization;
 using FluentValidation;
 using Streak.Ui.Constants;
+using Streak.Ui.Models.Storage;
 using Streak.Ui.Models.ViewModels.InputModels;
 using Streak.Ui.Models.ViewModels.ResultModels;
-using Streak.Ui.Repositories.Implementations.Sqlite.Entities;
 using Streak.Ui.Repositories.Interfaces;
 using Streak.Ui.Services.Interfaces;
 
@@ -59,7 +59,7 @@ public class CoreAppService(
         await habitUpdateValidator.ValidateAndThrowAsync(inputModel, cancellationToken);
 
         var existingHabit = await coreRepository.GetHabitByIdAsync(inputModel.HabitId, cancellationToken)
-                           ?? throw new KeyNotFoundException($"Habit '{inputModel.HabitId}' was not found.");
+                            ?? throw new KeyNotFoundException($"Habit '{inputModel.HabitId}' was not found.");
 
         var normalizedName = NormalizeHabitName(inputModel.Name);
         var duplicate = await coreRepository.GetHabitByNameAsync(normalizedName, cancellationToken);
@@ -273,7 +273,9 @@ public class CoreAppService(
 
         DateOnly currentDate;
         if (doneDates.Contains(today))
+        {
             currentDate = today;
+        }
         else
         {
             var yesterday = today.AddDays(-1);

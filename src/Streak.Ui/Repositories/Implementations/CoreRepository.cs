@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Streak.Ui.Constants;
+using Streak.Ui.Models.Storage;
 using Streak.Ui.Repositories.Implementations.Sqlite;
-using Streak.Ui.Repositories.Implementations.Sqlite.Entities;
 using Streak.Ui.Repositories.Interfaces;
 
 namespace Streak.Ui.Repositories.Implementations;

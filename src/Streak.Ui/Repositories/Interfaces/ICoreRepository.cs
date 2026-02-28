@@ -1,4 +1,4 @@
-using Streak.Ui.Repositories.Implementations.Sqlite.Entities;
+using Streak.Ui.Models.Storage;
 
 namespace Streak.Ui.Repositories.Interfaces;
 

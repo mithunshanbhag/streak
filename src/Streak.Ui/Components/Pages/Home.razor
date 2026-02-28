@@ -1,8 +1,9 @@
 ﻿@page "/"
-@using Streak.Ui.Constants
+@using FluentValidation
 @using Streak.Ui.Models.ViewModels.InputModels
 @using Streak.Ui.Models.ViewModels.ResultModels
 @using Streak.Ui.Services.Interfaces
+@using Severity = MudBlazor.Severity
 @inject ICoreAppService CoreAppService
 @inject NavigationManager NavigationManager
 @inject ISnackbar Snackbar
@@ -10,7 +11,7 @@
 @if (_isLoading)
 {
     <div class="loading-container">
-        <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+        <MudProgressCircular Color="Color.Primary" Indeterminate="true"/>
     </div>
 }
 else if (_habits.Count == 0)
@@ -50,7 +51,7 @@ else
                                          Icon="@Icons.Material.Filled.RadioButtonUnchecked"
                                          ToggledIcon="@Icons.Material.Filled.CheckCircle"
                                          Color="Color.Default"
-                                         ToggledColor="Color.Success" />
+                                         ToggledColor="Color.Success"/>
                 </div>
             </MudPaper>
         }
@@ -95,7 +96,7 @@ else
 
             _habits = await CoreAppService.GetHabitsAsync();
         }
-        catch (FluentValidation.ValidationException ex)
+        catch (ValidationException ex)
         {
             Snackbar.Add(ex.Message, Severity.Error);
         }

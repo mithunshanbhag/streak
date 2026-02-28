@@ -1,16 +1,16 @@
 @page "/manage-habits"
-@using Microsoft.AspNetCore.Components.Web
-@using Streak.Ui.Constants
+@using FluentValidation
 @using Streak.Ui.Models.ViewModels.InputModels
 @using Streak.Ui.Models.ViewModels.ResultModels
 @using Streak.Ui.Services.Interfaces
+@using Severity = MudBlazor.Severity
 @inject ICoreAppService CoreAppService
 @inject ISnackbar Snackbar
 
 @if (_isLoading)
 {
     <div class="loading-container">
-        <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+        <MudProgressCircular Color="Color.Primary" Indeterminate="true"/>
     </div>
 }
 else
@@ -30,18 +30,18 @@ else
                 {
                     <MudPaper Class="habit-row" Elevation="0"
                               draggable="true"
-                              @ondragstart="@((DragEventArgs _) => OnDragStart(habit.Id))"
+                              @ondragstart="@(_ => OnDragStart(habit.Id))"
                               @ondragover:preventDefault="true"
-                              @ondrop="@((DragEventArgs _) => OnDropAsync(habit.Id))">
-                        <MudIcon Icon="@Icons.Material.Filled.DragIndicator" Class="habit-drag-handle" />
+                              @ondrop="@(_ => OnDropAsync(habit.Id))">
+                        <MudIcon Icon="@Icons.Material.Filled.DragIndicator" Class="habit-drag-handle"/>
                         <span class="habit-emoji">@GetDisplayEmoji(habit.Emoji)</span>
                         <MudText Typo="Typo.body1" Class="habit-name">@habit.Name</MudText>
                         <MudIconButton Icon="@Icons.Material.Filled.Edit"
                                        Color="Color.Default"
-                                       OnClick="@(() => OpenEditHabitDialog(habit))" />
+                                       OnClick="@(() => OpenEditHabitDialog(habit))"/>
                         <MudIconButton Icon="@Icons.Material.Filled.Delete"
                                        Color="Color.Error"
-                                       OnClick="@(() => OpenDeleteDialog(habit))" />
+                                       OnClick="@(() => OpenDeleteDialog(habit))"/>
                     </MudPaper>
                 }
             </div>
@@ -71,12 +71,12 @@ else
                       Label="Name"
                       Immediate="true"
                       Required="true"
-                      MaxLength="@CoreConstants.HabitNameMaxLength" />
+                      MaxLength="@CoreConstants.HabitNameMaxLength"/>
         <MudTextField @bind-Value="_habitEmoji"
                       Label="Emoji"
                       Immediate="true"
                       MaxLength="4"
-                      Class="emoji-field" />
+                      Class="emoji-field"/>
         @if (!string.IsNullOrWhiteSpace(_habitDialogError))
         {
             <MudText Typo="Typo.caption" Color="Color.Error">@_habitDialogError</MudText>
@@ -216,7 +216,7 @@ else
             _isHabitDialogOpen = false;
             await LoadHabitsAsync();
         }
-        catch (FluentValidation.ValidationException ex)
+        catch (ValidationException ex)
         {
             _habitDialogError = ex.Message;
         }

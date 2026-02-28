@@ -1,5 +1,5 @@
-﻿using Streak.Ui.Models.ViewModels.ResultModels;
-using Streak.Ui.Repositories.Implementations.Sqlite.Entities;
+﻿using Streak.Ui.Models.Storage;
+using Streak.Ui.Models.ViewModels.ResultModels;
 
 namespace Streak.Ui.Models;
 

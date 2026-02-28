@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿namespace Streak.Ui.Models.Storage;
 
-namespace Streak.Ui.Repositories.Implementations.Sqlite.Entities;
-
-public partial class AppSetting
+public class AppSetting
 {
     public int Id { get; set; }
 

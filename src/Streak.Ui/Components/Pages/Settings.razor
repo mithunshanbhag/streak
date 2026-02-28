@@ -7,7 +7,7 @@
 @if (_isLoading)
 {
     <div class="loading-container">
-        <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+        <MudProgressCircular Color="Color.Primary" Indeterminate="true"/>
     </div>
 }
 else
@@ -21,7 +21,7 @@ else
                 <MudSwitch T="bool"
                            Color="Color.Primary"
                            Value="_isReminderEnabled"
-                           ValueChanged="OnReminderEnabledChanged" />
+                           ValueChanged="OnReminderEnabledChanged"/>
             </div>
 
             @if (_isReminderEnabled)
@@ -33,7 +33,7 @@ else
                                    AmPm="true"
                                    AutoClose="true"
                                    MinuteSelectionStep="5"
-                                   OpenTo="OpenTo.Hours" />
+                                   OpenTo="OpenTo.Hours"/>
                 </div>
             }
         </MudPaper>

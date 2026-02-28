@@ -1,6 +1,5 @@
 @page "/trends/{HabitId}"
 @using System.Globalization
-@using Streak.Ui.Constants
 @using Streak.Ui.Models.ViewModels.InputModels
 @using Streak.Ui.Models.ViewModels.ResultModels
 @using Streak.Ui.Services.Interfaces
@@ -10,7 +9,7 @@
 @if (_isLoading)
 {
     <div class="loading-container">
-        <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+        <MudProgressCircular Color="Color.Primary" Indeterminate="true"/>
     </div>
 }
 else if (_trend is null)
@@ -83,11 +82,9 @@ else
 
 @code
 {
-    [Parameter]
-    public string HabitId { get; set; } = string.Empty;
+    [Parameter] public string HabitId { get; set; } = string.Empty;
 
-    [CascadingParameter]
-    private MainLayout? MainLayout { get; set; }
+    [CascadingParameter] private MainLayout? MainLayout { get; set; }
 
     private HabitTrendViewModel? _trend;
     private bool _isLoading = true;

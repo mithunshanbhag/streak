@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿namespace Streak.Ui.Models.Storage;
 
-namespace Streak.Ui.Repositories.Implementations.Sqlite.Entities;
-
-public partial class Habit
+public class Habit
 {
     public string Id { get; set; } = null!;
 
