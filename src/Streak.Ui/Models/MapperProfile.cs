@@ -1,5 +1,3 @@
 ﻿namespace Streak.Ui.Models;
 
-public class MapperProfile : Profile
-{
-}
+public class MapperProfile : Profile;

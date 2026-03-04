@@ -10,5 +10,5 @@ public class Habit
 
     public int DisplayOrder { get; set; }
 
-    public virtual ICollection<Checkin> Checkins { get; set; } = new List<Checkin>();
+    public virtual ICollection<Checkin> Checkins { get; set; } = (List<Checkin>)[];
 }
