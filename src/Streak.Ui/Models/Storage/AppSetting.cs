@@ -2,11 +2,7 @@
 
 public class AppSetting
 {
-    public int Id { get; set; }
+    public string Key { get; set; } = null!;
 
-    public int IsReminderEnabled { get; set; }
-
-    public TimeSpan ReminderTimeLocal { get; set; }
-
-    public DateTime UpdatedAtUtc { get; set; }
+    public string Value { get; set; } = null!;
 }

@@ -1,1 +1,9 @@
 global using AutoMapper;
+global using Streak.Ui.Constants;
+global using Streak.Ui.Models.Storage;
+global using Streak.Ui.Models.ViewModels.InputModels;
+global using Streak.Ui.Models.ViewModels.ResultModels;
+global using Streak.Ui.Repositories.Interfaces;
+global using Streak.Ui.Services.Implementations;
+global using Streak.Ui.Services.Interfaces;
+global using Streak.Ui.Services.Validators;

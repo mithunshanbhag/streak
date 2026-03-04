@@ -2,13 +2,6 @@ using System.Globalization;
 using FluentAssertions;
 using FluentValidation;
 using Moq;
-using Streak.Ui.Constants;
-using Streak.Ui.Models.ViewModels.InputModels;
-using Streak.Ui.Models.ViewModels.ResultModels;
-using Streak.Ui.Repositories.Implementations.Sqlite.Entities;
-using Streak.Ui.Repositories.Interfaces;
-using Streak.Ui.Services.Implementations;
-using Streak.Ui.Services.Validators;
 
 namespace Streak.Ui.UnitTests;
 
