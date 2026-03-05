@@ -1,3 +1,8 @@
+using Streak.Core.Models;
+using Streak.Core.Repositories.DbContexts;
+using Streak.Core.Repositories.Implementations;
+using Streak.Core.Repositories.Interfaces;
+
 namespace Streak.Ui.Misc.ExtensionMethods;
 
 public static class MauiAppBuilderExtensions
@@ -34,6 +39,8 @@ public static class MauiAppBuilderExtensions
             builder.Services.AddDbContext<StreakDbContext>(options => { options.UseSqlite($"Data Source={databasePath}"); });
 
             // repositories
+            builder.Services.AddTransient<IHabitRepository, HabitRepository>();
+            builder.Services.AddTransient<ICheckinRepository, CheckinRepository>();
 
             // services
 

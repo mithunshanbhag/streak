@@ -1,4 +1,4 @@
-﻿namespace Streak.Ui.Models.Storage;
+﻿namespace Streak.Core.Models.Storage;
 
 public class Checkin
 {

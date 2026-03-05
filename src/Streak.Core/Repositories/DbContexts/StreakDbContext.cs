@@ -1,4 +1,4 @@
-﻿namespace Streak.Ui.Repositories.DbContexts;
+﻿namespace Streak.Core.Repositories.DbContexts;
 
 public partial class StreakDbContext(DbContextOptions<StreakDbContext> options) : DbContext(options)
 {
@@ -20,7 +20,8 @@ public partial class StreakDbContext(DbContextOptions<StreakDbContext> options) 
 
             entity.HasOne(d => d.HabitNameNavigation).WithMany(p => p.Checkins)
                 .HasPrincipalKey(p => p.Name)
-                .HasForeignKey(d => d.HabitName);
+                .HasForeignKey(d => d.HabitName)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<Habit>(entity =>

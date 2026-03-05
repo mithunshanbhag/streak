@@ -1,4 +1,4 @@
-namespace Streak.Ui.Constants;
+namespace Streak.Core.Constants;
 
 public static class RouteConstants
 {

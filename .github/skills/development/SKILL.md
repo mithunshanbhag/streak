@@ -25,10 +25,15 @@ description: Guidelines and best practices for development with .NET.
     - To the greatest extent possible, try to use the service base classes defined in the Nucleus nuget package (see details below).
     - Else if necessary, create new service base classes.
     - Every public method on services that accept model(s) as arguments must validate the input before any processing occurs (see below).
-    - Service methods should only accept and return DTOs/REST models and ViewModels. Not storage/persistence models or database entities.
-    - Service methods can use AutoMapper to map between DTOs/ViewModels and storage models/entities, but the service method signatures should not directly reference storage models/entities.
   - `Validators` for FluentValidation validators of inputs: models, DTOs, etc.
     - Define all your FluentValidation validator classes here.
+- Service layer should only accept and return DTOs/REST models and ViewModels. Not storage/persistence models or database entities.
+  - Service layer can use AutoMapper to map between DTOs/ViewModels and storage models/entities, but the service method signatures should not directly reference storage models/entities.
+- For all get/read/fetch/query methods, the service layer should take an optional parameter `bool throwIfNotExists = true`.
+  - If the entity does not exist and `throwIfNotExists` is true, the service layer should throw an appropriate custom exception.
+  - Else if the entity does not exist and `throwIfNotExists` is false, the service layer should return null or an empty collection.
+- For all update/delete/write methods, it would be the service layer's responsibility to explicitly check for the existence of said entity (via repository layer) before attempting to update/delete/write it.
+  - If the entity does not exist, the service layer should throw an appropriate custom exception.
 - Miscellaneous:
   - For all the app's HTTP calls to 3rd parties, we should define services that are injected via DI as typed clients or named clients.
 
@@ -37,10 +42,15 @@ description: Guidelines and best practices for development with .NET.
 - Repositories are centralized under: `src\{AppName}\Repositories\` or `src\{AppName}.Core\Repositories\`.
 - Define two sub-folders:
   - `Interfaces` for repository interfaces.
+    - To the greatest extent possible, try to use the generic repository interfaces defined in the Nucleus nuget package. Else create a new generic repository interface, operating on a `TEntity` type (basically a storage/entity/persistence model).
   - `Implementations` for concrete repository implementations.
     - To the greatest extent possible, try to use the repository base classes defined in the Nucleus nuget package (see details below).
     - When using EFCore, the DBContext class should be defined in the `Implementations` folder, and repository implementations can depend on it for data access.
-    - Repository methods should only accept, return and operate upon storage/persistence models or database entities. Not DTOs or ViewModels.
+- Repository layer should only accept, return and operate upon storage/persistence models or database entities. Not DTOs or ViewModels.
+- The repository layer can only throw `System.ArgumentException` (and its derived types) for invalid inputs.
+- The repository layer should not "intentionally" throw any exceptions if an entity is not found.
+  - For get/read/fetch/query methods, it should return null or an empty collection.
+  - For update/delete/write methods, it should return false. Additionally the caller (typically the service layer) is responsible for checking the existence of the entity before performing write operations on it.
 
 ## Models
 
@@ -50,8 +60,8 @@ description: Guidelines and best practices for development with .NET.
   - Result models go into a `ResultModels` sub-folder.
     - Result models include computed display properties (for example, currency-formatted strings) to keep display formatting out of core math logic.
 - For API: Create the following sub-folders:
-  - `REST` for REST API request/response models, DTOs, etc.
-  - `Storage` for persistence models (for example, Cosmos DB entities).
+  - `Dto` for REST API request/response models, DTOs, etc.
+  - `Dao` for persistence models (for example, Cosmos DB entities).
   - `Events` for event stream models.
 - Define a `MapperProfile` class for AutoMapper under `src\{AppName}\Misc\AutoMapper\` to centralize mapping configuration between various model types.
 
@@ -82,7 +92,7 @@ description: Guidelines and best practices for development with .NET.
 ### Dependency Injection Pattern ⚠️
 
 DI is centralized via startup extension methods:
-- `src\{appName}}\Misc\ExtensionMethods\WebAssemblyHostBuilderExtensions.cs`
+- `src\{appName}\Misc\ExtensionMethods\WebAssemblyHostBuilderExtensions.cs`
 
 Registration pattern:
 - AutoMapper profile registration (`MapperProfile`)
