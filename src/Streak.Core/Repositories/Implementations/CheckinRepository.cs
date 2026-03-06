@@ -20,10 +20,7 @@ public class CheckinRepository(StreakDbContext dbContext) : SqlGenericRepository
     {
         ArgumentNullException.ThrowIfNull(habitNames);
 
-        if (habitNames.Count == 0)
-        {
-            return [];
-        }
+        if (habitNames.Count == 0) return [];
 
         var normalizedHabitNames = habitNames
             .Select(x => NormalizeRequiredText(x, nameof(habitNames)))

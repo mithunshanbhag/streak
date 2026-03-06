@@ -63,6 +63,40 @@ public class HabitRepositoryTests
         }
     }
 
+    [Fact]
+    public async Task ReorderAsync_ShouldPersistSequentialDisplayOrder_WhenInputMatchesExistingHabits()
+    {
+        await using var context = TestDbContextFactory.CreateContext(out var connection);
+        await using (connection)
+        {
+            context.Habits.AddRange(
+                new Habit { Id = 1, Name = "Run", DisplayOrder = 20 },
+                new Habit { Id = 2, Name = "Read", DisplayOrder = 30 },
+                new Habit { Id = 3, Name = "Code", DisplayOrder = 10 });
+            await context.SaveChangesAsync();
+            context.ChangeTracker.Clear();
+
+            IHabitRepository sut = new HabitRepository(context);
+
+            var result = await sut.ReorderAsync(
+            [
+                new Habit { Id = 3, Name = "Code", DisplayOrder = 10 },
+                new Habit { Id = 1, Name = "Run", DisplayOrder = 20 },
+                new Habit { Id = 2, Name = "Read", DisplayOrder = 30 }
+            ]);
+
+            result.Should().BeTrue();
+            context.ChangeTracker.Clear();
+
+            var reorderedHabits = await context.Habits
+                .OrderBy(x => x.DisplayOrder)
+                .ToListAsync();
+
+            reorderedHabits.Select(x => x.Id).Should().Equal(3, 1, 2);
+            reorderedHabits.Select(x => x.DisplayOrder).Should().Equal(1, 2, 3);
+        }
+    }
+
     #endregion
 
     #region Negative tests
@@ -117,6 +151,38 @@ public class HabitRepositoryTests
 
         var exception = await act.Should().ThrowAsync<ArgumentNullException>();
         exception.Which.ParamName.Should().Be("entity");
+    }
+
+    [Fact]
+    public async Task ReorderAsync_ShouldRollbackTransaction_WhenFinalDisplayOrderUpdateFails()
+    {
+        await using var context = TestDbContextFactory.CreateContext(out var connection);
+        await using (connection)
+        {
+            context.Habits.AddRange(
+                new Habit { Id = 1, Name = "Run", DisplayOrder = 1 },
+                new Habit { Id = 2, Name = "Read", DisplayOrder = 2 },
+                new Habit { Id = 3, Name = "Code", DisplayOrder = 3 });
+            await context.SaveChangesAsync();
+            context.ChangeTracker.Clear();
+
+            IHabitRepository sut = new HabitRepository(context);
+
+            var act = () => sut.ReorderAsync(
+            [
+                new Habit { Id = 2, Name = "Read", DisplayOrder = 2 },
+                new Habit { Id = 3, Name = "Code", DisplayOrder = 3 }
+            ]);
+
+            await act.Should().ThrowAsync<DbUpdateException>();
+            context.ChangeTracker.Clear();
+
+            var persistedHabits = await context.Habits
+                .OrderBy(x => x.Id)
+                .ToListAsync();
+
+            persistedHabits.Select(x => x.DisplayOrder).Should().Equal(1, 2, 3);
+        }
     }
 
     #endregion

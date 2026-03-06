@@ -8,6 +8,7 @@ description: Guidelines and best practices for development with .NET.
 - All UI components are Razor components organized under `src\{appName}\Components\`.
 - The various components are organized by feature area, with a general pattern of having sub-folders for `Pages`, `Shared`, and `Layout` components:
 - The various UI components will inject services to perform any necessary business logic or data fetching, but should not contain any complex logic themselves. They should be thin and focused on rendering the UI and handling user interactions.
+- To the greatest extent possible, try to use built-in the defined themes, styles, typography, color palettes, and components from MudBlazor when implementing the UI in Blazor. This will help maintain a consistent look and feel across the app and also speed up development. Try to avoid custom CSS and styles unless absolutely necessary.
 
 ## Controllers
 
@@ -64,6 +65,7 @@ description: Guidelines and best practices for development with .NET.
   - `Dao` for persistence models (for example, Cosmos DB entities).
   - `Events` for event stream models.
 - Define a `MapperProfile` class for AutoMapper under `src\{AppName}\Misc\AutoMapper\` to centralize mapping configuration between various model types.
+- To the greatest extent possible, use `required` property modifiers for non-nullable properties.
 
 ## Custom Exceptions
 
@@ -84,10 +86,6 @@ description: Guidelines and best practices for development with .NET.
 - Centralize magic strings and enums in these classes rather than in individual components or services.
 
 ## Other Important Notes
-
-### UI Development
-
-- To the greatest extent possible, try to use built-in the defined themes, styles, typography, color palettes, and components from MudBlazor when implementing the UI in Blazor. This will help maintain a consistent look and feel across the app and also speed up development. Try to avoid custom CSS and styles unless absolutely necessary.
 
 ### Dependency Injection Pattern ⚠️
 
@@ -117,3 +115,8 @@ Before completing changes, run formatting and verification:
 1. `dotnet format`
    - Ensures code aligns with repository `.editorconfig` conventions.
 2. `dotnet build --nologo`
+
+### Other Conventions
+
+1. Prefer primary constructors for classes with dependencies.
+2. Have a `GlobalUsings.cs` file in each project for common namespaces.

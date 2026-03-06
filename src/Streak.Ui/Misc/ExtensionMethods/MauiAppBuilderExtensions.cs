@@ -1,7 +1,5 @@
-using Streak.Core.Models;
-using Streak.Core.Repositories.DbContexts;
-using Streak.Core.Repositories.Implementations;
-using Streak.Core.Repositories.Interfaces;
+using Streak.Core.Services.Implementations;
+using Streak.Core.Services.Interfaces;
 
 namespace Streak.Ui.Misc.ExtensionMethods;
 
@@ -43,6 +41,8 @@ public static class MauiAppBuilderExtensions
             builder.Services.AddTransient<ICheckinRepository, CheckinRepository>();
 
             // services
+            builder.Services.AddTransient<IHabitService, HabitService>();
+            builder.Services.AddTransient<ICheckinService, CheckinService>();
 
             builder.Services.AddMauiBlazorWebView();
 

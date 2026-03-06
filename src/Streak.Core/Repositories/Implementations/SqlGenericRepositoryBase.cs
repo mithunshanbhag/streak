@@ -1,12 +1,11 @@
 namespace Streak.Core.Repositories.Implementations;
 
-public abstract class SqlGenericRepositoryBase<TEntity, TKey>(StreakDbContext dbContext)
+public abstract class SqlGenericRepositoryBase<TEntity, TKey>(DbContext dbContext)
     : ISqlGenericRepository<TEntity, TKey>
     where TEntity : class
 {
-    protected readonly StreakDbContext StreakDbContext = dbContext;
-
     protected readonly DbSet<TEntity> EntitySet = dbContext.Set<TEntity>();
+    protected readonly DbContext StreakDbContext = dbContext;
 
     public async Task<IReadOnlyList<TEntity>> GetAllAsync(CancellationToken cancellationToken = default)
     {
@@ -19,24 +18,15 @@ public abstract class SqlGenericRepositoryBase<TEntity, TKey>(StreakDbContext db
     {
         ArgumentNullException.ThrowIfNull(keys);
 
-        if (keys.Count == 0)
-        {
-            return [];
-        }
+        if (keys.Count == 0) return [];
 
         List<TEntity> entities = [];
         foreach (var key in keys)
         {
-            if (key is null)
-            {
-                throw new ArgumentNullException(nameof(keys));
-            }
+            if (key is null) throw new ArgumentNullException(nameof(keys));
 
             var entity = await GetAsync(key, cancellationToken);
-            if (entity is not null)
-            {
-                entities.Add(entity);
-            }
+            if (entity is not null) entities.Add(entity);
         }
 
         return entities;
@@ -44,10 +34,7 @@ public abstract class SqlGenericRepositoryBase<TEntity, TKey>(StreakDbContext db
 
     public Task<TEntity?> GetAsync(TKey key, CancellationToken cancellationToken = default)
     {
-        if (key is null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        if (key is null) throw new ArgumentNullException(nameof(key));
 
         return GetByPredicateAsync(BuildKeyPredicate(key), cancellationToken);
     }
@@ -59,10 +46,7 @@ public abstract class SqlGenericRepositoryBase<TEntity, TKey>(StreakDbContext db
 
     public Task<bool> ExistsAsync(TKey key, CancellationToken cancellationToken = default)
     {
-        if (key is null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        if (key is null) throw new ArgumentNullException(nameof(key));
 
         return ExistsByPredicateAsync(BuildKeyPredicate(key), cancellationToken);
     }
@@ -78,10 +62,7 @@ public abstract class SqlGenericRepositoryBase<TEntity, TKey>(StreakDbContext db
     {
         ArgumentNullException.ThrowIfNull(entities);
 
-        if (entities.Count == 0)
-        {
-            return false;
-        }
+        if (entities.Count == 0) return false;
 
         await EntitySet.AddRangeAsync(entities, cancellationToken);
         return await SaveChangesAsync(cancellationToken) > 0;
@@ -97,10 +78,7 @@ public abstract class SqlGenericRepositoryBase<TEntity, TKey>(StreakDbContext db
 
     public Task<bool> DeleteAsync(TKey key, CancellationToken cancellationToken = default)
     {
-        if (key is null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        if (key is null) throw new ArgumentNullException(nameof(key));
 
         return DeleteByPredicateAsync(BuildKeyPredicate(key), cancellationToken);
     }
@@ -165,10 +143,7 @@ public abstract class SqlGenericRepositoryBase<TEntity, TKey>(StreakDbContext db
         string paramName,
         CancellationToken cancellationToken = default)
     {
-        if (entity is null)
-        {
-            throw new ArgumentNullException(paramName);
-        }
+        if (entity is null) throw new ArgumentNullException(paramName);
 
         await EntitySet.AddAsync(entity, cancellationToken);
         return await SaveChangesAsync(cancellationToken) > 0;

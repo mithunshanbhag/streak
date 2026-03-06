@@ -2,6 +2,24 @@ namespace Streak.Core.UnitTests.Repositories;
 
 public class CheckinRepositoryTests
 {
+    #region Boundary tests
+
+    [Fact]
+    public async Task GetByHabitNamesAsync_ShouldReturnEmpty_WhenHabitNamesCollectionIsEmpty()
+    {
+        await using var context = TestDbContextFactory.CreateContext(out var connection);
+        await using (connection)
+        {
+            var sut = new CheckinRepository(context);
+
+            var result = await sut.GetByHabitNamesAsync([]);
+
+            result.Should().BeEmpty();
+        }
+    }
+
+    #endregion
+
     #region Positive tests
 
     [Fact]
@@ -217,24 +235,6 @@ public class CheckinRepositoryTests
 
         var exception = await act.Should().ThrowAsync<ArgumentNullException>();
         exception.Which.ParamName.Should().Be("entity");
-    }
-
-    #endregion
-
-    #region Boundary tests
-
-    [Fact]
-    public async Task GetByHabitNamesAsync_ShouldReturnEmpty_WhenHabitNamesCollectionIsEmpty()
-    {
-        await using var context = TestDbContextFactory.CreateContext(out var connection);
-        await using (connection)
-        {
-            var sut = new CheckinRepository(context);
-
-            var result = await sut.GetByHabitNamesAsync([]);
-
-            result.Should().BeEmpty();
-        }
     }
 
     #endregion

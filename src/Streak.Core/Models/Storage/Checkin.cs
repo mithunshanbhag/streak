@@ -2,11 +2,11 @@
 
 public class Checkin
 {
-    public string CheckinDate { get; set; } = null!;
+    public required string CheckinDate { get; set; }
 
-    public string HabitName { get; set; } = null!;
+    public required string HabitName { get; set; }
 
-    public int IsDone { get; set; }
+    public required int IsDone { get; set; }
 
     public string? LastUpdatedUtc { get; set; }
 
