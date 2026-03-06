@@ -1,5 +1,5 @@
-﻿using FluentValidation;
-using MudBlazor.Services;
+using Streak.Core.Services.Implementations;
+using Streak.Core.Services.Interfaces;
 
 namespace Streak.Ui.Misc.ExtensionMethods;
 
@@ -32,6 +32,17 @@ public static class MauiAppBuilderExtensions
             // validators
             foreach (var validatorRegistration in AssemblyScanner.FindValidatorsInAssembly(Assembly.GetExecutingAssembly()))
                 builder.Services.AddSingleton(validatorRegistration.InterfaceType, validatorRegistration.ValidatorType);
+
+            var databasePath = Path.Combine(FileSystem.Current.AppDataDirectory, "streak.local.db");
+            builder.Services.AddDbContext<StreakDbContext>(options => { options.UseSqlite($"Data Source={databasePath}"); });
+
+            // repositories
+            builder.Services.AddTransient<IHabitRepository, HabitRepository>();
+            builder.Services.AddTransient<ICheckinRepository, CheckinRepository>();
+
+            // services
+            builder.Services.AddTransient<IHabitService, HabitService>();
+            builder.Services.AddTransient<ICheckinService, CheckinService>();
 
             builder.Services.AddMauiBlazorWebView();
 
