@@ -1,120 +1,64 @@
-﻿@implements IDisposable
-@inject NavigationManager NavigationManager
-@inject IJSRuntime JsRuntime
-@inherits LayoutComponentBase
+﻿@inherits LayoutComponentBase
 
 <MudThemeProvider/>
 <MudPopoverProvider/>
 <MudDialogProvider/>
 <MudSnackbarProvider/>
 
-<MudLayout Class="page-root">
-    <MudAppBar Dense="true" Fixed="true" Elevation="1" Color="Color.Primary" Class="streak-app-bar">
-        <div class="app-bar-left">
-            @if (IsHomeRoute)
-            {
-                <MudTooltip Text="Let your habits compound">
-                    <MudButton Variant="Variant.Text" Color="Color.Inherit" OnClick="NavigateHome" Class="streak-logo">
-                        Streak
-                    </MudButton>
-                </MudTooltip>
-            }
-            else
-            {
-                <MudIconButton Icon="@Icons.Material.Filled.ArrowBack" Color="Color.Inherit" OnClick="NavigateHome"/>
-                <MudText Typo="Typo.h6" Class="app-title">@CurrentTitle</MudText>
-            }
-        </div>
-
+<MudLayout>
+    <MudAppBar Color="Color.Primary"
+               Dense="true"
+               Elevation="1">
+        <MudTooltip Text="Let your habits compound">
+            <MudText Typo="Typo.h5">
+                Streak
+            </MudText>
+        </MudTooltip>
         <MudSpacer/>
-
         <MudTooltip Text="Manage habits">
-            <MudIconButton Icon="@Icons.Material.Filled.Add" Color="Color.Inherit" OnClick="NavigateManageHabits"/>
+            @* TODO: Change this icon later *@
+            <MudIconButton Class="mr-4"
+                           Href="@RouteConstants.ManageHabits"
+                           Icon="@Icons.Material.Filled.Add"
+                           Color="Color.Inherit"
+                           aria-label="Manage habits"/>
         </MudTooltip>
         <MudTooltip Text="Settings">
-            <MudIconButton Icon="@Icons.Material.Filled.Settings" Color="Color.Inherit" OnClick="NavigateSettings"/>
+            <MudIconButton Class="mr-4"
+                           Href="@RouteConstants.Home"
+                           Icon="@Icons.Material.Filled.Settings"
+                           Color="Color.Inherit"
+                           aria-label="Settings"/>
         </MudTooltip>
-        <MudTooltip Text="GitHub">
-            <MudIconButton Icon="@Icons.Material.Filled.Code" Color="Color.Inherit" OnClick="OpenGitHubAsync"/>
+        <MudTooltip Text="View source code"
+                    Placement="Placement.Left">
+            <MudIconButton Class="mr-4"
+                           Href="@UrlConstants.GitHubRepo"
+                           Target="_blank"
+                           Icon="@Icons.Custom.Brands.GitHub"
+                           Color="Color.Inherit"
+                           aria-label="View source code on GitHub"/>
         </MudTooltip>
     </MudAppBar>
 
     <MudMainContent>
-        <main class="streak-main-content">
+        <main role="main">
             @Body
         </main>
     </MudMainContent>
+
+    <MudScrollToTop>
+        <MudTooltip Text="Scroll to top">
+            <MudFab Color="Color.Primary"
+                    IconSize="Size.Large"
+                    Size="Size.Large"
+                    StartIcon="@Icons.Material.Filled.ArrowUpward"
+                    aria-label="Scroll to top of page"/>
+        </MudTooltip>
+    </MudScrollToTop>
+
 </MudLayout>
 
 @code
 {
-    private string? _customPageTitle;
-
-    private bool IsHomeRoute => string.IsNullOrWhiteSpace(GetRelativePath());
-
-    private string CurrentTitle => _customPageTitle ?? GetDefaultPageTitle();
-
-    protected override void OnInitialized()
-    {
-        NavigationManager.LocationChanged += OnLocationChanged;
-    }
-
-    public void SetPageTitle(string? title)
-    {
-        _customPageTitle = title;
-        _ = InvokeAsync(StateHasChanged);
-    }
-
-    public void ClearPageTitle()
-    {
-        _customPageTitle = null;
-    }
-
-    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
-    {
-        _customPageTitle = null;
-        _ = InvokeAsync(StateHasChanged);
-    }
-
-    private void NavigateHome()
-    {
-        NavigationManager.NavigateTo(RouteConstants.Home);
-    }
-
-    private void NavigateManageHabits()
-    {
-        NavigationManager.NavigateTo(RouteConstants.ManageHabits);
-    }
-
-    private void NavigateSettings()
-    {
-        NavigationManager.NavigateTo(RouteConstants.Settings);
-    }
-
-    private async Task OpenGitHubAsync()
-    {
-        await JsRuntime.InvokeVoidAsync("open", UrlConstants.StreakGitHubRepository, "_blank");
-    }
-
-    private string GetDefaultPageTitle()
-    {
-        var path = GetRelativePath();
-        return path.ToLowerInvariant() switch
-        {
-            "manage-habits" => "Manage Habits",
-            "settings" => "Settings",
-            _ when path.StartsWith("trends/", StringComparison.OrdinalIgnoreCase) => "Trends",
-            _ => "Streak"
-        };
-    }
-
-    private string GetRelativePath()
-    {
-        return NavigationManager.ToBaseRelativePath(NavigationManager.Uri).Trim('/');
-    }
-
-    public void Dispose()
-    {
-        NavigationManager.LocationChanged -= OnLocationChanged;
-    }
 }

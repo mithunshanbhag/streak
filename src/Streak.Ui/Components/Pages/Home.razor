@@ -1,5 +1,47 @@
 ﻿@page "/"
+@inject IHabitService HabitService
+@inject ICheckinService CheckinService
+
+<PageTitle>Streak</PageTitle>
+
+@if (_habits.Count == 0)
+{
+    <MudStack Style="min-height:100vh"
+              Justify="Justify.Center"
+              AlignItems="AlignItems.Center">
+        <MudFab Color="Color.Tertiary"
+                StartIcon="@Icons.Material.Filled.Add"
+                Label="New Habit"
+                Size="Size.Large"/>
+    </MudStack>
+}
+else
+{
+    @foreach (var habit in _habits)
+    {
+        <MudText Typo="Typo.h6">
+            @habit.Name
+        </MudText>
+    }
+}
 
 @code
 {
+    private IReadOnlyList<Habit> _habits = [];
+
+    private bool _loadingData;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDataAsync();
+    }
+
+    private async Task LoadDataAsync()
+    {
+        _loadingData = true;
+
+        _habits = await HabitService.GetAllAsync();
+
+        _loadingData = false;
+    }
 }
