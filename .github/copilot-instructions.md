@@ -7,6 +7,7 @@ This is my opinionated checklist for building indie-SaaS, micro-SaaS apps. It is
 My preferred framework for building apps is .NET (currently .NET 10 is the latest version):
 
 - Frontend: Blazor WebAssembly (with MudBlazor controls).
+- CommandLine: .NET Console App (with Spectre.Console for rich CLI).
 - Backend: Azure Function Apps.
 - Database: Azure Cosmos DB (NOSQL API, formerly known as Core SQL API).
 
@@ -28,7 +29,7 @@ I prefer to host my apps and related infra on Azure using serverless/PaaS. This 
 
 ## GENERAL WORKFLOW
 
-1. See if there are any prior learnings documented in `/.github/LEARNINGS.md` that can be helpful for the current task.
+1. See if there are any prior learnings documented in `/.github/LEARNINGS.md` that can be helpful for the current task. Create this file if it doesn't exist.
 
 2. Start with the specifications in the `/docs/specs` folder. This will give you a clear understanding of the requirements and features of the app.
    - Start with `/docs/specs/README.md`.
@@ -40,9 +41,23 @@ I prefer to host my apps and related infra on Azure using serverless/PaaS. This 
 
 5. Write tests in the `/tests` folder to verify that the features work as expected.
 
-6. Update the documentation in the `README.md` file as needed to reflect the current state of the project.
+6. Set up the local development script (if not already set up).
 
-7. Document any new, relevant learnings and notes by updating the `/.github/LEARNINGS.md` file.
+7. Update the documentation in the `README.md` file as needed to reflect the current state of the project.
+
+8. Document any new, relevant learnings and notes by updating the `/.github/LEARNINGS.md` file.
+
+9. Along with your actual output, please also provide a brief summary of the skills utilized, hooks invoked, LSPs invoked. Use the following format:
+
+  ```
+  Skills Utilized
+  - Skill 1
+  - Skill 2
+  Hooks Invoked
+  - Hook 1
+  LSPs Invoked
+  - LSP 1
+  ```
 
 ## UI MOCKUP GUIDELINES
 
@@ -105,6 +120,12 @@ I prefer to host my apps and related infra on Azure using serverless/PaaS. This 
 - Please follow the guidelines in the `/.github/skills/test-automation/SKILL.md` file when authoring automated tests.
 
 - Always ensure that the tests are building, running, and passing before declaring success.
+
+## LOCAL DEVELOPMENT SCRIPT GUIDELINES
+
+- Please follow the guidelines in the `/.github/skills/local-dev-script/SKILL.md` file when setting up the local development script.
+
+- Always ensure that the local development script is working as expected before declaring success.
 
 ## DOCUMENTATION GUIDELINES
 

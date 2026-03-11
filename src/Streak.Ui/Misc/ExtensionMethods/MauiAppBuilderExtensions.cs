@@ -1,5 +1,6 @@
 using Streak.Core.Services.Implementations;
 using Streak.Core.Services.Interfaces;
+using Streak.Ui.Misc.Startup;
 
 namespace Streak.Ui.Misc.ExtensionMethods;
 
@@ -33,8 +34,8 @@ public static class MauiAppBuilderExtensions
             foreach (var validatorRegistration in AssemblyScanner.FindValidatorsInAssembly(Assembly.GetExecutingAssembly()))
                 builder.Services.AddSingleton(validatorRegistration.InterfaceType, validatorRegistration.ValidatorType);
 
-            var databasePath = Path.Combine(FileSystem.Current.AppDataDirectory, "streak.local.db");
-            builder.Services.AddDbContext<StreakDbContext>(options => { options.UseSqlite($"Data Source={databasePath}"); });
+            builder.Services.AddSingleton<SqliteDatabaseBootstrapper>();
+            builder.Services.AddDbContext<StreakDbContext>(options => { options.UseSqlite(SqliteDatabaseBootstrapper.GetConnectionString()); });
 
             // repositories
             builder.Services.AddTransient<IHabitRepository, HabitRepository>();

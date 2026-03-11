@@ -13,3 +13,7 @@ description: Guidelines and best practices for authoring documentation.
   - A usage instructions section that explains how to use the project.
   - A section on how to build and run the project locally, with clear instructions.
   - A section on how to run the tests, with clear instructions.
+
+- Use markdown formatting to enhance readability, such as headings, bullet points, and code blocks.
+- Ensure that all links in the README.md file are valid and point to the correct resources.
+- Use emojis where appropriate to make the documentation more engaging and visually appealing.

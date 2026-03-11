@@ -120,3 +120,4 @@ Before completing changes, run formatting and verification:
 
 1. Prefer primary constructors for classes with dependencies.
 2. Have a `GlobalUsings.cs` file in each project for common namespaces.
+3. Only one .cs file per class/interface/struct/type, and the file name should match the type name.
