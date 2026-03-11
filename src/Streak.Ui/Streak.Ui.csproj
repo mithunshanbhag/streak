@@ -35,7 +35,10 @@
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)' == 'Debug|net10.0-android'">
-		<EmbedAssembliesIntoApk>true</EmbedAssembliesIntoApk>
+		<!-- Keep debug deploys fast on physical Android devices by using fast deployment
+		     and only packaging the phone runtime by default. -->
+		<RuntimeIdentifiers>android-arm64</RuntimeIdentifiers>
+		<EmbedAssembliesIntoApk>false</EmbedAssembliesIntoApk>
 	</PropertyGroup>
 
 	<ItemGroup>
