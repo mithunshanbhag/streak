@@ -35,7 +35,10 @@ public static class MauiAppBuilderExtensions
                 builder.Services.AddSingleton(validatorRegistration.InterfaceType, validatorRegistration.ValidatorType);
 
             builder.Services.AddSingleton<SqliteDatabaseBootstrapper>();
-            builder.Services.AddDbContext<StreakDbContext>(options => { options.UseSqlite(SqliteDatabaseBootstrapper.GetConnectionString()); });
+            builder.Services.AddDbContext<StreakDbContext>(options =>
+            {
+                options.UseSqlite(SqliteDatabaseBootstrapper.ConnectionString);
+            });
 
             // repositories
             builder.Services.AddTransient<IHabitRepository, HabitRepository>();

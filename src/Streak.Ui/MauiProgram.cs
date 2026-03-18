@@ -13,7 +13,7 @@ public static class MauiProgram
             .Build();
 
         app.Services.GetRequiredService<SqliteDatabaseBootstrapper>()
-            .InitializeAsync()
+            .EnsureDbExistsAsync()
             .GetAwaiter()
             .GetResult();
 

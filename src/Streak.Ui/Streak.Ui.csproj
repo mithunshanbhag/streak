@@ -37,7 +37,9 @@
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)' == 'Debug|net10.0-android'">
 		<!-- Keep debug deploys fast on physical Android devices by using fast deployment
 		     and only packaging the phone runtime by default. -->
-		<RuntimeIdentifiers>android-arm64</RuntimeIdentifiers>
+		<!-- @TODO: Update RuntimeIdentifiers and EmbedAssembliesIntoApk before
+		doing production deployment -->
+		<RuntimeIdentifiers>android-x64</RuntimeIdentifiers>
 		<EmbedAssembliesIntoApk>false</EmbedAssembliesIntoApk>
 	</PropertyGroup>
 
