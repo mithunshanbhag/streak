@@ -1,0 +1,99 @@
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: 'Roboto', sans-serif;
+    background: #ECECEC;
+    color: #1F1F1F;
+}
+
+.gallery {
+    padding: 32px 24px 48px;
+    display: grid;
+    gap: 24px;
+    max-width: 960px;
+    margin: 0 auto;
+}
+
+.intro-card,
+.decision-card {
+    background: #FFFFFF;
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+.eyebrow,
+.decision-card__eyebrow {
+    margin: 0 0 8px;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: #757575;
+}
+
+.intro-card h1,
+.decision-card h2 {
+    margin: 0;
+}
+
+.intro-copy,
+.decision-card p {
+    margin: 10px 0 0;
+    font-size: 14px;
+    line-height: 1.55;
+    color: #5F6368;
+}
+
+.decision-grid {
+    display: grid;
+    gap: 20px;
+}
+
+.decision-card {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 16px;
+    align-items: start;
+}
+
+.decision-card__icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.decision-card--accepted .decision-card__icon {
+    background: #E8F5E9;
+    color: #2E7D32;
+}
+
+.decision-card--discarded .decision-card__icon {
+    background: #FDECEC;
+    color: #C62828;
+}
+
+.decision-link {
+    display: inline-block;
+    margin-top: 14px;
+    color: #6200EE;
+    font-weight: 500;
+    text-decoration: none;
+}
+
+@media (min-width: 760px) {
+    .decision-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .decision-card--discarded {
+        grid-column: 1 / -1;
+    }
+}

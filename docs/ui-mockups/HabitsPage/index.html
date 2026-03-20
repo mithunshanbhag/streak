@@ -15,7 +15,7 @@
     <header class="app-bar">
         <span class="app-bar__logo" title="Let your habits compound">Streak</span>
         <div class="app-bar__actions">
-            <a class="app-bar__btn" href="../CreateHabitPage/index.html" aria-label="Create habit" title="Create Habit">
+            <a class="app-bar__btn" href="../CreateHabitPage/index.html" aria-label="Quick add habit" title="Quick Add Habit">
                 <span class="material-icons">add</span>
             </a>
             <a class="app-bar__btn" href="../SettingsPage/index.html" aria-label="Settings" title="Settings">
@@ -25,60 +25,65 @@
     </header>
 
     <main class="content" id="habitList">
-        <section class="list-header">
-            <div class="list-header__copy">
-                <p class="list-header__eyebrow">Today</p>
-                <div class="list-header__title-row">
-                    <h1 class="list-header__title">Habits, sorted A-Z</h1>
-                    <span class="list-header__chip">A-Z</span>
-                </div>
-                <p class="list-header__description">Tap a habit for details. Toggle today on the right.</p>
+        <section class="summary-strip">
+            <div>
+                <p class="summary-strip__eyebrow">Today</p>
+                <h1 class="summary-strip__title">2 left today</h1>
             </div>
+            <span class="summary-pill">4 habits</span>
         </section>
 
-        <div class="habit-card" data-done="false" data-name="Exercise">
+        <article class="habit-card" data-done="false" data-name="Exercise">
             <a class="habit-card__details" href="../HabitDetailsPage/index.html" title="Open Exercise details">
                 <span class="habit-card__emoji">💪</span>
-                <span class="habit-card__name">Exercise</span>
-                <span class="habit-card__streak habit-card__streak--zero">0</span>
+                <span class="habit-card__copy">
+                    <span class="habit-card__name">Exercise</span>
+                    <span class="habit-card__meta habit-card__meta--zero">0 streak</span>
+                </span>
             </a>
             <button class="habit-card__toggle habit-card__toggle--not-done" aria-label="Toggle Exercise">
                 <span class="material-icons">radio_button_unchecked</span>
             </button>
-        </div>
+        </article>
 
-        <div class="habit-card habit-card--done" data-done="true" data-name="Meditate">
+        <article class="habit-card habit-card--done" data-done="true" data-name="Meditate">
             <a class="habit-card__details" href="../HabitDetailsPage/index.html" title="Open Meditate details">
                 <span class="habit-card__emoji">🧘</span>
-                <span class="habit-card__name">Meditate</span>
-                <span class="habit-card__streak habit-card__streak--fire">🔥 12</span>
+                <span class="habit-card__copy">
+                    <span class="habit-card__name">Meditate</span>
+                    <span class="habit-card__meta habit-card__meta--fire">🔥 12 day streak</span>
+                </span>
             </a>
             <button class="habit-card__toggle habit-card__toggle--done" aria-label="Toggle Meditate">
                 <span class="material-icons">check_circle</span>
             </button>
-        </div>
+        </article>
 
-        <div class="habit-card" data-done="false" data-name="Read">
+        <article class="habit-card" data-done="false" data-name="Read">
             <a class="habit-card__details" href="../HabitDetailsPage/index.html" title="Open Read details">
                 <span class="habit-card__emoji">📖</span>
-                <span class="habit-card__name">Read</span>
-                <span class="habit-card__streak habit-card__streak--cool">😎 3</span>
+                <span class="habit-card__copy">
+                    <span class="habit-card__name">Read</span>
+                    <span class="habit-card__meta habit-card__meta--cool">😎 3 day streak</span>
+                </span>
             </a>
             <button class="habit-card__toggle habit-card__toggle--not-done" aria-label="Toggle Read">
                 <span class="material-icons">radio_button_unchecked</span>
             </button>
-        </div>
+        </article>
 
-        <div class="habit-card habit-card--done" data-done="true" data-name="Run">
+        <article class="habit-card habit-card--done" data-done="true" data-name="Run">
             <a class="habit-card__details" href="../HabitDetailsPage/index.html" title="Open Run details">
                 <span class="habit-card__emoji">🏃</span>
-                <span class="habit-card__name">Run</span>
-                <span class="habit-card__streak habit-card__streak--cool">😎 5</span>
+                <span class="habit-card__copy">
+                    <span class="habit-card__name">Run</span>
+                    <span class="habit-card__meta habit-card__meta--cool">😎 5 day streak</span>
+                </span>
             </a>
             <button class="habit-card__toggle habit-card__toggle--done" aria-label="Toggle Run">
                 <span class="material-icons">check_circle</span>
             </button>
-        </div>
+        </article>
     </main>
 </div>
 

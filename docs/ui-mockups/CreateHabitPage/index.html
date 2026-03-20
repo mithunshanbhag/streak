@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=393, initial-scale=1.0">
-    <title>Streak – Create Habit Page Mockup</title>
+    <title>Streak – Quick Add Habit Sheet Mockup</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
@@ -14,54 +14,82 @@
 
 <div class="phone-frame">
     <header class="app-bar">
-        <div class="app-bar__left">
-            <a class="app-bar__btn" href="../HabitsPage/index.html" aria-label="Back" title="Back to Habits">
-                <span class="material-icons">arrow_back</span>
-            </a>
-            <span class="app-bar__title">Create Habit</span>
-        </div>
+        <span class="app-bar__title">Streak</span>
         <div class="app-bar__actions">
+            <a class="app-bar__btn app-bar__btn--active" href="../CreateHabitPage/index.html" aria-label="Quick add habit" title="Quick Add Habit">
+                <span class="material-icons">add</span>
+            </a>
             <a class="app-bar__btn" href="../SettingsPage/index.html" aria-label="Settings" title="Settings">
                 <span class="material-icons">settings</span>
             </a>
         </div>
     </header>
 
-    <main class="content">
-        <section class="page-context">
-            <p class="page-context__description">Add a habit. It will appear alphabetically on Habits.</p>
+    <main class="content content--dimmed">
+        <section class="summary-strip">
+            <div>
+                <p class="summary-strip__eyebrow">Today</p>
+                <h1 class="summary-strip__title">2 left today</h1>
+            </div>
+            <span class="summary-pill">4 habits</span>
         </section>
 
-        <section class="page-card">
-            <h2 class="section-title">Habit details</h2>
-            <p class="section-text">Use a short, unique name. Emoji is optional.</p>
-
-            <div class="text-field">
-                <input type="text" class="text-field__input" id="habitNameInput" placeholder=" " autocomplete="off">
-                <label class="text-field__label" for="habitNameInput">Name</label>
-            </div>
-            <p class="field-help">1–30 characters, unique among your habits.</p>
-
-            <div class="text-field text-field--small">
-                <input type="text" class="text-field__input" id="habitEmojiInput" placeholder=" " autocomplete="off">
-                <label class="text-field__label" for="habitEmojiInput">Emoji</label>
-            </div>
-            <p class="field-help">Optional. Leave blank to use the default icon.</p>
-
-            <div class="preview-card">
-                <span class="preview-card__label">Preview</span>
-                <div class="preview-card__habit">
-                    <span class="preview-card__emoji">✨</span>
-                    <span class="preview-card__name">New habit</span>
+        <article class="habit-card">
+            <div class="habit-card__main">
+                <span class="habit-card__emoji">💪</span>
+                <div class="habit-card__copy">
+                    <span class="habit-card__name">Exercise</span>
+                    <span class="habit-card__meta">0 streak</span>
                 </div>
             </div>
+            <span class="material-icons habit-card__toggle">radio_button_unchecked</span>
+        </article>
 
-            <div class="page-actions">
-                <a class="btn-text" href="../HabitsPage/index.html">Cancel</a>
-                <a class="btn-contained" href="../HabitsPage/index.html">Save Habit</a>
+        <article class="habit-card habit-card--done">
+            <div class="habit-card__main">
+                <span class="habit-card__emoji">🧘</span>
+                <div class="habit-card__copy">
+                    <span class="habit-card__name">Meditate</span>
+                    <span class="habit-card__meta">🔥 12 day streak</span>
+                </div>
             </div>
-        </section>
+            <span class="material-icons habit-card__toggle habit-card__toggle--done">check_circle</span>
+        </article>
     </main>
+
+    <section class="bottom-sheet">
+        <div class="sheet-handle"></div>
+        <div class="sheet-header">
+            <div>
+                <p class="sheet-header__eyebrow">Quick add</p>
+                <h2 class="sheet-header__title">New habit</h2>
+            </div>
+            <a class="btn-text" href="../HabitsPage/index.html">Close</a>
+        </div>
+
+        <label class="field">
+            <span class="field__label">Name</span>
+            <input class="field__input" type="text" value="Journal">
+        </label>
+
+        <label class="field field--small">
+            <span class="field__label">Emoji (optional)</span>
+            <input class="field__input" type="text" value="📝">
+        </label>
+
+        <div class="preview-card">
+            <span class="preview-card__label">Preview</span>
+            <div class="preview-card__habit">
+                <span class="preview-card__emoji">📝</span>
+                <span class="preview-card__name">Journal</span>
+            </div>
+        </div>
+
+        <div class="page-actions">
+            <a class="btn-text" href="../HabitsPage/index.html">Cancel</a>
+            <a class="btn-contained" href="../HabitsPage/index.html">Save habit</a>
+        </div>
+    </section>
 </div>
 
 </body>

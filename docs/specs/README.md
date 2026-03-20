@@ -66,27 +66,33 @@ A streak is the count of **consecutive calendar days** on which a habit was chec
 - The app should work fully **offline** (local data only).
 - Minimal battery and storage footprint.
 
-## Page and Route Inventory
+## Surface and Route Inventory
 
-Each routed page has its own detailed spec:
+Each major surface has its own detailed spec:
 
-| Page                         | Route                    | Spec                                                     | Purpose                                             |
-| ---------------------------- | ------------------------ | -------------------------------------------------------- | --------------------------------------------------- |
-| Habits                       | `/`, `/habits`          | [habits-page.md](./habits-page.md)                       | Landing page, daily checkin surface, and habit list |
-| Habit Details                | `/habits/{habitId}`     | [habit-details-page.md](./habit-details-page.md)         | Habit details, trends, inline editing, and deletion |
-| Create Habit                 | `/habits/new`           | [create-habit-page.md](./create-habit-page.md)           | Create a new habit from the global add action       |
-| Settings                     | `/settings`             | [settings-page.md](./settings-page.md)                   | Configure reminder preferences                      |
+| Surface                      | Route / Trigger         | Spec                                                     | Purpose                                                  |
+| ---------------------------- | ----------------------- | -------------------------------------------------------- | -------------------------------------------------------- |
+| Habits                       | `/`, `/habits`         | [habits-page.md](./habits-page.md)                       | Landing page, daily checkin surface, and habit list      |
+| Habit Details                | `/habits/{habitId}`    | [habit-details-page.md](./habit-details-page.md)         | Habit details, trends, inline editing, and deletion      |
+| Quick Add Habit              | `+` action on Habits   | [create-habit-page.md](./create-habit-page.md)           | Create a new habit without leaving the Habits surface    |
+| Settings                     | `/settings`            | [settings-page.md](./settings-page.md)                   | Configure reminder preferences                           |
 
 ## Information Architecture Notes
 
 - The app remains **shallow by default**: **Habits** is the landing page, with **Habit Details** and **Settings** as the primary secondary destinations.
-- The global **+** app-bar action opens **Create Habit** directly.
+- The global **+** app-bar action opens a **Quick Add Habit** sheet anchored to **Habits**.
 - The **Habits** page doubles as the habit-list maintenance surface: habits are shown alphabetically and each habit opens its details on the Habit Details page.
 - The **Habit Details** page contains the heatmap, inline edit experience, and delete confirmation dialog for a single habit.
 - **Settings** is now focused only on notification reminder preferences.
+- The top of **Habits** uses a compact progress summary instead of instructional header copy.
 - There is no dedicated habit-list routed page separate from **Habits**.
+- There is no dedicated routed **Create Habit** page in the simplified direction.
 - Separate **Edit Habit** and **Delete Habit** routed pages are no longer part of the app structure.
 
 Common UI specifications (theme, typography, iconography, navigation):
 
 - [ui.md](./ui.md)
+
+## UX Exploration
+
+- [ux-simplification-review.md](./ux-simplification-review.md) - accepted and rejected simplification ideas, plus links to the updated primary mockups.

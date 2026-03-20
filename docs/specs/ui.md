@@ -49,33 +49,34 @@ The app uses a **top app bar** that is compact/dense to maximize the content are
 | ---------------------- | -------------------- | ------------------------------------------------------------------------------------------------------ |
 | Left                   | "Streak" logo text   | Tapping navigates to the Habits page. Tooltip on hover: *"Let your habits compound"*.                  |
 | Right (1st from right) | Settings icon (gear) | Navigates to the [Settings page](./settings-page.md).                                                  |
-| Right (2nd from right) | Add icon (plus)      | Navigates to the [Create Habit page](./create-habit-page.md).                                          |
+| Right (2nd from right) | Add icon (plus)      | Opens the [Quick Add Habit sheet](./create-habit-page.md) anchored to the Habits page.                |
 
 - The app bar is **fixed** at the top and does not scroll with content.
-- The app bar is present on **all** pages.
+- The full `Streak` + `Add` + `Settings` action set is present on the **Habits** page.
+- Routed secondary screens may keep a simpler app bar pattern, but the quick-add flow itself does **not** introduce a separate full-screen app bar.
 
 ## Navigation
 
 - The app uses a **shallow routed navigation model**:
   - **Habits page** is the landing page and the root of the navigation stack. It is accessible via both `/` and `/habits`.
   - **Habit Details** and **Settings** are one level deep from Habits.
-  - **Create Habit** is launched from the global **+** action (and may also be reached from Habits empty-state CTAs).
+  - **Quick Add Habit** is launched from the global **+** action (and may also be reached from Habits empty-state CTAs) as an anchored bottom sheet.
 - Habit edit is performed **inline on the Habit Details page**.
 - Habit delete is confirmed with a **dialog launched from the Habit Details page**, not a dedicated route.
-- Every non-Habits page displays a **Back arrow** in the app bar (replacing the logo position).
+- Every non-Habits routed page displays a **Back arrow** in the app bar (replacing the logo position).
   - From **Settings**, the back arrow returns the **Habits** page.
   - From **Habit Details**, the back arrow returns the previous in-app page; if there is no in-app history, it falls back to **Habits**.
-  - From **Create Habit**, the back arrow returns the previous in-app page; if there is no in-app history, it falls back to **Habits**.
+  - From the **Quick Add Habit** sheet, Android back dismisses the sheet and returns focus to **Habits**.
 - Android hardware/gesture back follows the same route hierarchy.
 - Navigation transitions should be fast with no perceptible delay.
 
 ## Route Inventory
 
-| Page           | Route               |
+| Surface        | Route / Trigger     |
 | -------------- | ------------------- |
 | Habits         | `/`, `/habits`      |
 | Habit Details  | `/habits/{habitId}` |
-| Create Habit   | `/habits/new`       |
+| Quick Add Habit| `+` from Habits     |
 | Settings       | `/settings`         |
 
 ## Breadcrumbs
@@ -95,4 +96,4 @@ The app uses a **top app bar** that is compact/dense to maximize the content are
 - When there is no content to display (e.g., no habits created), the page shows:
   - A friendly illustration or emoji (e.g., 🌱).
   - A short message (e.g., "No habits yet. Tap + to add one.").
-  - Optionally, a call-to-action button that navigates to the Create Habit page.
+  - Optionally, a call-to-action button that opens the Quick Add Habit sheet.

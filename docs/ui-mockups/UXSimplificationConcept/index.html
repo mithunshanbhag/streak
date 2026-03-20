@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Streak - UX Simplification Decisions</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <main class="gallery">
+        <section class="intro-card">
+            <p class="eyebrow">Decision summary</p>
+            <h1>UX simplification follow-up</h1>
+            <p class="intro-copy">
+                This page now records which brainstorming ideas were accepted and where they live.
+                The accepted directions have been moved into the primary mockups.
+            </p>
+        </section>
+
+        <section class="decision-grid">
+            <article class="decision-card decision-card--accepted">
+                <div class="decision-card__icon">
+                    <span class="material-icons">check_circle</span>
+                </div>
+                <div>
+                    <p class="decision-card__eyebrow">Accepted</p>
+                    <h2>Simplified Habits screen</h2>
+                    <p>Moved into the primary Habits mockup with the compact progress summary and quieter header treatment.</p>
+                    <a class="decision-link" href="../HabitsPage/index.html">Open `HabitsPage` mockup</a>
+                </div>
+            </article>
+
+            <article class="decision-card decision-card--accepted">
+                <div class="decision-card__icon">
+                    <span class="material-icons">check_circle</span>
+                </div>
+                <div>
+                    <p class="decision-card__eyebrow">Accepted</p>
+                    <h2>Quick-add sheet</h2>
+                    <p>Moved into the primary Create Habit mockup as an anchored bottom-sheet flow instead of a separate full-screen page concept.</p>
+                    <a class="decision-link" href="../CreateHabitPage/index.html">Open `CreateHabitPage` mockup</a>
+                </div>
+            </article>
+
+            <article class="decision-card decision-card--discarded">
+                <div class="decision-card__icon">
+                    <span class="material-icons">cancel</span>
+                </div>
+                <div>
+                    <p class="decision-card__eyebrow">Discarded</p>
+                    <h2>Compact details sheet</h2>
+                    <p>This direction was intentionally dropped. Habit details remain a separate flow in the specs and primary mockups for now.</p>
+                </div>
+            </article>
+        </section>
+    </main>
+</body>
+</html>

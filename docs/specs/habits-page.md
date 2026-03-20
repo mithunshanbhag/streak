@@ -11,16 +11,27 @@ The page displays a **vertical list of habit cards**, one per habit.
 - Habits are sorted **alphabetically by name**.
 - There is no separate manage-habits screen; the Habits page is the main habit list surface.
 
+### Progress Summary
+
+At the top of the page, above the habit cards, show a **compact progress summary strip**.
+
+- This summary is intentionally brief and should replace instructional header copy.
+- It should include:
+  - a small `Today` eyebrow
+  - a short status line such as `2 left today` or `All done today`
+  - a small pill showing the total number of habits (for example, `4 habits`)
+- Do **not** show an A-Z sort chip or explanatory helper text on this screen.
+
 ### Habit Card
 
 Each card shows:
 
-| Element        | Position     | Details                                                                                                                                          |
-| -------------- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Emoji / Icon   | Left         | The habit's emoji, or a default icon if none is set.                                                                                                 |
-| Habit name     | Center-left  | The habit's name label. Tapping the card body opens the [Habit Details page](./habit-details-page.md) for that habit.                                     |
-| Current streak | Center-right | A badge or label showing the streak count (e.g., "😎 3" or "🔥 12"). It remains visible within the tappable card body and opens the same Habit Details page. |
-| Checkin toggle | Right        | A `MudToggleIconButton`. Done = green check circle icon. Not done = empty circle icon.                                                               |
+| Element        | Position            | Details                                                                                                                                             |
+| -------------- | ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Emoji / Icon   | Left                | The habit's emoji, or a default icon if none is set.                                                                                               |
+| Habit name     | Main text column    | The habit's name label. Tapping the card body opens the [Habit Details page](./habit-details-page.md) for that habit.                             |
+| Current streak | Secondary text line | A compact secondary line under the habit name showing the streak (for example, `😎 3 day streak`, `🔥 12 day streak`, or `0 streak`).             |
+| Checkin toggle | Right               | A `MudToggleIconButton`. Done = green check circle icon. Not done = empty circle icon.                                                            |
 
 - Cards use the full width of the screen with standard horizontal padding (16dp).
 - Vertical spacing between cards: 12dp.
@@ -45,10 +56,10 @@ Each card shows:
 
 ## Streak Counter Display
 
-- The streak count is displayed as a number next to an emoji:
+- The streak count is displayed in the secondary line below the habit name:
   - **🔥** (fire) when the streak is **7 or more** consecutive days.
   - **😎** (cool) when the streak is **1–6** consecutive days.
-  - No emoji when the streak is **0** (just muted text).
+  - No emoji when the streak is **0** (just muted text such as `0 streak`).
 - The streak count is part of the tappable habit card and opens the [Habit Details page](./habit-details-page.md) for that specific habit.
 
 ## Empty State
@@ -57,7 +68,7 @@ When the user has no habits configured:
 
 - Display a friendly message: *"No habits yet. Tap **+** to add one."*
 - Show a 🌱 emoji or illustration above the message.
-- Optionally include a CTA button ("Add Habit") that navigates to the [Create Habit page](./create-habit-page.md).
+- Optionally include a CTA button ("Add Habit") that opens the [Quick Add Habit sheet](./create-habit-page.md).
 
 ## Interaction Summary
 
@@ -65,6 +76,6 @@ When the user has no habits configured:
 | -------------------------------- | ------------------------------------------------------------------ |
 | Toggle a habit's check icon      | Immediately records checkin for today; updates streak count        |
 | Tap a habit card (except toggle) | Navigates to the Habit Details page for that habit                 |
-| Tap **+** in app bar             | Navigates to the Create Habit page                                 |
+| Tap **+** in app bar             | Opens the Quick Add Habit sheet anchored to the Habits page        |
 | Tap **⚙** in app bar             | Navigates to the Settings page                                     |
 | Tap **Streak** logo              | No-op (already on the Habits page)                                 |
