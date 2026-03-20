@@ -39,7 +39,7 @@ public sealed class SqliteDatabaseBootstrapper(ILogger<SqliteDatabaseBootstrappe
             logger.LogError(ex, "SQLite database bootstrap failed for {DatabasePath}.", databasePath);
 
             DeleteDatabaseArtifacts(tempDatabasePath);
-            
+
             throw;
         }
     }
@@ -49,7 +49,7 @@ public sealed class SqliteDatabaseBootstrapper(ILogger<SqliteDatabaseBootstrappe
     private static async Task<string> LoadSchemaScriptAsync()
     {
         await using var scriptStream = await FileSystem.Current.OpenAppPackageFileAsync(AppConstants.SchemaAssetName);
-        
+
         using var reader = new StreamReader(scriptStream);
 
         return await reader.ReadToEndAsync();
@@ -67,7 +67,7 @@ public sealed class SqliteDatabaseBootstrapper(ILogger<SqliteDatabaseBootstrappe
         await using var command = connection.CreateCommand();
 
         command.CommandText = schemaScript;
-        
+
         await command.ExecuteNonQueryAsync(cancellationToken);
     }
 

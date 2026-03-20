@@ -1,7 +1,7 @@
 <Solution>
   <Project Path="src/Streak.Core/Streak.Core.csproj" Id="f60363f6-71e1-4cb9-bbea-79c137a1e3fb" />
   <Project Path="src/Streak.DbScaffold/Streak.DbScaffold.csproj" />
-  <Project Path="src/Streak.Ui/Streak.Ui.csproj" Id="da3954af-1ebb-498c-8f4e-cf080479ffe4">
+  <Project Path="src/Streak.Ui/Streak.Ui.csproj" Id="c2a78bb7-d076-4c14-a143-df834c9948dd">
     <Deploy Solution="Debug|*" />
   </Project>
   <Project Path="tests/Streak.Ui.UnitTests/Streak.Core.UnitTests.csproj" />

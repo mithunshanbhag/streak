@@ -1,7 +1,4 @@
-using Streak.Ui.Misc.ExtensionMethods;
-using Streak.Ui.Misc.Startup;
-
-namespace Streak.Ui;
+﻿namespace Streak.Ui;
 
 public static class MauiProgram
 {
@@ -12,10 +9,10 @@ public static class MauiProgram
             .ConfigureServices()
             .Build();
 
-        app.Services.GetRequiredService<SqliteDatabaseBootstrapper>()
-            .EnsureDbExistsAsync()
-            .GetAwaiter()
-            .GetResult();
+        //app.Services.GetRequiredService<SqliteDatabaseBootstrapper>()
+        //    .EnsureDbExistsAsync()
+        //    .GetAwaiter()
+        //    .GetResult();
 
         return app;
     }

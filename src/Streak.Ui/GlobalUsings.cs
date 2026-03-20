@@ -11,3 +11,7 @@ global using Streak.Core.Constants;
 global using Streak.Core.Repositories.DbContexts;
 global using Streak.Core.Repositories.Implementations;
 global using Streak.Core.Repositories.Interfaces;
+global using Streak.Core.Services.Implementations;
+global using Streak.Core.Services.Interfaces;
+global using Streak.Ui.Misc.ExtensionMethods;
+global using Streak.Ui.Misc.Startup;

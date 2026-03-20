@@ -1,27 +1,38 @@
 ﻿@page "/"
 @inject IHabitService HabitService
-@inject ICheckinService CheckinService
 
 <PageTitle>Streak</PageTitle>
 
-@if (_habits.Count == 0)
+@* Page has not been initialized yet. *@
+@if (_loadingData)
 {
-    <MudStack Style="min-height:100vh"
-              Justify="Justify.Center"
-              AlignItems="AlignItems.Center">
-        <MudFab Color="Color.Tertiary"
-                StartIcon="@Icons.Material.Filled.Add"
-                Label="New Habit"
-                Size="Size.Large"/>
-    </MudStack>
+    <MudAlert ContentAlignment="HorizontalAlignment.Center"
+              Severity="Severity.Info">
+        Loading Data...
+    </MudAlert>
 }
+@* Page initialized *@
 else
 {
-    @foreach (var habit in _habits)
+    if (_habits.Count == 0)
     {
-        <MudText Typo="Typo.h6">
-            @habit.Name
-        </MudText>
+        <MudStack Style="min-height:100vh"
+                  Justify="Justify.Center"
+                  AlignItems="AlignItems.Center">
+            <MudFab Color="Color.Tertiary"
+                    StartIcon="@Icons.Material.Filled.Add"
+                    Label="New Habit"
+                    Size="Size.Large"/>
+        </MudStack>
+    }
+    else
+    {
+        @foreach (var habit in _habits)
+        {
+            <MudText Typo="Typo.h6">
+                @habit.Name
+            </MudText>
+        }
     }
 }
 
@@ -40,7 +51,7 @@ else
     {
         _loadingData = true;
 
-        _habits = await HabitService.GetAllAsync();
+        //_habits = await HabitService.GetAllAsync();
 
         _loadingData = false;
     }
