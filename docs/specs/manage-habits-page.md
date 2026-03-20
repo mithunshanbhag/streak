@@ -2,11 +2,11 @@
 
 > **Route**: `/manage-habits`
 
-The manage habits page allows users to **add, edit, delete, and reorder** their habits. Users access this page by tapping the **+** icon in the app bar.
+The manage habits page allows users to **add, edit, delete, and reorder** their habits. Users access this page from the app bar's **More** menu when they want to maintain the full habit list.
 
 ## Navigation
 
-- Accessible from the **+** icon in the app bar (available on all pages).
+- Accessible from the **Manage Habits** item in the app bar's **More** menu.
 - A **back arrow** in the app bar returns the user to the [Home page](./home-page.md).
 
 ## Breadcrumbs

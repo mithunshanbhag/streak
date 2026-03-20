@@ -73,8 +73,8 @@ Each routed page has its own detailed spec:
 | ---------------------------- | ----------------------------------- | ------------------------------------------------------------ | ----------------------------------------------------- |
 | Home                         | `/`                                 | [home-page.md](./home-page.md)                               | Daily checkin surface (landing page)                  |
 | Trends                       | `/trends/{habitId}`                 | [trends-page.md](./trends-page.md)                           | Habit streak heatmap and streak counter               |
-| Manage Habits                | `/manage-habits`                    | [manage-habits-page.md](./manage-habits-page.md)             | Habit list, reorder, and entry point for habit CRUD   |
-| Create Habit                 | `/manage-habits/new`                | [create-habit-page.md](./create-habit-page.md)               | Create a new habit from the manage habits flow        |
+| Manage Habits                | `/manage-habits`                    | [manage-habits-page.md](./manage-habits-page.md)             | Habit list, reorder, and maintenance actions          |
+| Create Habit                 | `/manage-habits/new`                | [create-habit-page.md](./create-habit-page.md)               | Create a new habit from the global add action or manage habits flow |
 | Edit Habit                   | `/manage-habits/{habitId}/edit`     | [edit-habit-page.md](./edit-habit-page.md)                   | Update an existing habit without changing its history |
 | Delete Habit Confirmation    | `/manage-habits/{habitId}/delete`   | [delete-habit-page.md](./delete-habit-page.md)               | Confirm destructive habit deletion                    |
 | Settings                     | `/settings`                         | [settings-page.md](./settings-page.md)                       | Configure daily reminder time                         |
@@ -82,6 +82,8 @@ Each routed page has its own detailed spec:
 ## Information Architecture Notes
 
 - The app remains **shallow by default**: Home is the landing page, with Trends, Manage Habits, and Settings as the primary secondary destinations.
+- The global **+** app-bar action opens **Create Habit** directly.
+- **Manage Habits** is a lower-frequency maintenance surface reached from the app bar's **More** menu.
 - Habit creation, editing, and deletion are part of the **Manage Habits route hierarchy**, rather than separate top-level areas.
 - The previous add, edit, and delete dialogs are now represented as **regular routed pages** so they can support direct navigation, browser history, and breadcrumbs without changing the overall structure of the app.
 

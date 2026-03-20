@@ -2,13 +2,13 @@
 
 > **Route**: `/manage-habits/new`
 
-The create habit page replaces the previous add-habit dialog with a dedicated routed page within the manage habits flow.
+The create habit page replaces the previous add-habit dialog with a dedicated routed page within the manage habits flow. It is also the direct destination of the global **+** action in the app bar.
 
 ## Navigation
 
-- Users arrive here by tapping **"+ Add Habit"** on the [Manage Habits page](./manage-habits-page.md).
-- A **back arrow** in the app bar returns the user to the [Manage Habits page](./manage-habits-page.md).
-- Android hardware/gesture back also returns the user to the [Manage Habits page](./manage-habits-page.md).
+- Users arrive here by tapping the **+** icon in the app bar or by tapping **"+ Add Habit"** on the [Manage Habits page](./manage-habits-page.md).
+- A **back arrow** in the app bar returns the user to the previous in-app page. If there is no in-app history, it falls back to the [Manage Habits page](./manage-habits-page.md).
+- Android hardware/gesture back follows the same behavior.
 
 ## Breadcrumbs
 
@@ -28,8 +28,8 @@ The page uses the same form content that previously appeared in the add-habit di
 
 ## Actions
 
-- **Save**: Creates the habit and navigates back to the [Manage Habits page](./manage-habits-page.md). The new habit appears at the bottom of the list and on the [Home page](./home-page.md).
-- **Cancel**: Returns to the [Manage Habits page](./manage-habits-page.md) without creating anything.
+- **Save**: Creates the habit and returns to the previous in-app page. If launched from the [Manage Habits page](./manage-habits-page.md), the new habit appears at the bottom of that list. If launched from the [Home page](./home-page.md), the new habit appears on Home immediately.
+- **Cancel**: Returns to the previous in-app page without creating anything. If there is no in-app history, it falls back to the [Manage Habits page](./manage-habits-page.md).
 
 ## Constraints
 

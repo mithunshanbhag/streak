@@ -3,6 +3,11 @@
 
 <PageTitle>Streak</PageTitle>
 
+<PageHeader BreadcrumbItems="@(
+                             [
+                                 new BreadcrumbItem("Home", "#", disabled: true)
+                             ])"/>
+
 @* Page has not been initialized yet. *@
 @if (_loadingData)
 {
@@ -16,7 +21,7 @@ else
 {
     if (_habits.Count == 0)
     {
-        <MudStack Style="min-height:100vh"
+        <MudStack Style="min-height: 100vh"
                   Justify="Justify.Center"
                   AlignItems="AlignItems.Center">
             <MudFab Color="Color.Tertiary"

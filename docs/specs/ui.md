@@ -33,9 +33,9 @@ This document covers shared UI conventions that apply across all screens in the 
 
 - **Habit icons**: Users may select a single emoji to represent each habit. If no emoji is selected, a default filled-circle icon is used.
 - **App bar icons**: Material Design icons from MudBlazor's built-in icon set:
-  - Manage habits: `Add` (plus) icon
+  - Create habit: `Add` (plus) icon
   - Settings: `Settings` (gear) icon
-  - GitHub: `GitHub` brand icon (from MudBlazor icons or a custom SVG)
+  - More actions: `MoreVert` (vertical ellipsis) icon
 - **Checkin toggle**: Use MudBlazor's `MudToggleIconButton` for the checkin toggle on the home page. Done = green filled check-circle icon. Not done = empty circle icon.
 - Icon sizes follow MudBlazor defaults. App bar icons should be sized at 24dp.
 
@@ -46,24 +46,29 @@ The app uses a **top app bar** that is compact/dense to maximize the content are
 | Position               | Element              | Behavior                                                                                               |
 | ---------------------- | -------------------- | ------------------------------------------------------------------------------------------------------ |
 | Left                   | "Streak" logo text   | Tapping navigates to the home page. Tooltip on hover: *"Let your habits compound"*.                    |
-| Right (1st from right) | GitHub icon          | Opens the [Streak GitHub repository](https://github.com/mithunshanbhag/streak) in an external browser. |
+| Right (1st from right) | More icon            | Opens an overflow menu with **Manage Habits** and **GitHub** actions.                                  |
 | Right (2nd from right) | Settings icon (gear) | Navigates to the [Settings page](./settings-page.md).                                                  |
-| Right (3rd from right) | Add icon (plus)      | Navigates to the [Manage Habits page](./manage-habits-page.md).                                        |
+| Right (3rd from right) | Add icon (plus)      | Navigates to the [Create Habit page](./create-habit-page.md).                                          |
 
 - The app bar is **fixed** at the top and does not scroll with content.
 - The app bar is present on **all** pages.
+- Overflow menu items:
+  - **Manage Habits** navigates to the [Manage Habits page](./manage-habits-page.md).
+  - **GitHub** opens the [Streak GitHub repository](https://github.com/mithunshanbhag/streak) in an external browser.
 
 ## Navigation
 
 - The app uses a **shallow routed navigation model**:
   - **Home page** is the landing page and the root of the navigation stack.
   - **Trends**, **Manage Habits**, and **Settings** are one level deep from Home.
-  - **Create Habit**, **Edit Habit**, and **Delete Habit Confirmation** are nested under **Manage Habits**.
+  - **Create Habit** keeps the `/manage-habits/new` route for consistency with habit CRUD, but is also reachable directly from the global **+** action.
+  - **Edit Habit** and **Delete Habit Confirmation** are nested under **Manage Habits**.
 - Habit management create/edit/delete flows use **regular routed pages**, not dialogs.
 - Every non-home page displays a **Back arrow** in the app bar (replacing the logo position).
   - From **Trends** and **Settings**, the back arrow returns the user to the Home page.
   - From **Manage Habits**, the back arrow returns the user to the Home page.
-  - From **Create Habit**, **Edit Habit**, and **Delete Habit Confirmation**, the back arrow returns the user to the Manage Habits page.
+  - From **Create Habit**, the back arrow returns the user to the previous in-app page; if there is no in-app history, it falls back to **Manage Habits**.
+  - From **Edit Habit** and **Delete Habit Confirmation**, the back arrow returns the user to the Manage Habits page.
 - Android hardware/gesture back follows the same route hierarchy.
 - Navigation transitions should be fast with no perceptible delay.
 
@@ -103,4 +108,4 @@ The app uses a **top app bar** that is compact/dense to maximize the content are
 - When there is no content to display (e.g., no habits created), the page shows:
   - A friendly illustration or emoji (e.g., 🌱).
   - A short message (e.g., "No habits yet. Tap + to add your first!").
-  - Optionally, a call-to-action button that navigates to the Manage Habits page.
+  - Optionally, a call-to-action button that navigates to the Create Habit page.

@@ -52,7 +52,7 @@ When the user has no habits configured:
 
 - Display a friendly message: *"No habits yet. Tap **+** to add your first one!"*
 - Show a 🌱 emoji or illustration above the message.
-- Optionally include a CTA button ("Add Habit") that navigates to the [Manage Habits page](./manage-habits-page.md).
+- Optionally include a CTA button ("Add Habit") that navigates to the [Create Habit page](./create-habit-page.md).
 
 ## Interaction Summary
 
@@ -60,6 +60,7 @@ When the user has no habits configured:
 | --------------------------- | ----------------------------------------------------------- |
 | Toggle a habit's check icon | Immediately records checkin for today; updates streak count |
 | Tap streak count / badge    | Navigates to the Trends page for that habit                 |
-| Tap **+** in app bar        | Navigates to the Manage Habits page                         |
+| Tap **+** in app bar        | Navigates to the Create Habit page                          |
+| Open **More** in app bar, tap **Manage Habits** | Navigates to the Manage Habits page          |
 | Tap **⚙** in app bar        | Navigates to the Settings page                              |
 | Tap **Streak** logo         | No-op (already on home page)                                |
