@@ -86,37 +86,8 @@ body {
     background: linear-gradient(180deg, #F8F3FF 0%, #FFFFFF 100%);
 }
 
-.breadcrumb {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    font-size: 12px;
-    color: #5F6368;
-}
-
-.breadcrumb a {
-    color: #6200EE;
-    text-decoration: none;
-    font-weight: 500;
-}
-
-.breadcrumb .material-icons {
-    font-size: 16px;
-}
-
-.route-pill {
-    display: inline-flex;
-    margin-top: 10px;
-    padding: 4px 10px;
-    border-radius: 999px;
-    background: #EDE7F6;
-    color: #6200EE;
-    font-size: 11px;
-    font-weight: 500;
-}
-
 .page-context__description {
-    margin-top: 12px;
+    margin-top: 0;
     font-size: 13px;
     color: #5F6368;
     line-height: 1.45;

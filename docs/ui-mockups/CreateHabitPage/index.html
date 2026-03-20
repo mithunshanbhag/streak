@@ -15,7 +15,7 @@
 <div class="phone-frame">
     <header class="app-bar">
         <div class="app-bar__left">
-            <a class="app-bar__btn" href="../SettingsPage/index.html" aria-label="Back to settings" title="Back to Settings">
+            <a class="app-bar__btn" href="../HabitsPage/index.html" aria-label="Back" title="Back to Habits">
                 <span class="material-icons">arrow_back</span>
             </a>
             <span class="app-bar__title">Create Habit</span>
@@ -24,26 +24,17 @@
             <a class="app-bar__btn" href="../SettingsPage/index.html" aria-label="Settings" title="Settings">
                 <span class="material-icons">settings</span>
             </a>
-            <button class="app-bar__btn" aria-label="More actions" title="More actions (GitHub)">
-                <span class="material-icons">more_vert</span>
-            </button>
         </div>
     </header>
 
     <main class="content">
         <section class="page-context">
-            <nav class="breadcrumb" aria-label="Breadcrumb">
-                <a href="../HomePage/index.html">Home</a>
-                <span class="material-icons" aria-hidden="true">chevron_right</span>
-                <span>Create Habit</span>
-            </nav>
-            <div class="route-pill">/habits/new</div>
-            <p class="page-context__description">This page can be launched directly from the global + action or from Settings when the user wants to manage the full habit list.</p>
+            <p class="page-context__description">Add a habit. It will appear alphabetically on Habits.</p>
         </section>
 
         <section class="page-card">
             <h2 class="section-title">Habit details</h2>
-            <p class="section-text">Create a habit with a short, unique name. Adding an emoji is optional.</p>
+            <p class="section-text">Use a short, unique name. Emoji is optional.</p>
 
             <div class="text-field">
                 <input type="text" class="text-field__input" id="habitNameInput" placeholder=" " autocomplete="off">
@@ -66,8 +57,8 @@
             </div>
 
             <div class="page-actions">
-                <a class="btn-text" href="../SettingsPage/index.html">Cancel</a>
-                <a class="btn-contained" href="../SettingsPage/index.html">Save Habit</a>
+                <a class="btn-text" href="../HabitsPage/index.html">Cancel</a>
+                <a class="btn-contained" href="../HabitsPage/index.html">Save Habit</a>
             </div>
         </section>
     </main>

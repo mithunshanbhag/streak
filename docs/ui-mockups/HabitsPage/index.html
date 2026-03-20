@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=393, initial-scale=1.0">
+    <title>Streak – Habits Page Mockup</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="phone-frame">
+    <header class="app-bar">
+        <span class="app-bar__logo" title="Let your habits compound">Streak</span>
+        <div class="app-bar__actions">
+            <a class="app-bar__btn" href="../CreateHabitPage/index.html" aria-label="Create habit" title="Create Habit">
+                <span class="material-icons">add</span>
+            </a>
+            <a class="app-bar__btn" href="../SettingsPage/index.html" aria-label="Settings" title="Settings">
+                <span class="material-icons">settings</span>
+            </a>
+        </div>
+    </header>
+
+    <main class="content" id="habitList">
+        <section class="list-header">
+            <div class="list-header__copy">
+                <p class="list-header__eyebrow">Today</p>
+                <div class="list-header__title-row">
+                    <h1 class="list-header__title">Habits, sorted A-Z</h1>
+                    <span class="list-header__chip">A-Z</span>
+                </div>
+                <p class="list-header__description">Tap a habit for details. Toggle today on the right.</p>
+            </div>
+        </section>
+
+        <div class="habit-card" data-done="false" data-name="Exercise">
+            <a class="habit-card__details" href="../HabitDetailsPage/index.html" title="Open Exercise details">
+                <span class="habit-card__emoji">💪</span>
+                <span class="habit-card__name">Exercise</span>
+                <span class="habit-card__streak habit-card__streak--zero">0</span>
+            </a>
+            <button class="habit-card__toggle habit-card__toggle--not-done" aria-label="Toggle Exercise">
+                <span class="material-icons">radio_button_unchecked</span>
+            </button>
+        </div>
+
+        <div class="habit-card habit-card--done" data-done="true" data-name="Meditate">
+            <a class="habit-card__details" href="../HabitDetailsPage/index.html" title="Open Meditate details">
+                <span class="habit-card__emoji">🧘</span>
+                <span class="habit-card__name">Meditate</span>
+                <span class="habit-card__streak habit-card__streak--fire">🔥 12</span>
+            </a>
+            <button class="habit-card__toggle habit-card__toggle--done" aria-label="Toggle Meditate">
+                <span class="material-icons">check_circle</span>
+            </button>
+        </div>
+
+        <div class="habit-card" data-done="false" data-name="Read">
+            <a class="habit-card__details" href="../HabitDetailsPage/index.html" title="Open Read details">
+                <span class="habit-card__emoji">📖</span>
+                <span class="habit-card__name">Read</span>
+                <span class="habit-card__streak habit-card__streak--cool">😎 3</span>
+            </a>
+            <button class="habit-card__toggle habit-card__toggle--not-done" aria-label="Toggle Read">
+                <span class="material-icons">radio_button_unchecked</span>
+            </button>
+        </div>
+
+        <div class="habit-card habit-card--done" data-done="true" data-name="Run">
+            <a class="habit-card__details" href="../HabitDetailsPage/index.html" title="Open Run details">
+                <span class="habit-card__emoji">🏃</span>
+                <span class="habit-card__name">Run</span>
+                <span class="habit-card__streak habit-card__streak--cool">😎 5</span>
+            </a>
+            <button class="habit-card__toggle habit-card__toggle--done" aria-label="Toggle Run">
+                <span class="material-icons">check_circle</span>
+            </button>
+        </div>
+    </main>
+</div>
+
+<script>
+    const habitList = document.getElementById('habitList');
+    const cards = Array.from(document.querySelectorAll('.habit-card'));
+
+    function sortCards() {
+        cards.sort((left, right) => {
+            return left.dataset.name.localeCompare(right.dataset.name);
+        });
+
+        cards.forEach(card => habitList.appendChild(card));
+    }
+
+    document.querySelectorAll('.habit-card__toggle').forEach(button => {
+        button.addEventListener('click', () => {
+            const card = button.closest('.habit-card');
+            const icon = button.querySelector('.material-icons');
+            const isDone = card.dataset.done === 'true';
+
+            card.dataset.done = isDone ? 'false' : 'true';
+            card.classList.toggle('habit-card--done', !isDone);
+            button.classList.toggle('habit-card__toggle--done', !isDone);
+            button.classList.toggle('habit-card__toggle--not-done', isDone);
+            icon.textContent = isDone ? 'radio_button_unchecked' : 'check_circle';
+
+            sortCards();
+        });
+    });
+
+    sortCards();
+</script>
+</body>
+</html>

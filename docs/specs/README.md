@@ -22,7 +22,8 @@ A recurring daily activity the user wants to track.
 | Emoji / Icon | No       | A single emoji to visually represent the habit (e.g., 🧘, 📖). A default icon is used if none is selected. |
 
 - A user can have between 0 and **6** habits at any time.
-- Habits are displayed in a user-defined order on the home page.
+- On the [Habits page](./habits-page.md), habits are listed in **alphabetical order by name**.
+- Tapping a habit on the Habits page opens that habit's [Habit Details page](./habit-details-page.md).
 
 ### Checkin
 
@@ -32,7 +33,7 @@ A daily record that marks a habit as **done** or **not done** for a given calend
 - Checkins apply to **today only**. Backdating (marking a past day) is not supported.
 - A habit that has no checkin recorded for a day is treated as **not done**.
 - There are two ways a checkin happens:
-  1. **Voluntary**: the user taps the toggle on the home page as soon as they complete the activity.
+  1. **Voluntary**: the user taps the toggle on the habits page as soon as they complete the activity.
   2. **Via reminder**: at a user-configured time each day, the app sends a notification prompting the user to check in on any habits that are still pending (not yet marked done).
 
 ### Streak
@@ -47,7 +48,7 @@ A streak is the count of **consecutive calendar days** on which a habit was chec
 ## Data Storage
 
 - All data is stored **locally on the device**. There is no cloud sync, no user accounts, and no authentication.
-- Data must persist across app restarts.
+- Data will be persisted across app restarts.
 
 ## Notifications and Reminders
 
@@ -69,22 +70,22 @@ A streak is the count of **consecutive calendar days** on which a habit was chec
 
 Each routed page has its own detailed spec:
 
-| Page                         | Route                               | Spec                                                         | Purpose                                               |
-| ---------------------------- | ----------------------------------- | ------------------------------------------------------------ | ----------------------------------------------------- |
-| Home                         | `/`                                 | [home-page.md](./home-page.md)                               | Daily checkin surface (landing page)                  |
-| Trends                       | `/trends/{habitId}`                 | [trends-page.md](./trends-page.md)                           | Habit streak heatmap and streak counter               |
-| Create Habit                 | `/habits/new`                       | [create-habit-page.md](./create-habit-page.md)               | Create a new habit from the global add action or settings |
-| Edit Habit                   | `/habits/{habitId}/edit`            | [edit-habit-page.md](./edit-habit-page.md)                   | Update an existing habit without changing its history |
-| Delete Habit Confirmation    | `/habits/{habitId}/delete`          | [delete-habit-page.md](./delete-habit-page.md)               | Confirm destructive habit deletion                    |
-| Settings                     | `/settings`                         | [settings-page.md](./settings-page.md)                       | Configure reminders and manage the habit list         |
+| Page                         | Route                    | Spec                                                     | Purpose                                             |
+| ---------------------------- | ------------------------ | -------------------------------------------------------- | --------------------------------------------------- |
+| Habits                       | `/`, `/habits`          | [habits-page.md](./habits-page.md)                       | Landing page, daily checkin surface, and habit list |
+| Habit Details                | `/habits/{habitId}`     | [habit-details-page.md](./habit-details-page.md)         | Habit details, trends, inline editing, and deletion |
+| Create Habit                 | `/habits/new`           | [create-habit-page.md](./create-habit-page.md)           | Create a new habit from the global add action       |
+| Settings                     | `/settings`             | [settings-page.md](./settings-page.md)                   | Configure reminder preferences                      |
 
 ## Information Architecture Notes
 
-- The app remains **shallow by default**: Home is the landing page, with Trends and Settings as the primary secondary destinations.
+- The app remains **shallow by default**: **Habits** is the landing page, with **Habit Details** and **Settings** as the primary secondary destinations.
 - The global **+** app-bar action opens **Create Habit** directly.
-- **Settings** consolidates reminder preferences and habit maintenance on a single page.
-- Habit creation, editing, and deletion are launched from **Settings** as part of the same maintenance flow, even though the habit CRUD routes do not use a `/settings` URL prefix.
-- The previous add, edit, and delete dialogs are now represented as **regular routed pages** so they can support direct navigation, browser history, and breadcrumbs without changing the overall structure of the app.
+- The **Habits** page doubles as the habit-list maintenance surface: habits are shown alphabetically and each habit opens its details on the Habit Details page.
+- The **Habit Details** page contains the heatmap, inline edit experience, and delete confirmation dialog for a single habit.
+- **Settings** is now focused only on notification reminder preferences.
+- There is no dedicated habit-list routed page separate from **Habits**.
+- Separate **Edit Habit** and **Delete Habit** routed pages are no longer part of the app structure.
 
 Common UI specifications (theme, typography, iconography, navigation):
 

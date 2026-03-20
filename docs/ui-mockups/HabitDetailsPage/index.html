@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=393, initial-scale=1.0">
+  <title>Streak — Habit Details Page Mockup</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="phone-frame">
+    <header class="app-bar">
+      <div class="app-bar-left">
+        <a class="app-bar-btn" href="../HabitsPage/index.html" title="Back to Habits">
+          <span class="material-icons">arrow_back</span>
+        </a>
+        <span class="app-bar-title" id="appBarTitle">🧘 Meditate</span>
+      </div>
+      <div class="app-bar-right">
+        <a class="app-bar-btn" href="../CreateHabitPage/index.html" title="Create Habit">
+          <span class="material-icons">add</span>
+        </a>
+        <a class="app-bar-btn" href="../SettingsPage/index.html" title="Settings">
+          <span class="material-icons">settings</span>
+        </a>
+      </div>
+    </header>
+
+    <main class="page-content">
+      <section class="card detail-card">
+        <div class="detail-card__view" id="detailView">
+          <div class="habit-identity">
+            <span class="habit-identity__emoji" id="habitEmojiDisplay">🧘</span>
+            <div>
+              <h1 class="habit-identity__name" id="habitNameDisplay">Meditate</h1>
+              <p class="habit-identity__meta">Edit this habit here.</p>
+            </div>
+          </div>
+          <div class="detail-card__actions">
+            <button class="icon-action" id="editButton" aria-label="Edit habit">
+              <span class="material-icons">edit</span>
+            </button>
+            <button class="icon-action icon-action--danger" id="deleteButton" aria-label="Delete habit">
+              <span class="material-icons">delete</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="detail-card__edit hidden" id="detailEdit">
+          <div class="inline-field inline-field--emoji">
+            <label for="habitEmojiInput">Emoji</label>
+            <input id="habitEmojiInput" type="text" value="🧘" maxlength="2">
+          </div>
+          <div class="inline-field">
+            <label for="habitNameInput">Name</label>
+            <input id="habitNameInput" type="text" value="Meditate" maxlength="30">
+          </div>
+          <div class="inline-actions">
+            <button class="btn-text" id="cancelEditButton">Cancel</button>
+            <button class="btn-contained" id="saveEditButton">Save</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="card streak-counter">
+        <div class="streak-number-row">
+          <span class="streak-number">12</span>
+          <span class="streak-fire">🔥</span>
+        </div>
+        <span class="streak-label">days streak</span>
+      </section>
+
+      <section class="card heatmap-section">
+        <div class="heatmap-title">Activity — Last 90 Days</div>
+        <div class="heatmap-wrapper">
+          <div class="heatmap-container">
+            <div class="heatmap-months" id="month-labels"></div>
+            <div class="heatmap-grid">
+              <div class="day-labels" id="day-labels"></div>
+              <div class="weeks-container" id="weeks-container"></div>
+            </div>
+          </div>
+        </div>
+        <div class="heatmap-legend">
+          <span class="legend-item"><span class="legend-swatch missed"></span> Missed</span>
+          <span class="legend-item"><span class="legend-swatch done"></span> Done</span>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="dialog-backdrop hidden" id="deleteDialog">
+    <div class="dialog">
+      <h2 class="dialog__title">Delete “<span id="deleteHabitName">Meditate</span>”?</h2>
+      <p class="dialog__body">All check-in history for this habit will be permanently lost.</p>
+        <div class="dialog__actions">
+          <button class="btn-text" id="cancelDeleteButton">Cancel</button>
+          <a class="btn-contained btn-contained--danger" href="../HabitsPage/index.html">Delete Habit</a>
+        </div>
+      </div>
+    </div>
+
+  <div class="tooltip" id="tooltip"></div>
+
+  <script>
+    const detailView = document.getElementById('detailView');
+    const detailEdit = document.getElementById('detailEdit');
+    const editButton = document.getElementById('editButton');
+    const cancelEditButton = document.getElementById('cancelEditButton');
+    const saveEditButton = document.getElementById('saveEditButton');
+    const deleteButton = document.getElementById('deleteButton');
+    const cancelDeleteButton = document.getElementById('cancelDeleteButton');
+    const deleteDialog = document.getElementById('deleteDialog');
+    const habitEmojiInput = document.getElementById('habitEmojiInput');
+    const habitNameInput = document.getElementById('habitNameInput');
+    const habitEmojiDisplay = document.getElementById('habitEmojiDisplay');
+    const habitNameDisplay = document.getElementById('habitNameDisplay');
+    const deleteHabitName = document.getElementById('deleteHabitName');
+    const appBarTitle = document.getElementById('appBarTitle');
+
+    editButton.addEventListener('click', () => {
+      detailView.classList.add('hidden');
+      detailEdit.classList.remove('hidden');
+      habitNameInput.focus();
+    });
+
+    cancelEditButton.addEventListener('click', () => {
+      detailEdit.classList.add('hidden');
+      detailView.classList.remove('hidden');
+      habitEmojiInput.value = habitEmojiDisplay.textContent === '●' ? '' : habitEmojiDisplay.textContent;
+      habitNameInput.value = habitNameDisplay.textContent;
+    });
+
+    saveEditButton.addEventListener('click', () => {
+      const nextName = habitNameInput.value.trim() || 'Untitled Habit';
+      const nextEmoji = habitEmojiInput.value.trim() || '●';
+
+      habitNameDisplay.textContent = nextName;
+      habitEmojiDisplay.textContent = nextEmoji;
+      deleteHabitName.textContent = nextName;
+      appBarTitle.textContent = nextEmoji + ' ' + nextName;
+
+      detailEdit.classList.add('hidden');
+      detailView.classList.remove('hidden');
+    });
+
+    deleteButton.addEventListener('click', () => {
+      deleteDialog.classList.remove('hidden');
+    });
+
+    cancelDeleteButton.addEventListener('click', () => {
+      deleteDialog.classList.add('hidden');
+    });
+
+    (function () {
+      const TOTAL_DAYS = 91;
+      const STREAK_DAYS = 12;
+      const RANDOM_DONE_RATE = 0.6;
+      const CELL_SIZE = 14;
+      const GAP = 2;
+
+      const DAY_ABBR = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+      const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                           'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const days = [];
+      for (let i = TOTAL_DAYS - 1; i >= 0; i--) {
+        const d = new Date(today);
+        d.setDate(d.getDate() - i);
+        days.push({ date: new Date(d), done: i < STREAK_DAYS ? true : Math.random() < RANDOM_DONE_RATE });
+      }
+
+      const firstDate = days[0].date;
+      const firstDow = (firstDate.getDay() + 6) % 7;
+      const paddedDays = [];
+      for (let i = 0; i < firstDow; i++) paddedDays.push(null);
+      days.forEach(day => paddedDays.push(day));
+      while (paddedDays.length % 7 !== 0) paddedDays.push(null);
+
+      const weeks = [];
+      for (let i = 0; i < paddedDays.length; i += 7) {
+        weeks.push(paddedDays.slice(i, i + 7));
+      }
+
+      const dayLabelsEl = document.getElementById('day-labels');
+      DAY_ABBR.forEach((label, i) => {
+        const el = document.createElement('div');
+        el.className = 'day-label';
+        el.textContent = i % 2 === 0 ? label : '';
+        dayLabelsEl.appendChild(el);
+      });
+
+      const weeksContainer = document.getElementById('weeks-container');
+      const tooltip = document.getElementById('tooltip');
+      const todayStr = today.toDateString();
+
+      weeks.forEach(week => {
+        const col = document.createElement('div');
+        col.className = 'week-column';
+
+        week.forEach(day => {
+          const cell = document.createElement('div');
+          cell.className = 'heatmap-cell';
+
+          if (!day) {
+            cell.classList.add('empty');
+          } else {
+            cell.classList.add(day.done ? 'done' : 'missed');
+            if (day.date.toDateString() === todayStr) {
+              cell.classList.add('today');
+            }
+
+            const monthName = MONTH_NAMES[day.date.getMonth()];
+            const dayNum = day.date.getDate();
+            const label = `${monthName} ${dayNum} — ${day.done ? 'Done ✅' : 'Missed'}`;
+
+            cell.addEventListener('mouseenter', event => {
+              tooltip.textContent = label;
+              tooltip.classList.add('visible');
+              positionTooltip(event);
+            });
+            cell.addEventListener('mousemove', positionTooltip);
+            cell.addEventListener('mouseleave', () => tooltip.classList.remove('visible'));
+          }
+
+          col.appendChild(cell);
+        });
+
+        weeksContainer.appendChild(col);
+      });
+
+      const monthLabelsEl = document.getElementById('month-labels');
+      let lastMonth = -1;
+      weeks.forEach((week, weekIdx) => {
+        const firstReal = week.find(day => day !== null);
+        if (!firstReal) return;
+        const month = firstReal.date.getMonth();
+        if (month !== lastMonth) {
+          lastMonth = month;
+          const label = document.createElement('span');
+          label.className = 'month-label';
+          label.textContent = MONTH_NAMES[month];
+          label.style.left = (weekIdx * (CELL_SIZE + GAP)) + 'px';
+          monthLabelsEl.appendChild(label);
+        }
+      });
+
+      function positionTooltip(event) {
+        const ttRect = tooltip.getBoundingClientRect();
+        let x = event.clientX - ttRect.width / 2;
+        let y = event.clientY - ttRect.height - 14;
+
+        if (x < 4) x = 4;
+        if (x + ttRect.width > window.innerWidth - 4) x = window.innerWidth - ttRect.width - 4;
+        if (y < 4) y = event.clientY + 18;
+
+        tooltip.style.left = x + 'px';
+        tooltip.style.top = y + 'px';
+      }
+    })();
+  </script>
+</body>
+</html>

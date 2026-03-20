@@ -2,24 +2,17 @@
 
 > **Route**: `/habits/new`
 
-The create habit page replaces the previous add-habit dialog with a dedicated routed page within the settings-led habit-management flow. It is also the direct destination of the global **+** action in the app bar.
+The create habit page is a routed page for adding a new habit. It opens from the global **+** action in the app bar and may also be launched from optional add-habit CTAs on the [Habits page](./habits-page.md).
 
 ## Navigation
 
-- Users arrive here by tapping the **+** icon in the app bar or by tapping **"+ Add Habit"** on the [Settings page](./settings-page.md).
-- A **back arrow** in the app bar returns the user to the previous in-app page. If there is no in-app history, it falls back to the [Settings page](./settings-page.md).
+- Users arrive here by tapping the **+** icon in the app bar or by tapping **"Add Habit"** from the [Habits page](./habits-page.md) empty state.
+- A **back arrow** in the app bar returns the user to the previous in-app page. If there is no in-app history, it falls back to the [Habits page](./habits-page.md).
 - Android hardware/gesture back follows the same behavior.
-
-## Breadcrumbs
-
-- Show breadcrumbs near the top of the page.
-- Expected trail: **Home / Create Habit**
-- **Home** is a tappable breadcrumb link.
-- **Create Habit** is the current page and is not tappable.
 
 ## Layout
 
-The page uses the same form content that previously appeared in the add-habit dialog, but presented as a full routed page.
+The page presents a simple form for creating a habit.
 
 | Field | Type                       | Required | Validation                                                                  |
 | ----- | -------------------------- | -------- | --------------------------------------------------------------------------- |
@@ -28,8 +21,8 @@ The page uses the same form content that previously appeared in the add-habit di
 
 ## Actions
 
-- **Save**: Creates the habit and returns to the previous in-app page. If launched from the [Settings page](./settings-page.md), the new habit appears at the bottom of that list. If launched from the [Home page](./home-page.md), the new habit appears on Home immediately.
-- **Cancel**: Returns to the previous in-app page without creating anything. If there is no in-app history, it falls back to the [Settings page](./settings-page.md).
+- **Save**: Creates the habit and returns to the previous in-app page. The new habit appears on the [Habits page](./habits-page.md) in the correct alphabetical position.
+- **Cancel**: Returns to the previous in-app page without creating anything. If there is no in-app history, it falls back to the [Habits page](./habits-page.md).
 
 ## Constraints
 
