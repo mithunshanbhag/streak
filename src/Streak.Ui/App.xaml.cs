@@ -7,7 +7,7 @@ public partial class App : Application
     public App(SqliteDatabaseBootstrapper sqliteDatabaseBootstrapper)
     {
         _sqliteDatabaseBootstrapper = sqliteDatabaseBootstrapper;
-        
+
         InitializeComponent();
     }
 

@@ -64,7 +64,10 @@
 
 		<!-- Raw Assets (also remove the "Resources\Raw" prefix) -->
 		<MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
-		<MauiAsset Include="..\..\infra\sqlite\restore-db.sql" LogicalName="restore-db.sql" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<EmbeddedResource Include="..\..\infra\sqlite\restore-db.sql" LogicalName="restore-db.sql" />
 	</ItemGroup>
 
 	<ItemGroup>
