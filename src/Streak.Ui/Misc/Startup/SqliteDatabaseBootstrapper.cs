@@ -6,7 +6,7 @@ public sealed class SqliteDatabaseBootstrapper(ILogger<SqliteDatabaseBootstrappe
 
     private static string DatabasePath => Path.Combine(FileSystem.Current.AppDataDirectory, AppConstants.DatabaseFileName);
 
-    public async Task EnsureDbExistsAsync(CancellationToken cancellationToken = default)
+    public void EnsureDbExists()
     {
         var databasePath = DatabasePath;
         if (File.Exists(databasePath))
@@ -18,19 +18,13 @@ public sealed class SqliteDatabaseBootstrapper(ILogger<SqliteDatabaseBootstrappe
         var databaseDirectory = Path.GetDirectoryName(databasePath);
         if (!string.IsNullOrWhiteSpace(databaseDirectory)) Directory.CreateDirectory(databaseDirectory);
 
-        var tempDatabasePath = Path.Combine(
-            databaseDirectory ?? FileSystem.Current.AppDataDirectory,
-            $"{Path.GetFileNameWithoutExtension(AppConstants.DatabaseFileName)}.{Guid.NewGuid():N}{Path.GetExtension(AppConstants.DatabaseFileName)}");
-
         logger.LogInformation("Bootstrapping SQLite database at {DatabasePath}.", databasePath);
 
         try
         {
-            var schemaScript = await LoadSchemaScriptAsync();
+            var schemaScript = LoadSchemaScript();
 
-            await ExecuteSchemaScriptAsync(tempDatabasePath, schemaScript, cancellationToken);
-
-            File.Move(tempDatabasePath, databasePath);
+            ExecuteSchemaScript(databasePath, schemaScript);
 
             logger.LogInformation("SQLite database bootstrap completed at {DatabasePath}.", databasePath);
         }
@@ -38,7 +32,7 @@ public sealed class SqliteDatabaseBootstrapper(ILogger<SqliteDatabaseBootstrappe
         {
             logger.LogError(ex, "SQLite database bootstrap failed for {DatabasePath}.", databasePath);
 
-            DeleteDatabaseArtifacts(tempDatabasePath);
+            DeleteDatabaseArtifacts(databasePath);
 
             throw;
         }
@@ -46,29 +40,37 @@ public sealed class SqliteDatabaseBootstrapper(ILogger<SqliteDatabaseBootstrappe
 
     #region Private Helper Methods
 
-    private static async Task<string> LoadSchemaScriptAsync()
+    private static string LoadSchemaScript()
     {
-        await using var scriptStream = await FileSystem.Current.OpenAppPackageFileAsync(AppConstants.SchemaAssetName);
+        var manifestResourceStream = typeof(SqliteDatabaseBootstrapper).Assembly.GetManifestResourceStream(AppConstants.SchemaAssetName);
+
+        using var scriptStream = manifestResourceStream
+                                 ?? throw new InvalidOperationException($"SQLite schema resource '{AppConstants.SchemaAssetName}' was not found.");
 
         using var reader = new StreamReader(scriptStream);
 
-        return await reader.ReadToEndAsync();
+        return reader.ReadToEnd();
     }
 
-    private static async Task ExecuteSchemaScriptAsync(string databasePath, string schemaScript, CancellationToken cancellationToken)
+    private static void ExecuteSchemaScript(string databasePath, string schemaScript)
     {
-        await using var connection = new SqliteConnection(new SqliteConnectionStringBuilder
+        var connectionStringBuilder = new SqliteConnectionStringBuilder
         {
-            DataSource = databasePath
-        }.ToString());
+            DataSource = databasePath,
+            Pooling = false
+        };
 
-        await connection.OpenAsync(cancellationToken);
+        var connectionString = connectionStringBuilder.ToString();
 
-        await using var command = connection.CreateCommand();
+        using var connection = new SqliteConnection(connectionString);
+
+        connection.Open();
+
+        using var command = connection.CreateCommand();
 
         command.CommandText = schemaScript;
 
-        await command.ExecuteNonQueryAsync(cancellationToken);
+        command.ExecuteNonQuery();
     }
 
     private static void DeleteDatabaseArtifacts(string databasePath)
