@@ -55,13 +55,41 @@ The app uses a **top app bar** that is compact/dense to maximize the content are
 
 ## Navigation
 
-- The app uses a **flat navigation model** with minimal depth:
+- The app uses a **shallow routed navigation model**:
   - **Home page** is the landing page and the root of the navigation stack.
   - **Trends**, **Manage Habits**, and **Settings** are one level deep from Home.
-  - There are no nested pages beyond this.
-- Every non-home page displays a **Back arrow** in the app bar (replacing the logo position) that returns the user to the Home page.
-- Android hardware/gesture back also returns to the Home page from any secondary screen.
+  - **Create Habit**, **Edit Habit**, and **Delete Habit Confirmation** are nested under **Manage Habits**.
+- Habit management create/edit/delete flows use **regular routed pages**, not dialogs.
+- Every non-home page displays a **Back arrow** in the app bar (replacing the logo position).
+  - From **Trends** and **Settings**, the back arrow returns the user to the Home page.
+  - From **Manage Habits**, the back arrow returns the user to the Home page.
+  - From **Create Habit**, **Edit Habit**, and **Delete Habit Confirmation**, the back arrow returns the user to the Manage Habits page.
+- Android hardware/gesture back follows the same route hierarchy.
 - Navigation transitions should be fast with no perceptible delay.
+
+## Route Inventory
+
+| Page                      | Route                             |
+| ------------------------- | --------------------------------- |
+| Home                      | `/`                               |
+| Trends                    | `/trends/{habitId}`               |
+| Manage Habits             | `/manage-habits`                  |
+| Create Habit              | `/manage-habits/new`              |
+| Edit Habit                | `/manage-habits/{habitId}/edit`   |
+| Delete Habit Confirmation | `/manage-habits/{habitId}/delete` |
+| Settings                  | `/settings`                       |
+
+## Breadcrumbs
+
+- Breadcrumbs are required on the **Manage Habits route hierarchy** to make the routed CRUD flow explicit.
+- Place breadcrumbs near the top of the page content, below the app bar and above the main page heading.
+- Breadcrumb labels should match the page names used in the route inventory.
+- Expected breadcrumb trails:
+  - **Manage Habits**: `Home / Manage Habits`
+  - **Create Habit**: `Home / Manage Habits / Create Habit`
+  - **Edit Habit**: `Home / Manage Habits / Edit Habit`
+  - **Delete Habit Confirmation**: `Home / Manage Habits / Delete Habit Confirmation`
+- Earlier breadcrumb items are tappable links. The current page breadcrumb is not tappable.
 
 ## Layout
 
