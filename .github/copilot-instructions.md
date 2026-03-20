@@ -47,9 +47,12 @@ I prefer to host my apps and related infra on Azure using serverless/PaaS. This 
 
 8. Document any new, relevant learnings and notes by updating the `/.github/LEARNINGS.md` file.
 
-9. Along with your actual output, please also provide a brief summary of the skills utilized, hooks invoked, LSPs invoked. Use the following format:
+9. Along with your actual output, please also provide a brief summary of the MCP servers utilized, skills utilized, hooks invoked, LSPs invoked. Use the following format:
 
   ```
+  MCP Servers Utilized
+  - MCP Server 1
+  - MCP Server 2
   Skills Utilized
   - Skill 1
   - Skill 2

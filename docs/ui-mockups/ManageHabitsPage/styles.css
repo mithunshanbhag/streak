@@ -14,7 +14,6 @@ body {
     padding: 24px 0;
 }
 
-/* ===== Phone Frame ===== */
 .phone-frame {
     width: 393px;
     min-height: 700px;
@@ -27,7 +26,6 @@ body {
     position: relative;
 }
 
-/* ===== App Bar ===== */
 .app-bar {
     position: sticky;
     top: 0;
@@ -42,10 +40,18 @@ body {
     flex-shrink: 0;
 }
 
-.app-bar__left {
+.app-bar__left,
+.app-bar__actions {
     display: flex;
     align-items: center;
+}
+
+.app-bar__left {
     gap: 8px;
+}
+
+.app-bar__actions {
+    gap: 4px;
 }
 
 .app-bar__btn {
@@ -71,6 +77,12 @@ body {
     font-size: 24px;
 }
 
+.app-bar__btn svg {
+    width: 22px;
+    height: 22px;
+    fill: #FFFFFF;
+}
+
 .app-bar__title {
     font-size: 20px;
     font-weight: 500;
@@ -78,20 +90,6 @@ body {
     white-space: nowrap;
 }
 
-.app-bar__actions {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-}
-
-/* GitHub SVG icon sizing */
-.app-bar__btn svg {
-    width: 22px;
-    height: 22px;
-    fill: #FFFFFF;
-}
-
-/* ===== Content Area ===== */
 .content {
     flex: 1;
     display: flex;
@@ -100,7 +98,50 @@ body {
     background: #FFFFFF;
 }
 
-/* ===== Habit Row ===== */
+.page-context {
+    padding: 16px 16px 14px;
+    border-bottom: 1px solid #EDE7F6;
+    background: linear-gradient(180deg, #F8F3FF 0%, #FFFFFF 100%);
+}
+
+.breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    color: #5F6368;
+}
+
+.breadcrumb a {
+    color: #6200EE;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.breadcrumb .material-icons {
+    font-size: 16px;
+}
+
+.route-pill {
+    display: inline-flex;
+    align-items: center;
+    margin-top: 10px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: #EDE7F6;
+    color: #6200EE;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.2px;
+}
+
+.page-context__description {
+    margin-top: 12px;
+    font-size: 13px;
+    color: #5F6368;
+    line-height: 1.45;
+}
+
 .habit-row {
     display: flex;
     align-items: center;
@@ -124,10 +165,6 @@ body {
     font-size: 24px;
 }
 
-.habit-row__drag:active {
-    cursor: grabbing;
-}
-
 .habit-row__emoji {
     font-size: 24px;
     width: 32px;
@@ -140,7 +177,6 @@ body {
 .habit-row__name {
     flex: 1;
     font-size: 14px;
-    font-weight: 400;
     color: #000000;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -159,6 +195,7 @@ body {
     justify-content: center;
     flex-shrink: 0;
     transition: background 0.15s;
+    text-decoration: none;
 }
 
 .habit-row__action:hover {
@@ -177,7 +214,6 @@ body {
     color: #F44336;
 }
 
-/* ===== Add Habit Button ===== */
 .add-habit-btn {
     display: flex;
     align-items: center;
@@ -197,6 +233,7 @@ body {
     text-transform: uppercase;
     cursor: pointer;
     transition: background 0.15s;
+    text-decoration: none;
 }
 
 .add-habit-btn:hover {
@@ -207,7 +244,6 @@ body {
     font-size: 18px;
 }
 
-/* ===== Empty State ===== */
 .empty-state {
     display: flex;
     flex-direction: column;
@@ -230,150 +266,6 @@ body {
     line-height: 1.5;
 }
 
-/* ===== Modal Backdrop ===== */
-.dialog-backdrop {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 100;
-    justify-content: center;
-    align-items: center;
-}
-
-.dialog-backdrop--open {
-    display: flex;
-}
-
-/* ===== Dialog ===== */
-.dialog {
-    background: #FFFFFF;
-    border-radius: 16px;
-    padding: 24px;
-    width: 320px;
-    max-width: 90vw;
-    box-shadow: 0 11px 15px -7px rgba(0, 0, 0, 0.2),
-                0 24px 38px 3px rgba(0, 0, 0, 0.14),
-                0 9px 46px 8px rgba(0, 0, 0, 0.12);
-}
-
-.dialog__title {
-    font-size: 20px;
-    font-weight: 500;
-    color: #000000;
-    margin-bottom: 20px;
-}
-
-/* ===== Material Text Field ===== */
-.text-field {
-    position: relative;
-    margin-bottom: 20px;
-}
-
-.text-field__input {
-    width: 100%;
-    font-family: 'Roboto', sans-serif;
-    font-size: 14px;
-    color: #000000;
-    padding: 20px 0 6px;
-    border: none;
-    border-bottom: 1px solid #9E9E9E;
-    outline: none;
-    background: transparent;
-    transition: border-color 0.2s;
-}
-
-.text-field__input:focus {
-    border-bottom: 2px solid #6200EE;
-    padding-bottom: 5px;
-}
-
-.text-field__label {
-    position: absolute;
-    left: 0;
-    top: 20px;
-    font-size: 14px;
-    color: #9E9E9E;
-    pointer-events: none;
-    transition: all 0.2s ease;
-}
-
-.text-field__input:focus ~ .text-field__label,
-.text-field__input:not(:placeholder-shown) ~ .text-field__label {
-    top: 2px;
-    font-size: 12px;
-    color: #6200EE;
-}
-
-.text-field--small {
-    max-width: 140px;
-}
-
-/* ===== Dialog Actions ===== */
-.dialog__actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 8px;
-    margin-top: 24px;
-}
-
-.btn-text {
-    background: none;
-    border: none;
-    color: #6200EE;
-    font-family: 'Roboto', sans-serif;
-    font-size: 14px;
-    font-weight: 500;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-    cursor: pointer;
-    padding: 8px 16px;
-    border-radius: 4px;
-    transition: background 0.15s;
-}
-
-.btn-text:hover {
-    background: rgba(98, 0, 238, 0.08);
-}
-
-.btn-contained {
-    background: #6200EE;
-    border: none;
-    color: #FFFFFF;
-    font-family: 'Roboto', sans-serif;
-    font-size: 14px;
-    font-weight: 500;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-    cursor: pointer;
-    padding: 8px 20px;
-    border-radius: 4px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    transition: background 0.15s, box-shadow 0.15s;
-}
-
-.btn-contained:hover {
-    background: #5000D4;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
-}
-
-.btn-contained--danger {
-    background: #F44336;
-}
-
-.btn-contained--danger:hover {
-    background: #D32F2F;
-}
-
-/* ===== Delete Dialog ===== */
-.dialog__message {
-    font-size: 14px;
-    color: #000000;
-    line-height: 1.6;
-    margin-bottom: 4px;
-}
-
-/* ===== State Toggle Control ===== */
 .state-toggle {
     position: fixed;
     bottom: 16px;
@@ -387,15 +279,10 @@ body {
     padding: 8px 14px;
     border-radius: 20px;
     font-size: 12px;
-    font-family: 'Roboto', sans-serif;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
-.state-toggle label {
-    cursor: pointer;
-    user-select: none;
-}
-
+.state-toggle label,
 .state-toggle input[type="checkbox"] {
     cursor: pointer;
 }

@@ -1,0 +1,40 @@
+# Create Habit Page
+
+> **Route**: `/manage-habits/new`
+
+The create habit page replaces the previous add-habit dialog with a dedicated routed page within the manage habits flow.
+
+## Navigation
+
+- Users arrive here by tapping **"+ Add Habit"** on the [Manage Habits page](./manage-habits-page.md).
+- A **back arrow** in the app bar returns the user to the [Manage Habits page](./manage-habits-page.md).
+- Android hardware/gesture back also returns the user to the [Manage Habits page](./manage-habits-page.md).
+
+## Breadcrumbs
+
+- Show breadcrumbs near the top of the page.
+- Expected trail: **Home / Manage Habits / Create Habit**
+- **Home** and **Manage Habits** are tappable breadcrumb links.
+- **Create Habit** is the current page and is not tappable.
+
+## Layout
+
+The page uses the same form content that previously appeared in the add-habit dialog, but presented as a full routed page.
+
+| Field | Type                       | Required | Validation                                                                  |
+| ----- | -------------------------- | -------- | --------------------------------------------------------------------------- |
+| Name  | Text input                 | Yes      | 1–30 characters. Must be unique among the user's habits (case-insensitive). |
+| Emoji | Emoji picker or text input | No       | Single emoji character. If left empty, a default icon is used.              |
+
+## Actions
+
+- **Save**: Creates the habit and navigates back to the [Manage Habits page](./manage-habits-page.md). The new habit appears at the bottom of the list and on the [Home page](./home-page.md).
+- **Cancel**: Returns to the [Manage Habits page](./manage-habits-page.md) without creating anything.
+
+## Constraints
+
+| Rule         | Details                                                                                                                 |
+| ------------ | ----------------------------------------------------------------------------------------------------------------------- |
+| Max habits   | 6. This page should not be reachable from the normal UI when the limit is already reached.                             |
+| Unique names | Habit names must be unique (case-insensitive). The Save button shows a validation error if a duplicate name is entered. |
+| Name length  | 1–30 characters.                                                                                                        |

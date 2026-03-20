@@ -31,6 +31,13 @@
     font-size: 1.5rem;
 }
 
+.habit-emoji-icon {
+    width: 36px;
+    text-align: center;
+    font-size: 1.5rem;
+    color: var(--mud-palette-text-secondary);
+}
+
 .habit-name {
     flex: 1;
 }

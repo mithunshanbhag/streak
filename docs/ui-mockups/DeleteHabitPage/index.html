@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=393, initial-scale=1.0">
+    <title>Streak – Delete Habit Page Mockup</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="phone-frame">
+    <header class="app-bar">
+        <div class="app-bar__left">
+            <a class="app-bar__btn" href="../ManageHabitsPage/index.html" aria-label="Back to manage habits" title="Back to Manage Habits">
+                <span class="material-icons">arrow_back</span>
+            </a>
+            <span class="app-bar__title">Delete Habit</span>
+        </div>
+        <div class="app-bar__actions">
+            <a class="app-bar__btn" href="../SettingsPage/index.html" aria-label="Settings" title="Settings">
+                <span class="material-icons">settings</span>
+            </a>
+            <a class="app-bar__btn" href="https://github.com/mithunshanbhag/streak" target="_blank" rel="noopener noreferrer" aria-label="GitHub" title="GitHub">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+            </a>
+        </div>
+    </header>
+
+    <main class="content">
+        <section class="page-context">
+            <nav class="breadcrumb" aria-label="Breadcrumb">
+                <a href="../HomePage/index.html">Home</a>
+                <span class="material-icons" aria-hidden="true">chevron_right</span>
+                <a href="../ManageHabitsPage/index.html">Manage Habits</a>
+                <span class="material-icons" aria-hidden="true">chevron_right</span>
+                <span>Meditate</span>
+                <span class="material-icons" aria-hidden="true">chevron_right</span>
+                <span>Delete</span>
+            </nav>
+            <div class="route-pill">/manage-habits/{habitId}/delete</div>
+            <p class="page-context__description">Delete confirmation is now a dedicated route with room for breadcrumbs and clearer destructive messaging.</p>
+        </section>
+
+        <section class="warning-card">
+            <div class="warning-icon">
+                <span class="material-icons">warning</span>
+            </div>
+            <h2 class="warning-title">Delete “Meditate”?</h2>
+            <p class="warning-text">All check-in history for this habit will be permanently lost. This action cannot be undone.</p>
+
+            <div class="habit-summary">
+                <span class="habit-summary__emoji">🧘</span>
+                <div>
+                    <div class="habit-summary__name">Meditate</div>
+                    <div class="habit-summary__meta">Current streak: 12 days · Created 4 months ago</div>
+                </div>
+            </div>
+
+            <ul class="impact-list">
+                <li>Removes the habit from the home page.</li>
+                <li>Deletes all historical check-ins and streak data.</li>
+                <li>Frees up one habit slot in the list.</li>
+            </ul>
+
+            <div class="page-actions">
+                <a class="btn-text" href="../ManageHabitsPage/index.html">Cancel</a>
+                <a class="btn-contained btn-contained--danger" href="../ManageHabitsPage/index.html">Delete Habit</a>
+            </div>
+        </section>
+    </main>
+</div>
+
+</body>
+</html>

@@ -12,10 +12,12 @@ public sealed class HabitService(IHabitRepository habitRepository) : StreakServi
     {
         var habits = await _habitRepository.GetAllAsync(cancellationToken);
 
-        return habits
-            .OrderBy(x => x.DisplayOrder)
-            .ThenBy(x => x.Name, StringComparer.OrdinalIgnoreCase)
-            .ToArray();
+        return
+        [
+            .. habits
+                .OrderBy(x => x.DisplayOrder)
+                .ThenBy(x => x.Name, StringComparer.OrdinalIgnoreCase)
+        ];
     }
 
     public Task<Habit?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
@@ -68,10 +70,11 @@ public sealed class HabitService(IHabitRepository habitRepository) : StreakServi
         var normalizedHabit = NormalizeHabitForWrite(habit, nameof(habit));
         ValidateHabitId(normalizedHabit.Id, nameof(Habit.Id));
 
-        var existingHabit = await _habitRepository.GetAsync(normalizedHabit.Id, cancellationToken);
-        if (existingHabit is null) throw new KeyNotFoundException($"Habit with id '{normalizedHabit.Id}' was not found.");
-
+        var existingHabit = await _habitRepository.GetAsync(normalizedHabit.Id, cancellationToken)
+            ?? throw new KeyNotFoundException($"Habit with id '{normalizedHabit.Id}' was not found.");
+        
         var existingHabits = await _habitRepository.GetAllAsync(cancellationToken);
+        
         EnsureHabitNameIsUnique(normalizedHabit.Name, existingHabits, normalizedHabit.Id);
 
         existingHabit.Name = normalizedHabit.Name;

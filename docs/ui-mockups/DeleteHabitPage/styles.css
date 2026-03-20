@@ -1,0 +1,234 @@
+/* ===== Reset & Base ===== */
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Roboto', sans-serif;
+    background: #E0E0E0;
+    display: flex;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 24px 0;
+}
+
+.phone-frame {
+    width: 393px;
+    min-height: 700px;
+    background: #FFFFFF;
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+    display: flex;
+    flex-direction: column;
+}
+
+.app-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 48px;
+    padding: 0 12px;
+    background: #6200EE;
+    color: #FFFFFF;
+}
+
+.app-bar__left,
+.app-bar__actions {
+    display: flex;
+    align-items: center;
+}
+
+.app-bar__left {
+    gap: 8px;
+}
+
+.app-bar__actions {
+    gap: 4px;
+}
+
+.app-bar__btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #FFFFFF;
+    text-decoration: none;
+}
+
+.app-bar__btn .material-icons {
+    font-size: 24px;
+}
+
+.app-bar__btn svg {
+    width: 22px;
+    height: 22px;
+    fill: #FFFFFF;
+}
+
+.app-bar__title {
+    font-size: 20px;
+    font-weight: 500;
+}
+
+.content {
+    flex: 1;
+    background: #FAFAFA;
+}
+
+.page-context {
+    padding: 16px;
+    border-bottom: 1px solid #FAD2CF;
+    background: linear-gradient(180deg, #FFF4F3 0%, #FFFFFF 100%);
+}
+
+.breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    color: #5F6368;
+    flex-wrap: wrap;
+}
+
+.breadcrumb a {
+    color: #6200EE;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.breadcrumb .material-icons {
+    font-size: 16px;
+}
+
+.route-pill {
+    display: inline-flex;
+    margin-top: 10px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: #FDE7E5;
+    color: #C62828;
+    font-size: 11px;
+    font-weight: 500;
+}
+
+.page-context__description {
+    margin-top: 12px;
+    font-size: 13px;
+    color: #6D4C41;
+    line-height: 1.45;
+}
+
+.warning-card {
+    margin: 16px;
+    padding: 24px 20px;
+    border-radius: 18px;
+    background: #FFFFFF;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+    border: 1px solid #FFCDD2;
+}
+
+.warning-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #FDE7E5;
+    color: #D32F2F;
+}
+
+.warning-title {
+    margin-top: 16px;
+    font-size: 22px;
+    font-weight: 500;
+    color: #B71C1C;
+}
+
+.warning-text {
+    margin-top: 10px;
+    font-size: 14px;
+    color: #5F6368;
+    line-height: 1.6;
+}
+
+.habit-summary {
+    margin-top: 20px;
+    display: flex;
+    gap: 12px;
+    padding: 14px;
+    border-radius: 14px;
+    background: #FFF5F5;
+}
+
+.habit-summary__emoji {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #FFFFFF;
+    font-size: 22px;
+}
+
+.habit-summary__name {
+    font-size: 16px;
+    font-weight: 500;
+    color: #1F1F1F;
+}
+
+.habit-summary__meta {
+    margin-top: 4px;
+    font-size: 12px;
+    color: #757575;
+    line-height: 1.4;
+}
+
+.impact-list {
+    margin-top: 18px;
+    padding-left: 20px;
+    color: #5F6368;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.page-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 28px;
+}
+
+.btn-text,
+.btn-contained {
+    border-radius: 4px;
+    padding: 8px 18px;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-text {
+    color: #6200EE;
+}
+
+.btn-contained {
+    background: #6200EE;
+    color: #FFFFFF;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.btn-contained--danger {
+    background: #F44336;
+}

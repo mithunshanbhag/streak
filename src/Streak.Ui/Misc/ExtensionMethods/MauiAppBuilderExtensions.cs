@@ -1,7 +1,3 @@
-using Streak.Core.Services.Implementations;
-using Streak.Core.Services.Interfaces;
-using Streak.Ui.Misc.Startup;
-
 namespace Streak.Ui.Misc.ExtensionMethods;
 
 public static class MauiAppBuilderExtensions
@@ -35,7 +31,7 @@ public static class MauiAppBuilderExtensions
                 builder.Services.AddSingleton(validatorRegistration.InterfaceType, validatorRegistration.ValidatorType);
 
             builder.Services.AddSingleton<SqliteDatabaseBootstrapper>();
-            builder.Services.AddDbContext<StreakDbContext>(options => { options.UseSqlite(SqliteDatabaseBootstrapper.GetConnectionString()); });
+            builder.Services.AddDbContext<StreakDbContext>(options => { options.UseSqlite(SqliteDatabaseBootstrapper.ConnectionString); });
 
             // repositories
             builder.Services.AddTransient<IHabitRepository, HabitRepository>();
