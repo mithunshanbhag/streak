@@ -2,7 +2,7 @@
 
 > **Route**: `/settings`
 
-The settings page allows users to configure their **daily reminder** preferences. Users access this page by tapping the **⚙** (gear) icon in the app bar.
+The settings page allows users to configure their **daily reminder** preferences and manage their full **habit list** from one place. Users access this page by tapping the **⚙** (gear) icon in the app bar.
 
 ## Navigation
 
@@ -11,7 +11,7 @@ The settings page allows users to configure their **daily reminder** preferences
 
 ## Layout
 
-The page contains a single settings section for reminders.
+The page contains two vertically stacked sections: one for reminders and one for habit management.
 
 ### Daily Reminder Section
 
@@ -21,6 +21,34 @@ The page contains a single settings section for reminders.
 | Enable/disable toggle | `MudSwitch`     | ON = reminders enabled, OFF = reminders disabled. Default: **ON**.                                                                        |
 | Reminder time picker  | `MudTimePicker` | Allows the user to select the time of day for the reminder. Visible only when the toggle is ON. Default: **9:00 PM** (local device time). |
 | Helper text           | Caption         | *"You'll be reminded only if there are habits you haven't checked in yet."*                                                               |
+
+### Habit Management Section
+
+| Element                | Type                     | Details                                                                                                                                               |
+| ---------------------- | ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Section header         | Text                     | **"Habits"**                                                                                                                                          |
+| Section description    | Caption                  | Brief copy explaining that this is where the user reorders the home-page list and maintains existing habits.                                        |
+| Habit list             | Reorderable list / card  | Shows each habit with drag handle, emoji/icon, name, edit action, and delete action.                                                                |
+| Add habit button       | `MudButton`              | **"+ Add Habit"** button shown below the list. Disabled when the user already has 6 habits.                                                         |
+| Empty state            | Inline empty state       | When there are no habits, show a 🌱 emoji, a short message, and the same **"+ Add Habit"** button.                                                  |
+
+#### Habit List Behavior
+
+- Users can **drag and drop** habits in the list to change their display order on the [Home page](./home-page.md).
+- The new order is persisted immediately.
+- Tapping the **edit** icon opens the [Edit Habit page](./edit-habit-page.md).
+- Tapping the **delete** icon opens the [Delete Habit Confirmation page](./delete-habit-page.md).
+- Tapping **"+ Add Habit"** opens the [Create Habit page](./create-habit-page.md).
+
+## Child Pages
+
+The habit CRUD flows remain dedicated routed pages, but they are launched from the settings experience:
+
+| Page                                                        | Route                               | Purpose                                               |
+| ----------------------------------------------------------- | ----------------------------------- | ----------------------------------------------------- |
+| [Create Habit](./create-habit-page.md)                      | `/habits/new`                       | Create a new habit                                    |
+| [Edit Habit](./edit-habit-page.md)                          | `/habits/{habitId}/edit`            | Edit an existing habit without affecting its history |
+| [Delete Habit Confirmation](./delete-habit-page.md)         | `/habits/{habitId}/delete`          | Confirm destructive deletion                          |
 
 ## Reminder Behavior
 
@@ -43,6 +71,7 @@ The page contains a single settings section for reminders.
 
 - Settings are saved to **local SQLite** immediately when changed (no explicit "Save" button).
 - Settings persist across app restarts.
+- Habit reorder changes are saved immediately.
 
 ## Edge Cases
 
@@ -52,3 +81,4 @@ The page contains a single settings section for reminders.
 | User disables reminders | No notifications are scheduled. The time picker is hidden.                                                                        |
 | User changes time       | The next reminder is rescheduled to the new time. If the new time has already passed for today, the next reminder fires tomorrow. |
 | App is force-closed     | Reminders should still fire (use Android's alarm/notification scheduling APIs that persist beyond app lifecycle).                 |
+| User reaches 6 habits   | The **"+ Add Habit"** button is disabled and explains that the maximum has been reached.                                          |

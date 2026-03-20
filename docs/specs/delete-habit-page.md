@@ -1,20 +1,20 @@
 # Delete Habit Confirmation Page
 
-> **Route**: `/manage-habits/{habitId}/delete`
+> **Route**: `/habits/{habitId}/delete`
 
-The delete habit confirmation page replaces the previous confirmation dialog with a dedicated routed page in the manage habits flow.
+The delete habit confirmation page replaces the previous confirmation dialog with a dedicated routed page in the settings-led habit-management flow.
 
 ## Navigation
 
-- Users arrive here by tapping the **delete** icon for a habit on the [Manage Habits page](./manage-habits-page.md).
-- A **back arrow** in the app bar returns the user to the [Manage Habits page](./manage-habits-page.md).
-- Android hardware/gesture back also returns the user to the [Manage Habits page](./manage-habits-page.md).
+- Users arrive here by tapping the **delete** icon for a habit on the [Settings page](./settings-page.md).
+- A **back arrow** in the app bar returns the user to the [Settings page](./settings-page.md).
+- Android hardware/gesture back also returns the user to the [Settings page](./settings-page.md).
 
 ## Breadcrumbs
 
 - Show breadcrumbs near the top of the page.
-- Expected trail: **Home / Manage Habits / Delete Habit Confirmation**
-- **Home** and **Manage Habits** are tappable breadcrumb links.
+- Expected trail: **Home / Delete Habit Confirmation**
+- **Home** is a tappable breadcrumb link.
 - **Delete Habit Confirmation** is the current page and is not tappable.
 
 ## Layout
@@ -26,8 +26,8 @@ The page presents a focused destructive-action confirmation surface rather than 
 
 ## Actions
 
-- **Delete** button (destructive / red): Deletes the habit and all its associated checkin data, then navigates back to the [Manage Habits page](./manage-habits-page.md).
-- **Cancel** button: Returns to the [Manage Habits page](./manage-habits-page.md) without deleting anything.
+- **Delete** button (destructive / red): Deletes the habit and all its associated checkin data, then navigates back to the [Settings page](./settings-page.md).
+- **Cancel** button: Returns to the [Settings page](./settings-page.md) without deleting anything.
 
 ## Behavior Notes
 

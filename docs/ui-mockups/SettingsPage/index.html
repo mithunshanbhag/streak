@@ -28,7 +28,7 @@
         <button class="icon-btn" title="Settings">
           <span class="material-icons">settings</span>
         </button>
-        <button class="icon-btn" title="More actions (Manage Habits, GitHub)">
+        <button class="icon-btn" title="More actions (GitHub)">
           <span class="material-icons">more_vert</span>
         </button>
       </div>
@@ -36,6 +36,11 @@
 
     <!-- ===== Page Content ===== -->
     <main class="page-content">
+      <section class="page-context">
+        <div class="route-pill">/settings</div>
+        <p class="page-context__description">Settings now brings reminders and habit maintenance together so there is only one place to manage the app.</p>
+      </section>
+
       <div class="settings-card">
         <h2 class="section-header">Daily Reminder</h2>
 
@@ -65,6 +70,69 @@
       <p class="helper-text">
         You'll be reminded only if there are habits you haven't checked in yet.
       </p>
+
+      <div class="settings-card settings-card--spaced">
+        <div class="section-header-row">
+          <div>
+            <h2 class="section-header">Habits</h2>
+            <p class="section-description">Reorder what appears on Home, add a new habit, or update existing ones without leaving Settings.</p>
+          </div>
+          <span class="section-chip">4 of 6</span>
+        </div>
+
+        <div class="habit-row">
+          <span class="habit-row__drag"><span class="material-icons">drag_indicator</span></span>
+          <span class="habit-row__emoji">🧘</span>
+          <span class="habit-row__name">Meditate</span>
+          <a class="habit-row__action habit-row__action--edit" href="../EditHabitPage/index.html" aria-label="Edit Meditate" title="Go to /habits/{habitId}/edit">
+            <span class="material-icons">edit</span>
+          </a>
+          <a class="habit-row__action habit-row__action--delete" href="../DeleteHabitPage/index.html" aria-label="Delete Meditate" title="Go to /habits/{habitId}/delete">
+            <span class="material-icons">delete</span>
+          </a>
+        </div>
+
+        <div class="habit-row">
+          <span class="habit-row__drag"><span class="material-icons">drag_indicator</span></span>
+          <span class="habit-row__emoji">📖</span>
+          <span class="habit-row__name">Read</span>
+          <a class="habit-row__action habit-row__action--edit" href="../EditHabitPage/index.html" aria-label="Edit Read" title="Go to /habits/{habitId}/edit">
+            <span class="material-icons">edit</span>
+          </a>
+          <a class="habit-row__action habit-row__action--delete" href="../DeleteHabitPage/index.html" aria-label="Delete Read" title="Go to /habits/{habitId}/delete">
+            <span class="material-icons">delete</span>
+          </a>
+        </div>
+
+        <div class="habit-row">
+          <span class="habit-row__drag"><span class="material-icons">drag_indicator</span></span>
+          <span class="habit-row__emoji">💪</span>
+          <span class="habit-row__name">Exercise</span>
+          <a class="habit-row__action habit-row__action--edit" href="../EditHabitPage/index.html" aria-label="Edit Exercise" title="Go to /habits/{habitId}/edit">
+            <span class="material-icons">edit</span>
+          </a>
+          <a class="habit-row__action habit-row__action--delete" href="../DeleteHabitPage/index.html" aria-label="Delete Exercise" title="Go to /habits/{habitId}/delete">
+            <span class="material-icons">delete</span>
+          </a>
+        </div>
+
+        <div class="habit-row">
+          <span class="habit-row__drag"><span class="material-icons">drag_indicator</span></span>
+          <span class="habit-row__emoji">🏃</span>
+          <span class="habit-row__name">Run</span>
+          <a class="habit-row__action habit-row__action--edit" href="../EditHabitPage/index.html" aria-label="Edit Run" title="Go to /habits/{habitId}/edit">
+            <span class="material-icons">edit</span>
+          </a>
+          <a class="habit-row__action habit-row__action--delete" href="../DeleteHabitPage/index.html" aria-label="Delete Run" title="Go to /habits/{habitId}/delete">
+            <span class="material-icons">delete</span>
+          </a>
+        </div>
+
+        <a class="add-habit-btn" href="../CreateHabitPage/index.html">
+          <span class="material-icons">add</span>
+          Add Habit
+        </a>
+      </div>
     </main>
   </div>
 
