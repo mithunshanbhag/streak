@@ -60,8 +60,7 @@ The app uses a **top app bar** that is compact/dense to maximize the content are
 - The app uses a **shallow routed navigation model**:
   - **Home page** is the landing page and the root of the navigation stack.
   - **Trends** and **Settings** are one level deep from Home.
-  - **Create Habit** keeps a dedicated child route under **Settings** for consistency with habit CRUD, but is also reachable directly from the global **+** action.
-  - **Edit Habit** and **Delete Habit Confirmation** are nested under **Settings**.
+  - **Create Habit**, **Edit Habit**, and **Delete Habit Confirmation** are launched from **Settings** as part of the same maintenance flow, but their URLs do not use a `/settings` prefix.
 - Habit management create/edit/delete flows use **regular routed pages**, not dialogs.
 - Every non-home page displays a **Back arrow** in the app bar (replacing the logo position).
   - From **Trends** and **Settings**, the back arrow returns the user to the Home page.
@@ -76,14 +75,14 @@ The app uses a **top app bar** that is compact/dense to maximize the content are
 | ------------------------- | --------------------------------- |
 | Home                      | `/`                               |
 | Trends                    | `/trends/{habitId}`               |
-| Create Habit              | `/settings/habits/new`            |
-| Edit Habit                | `/settings/habits/{habitId}/edit` |
-| Delete Habit Confirmation | `/settings/habits/{habitId}/delete` |
+| Create Habit              | `/habits/new`                    |
+| Edit Habit                | `/habits/{habitId}/edit`         |
+| Delete Habit Confirmation | `/habits/{habitId}/delete`       |
 | Settings                  | `/settings`                       |
 
 ## Breadcrumbs
 
-- Breadcrumbs are required on the **Settings habit-management route hierarchy** to make the routed CRUD flow explicit.
+- Breadcrumbs are required on the **Settings-launched habit-management flow** to make the routed CRUD flow explicit.
 - Place breadcrumbs near the top of the page content, below the app bar and above the main page heading.
 - Breadcrumb labels should match the page names used in the route inventory.
 - Expected breadcrumb trails:

@@ -1,8 +1,8 @@
 # Create Habit Page
 
-> **Route**: `/settings/habits/new`
+> **Route**: `/habits/new`
 
-The create habit page replaces the previous add-habit dialog with a dedicated routed page within the settings habit-management flow. It is also the direct destination of the global **+** action in the app bar.
+The create habit page replaces the previous add-habit dialog with a dedicated routed page within the settings-led habit-management flow. It is also the direct destination of the global **+** action in the app bar.
 
 ## Navigation
 

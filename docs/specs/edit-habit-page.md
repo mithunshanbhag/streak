@@ -1,8 +1,8 @@
 # Edit Habit Page
 
-> **Route**: `/settings/habits/{habitId}/edit`
+> **Route**: `/habits/{habitId}/edit`
 
-The edit habit page replaces the previous edit-habit dialog with a dedicated routed page inside the settings hierarchy.
+The edit habit page replaces the previous edit-habit dialog with a dedicated routed page that is launched from the settings-led maintenance flow.
 
 ## Navigation
 

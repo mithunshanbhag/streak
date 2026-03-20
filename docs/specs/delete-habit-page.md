@@ -1,8 +1,8 @@
 # Delete Habit Confirmation Page
 
-> **Route**: `/settings/habits/{habitId}/delete`
+> **Route**: `/habits/{habitId}/delete`
 
-The delete habit confirmation page replaces the previous confirmation dialog with a dedicated routed page in the settings habit-management flow.
+The delete habit confirmation page replaces the previous confirmation dialog with a dedicated routed page in the settings-led habit-management flow.
 
 ## Navigation
 

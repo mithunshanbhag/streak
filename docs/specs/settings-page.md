@@ -42,13 +42,13 @@ The page contains two vertically stacked sections: one for reminders and one for
 
 ## Child Pages
 
-The habit CRUD flows remain dedicated routed pages, but they now live under the settings hierarchy:
+The habit CRUD flows remain dedicated routed pages, but they are launched from the settings experience:
 
 | Page                                                        | Route                               | Purpose                                               |
 | ----------------------------------------------------------- | ----------------------------------- | ----------------------------------------------------- |
-| [Create Habit](./create-habit-page.md)                      | `/settings/habits/new`              | Create a new habit                                    |
-| [Edit Habit](./edit-habit-page.md)                          | `/settings/habits/{habitId}/edit`   | Edit an existing habit without affecting its history |
-| [Delete Habit Confirmation](./delete-habit-page.md)         | `/settings/habits/{habitId}/delete` | Confirm destructive deletion                          |
+| [Create Habit](./create-habit-page.md)                      | `/habits/new`                       | Create a new habit                                    |
+| [Edit Habit](./edit-habit-page.md)                          | `/habits/{habitId}/edit`            | Edit an existing habit without affecting its history |
+| [Delete Habit Confirmation](./delete-habit-page.md)         | `/habits/{habitId}/delete`          | Confirm destructive deletion                          |
 
 ## Reminder Behavior
 
