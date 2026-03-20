@@ -61,6 +61,6 @@ When the user has no habits configured:
 | Toggle a habit's check icon | Immediately records checkin for today; updates streak count |
 | Tap streak count / badge    | Navigates to the Trends page for that habit                 |
 | Tap **+** in app bar        | Navigates to the Create Habit page                          |
-| Open **More** in app bar, tap **Manage Habits** | Navigates to the Manage Habits page          |
+| Open **More** in app bar, tap **GitHub**        | Opens the Streak GitHub repository externally |
 | Tap **⚙** in app bar        | Navigates to the Settings page                              |
 | Tap **Streak** logo         | No-op (already on home page)                                |

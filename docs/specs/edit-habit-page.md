@@ -1,20 +1,20 @@
 # Edit Habit Page
 
-> **Route**: `/manage-habits/{habitId}/edit`
+> **Route**: `/settings/habits/{habitId}/edit`
 
-The edit habit page replaces the previous edit-habit dialog with a dedicated routed page inside the manage habits hierarchy.
+The edit habit page replaces the previous edit-habit dialog with a dedicated routed page inside the settings hierarchy.
 
 ## Navigation
 
-- Users arrive here by tapping the **edit** icon for a habit on the [Manage Habits page](./manage-habits-page.md).
-- A **back arrow** in the app bar returns the user to the [Manage Habits page](./manage-habits-page.md).
-- Android hardware/gesture back also returns the user to the [Manage Habits page](./manage-habits-page.md).
+- Users arrive here by tapping the **edit** icon for a habit on the [Settings page](./settings-page.md).
+- A **back arrow** in the app bar returns the user to the [Settings page](./settings-page.md).
+- Android hardware/gesture back also returns the user to the [Settings page](./settings-page.md).
 
 ## Breadcrumbs
 
 - Show breadcrumbs near the top of the page.
-- Expected trail: **Home / Manage Habits / Edit Habit**
-- **Home** and **Manage Habits** are tappable breadcrumb links.
+- Expected trail: **Home / Settings / Edit Habit**
+- **Home** and **Settings** are tappable breadcrumb links.
 - **Edit Habit** is the current page and is not tappable.
 
 ## Layout
@@ -28,8 +28,8 @@ The page uses the same form layout as the create habit page, pre-populated with 
 
 ## Actions
 
-- **Save**: Updates the habit and navigates back to the [Manage Habits page](./manage-habits-page.md).
-- **Cancel**: Returns to the [Manage Habits page](./manage-habits-page.md) without saving changes.
+- **Save**: Updates the habit and navigates back to the [Settings page](./settings-page.md).
+- **Cancel**: Returns to the [Settings page](./settings-page.md) without saving changes.
 
 > Editing a habit's name or emoji does **not** affect its checkin history or streak.
 

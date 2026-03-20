@@ -93,8 +93,32 @@ body {
 /* ===== Page Content ===== */
 .page-content {
   flex: 1;
-  padding: 20px 16px;
+  padding: 20px 16px 28px;
   background: #FAFAFA;
+}
+
+/* ===== Page Context ===== */
+.page-context {
+  margin-bottom: 12px;
+}
+
+.route-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #EDE7F6;
+  color: #6200EE;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.2px;
+}
+
+.page-context__description {
+  margin-top: 10px;
+  font-size: 13px;
+  color: #5F6368;
+  line-height: 1.45;
 }
 
 /* ===== Card ===== */
@@ -105,12 +129,45 @@ body {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.08);
 }
 
+.settings-card--spaced {
+  margin-top: 16px;
+}
+
 /* ===== Section Header ===== */
 .section-header {
   font-size: 16px;
   font-weight: 500;
   color: #000000;
   margin-bottom: 16px;
+}
+
+.section-header-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.section-description {
+  margin-top: -8px;
+  font-size: 13px;
+  color: #5F6368;
+  line-height: 1.45;
+}
+
+.section-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 52px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #EDE7F6;
+  color: #6200EE;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
 }
 
 /* ===== Setting Row ===== */
@@ -249,4 +306,89 @@ body {
   margin-top: 12px;
   padding: 0 4px;
   line-height: 1.5;
+}
+
+/* ===== Habit Management ===== */
+.habit-row {
+  display: flex;
+  align-items: center;
+  min-height: 56px;
+  padding: 0 4px;
+  border-top: 1px solid #F0F0F0;
+}
+
+.habit-row__drag {
+  color: #9E9E9E;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  flex-shrink: 0;
+  margin-right: 8px;
+}
+
+.habit-row__drag .material-icons {
+  font-size: 24px;
+}
+
+.habit-row__emoji {
+  font-size: 24px;
+  width: 32px;
+  text-align: center;
+  line-height: 1;
+  margin-right: 12px;
+  flex-shrink: 0;
+}
+
+.habit-row__name {
+  flex: 1;
+  font-size: 14px;
+  color: #000000;
+}
+
+.habit-row__action {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: inherit;
+  text-decoration: none;
+}
+
+.habit-row__action .material-icons {
+  font-size: 22px;
+}
+
+.habit-row__action--edit .material-icons {
+  color: #9E9E9E;
+}
+
+.habit-row__action--delete .material-icons {
+  color: #F44336;
+}
+
+.add-habit-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  margin-top: 16px;
+  padding: 10px 20px;
+  border: 2px solid #6200EE;
+  border-radius: 4px;
+  background: transparent;
+  color: #6200EE;
+  font-family: 'Roboto', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  text-decoration: none;
+}
+
+.add-habit-btn .material-icons {
+  font-size: 18px;
 }

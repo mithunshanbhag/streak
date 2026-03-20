@@ -15,7 +15,7 @@
 <div class="phone-frame">
     <header class="app-bar">
         <div class="app-bar__left">
-            <a class="app-bar__btn" href="../ManageHabitsPage/index.html" aria-label="Back to manage habits" title="Back to Manage Habits">
+            <a class="app-bar__btn" href="../SettingsPage/index.html" aria-label="Back to settings" title="Back to Settings">
                 <span class="material-icons">arrow_back</span>
             </a>
             <span class="app-bar__title">Edit Habit</span>
@@ -24,7 +24,7 @@
             <a class="app-bar__btn" href="../SettingsPage/index.html" aria-label="Settings" title="Settings">
                 <span class="material-icons">settings</span>
             </a>
-            <button class="app-bar__btn" aria-label="More actions" title="More actions (Manage Habits, GitHub)">
+            <button class="app-bar__btn" aria-label="More actions" title="More actions (GitHub)">
                 <span class="material-icons">more_vert</span>
             </button>
         </div>
@@ -35,14 +35,12 @@
             <nav class="breadcrumb" aria-label="Breadcrumb">
                 <a href="../HomePage/index.html">Home</a>
                 <span class="material-icons" aria-hidden="true">chevron_right</span>
-                <a href="../ManageHabitsPage/index.html">Manage Habits</a>
+                <a href="../SettingsPage/index.html">Settings</a>
                 <span class="material-icons" aria-hidden="true">chevron_right</span>
-                <span>Meditate</span>
-                <span class="material-icons" aria-hidden="true">chevron_right</span>
-                <span>Edit</span>
+                <span>Edit Habit</span>
             </nav>
-            <div class="route-pill">/manage-habits/{habitId}/edit</div>
-            <p class="page-context__description">The edit experience has its own route, with the selected habit visible in the breadcrumb trail.</p>
+            <div class="route-pill">/settings/habits/{habitId}/edit</div>
+            <p class="page-context__description">The edit experience stays in the settings hierarchy so reminders and habit maintenance remain grouped together.</p>
         </section>
 
         <section class="page-card">
@@ -75,8 +73,8 @@
             </div>
 
             <div class="page-actions">
-                <a class="btn-text" href="../ManageHabitsPage/index.html">Cancel</a>
-                <a class="btn-contained" href="../ManageHabitsPage/index.html">Save Changes</a>
+                <a class="btn-text" href="../SettingsPage/index.html">Cancel</a>
+                <a class="btn-contained" href="../SettingsPage/index.html">Save Changes</a>
             </div>
         </section>
     </main>
