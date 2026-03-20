@@ -82,13 +82,13 @@ The app uses a **top app bar** that is compact/dense to maximize the content are
 
 ## Breadcrumbs
 
-- Breadcrumbs are required on the **Settings-launched habit-management flow** to make the routed CRUD flow explicit.
+- Breadcrumbs are required on the habit-management flow to make the routed CRUD flow explicit.
 - Place breadcrumbs near the top of the page content, below the app bar and above the main page heading.
 - Breadcrumb labels should match the page names used in the route inventory.
 - Expected breadcrumb trails:
-  - **Create Habit**: `Home / Settings / Create Habit`
-  - **Edit Habit**: `Home / Settings / Edit Habit`
-  - **Delete Habit Confirmation**: `Home / Settings / Delete Habit Confirmation`
+  - **Create Habit**: `Home / Create Habit`
+  - **Edit Habit**: `Home / Edit Habit`
+  - **Delete Habit Confirmation**: `Home / Delete Habit Confirmation`
 - Earlier breadcrumb items are tappable links. The current page breadcrumb is not tappable.
 
 ## Layout

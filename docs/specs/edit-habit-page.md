@@ -13,8 +13,8 @@ The edit habit page replaces the previous edit-habit dialog with a dedicated rou
 ## Breadcrumbs
 
 - Show breadcrumbs near the top of the page.
-- Expected trail: **Home / Settings / Edit Habit**
-- **Home** and **Settings** are tappable breadcrumb links.
+- Expected trail: **Home / Edit Habit**
+- **Home** is a tappable breadcrumb link.
 - **Edit Habit** is the current page and is not tappable.
 
 ## Layout

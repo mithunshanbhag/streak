@@ -13,8 +13,8 @@ The create habit page replaces the previous add-habit dialog with a dedicated ro
 ## Breadcrumbs
 
 - Show breadcrumbs near the top of the page.
-- Expected trail: **Home / Settings / Create Habit**
-- **Home** and **Settings** are tappable breadcrumb links.
+- Expected trail: **Home / Create Habit**
+- **Home** is a tappable breadcrumb link.
 - **Create Habit** is the current page and is not tappable.
 
 ## Layout

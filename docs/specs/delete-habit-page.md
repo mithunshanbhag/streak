@@ -13,8 +13,8 @@ The delete habit confirmation page replaces the previous confirmation dialog wit
 ## Breadcrumbs
 
 - Show breadcrumbs near the top of the page.
-- Expected trail: **Home / Settings / Delete Habit Confirmation**
-- **Home** and **Settings** are tappable breadcrumb links.
+- Expected trail: **Home / Delete Habit Confirmation**
+- **Home** is a tappable breadcrumb link.
 - **Delete Habit Confirmation** is the current page and is not tappable.
 
 ## Layout
