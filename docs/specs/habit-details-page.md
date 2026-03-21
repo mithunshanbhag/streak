@@ -2,21 +2,22 @@
 
 > **Route**: `/habits/{habitId}`
 
-The habit details page shows a **detailed view of a single habit**, including its editable habit details, a GitHub-style calendar heatmap, and a prominent current streak counter.
+The habit details page shows a **detailed view of a single habit**, including editable habit details, a compact streak summary, and a GitHub-style history heatmap that is treated as secondary information.
 
 ## Navigation
 
 - The user arrives here by **tapping a habit card** on the [Habits page](./habits-page.md), including its visible streak badge.
 - The page title in the app bar shows the habit's current emoji and name (e.g., "🧘 Meditate").
 - A **back arrow** in the app bar returns the user to the previous in-app page. If there is no in-app history, it falls back to the [Habits page](./habits-page.md).
+- Secondary-screen chrome stays focused: use **Back** + title only. Do not repeat the root-screen `+` or `Settings` actions here.
 
 ## Layout
 
-The page is a single-column, vertically scrollable layout with three main sections:
+The page is a single-column, vertically scrollable layout with two main sections:
 
-### 1. Habit Details Header
+### 1. Habit Summary Card
 
-Displayed at the top of the page.
+Displayed at the top of the page. This section combines identity, current streak, and edit access into one compact surface instead of stacking multiple top-level cards.
 
 #### View Mode
 
@@ -24,12 +25,16 @@ Displayed at the top of the page.
 | -------------- | ---------------------------------------------------------------------------------------- |
 | Emoji / icon   | The habit's emoji or default icon                                                        |
 | Habit name     | Primary label for the habit                                                              |
-| Edit action    | Pencil icon. Switches the header into inline edit mode                                   |
-| Delete action  | Bin icon. Opens a destructive confirmation dialog                                        |
+| Current streak | Large streak number plus supporting label in the same card                               |
+| Edit action    | Pencil icon. Switches the summary card into inline edit mode                             |
+| More actions   | Overflow menu (`MoreVert`). Contains the delete action                                   |
+
+- Prefer `MudCard` or `MudPaper`, `MudText`, `MudIconButton`, and `MudMenu`.
+- Use built-in spacing utilities rather than custom section wrappers.
 
 #### Inline Edit Mode
 
-When the user taps the edit icon, the header switches into an inline editing state.
+When the user taps the edit icon, the summary card switches into an inline editing state.
 
 | Field | Type                       | Required | Validation                                                                                                  |
 | ----- | -------------------------- | -------- | ----------------------------------------------------------------------------------------------------------- |
@@ -39,19 +44,21 @@ When the user taps the edit icon, the header switches into an inline editing sta
 - **Save** applies the updated name and/or emoji without leaving the page.
 - **Cancel** discards any unsaved edits and returns to view mode.
 - Editing a habit's name or emoji does **not** affect its checkin history or streak.
+- Prefer `MudTextField` and standard `MudButton` actions before creating any custom inline form styling.
 
 #### Delete Confirmation Dialog
 
-When the user taps the delete icon:
+When the user chooses **Delete** from the overflow menu:
 
 - Show a confirmation dialog over the current page.
 - Message: *"Delete '{habit name}'? All checkin history for this habit will be permanently lost."*
 - **Delete** permanently deletes the habit and all associated checkin history, then returns the user to the previous in-app page (or [Habits](./habits-page.md) if there is no in-app history).
 - **Cancel** closes the dialog and keeps the user on the page.
+- Prefer a standard `MudDialog` rather than a custom destructive modal treatment.
 
-### 2. Current Streak Counter
+#### Current Streak Display
 
-Displayed prominently at the top of the page.
+Displayed prominently inside the summary card.
 
 | Element       | Details                                                                                                                      |
 | ------------- | ---------------------------------------------------------------------------------------------------------------------------- |
@@ -59,9 +66,12 @@ Displayed prominently at the top of the page.
 | Label         | Caption text below the number: *"day streak"* (or *"days streak"* if > 1). Shows *"No active streak"* when the count is 0. |
 | Streak emoji  | 🔥 displayed next to the number when streak ≥ 7 days. 😎 displayed when streak is 1–6 days. No emoji when streak is 0.         |
 
-### 3. Calendar Heatmap
+### 2. History Panel
 
-A GitHub-contribution-style grid that visualizes daily checkin history.
+The history surface is secondary to the daily flow and should be **collapsed by default** behind a disclosure such as **"Show history"**.
+
+- Prefer `MudExpansionPanels` / `MudExpansionPanel` for the disclosure pattern.
+- When expanded, show a GitHub-contribution-style grid that visualizes daily checkin history.
 
 | Property     | Details                                                                                                                                                              |
 | ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -78,6 +88,8 @@ A GitHub-contribution-style grid that visualizes daily checkin history.
 | Tap a cell        | Shows a tooltip with the date and status (e.g., "Feb 15 — Done ✅" or "Feb 14 — Missed"). |
 | Scroll/swipe left | Reveals older history beyond the 90-day window (if data exists).                         |
 
+- Prefer `MudTooltip` for per-cell feedback when feasible.
+
 ## Edge Cases
 
 | Scenario                   | Behavior                                                                                   |
@@ -92,4 +104,5 @@ A GitHub-contribution-style grid that visualizes daily checkin history.
 
 - The heatmap cells should be small squares (approx. 12–14dp) with 2dp gaps, similar to GitHub's contribution graph.
 - Use rounded corners (2dp radius) on each cell.
-- The overall heatmap section should have a subtle card or container background to visually separate it from the streak counter above.
+- The expanded history area should sit inside a subtle card or expansion-panel surface.
+- Minimal inline sizing/style is acceptable for the heatmap cell grid if MudBlazor's standard primitives do not express the layout cleanly.

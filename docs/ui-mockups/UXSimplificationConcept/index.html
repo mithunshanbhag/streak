@@ -16,8 +16,8 @@
             <p class="eyebrow">Decision summary</p>
             <h1>UX simplification follow-up</h1>
             <p class="intro-copy">
-                This page now records which brainstorming ideas were accepted and where they live.
-                The accepted directions have been moved into the primary mockups.
+                This page records the simplified direction that the primary specs and mockups now follow:
+                a Habits-first shell, a compact Quick Add dialog, quieter secondary screens, and a stronger bias toward MudBlazor controls plus built-in utility classes.
             </p>
         </section>
 
@@ -29,7 +29,7 @@
                 <div>
                     <p class="decision-card__eyebrow">Accepted</p>
                     <h2>Simplified Habits screen</h2>
-                    <p>Moved into the primary Habits mockup with the compact progress summary and quieter header treatment.</p>
+                    <p>The primary Habits mockup keeps only the compact progress summary, the daily list, and the root-screen app-bar actions.</p>
                     <a class="decision-link" href="../HabitsPage/index.html">Open `HabitsPage` mockup</a>
                 </div>
             </article>
@@ -40,9 +40,33 @@
                 </div>
                 <div>
                     <p class="decision-card__eyebrow">Accepted</p>
-                    <h2>Quick-add sheet</h2>
-                    <p>Moved into the primary Create Habit mockup as an anchored bottom-sheet flow instead of a separate full-screen page concept.</p>
+                    <h2>Quick Add dialog</h2>
+                    <p>The create flow is now represented as a compact dialog over Habits instead of a routed page or custom bottom sheet.</p>
                     <a class="decision-link" href="../CreateHabitPage/index.html">Open `CreateHabitPage` mockup</a>
+                </div>
+            </article>
+
+            <article class="decision-card decision-card--accepted">
+                <div class="decision-card__icon">
+                    <span class="material-icons">check_circle</span>
+                </div>
+                <div>
+                    <p class="decision-card__eyebrow">Accepted</p>
+                    <h2>MudBlazor-first surfaces</h2>
+                    <p>Specs now explicitly favor built-in MudBlazor controls, theme semantics, and CSS utilities before any bespoke layout styling.</p>
+                    <a class="decision-link" href="../../specs/ui.md">Open `ui.md`</a>
+                </div>
+            </article>
+
+            <article class="decision-card decision-card--accepted">
+                <div class="decision-card__icon">
+                    <span class="material-icons">check_circle</span>
+                </div>
+                <div>
+                    <p class="decision-card__eyebrow">Accepted</p>
+                    <h2>Lighter Habit Details hierarchy</h2>
+                    <p>Habit Details keeps its dedicated route, but combines identity and streak at the top and treats history as a secondary disclosure.</p>
+                    <a class="decision-link" href="../HabitDetailsPage/index.html">Open `HabitDetailsPage` mockup</a>
                 </div>
             </article>
 
@@ -53,7 +77,7 @@
                 <div>
                     <p class="decision-card__eyebrow">Discarded</p>
                     <h2>Compact details sheet</h2>
-                    <p>This direction was intentionally dropped. Habit details remain a separate flow in the specs and primary mockups for now.</p>
+                    <p>This direction remains intentionally dropped. Habit details stay as a dedicated route in both the specs and the primary mockups.</p>
                 </div>
             </article>
         </section>

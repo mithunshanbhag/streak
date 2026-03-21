@@ -19,29 +19,24 @@
         </a>
         <span class="app-bar-title">Settings</span>
       </div>
-      <div class="app-bar-right">
-        <a class="icon-btn" href="../CreateHabitPage/index.html" title="Create Habit">
-          <span class="material-icons">add</span>
-        </a>
-      </div>
     </header>
 
     <main class="page-content">
-      <section class="page-context">
-        <p class="page-context__description">Reminder settings only.</p>
-      </section>
-
-      <div class="settings-card">
+      <section class="settings-card">
         <div class="section-header-row">
           <div>
-            <h2 class="section-header">Daily Reminder</h2>
-            <p class="section-description">Only shows when a habit is still pending.</p>
+            <p class="section-eyebrow">Reminders</p>
+            <h1 class="section-header">Daily reminder</h1>
+            <p class="section-description">You will only be reminded if at least one habit is still pending.</p>
           </div>
           <span class="section-chip">9:00 PM</span>
         </div>
 
         <div class="setting-row">
-          <span class="setting-label">Enable reminders</span>
+          <div>
+            <div class="setting-label">Enable reminders</div>
+            <div class="setting-caption">Uses a standard switch with immediate persistence.</div>
+          </div>
           <label class="toggle-switch">
             <input type="checkbox" id="reminderToggle" checked>
             <span class="toggle-track"></span>
@@ -50,18 +45,19 @@
         </div>
 
         <div class="time-picker-row" id="timePickerRow">
-          <div class="setting-row">
-            <span class="setting-label">Reminder time</span>
-            <div class="time-display" id="timeDisplay">
+          <div class="setting-row setting-row--divider">
+            <div>
+              <div class="setting-label">Reminder time</div>
+              <div class="setting-caption">Pick once and save automatically.</div>
+            </div>
+            <label class="time-display">
               <input type="time" class="time-input-native" id="timeInput" value="21:00">
               <span class="material-icons">schedule</span>
               <span class="time-text" id="timeText">9:00 PM</span>
-            </div>
+            </label>
           </div>
         </div>
-      </div>
-
-      <p class="helper-text">Habits are managed from the Habits page.</p>
+      </section>
     </main>
   </div>
 

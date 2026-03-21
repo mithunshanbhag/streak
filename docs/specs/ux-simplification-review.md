@@ -9,7 +9,8 @@ The current direction is already strong: one primary screen, binary check-ins, a
 After review, the following decisions were made:
 
 - **Accepted**: simplify the Habits screen header into a compact progress summary
-- **Accepted**: replace the create habit full-page concept with a quick-add bottom sheet
+- **Accepted**: replace the create habit full-page concept with a compact quick-add dialog
+- **Accepted**: favor MudBlazor controls and built-in CSS utilities over bespoke CSS where possible
 - **Rejected**: compact Habit Details sheet
 
 The accepted directions now live in the primary `HabitsPage` and `CreateHabitPage` mockups.
@@ -36,7 +37,7 @@ These should remain intact.
 | --- | --- | --- |
 | Habits page header | Explanatory copy, sort labeling, and decorative chips add scan cost to the most frequently used screen. | Keep a compact status summary instead of instructional text. |
 | App-bar chrome on secondary screens | Global actions on every screen compete with the main task and add visual noise. | Show the full action set only on the root screen. |
-| Create Habit flow | A dedicated routed page is clear, but it costs a full navigation step for a tiny form. | Consider a bottom sheet or compact modal for quick add. |
+| Create Habit flow | A dedicated routed page is clear, but it costs a full navigation step for a tiny form. | Consider a compact dialog for quick add. |
 | Habit Details layout | Identity, streak, actions, and heatmap each claim their own visual block, so the page feels longer and busier. | Simplify within the existing page rather than replacing the page with a sheet. |
 | Settings | Only one real preference exists, but it still occupies a full screen. | Keep the route for clarity or collapse it into a lighter presentation later. |
 
@@ -102,11 +103,11 @@ Why:
 
 These reduce taps more aggressively while preserving the app's core model.
 
-#### A. Replace the Create Habit page with a quick-add bottom sheet
+#### A. Replace the Create Habit page with a quick-add dialog
 
 Recommended concept:
 
-- Open `+` into a bottom sheet anchored from the Habits page.
+- Open `+` into a compact dialog from the Habits page.
 - Show a required name field first.
 - Keep emoji optional and visually secondary.
 - Save returns the user to the same scroll position on the Habits page.
@@ -119,13 +120,13 @@ Why:
 Trade-off:
 
 - A routed page is easier to deep-link and simpler to implement.
-- A sheet is better for speed, but slightly more opinionated.
+- A compact dialog is closer to MudBlazor's built-in primitives and keeps the flow lightweight without needing a custom sheet treatment.
 
 #### B. Unify create and edit into the same form pattern
 
 Recommended:
 
-- Use the same sheet or compact form structure for both `create` and `edit`.
+- Use the same dialog or compact form structure for both `create` and `edit`.
 
 Why:
 
@@ -176,7 +177,7 @@ If the goal is to improve the app without overcomplicating the redesign, the str
 1. Keep **Habits** as the only full-screen view most users need daily.
 2. Reduce the Habits header to a compact progress summary.
 3. Remove extra app-bar actions from secondary screens.
-4. Turn **Create Habit** into a quick-add sheet.
+4. Turn **Create Habit** into a quick-add dialog.
 5. Keep **Habit Details** as a dedicated page for now and simplify within that page if needed later.
 6. Keep **Settings** as a route for now, but visually reduce it to a single clean card.
 

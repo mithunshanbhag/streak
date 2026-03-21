@@ -1,24 +1,28 @@
 *, *::before, *::after {
   box-sizing: border-box;
-  margin: 0;
-  padding: 0;
 }
 
 body {
+  margin: 0;
   font-family: 'Roboto', sans-serif;
-  background: #F5F5F5;
+  background: #ECECEC;
+  color: #1F1F1F;
   display: flex;
   justify-content: center;
-  min-height: 100vh;
   padding: 24px 0;
+}
+
+button,
+input {
+  font: inherit;
 }
 
 .phone-frame {
   width: 393px;
   min-height: 820px;
   background: #FFFFFF;
-  border-radius: 16px;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+  border-radius: 20px;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.16);
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -28,19 +32,15 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 48px;
+  min-height: 48px;
   background: #6200EE;
   color: #FFFFFF;
   padding: 0 8px;
 }
 
-.app-bar-left,
-.app-bar-right {
+.app-bar-left {
   display: flex;
   align-items: center;
-}
-
-.app-bar-left {
   gap: 4px;
 }
 
@@ -79,14 +79,22 @@ body {
 
 .card {
   background: #FFFFFF;
-  border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.08);
+  border-radius: 16px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
   padding: 16px;
 }
 
-.detail-card__view,
-.detail-card__edit {
+.summary-header-row,
+.summary-actions,
+.edit-fields,
+.inline-actions,
+.history-toggle,
+.dialog__actions {
   display: flex;
+  align-items: center;
+}
+
+.summary-header-row {
   align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
@@ -114,17 +122,17 @@ body {
   font-size: 20px;
   font-weight: 500;
   color: #1F1F1F;
+  margin: 0;
 }
 
 .habit-identity__meta {
-  margin-top: 4px;
+  margin: 4px 0 0;
   font-size: 13px;
   color: #6B7280;
   line-height: 1.45;
 }
 
-.detail-card__actions {
-  display: flex;
+.summary-actions {
   gap: 4px;
 }
 
@@ -141,77 +149,43 @@ body {
   cursor: pointer;
 }
 
-.icon-action--danger {
-  background: #FEEDEE;
-  color: #D32F2F;
+.menu-anchor {
+  position: relative;
 }
 
-.inline-field {
-  flex: 1;
+.overflow-menu {
+  position: absolute;
+  top: 42px;
+  right: 0;
+  min-width: 152px;
+  border-radius: 12px;
+  background: #FFFFFF;
+  border: 1px solid #E5E7EB;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.16);
+  padding: 6px;
+  z-index: 5;
 }
 
-.inline-field--emoji {
-  flex: 0 0 76px;
-}
-
-.inline-field label {
-  display: block;
-  font-size: 12px;
-  color: #6B7280;
-  margin-bottom: 6px;
-}
-
-.inline-field input {
+.menu-item {
   width: 100%;
-  border: 1px solid #D1D5DB;
-  border-radius: 8px;
   padding: 10px 12px;
-  font: inherit;
-}
-
-.inline-actions {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 8px;
-  margin-top: 12px;
-}
-
-.hidden {
-  display: none;
-}
-
-.btn-text,
-.btn-contained {
   border: none;
-  border-radius: 4px;
-  padding: 8px 16px;
-  font-size: 14px;
-  font-weight: 500;
-  text-decoration: none;
+  border-radius: 8px;
+  text-align: left;
+  background: transparent;
   cursor: pointer;
 }
 
-.btn-text {
-  background: transparent;
-  color: #6200EE;
+.menu-item--danger {
+  color: #C62828;
 }
 
-.btn-contained {
-  background: #6200EE;
-  color: #FFFFFF;
-}
-
-.btn-contained--danger {
-  background: #D32F2F;
-}
-
-.streak-counter {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  padding: 24px 20px;
+.streak-block {
+  margin-top: 18px;
+  padding: 16px;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #F7F1FF 0%, #FFFFFF 100%);
+  border: 1px solid #EEE6FF;
 }
 
 .streak-number-row {
@@ -233,17 +207,119 @@ body {
 }
 
 .streak-label {
+  display: block;
+  margin-top: 4px;
   font-size: 12px;
-  color: #9E9E9E;
+  color: #7A7A7A;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.4px;
 }
 
-.heatmap-title {
+.streak-support {
+  margin: 10px 0 0;
+  font-size: 13px;
+  color: #5F6368;
+}
+
+.summary-edit.hidden,
+.summary-view.hidden,
+.overflow-menu.hidden,
+.history-body.hidden,
+.dialog-backdrop.hidden,
+.tooltip.hidden,
+.hidden {
+  display: none;
+}
+
+.edit-fields {
+  align-items: stretch;
+  gap: 12px;
+}
+
+.inline-field {
+  flex: 1;
+  display: block;
+}
+
+.inline-field--emoji {
+  flex: 0 0 80px;
+}
+
+.inline-field span {
+  display: block;
+  font-size: 12px;
+  color: #6B7280;
+  margin-bottom: 6px;
+}
+
+.inline-field input {
+  width: 100%;
+  border: 1px solid #D1D5DB;
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+
+.inline-actions,
+.dialog__actions {
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.btn-text,
+.btn-contained {
+  border: none;
+  border-radius: 10px;
+  padding: 10px 16px;
   font-size: 14px;
   font-weight: 500;
-  color: #000000;
-  margin-bottom: 12px;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.btn-text {
+  background: transparent;
+  color: #6200EE;
+}
+
+.btn-contained {
+  background: #6200EE;
+  color: #FFFFFF;
+}
+
+.btn-contained--danger {
+  background: #D32F2F;
+}
+
+.history-toggle {
+  width: 100%;
+  justify-content: space-between;
+  gap: 12px;
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+}
+
+.history-toggle strong {
+  display: block;
+  font-size: 15px;
+  font-weight: 500;
+  color: #1F1F1F;
+  text-align: left;
+}
+
+.history-toggle small {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #6B7280;
+  text-align: left;
+}
+
+.history-body {
+  margin-top: 16px;
 }
 
 .heatmap-wrapper {
@@ -310,6 +386,8 @@ body {
   height: 14px;
   border-radius: 2px;
   cursor: pointer;
+  border: none;
+  padding: 0;
 }
 
 .heatmap-cell.done {
@@ -370,10 +448,6 @@ body {
   padding: 24px;
 }
 
-.dialog-backdrop.hidden {
-  display: none;
-}
-
 .dialog {
   width: 320px;
   background: #FFFFFF;
@@ -386,6 +460,7 @@ body {
   font-size: 20px;
   font-weight: 500;
   color: #1F1F1F;
+  margin: 0;
 }
 
 .dialog__body {
@@ -393,13 +468,6 @@ body {
   font-size: 14px;
   color: #4B5563;
   line-height: 1.5;
-}
-
-.dialog__actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-  margin-top: 20px;
 }
 
 .tooltip {

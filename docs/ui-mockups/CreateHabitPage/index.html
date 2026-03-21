@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=393, initial-scale=1.0">
-    <title>Streak – Quick Add Habit Sheet Mockup</title>
+    <title>Streak – Quick Add Habit Dialog Mockup</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
@@ -11,7 +11,6 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-
 <div class="phone-frame">
     <header class="app-bar">
         <span class="app-bar__title">Streak</span>
@@ -36,10 +35,10 @@
 
         <article class="habit-card">
             <div class="habit-card__main">
-                <span class="habit-card__emoji">💪</span>
+                <span class="habit-card__emoji">📖</span>
                 <div class="habit-card__copy">
-                    <span class="habit-card__name">Exercise</span>
-                    <span class="habit-card__meta">0 streak</span>
+                    <span class="habit-card__name">Read</span>
+                    <span class="habit-card__meta">😎 3 day streak</span>
                 </div>
             </div>
             <span class="material-icons habit-card__toggle">radio_button_unchecked</span>
@@ -57,40 +56,47 @@
         </article>
     </main>
 
-    <section class="bottom-sheet">
-        <div class="sheet-handle"></div>
-        <div class="sheet-header">
-            <div>
-                <p class="sheet-header__eyebrow">Quick add</p>
-                <h2 class="sheet-header__title">New habit</h2>
+    <div class="dialog-backdrop">
+        <section class="dialog-card" role="dialog" aria-modal="true" aria-labelledby="dialogTitle">
+            <div class="dialog-header">
+                <div>
+                    <p class="dialog-eyebrow">Quick add</p>
+                    <h2 class="dialog-title" id="dialogTitle">New habit</h2>
+                </div>
+                <a class="icon-button" href="../HabitsPage/index.html" aria-label="Close dialog">
+                    <span class="material-icons">close</span>
+                </a>
             </div>
-            <a class="btn-text" href="../HabitsPage/index.html">Close</a>
-        </div>
 
-        <label class="field">
-            <span class="field__label">Name</span>
-            <input class="field__input" type="text" value="Journal">
-        </label>
+            <label class="field">
+                <span class="field__label">Name</span>
+                <input class="field__input" type="text" value="Journal">
+            </label>
 
-        <label class="field field--small">
-            <span class="field__label">Emoji (optional)</span>
-            <input class="field__input" type="text" value="📝">
-        </label>
+            <label class="field field--compact">
+                <span class="field__label">Emoji (optional)</span>
+                <input class="field__input" type="text" value="📝">
+            </label>
 
-        <div class="preview-card">
-            <span class="preview-card__label">Preview</span>
-            <div class="preview-card__habit">
-                <span class="preview-card__emoji">📝</span>
-                <span class="preview-card__name">Journal</span>
+            <div class="preview-card">
+                <span class="preview-card__label">Preview</span>
+                <div class="preview-card__habit">
+                    <span class="preview-card__emoji">📝</span>
+                    <div>
+                        <div class="preview-card__name">Journal</div>
+                        <div class="preview-card__meta">0 streak</div>
+                    </div>
+                </div>
             </div>
-        </div>
 
-        <div class="page-actions">
-            <a class="btn-text" href="../HabitsPage/index.html">Cancel</a>
-            <a class="btn-contained" href="../HabitsPage/index.html">Save habit</a>
-        </div>
-    </section>
+            <p class="helper-text">Use a compact `MudDialog` and standard form fields before introducing any custom sheet styling.</p>
+
+            <div class="dialog-actions">
+                <a class="btn-text" href="../HabitsPage/index.html">Cancel</a>
+                <a class="btn-contained" href="../HabitsPage/index.html">Save habit</a>
+            </div>
+        </section>
+    </div>
 </div>
-
 </body>
 </html>

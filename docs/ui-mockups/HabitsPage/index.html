@@ -33,20 +33,20 @@
             <span class="summary-pill">4 habits</span>
         </section>
 
-        <article class="habit-card" data-done="false" data-name="Exercise">
+        <article class="habit-card habit-card--done" data-name="Exercise">
             <a class="habit-card__details" href="../HabitDetailsPage/index.html" title="Open Exercise details">
                 <span class="habit-card__emoji">💪</span>
                 <span class="habit-card__copy">
                     <span class="habit-card__name">Exercise</span>
-                    <span class="habit-card__meta habit-card__meta--zero">0 streak</span>
+                    <span class="habit-card__meta habit-card__meta--cool">😎 2 day streak</span>
                 </span>
             </a>
-            <button class="habit-card__toggle habit-card__toggle--not-done" aria-label="Toggle Exercise">
-                <span class="material-icons">radio_button_unchecked</span>
+            <button class="habit-card__toggle habit-card__toggle--done" aria-label="Toggle Exercise" aria-pressed="true">
+                <span class="material-icons">check_circle</span>
             </button>
         </article>
 
-        <article class="habit-card habit-card--done" data-done="true" data-name="Meditate">
+        <article class="habit-card habit-card--done" data-name="Meditate">
             <a class="habit-card__details" href="../HabitDetailsPage/index.html" title="Open Meditate details">
                 <span class="habit-card__emoji">🧘</span>
                 <span class="habit-card__copy">
@@ -54,12 +54,12 @@
                     <span class="habit-card__meta habit-card__meta--fire">🔥 12 day streak</span>
                 </span>
             </a>
-            <button class="habit-card__toggle habit-card__toggle--done" aria-label="Toggle Meditate">
+            <button class="habit-card__toggle habit-card__toggle--done" aria-label="Toggle Meditate" aria-pressed="true">
                 <span class="material-icons">check_circle</span>
             </button>
         </article>
 
-        <article class="habit-card" data-done="false" data-name="Read">
+        <article class="habit-card" data-name="Read">
             <a class="habit-card__details" href="../HabitDetailsPage/index.html" title="Open Read details">
                 <span class="habit-card__emoji">📖</span>
                 <span class="habit-card__copy">
@@ -67,12 +67,12 @@
                     <span class="habit-card__meta habit-card__meta--cool">😎 3 day streak</span>
                 </span>
             </a>
-            <button class="habit-card__toggle habit-card__toggle--not-done" aria-label="Toggle Read">
+            <button class="habit-card__toggle habit-card__toggle--not-done" aria-label="Toggle Read" aria-pressed="false">
                 <span class="material-icons">radio_button_unchecked</span>
             </button>
         </article>
 
-        <article class="habit-card habit-card--done" data-done="true" data-name="Run">
+        <article class="habit-card" data-name="Run">
             <a class="habit-card__details" href="../HabitDetailsPage/index.html" title="Open Run details">
                 <span class="habit-card__emoji">🏃</span>
                 <span class="habit-card__copy">
@@ -80,42 +80,27 @@
                     <span class="habit-card__meta habit-card__meta--cool">😎 5 day streak</span>
                 </span>
             </a>
-            <button class="habit-card__toggle habit-card__toggle--done" aria-label="Toggle Run">
-                <span class="material-icons">check_circle</span>
+            <button class="habit-card__toggle habit-card__toggle--not-done" aria-label="Toggle Run" aria-pressed="false">
+                <span class="material-icons">radio_button_unchecked</span>
             </button>
         </article>
     </main>
 </div>
 
 <script>
-    const habitList = document.getElementById('habitList');
-    const cards = Array.from(document.querySelectorAll('.habit-card'));
-
-    function sortCards() {
-        cards.sort((left, right) => {
-            return left.dataset.name.localeCompare(right.dataset.name);
-        });
-
-        cards.forEach(card => habitList.appendChild(card));
-    }
-
     document.querySelectorAll('.habit-card__toggle').forEach(button => {
         button.addEventListener('click', () => {
             const card = button.closest('.habit-card');
             const icon = button.querySelector('.material-icons');
-            const isDone = card.dataset.done === 'true';
+            const isDone = button.classList.contains('habit-card__toggle--done');
 
-            card.dataset.done = isDone ? 'false' : 'true';
-            card.classList.toggle('habit-card--done', !isDone);
             button.classList.toggle('habit-card__toggle--done', !isDone);
             button.classList.toggle('habit-card__toggle--not-done', isDone);
+            button.setAttribute('aria-pressed', String(!isDone));
+            card.classList.toggle('habit-card--done', !isDone);
             icon.textContent = isDone ? 'radio_button_unchecked' : 'check_circle';
-
-            sortCards();
         });
     });
-
-    sortCards();
 </script>
 </body>
 </html>

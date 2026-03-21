@@ -19,44 +19,54 @@
         </a>
         <span class="app-bar-title" id="appBarTitle">🧘 Meditate</span>
       </div>
-      <div class="app-bar-right">
-        <a class="app-bar-btn" href="../CreateHabitPage/index.html" title="Create Habit">
-          <span class="material-icons">add</span>
-        </a>
-        <a class="app-bar-btn" href="../SettingsPage/index.html" title="Settings">
-          <span class="material-icons">settings</span>
-        </a>
-      </div>
     </header>
 
     <main class="page-content">
-      <section class="card detail-card">
-        <div class="detail-card__view" id="detailView">
-          <div class="habit-identity">
-            <span class="habit-identity__emoji" id="habitEmojiDisplay">🧘</span>
-            <div>
-              <h1 class="habit-identity__name" id="habitNameDisplay">Meditate</h1>
-              <p class="habit-identity__meta">Edit this habit here.</p>
+      <section class="card summary-card">
+        <div class="summary-view" id="summaryView">
+          <div class="summary-header-row">
+            <div class="habit-identity">
+              <span class="habit-identity__emoji" id="habitEmojiDisplay">🧘</span>
+              <div>
+                <h1 class="habit-identity__name" id="habitNameDisplay">Meditate</h1>
+                <p class="habit-identity__meta">Focused secondary chrome, quick edits, and a lighter details hierarchy.</p>
+              </div>
+            </div>
+            <div class="summary-actions">
+              <button class="icon-action" id="editButton" aria-label="Edit habit">
+                <span class="material-icons">edit</span>
+              </button>
+              <div class="menu-anchor">
+                <button class="icon-action" id="menuButton" aria-label="More actions">
+                  <span class="material-icons">more_vert</span>
+                </button>
+                <div class="overflow-menu hidden" id="overflowMenu">
+                  <button class="menu-item menu-item--danger" id="deleteButton">Delete habit</button>
+                </div>
+              </div>
             </div>
           </div>
-          <div class="detail-card__actions">
-            <button class="icon-action" id="editButton" aria-label="Edit habit">
-              <span class="material-icons">edit</span>
-            </button>
-            <button class="icon-action icon-action--danger" id="deleteButton" aria-label="Delete habit">
-              <span class="material-icons">delete</span>
-            </button>
+
+          <div class="streak-block">
+            <div class="streak-number-row">
+              <span class="streak-number">12</span>
+              <span class="streak-fire">🔥</span>
+            </div>
+            <span class="streak-label">days streak</span>
+            <p class="streak-support">Checked in for the last 12 days in a row.</p>
           </div>
         </div>
 
-        <div class="detail-card__edit hidden" id="detailEdit">
-          <div class="inline-field inline-field--emoji">
-            <label for="habitEmojiInput">Emoji</label>
-            <input id="habitEmojiInput" type="text" value="🧘" maxlength="2">
-          </div>
-          <div class="inline-field">
-            <label for="habitNameInput">Name</label>
-            <input id="habitNameInput" type="text" value="Meditate" maxlength="30">
+        <div class="summary-edit hidden" id="summaryEdit">
+          <div class="edit-fields">
+            <label class="inline-field inline-field--emoji">
+              <span>Emoji</span>
+              <input id="habitEmojiInput" type="text" value="🧘" maxlength="2">
+            </label>
+            <label class="inline-field">
+              <span>Name</span>
+              <input id="habitNameInput" type="text" value="Meditate" maxlength="30">
+            </label>
           </div>
           <div class="inline-actions">
             <button class="btn-text" id="cancelEditButton">Cancel</button>
@@ -65,28 +75,29 @@
         </div>
       </section>
 
-      <section class="card streak-counter">
-        <div class="streak-number-row">
-          <span class="streak-number">12</span>
-          <span class="streak-fire">🔥</span>
-        </div>
-        <span class="streak-label">days streak</span>
-      </section>
+      <section class="card history-card">
+        <button class="history-toggle" id="historyToggle" aria-expanded="true">
+          <span>
+            <strong>Show history</strong>
+            <small>Collapsed by default in product; expanded here to show the simplified structure.</small>
+          </span>
+          <span class="material-icons" id="historyIcon">expand_less</span>
+        </button>
 
-      <section class="card heatmap-section">
-        <div class="heatmap-title">Activity — Last 90 Days</div>
-        <div class="heatmap-wrapper">
-          <div class="heatmap-container">
-            <div class="heatmap-months" id="month-labels"></div>
-            <div class="heatmap-grid">
-              <div class="day-labels" id="day-labels"></div>
-              <div class="weeks-container" id="weeks-container"></div>
+        <div class="history-body" id="historyBody">
+          <div class="heatmap-wrapper">
+            <div class="heatmap-container">
+              <div class="heatmap-months" id="month-labels"></div>
+              <div class="heatmap-grid">
+                <div class="day-labels" id="day-labels"></div>
+                <div class="weeks-container" id="weeks-container"></div>
+              </div>
             </div>
           </div>
-        </div>
-        <div class="heatmap-legend">
-          <span class="legend-item"><span class="legend-swatch missed"></span> Missed</span>
-          <span class="legend-item"><span class="legend-swatch done"></span> Done</span>
+          <div class="heatmap-legend">
+            <span class="legend-item"><span class="legend-swatch missed"></span> Missed</span>
+            <span class="legend-item"><span class="legend-swatch done"></span> Done</span>
+          </div>
         </div>
       </section>
     </main>
@@ -96,21 +107,23 @@
     <div class="dialog">
       <h2 class="dialog__title">Delete “<span id="deleteHabitName">Meditate</span>”?</h2>
       <p class="dialog__body">All check-in history for this habit will be permanently lost.</p>
-        <div class="dialog__actions">
-          <button class="btn-text" id="cancelDeleteButton">Cancel</button>
-          <a class="btn-contained btn-contained--danger" href="../HabitsPage/index.html">Delete Habit</a>
-        </div>
+      <div class="dialog__actions">
+        <button class="btn-text" id="cancelDeleteButton">Cancel</button>
+        <a class="btn-contained btn-contained--danger" href="../HabitsPage/index.html">Delete habit</a>
       </div>
     </div>
+  </div>
 
   <div class="tooltip" id="tooltip"></div>
 
   <script>
-    const detailView = document.getElementById('detailView');
-    const detailEdit = document.getElementById('detailEdit');
+    const summaryView = document.getElementById('summaryView');
+    const summaryEdit = document.getElementById('summaryEdit');
     const editButton = document.getElementById('editButton');
     const cancelEditButton = document.getElementById('cancelEditButton');
     const saveEditButton = document.getElementById('saveEditButton');
+    const menuButton = document.getElementById('menuButton');
+    const overflowMenu = document.getElementById('overflowMenu');
     const deleteButton = document.getElementById('deleteButton');
     const cancelDeleteButton = document.getElementById('cancelDeleteButton');
     const deleteDialog = document.getElementById('deleteDialog');
@@ -120,16 +133,20 @@
     const habitNameDisplay = document.getElementById('habitNameDisplay');
     const deleteHabitName = document.getElementById('deleteHabitName');
     const appBarTitle = document.getElementById('appBarTitle');
+    const historyToggle = document.getElementById('historyToggle');
+    const historyBody = document.getElementById('historyBody');
+    const historyIcon = document.getElementById('historyIcon');
 
     editButton.addEventListener('click', () => {
-      detailView.classList.add('hidden');
-      detailEdit.classList.remove('hidden');
+      overflowMenu.classList.add('hidden');
+      summaryView.classList.add('hidden');
+      summaryEdit.classList.remove('hidden');
       habitNameInput.focus();
     });
 
     cancelEditButton.addEventListener('click', () => {
-      detailEdit.classList.add('hidden');
-      detailView.classList.remove('hidden');
+      summaryEdit.classList.add('hidden');
+      summaryView.classList.remove('hidden');
       habitEmojiInput.value = habitEmojiDisplay.textContent === '●' ? '' : habitEmojiDisplay.textContent;
       habitNameInput.value = habitNameDisplay.textContent;
     });
@@ -143,11 +160,16 @@
       deleteHabitName.textContent = nextName;
       appBarTitle.textContent = nextEmoji + ' ' + nextName;
 
-      detailEdit.classList.add('hidden');
-      detailView.classList.remove('hidden');
+      summaryEdit.classList.add('hidden');
+      summaryView.classList.remove('hidden');
+    });
+
+    menuButton.addEventListener('click', () => {
+      overflowMenu.classList.toggle('hidden');
     });
 
     deleteButton.addEventListener('click', () => {
+      overflowMenu.classList.add('hidden');
       deleteDialog.classList.remove('hidden');
     });
 
@@ -155,10 +177,22 @@
       deleteDialog.classList.add('hidden');
     });
 
+    historyToggle.addEventListener('click', () => {
+      const isHidden = historyBody.classList.toggle('hidden');
+      historyToggle.setAttribute('aria-expanded', String(!isHidden));
+      historyIcon.textContent = isHidden ? 'expand_more' : 'expand_less';
+    });
+
+    document.addEventListener('click', event => {
+      if (!event.target.closest('.menu-anchor')) {
+        overflowMenu.classList.add('hidden');
+      }
+    });
+
     (function () {
       const TOTAL_DAYS = 91;
       const STREAK_DAYS = 12;
-      const RANDOM_DONE_RATE = 0.6;
+      const RANDOM_DONE_RATE = 0.58;
       const CELL_SIZE = 14;
       const GAP = 2;
 
@@ -205,11 +239,13 @@
         col.className = 'week-column';
 
         week.forEach(day => {
-          const cell = document.createElement('div');
+          const cell = document.createElement('button');
           cell.className = 'heatmap-cell';
+          cell.type = 'button';
 
           if (!day) {
             cell.classList.add('empty');
+            cell.disabled = true;
           } else {
             cell.classList.add(day.done ? 'done' : 'missed');
             if (day.date.toDateString() === todayStr) {

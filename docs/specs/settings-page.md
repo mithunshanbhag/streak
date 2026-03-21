@@ -6,12 +6,17 @@ The settings page lets users configure **daily reminders**. Users access it from
 
 ## Navigation
 
-- Accessible from the **⚙** icon in the app bar (available on all pages).
+- Accessible from the **⚙** icon in the Habits page app bar.
 - A **back arrow** in the app bar returns the user to the [Habits page](./habits-page.md).
+- Secondary-screen chrome stays focused: show **Back** + `Settings` only.
 
 ## Layout
 
-The page contains a single reminders section.
+The page contains a single reminders section presented as one clean card.
+
+- Prefer `MudCard` or `MudPaper` plus built-in spacing utilities.
+- Prefer `MudSwitch`, `MudTimePicker`, and `MudText` rather than custom control treatments.
+- No custom page-specific CSS should be required beyond ordinary spacing or width adjustments.
 
 ### Daily Reminder Section
 
