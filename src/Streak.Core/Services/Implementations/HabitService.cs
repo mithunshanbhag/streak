@@ -1,11 +1,9 @@
+using Streak.Core.Constants;
+
 namespace Streak.Core.Services.Implementations;
 
 public sealed class HabitService(IHabitRepository habitRepository) : StreakServiceBase, IHabitService
 {
-    private const int MaxHabits = 6;
-    private const int MinHabitNameLength = 1;
-    private const int MaxHabitNameLength = 30;
-
     private readonly IHabitRepository _habitRepository = RequireNotNull(habitRepository, nameof(habitRepository));
 
     public async Task<IReadOnlyList<Habit>> GetAllAsync(CancellationToken cancellationToken = default)
@@ -44,7 +42,8 @@ public sealed class HabitService(IHabitRepository habitRepository) : StreakServi
         var normalizedHabit = NormalizeHabitForWrite(habit, nameof(habit));
         var existingHabits = await _habitRepository.GetAllAsync(cancellationToken);
 
-        if (existingHabits.Count >= MaxHabits) throw new InvalidOperationException($"Cannot create more than {MaxHabits} habits.");
+        if (existingHabits.Count >= CoreConstants.MaxHabitCount)
+            throw new InvalidOperationException($"Cannot create more than {CoreConstants.MaxHabitCount} habits.");
 
         EnsureHabitNameIsUnique(normalizedHabit.Name, existingHabits);
 
@@ -72,9 +71,9 @@ public sealed class HabitService(IHabitRepository habitRepository) : StreakServi
 
         var existingHabit = await _habitRepository.GetAsync(normalizedHabit.Id, cancellationToken)
             ?? throw new KeyNotFoundException($"Habit with id '{normalizedHabit.Id}' was not found.");
-        
+
         var existingHabits = await _habitRepository.GetAllAsync(cancellationToken);
-        
+
         EnsureHabitNameIsUnique(normalizedHabit.Name, existingHabits, normalizedHabit.Id);
 
         existingHabit.Name = normalizedHabit.Name;
@@ -158,9 +157,9 @@ public sealed class HabitService(IHabitRepository habitRepository) : StreakServi
     private static string NormalizeAndValidateHabitName(string name, string paramName)
     {
         var normalizedName = NormalizeRequiredText(name, paramName);
-        if (normalizedName.Length is < MinHabitNameLength or > MaxHabitNameLength)
+        if (normalizedName.Length is < CoreConstants.HabitNameMinLength or > CoreConstants.HabitNameMaxLength)
             throw new ArgumentException(
-                $"Habit name must be between {MinHabitNameLength} and {MaxHabitNameLength} characters.",
+                $"Habit name must be between {CoreConstants.HabitNameMinLength} and {CoreConstants.HabitNameMaxLength} characters.",
                 paramName);
 
         return normalizedName;

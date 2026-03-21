@@ -81,4 +81,8 @@
 		<ProjectReference Include="..\Streak.Core\Streak.Core.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Folder Include="Components\Dialogs\" />
+	</ItemGroup>
+
 </Project>

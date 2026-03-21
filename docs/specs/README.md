@@ -74,14 +74,15 @@ Each major surface has its own detailed spec:
 | ---------------------------- | ----------------------- | -------------------------------------------------------- | -------------------------------------------------------- |
 | Homepage                     | `/`                    | [homepage.md](./homepage.md)                             | Landing page, daily checkin surface, and habit list      |
 | Habit Details                | `/habits/{habitId}`    | [habit-details-page.md](./habit-details-page.md)         | Habit details, trends, inline editing, and deletion      |
-| Quick Add Habit              | `+` action on Homepage | [create-habit-page.md](./create-habit-page.md)           | Create a new habit in a compact dialog without leaving the homepage |
+| Quick Add Habit              | `+ New Habit` on Homepage | [create-habit-page.md](./create-habit-page.md)        | Create a new habit in a compact dialog without leaving the homepage |
 | Settings                     | `/settings`            | [settings-page.md](./settings-page.md)                   | Configure reminder preferences                           |
 
 ## Information Architecture Notes
 
 - The app remains **shallow by default**: **Homepage** is the landing page, with **Habit Details** and **Settings** as the primary secondary destinations.
-- The global **+** app-bar action opens a compact **Quick Add Habit** dialog over **Homepage**.
+- The Homepage includes a dedicated **`+ New Habit`** CTA below the habit list, which opens a compact **Quick Add Habit** dialog over **Homepage**.
 - The **Homepage** doubles as the habit-list maintenance surface: habits are shown alphabetically and each habit opens its details on the Habit Details page.
+- The Homepage app bar keeps **Settings** plus a right-most **GitHub** repo link instead of a global create icon.
 - The **Habit Details** page contains the heatmap, inline edit experience, and delete confirmation dialog for a single habit.
 - **Settings** is now focused only on notification reminder preferences.
 - The top of **Homepage** uses a compact progress summary instead of instructional header copy.

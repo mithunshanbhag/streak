@@ -39,7 +39,7 @@ These screenshots were captured from the current HTML mockups in `docs\ui-mockup
 
 ### Homepage
 
-The homepage is the main surface of the app: today's progress, quick check-ins, and direct access to each habit.
+The homepage is the main surface of the app: today's progress, quick check-ins, direct access to each habit, and a footer `+ New Habit` CTA.
 
 ![Homepage screen](docs/readme-assets/homepage.png)
 
@@ -47,7 +47,7 @@ Mockup source: [`docs/ui-mockups/Homepage/index.html`](docs/ui-mockups/Homepage/
 
 ### Quick Add Habit
 
-The quick-add flow keeps habit creation lightweight so new habits can be added without interrupting the main workflow.
+The quick-add flow keeps habit creation lightweight so new habits can be added from the homepage without interrupting the main workflow.
 
 ![Quick add habit screen](docs/readme-assets/quick-add-habit.png)
 

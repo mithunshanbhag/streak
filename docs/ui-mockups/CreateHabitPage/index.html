@@ -15,11 +15,13 @@
     <header class="app-bar">
         <span class="app-bar__title">Streak</span>
         <div class="app-bar__actions">
-            <a class="app-bar__btn app-bar__btn--active" href="../CreateHabitPage/index.html" aria-label="Quick add habit" title="Quick Add Habit">
-                <span class="material-icons">add</span>
-            </a>
             <a class="app-bar__btn" href="../SettingsPage/index.html" aria-label="Settings" title="Settings">
                 <span class="material-icons">settings</span>
+            </a>
+            <a class="app-bar__btn" href="https://github.com/mithunshanbhag/streak" aria-label="View source code on GitHub" title="View source code on GitHub" target="_blank" rel="noreferrer">
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                    <path d="M12 .5C5.65.5.5 5.65.5 12a11.5 11.5 0 0 0 7.86 10.92c.58.11.79-.25.79-.56v-2.18c-3.2.7-3.88-1.36-3.88-1.36-.52-1.33-1.27-1.68-1.27-1.68-1.04-.71.08-.69.08-.69 1.15.08 1.75 1.18 1.75 1.18 1.02 1.75 2.68 1.25 3.33.96.1-.74.4-1.25.73-1.54-2.55-.29-5.23-1.27-5.23-5.66 0-1.25.45-2.28 1.18-3.08-.12-.29-.51-1.47.11-3.07 0 0 .97-.31 3.19 1.18A11.1 11.1 0 0 1 12 6.32c.98 0 1.96.13 2.88.39 2.21-1.49 3.18-1.18 3.18-1.18.63 1.6.24 2.78.12 3.07.73.8 1.17 1.83 1.17 3.08 0 4.4-2.69 5.36-5.25 5.64.41.36.78 1.07.78 2.16v3.2c0 .31.21.68.8.56A11.5 11.5 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5Z"/>
+                </svg>
             </a>
         </div>
     </header>
@@ -54,6 +56,14 @@
             </div>
             <span class="material-icons habit-card__toggle habit-card__toggle--done">check_circle</span>
         </article>
+
+        <section class="habit-list-footer" aria-hidden="true">
+            <div class="habit-list-footer__rule"></div>
+            <a class="habit-list-footer__btn" href="../CreateHabitPage/index.html">
+                <span class="material-icons">add</span>
+                <span>New Habit</span>
+            </a>
+        </section>
     </main>
 
     <div class="dialog-backdrop">

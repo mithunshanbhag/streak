@@ -1,0 +1,233 @@
+@using FluentValidation
+@using FluentValidation.Results
+@using Streak.Core.Models.ViewModels.InputModels
+@using Streak.Core.Models.ViewModels.ResultModels
+@inject IHabitService HabitService
+@inject IValidator<CreateHabitDialogInputModel> CreateHabitDialogInputModelValidator
+
+<MudDialog>
+    <DialogContent>
+        <MudForm @ref="_form">
+            <MudStack Spacing="3">
+                @if (!string.IsNullOrWhiteSpace(_submitError))
+                {
+                    <MudAlert Dense="true"
+                              Severity="MudBlazor.Severity.Error">
+                        @_submitError
+                    </MudAlert>
+                }
+
+                <MudTextField T="string"
+                              Label="Name"
+                              Value="@_model.Name"
+                              ValueChanged="OnNameChangedAsync"
+                              For="@(() => _model.Name)"
+                              Immediate="true"
+                              Required="true"
+                              MaxLength="@CoreConstants.HabitNameMaxLength"
+                              Counter="@CoreConstants.HabitNameMaxLength"
+                              HelperText="@($"Required · {CoreConstants.HabitNameMinLength}–{CoreConstants.HabitNameMaxLength} characters")"
+                              Disabled="@_isSaving"
+                              Error="@HasFieldError(nameof(CreateHabitDialogInputModel.Name))"
+                              ErrorText="@GetFieldError(nameof(CreateHabitDialogInputModel.Name))" />
+
+                <MudTextField T="string"
+                              Label="Emoji"
+                              Value="@_model.Emoji"
+                              ValueChanged="OnEmojiChangedAsync"
+                              For="@(() => _model.Emoji)"
+                              Immediate="true"
+                              HelperText="Optional single emoji"
+                              Placeholder="🙂"
+                              Disabled="@_isSaving"
+                              Error="@HasFieldError(nameof(CreateHabitDialogInputModel.Emoji))"
+                              ErrorText="@GetFieldError(nameof(CreateHabitDialogInputModel.Emoji))" />
+
+                <MudPaper Class="pa-4"
+                          Outlined="true">
+                    <MudText GutterBottom="true"
+                             Typo="Typo.subtitle2">
+                        Preview
+                    </MudText>
+
+                    <MudStack Row="true"
+                              Spacing="2"
+                              AlignItems="AlignItems.Center">
+                        <MudPaper Class="pa-3"
+                                  Outlined="true"
+                                  Style="min-width: 4rem; min-height: 4rem; display: flex; align-items: center; justify-content: center;">
+                            @if (string.IsNullOrWhiteSpace(PreviewEmoji))
+                            {
+                                <MudIcon Icon="@Icons.Material.Filled.TaskAlt"
+                                         Color="Color.Primary"
+                                         Size="Size.Large" />
+                            }
+                            else
+                            {
+                                <MudText Typo="Typo.h4">
+                                    @PreviewEmoji
+                                </MudText>
+                            }
+                        </MudPaper>
+
+                        <MudStack Spacing="0">
+                            <MudText Typo="Typo.subtitle1">
+                                @PreviewName
+                            </MudText>
+                            <MudText Color="Color.Secondary"
+                                     Typo="Typo.body2">
+                                This is how your habit will appear in the list.
+                            </MudText>
+                        </MudStack>
+                    </MudStack>
+                </MudPaper>
+            </MudStack>
+        </MudForm>
+    </DialogContent>
+
+    <DialogActions>
+        <MudButton Disabled="@_isSaving"
+                   OnClick="Cancel"
+                   Variant="Variant.Text">
+            Cancel
+        </MudButton>
+
+        <MudButton Color="Color.Primary"
+                   Disabled="@_isSaving"
+                   OnClick="SaveAsync"
+                   Variant="Variant.Filled">
+            @if (_isSaving)
+            {
+                <MudProgressCircular Class="mr-2"
+                                     Color="Color.Inherit"
+                                     Indeterminate="true"
+                                     Size="Size.Small" />
+                <span>Saving...</span>
+            }
+            else
+            {
+                <span>Save</span>
+            }
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code
+{
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    private readonly Dictionary<string, string[]> _validationErrors = new(StringComparer.Ordinal);
+
+    private MudForm? _form;
+    private CreateHabitDialogInputModel _model = new();
+    private bool _isSaving;
+    private string? _submitError;
+
+    private string PreviewName => string.IsNullOrWhiteSpace(_model.Name) ? "Your new habit" : _model.Name.Trim();
+
+    private string? PreviewEmoji => string.IsNullOrWhiteSpace(_model.Emoji) ? null : _model.Emoji.Trim();
+
+    private Task OnNameChangedAsync(string? value)
+    {
+        _model.Name = value ?? string.Empty;
+        ClearFieldError(nameof(CreateHabitDialogInputModel.Name));
+        _submitError = null;
+
+        return Task.CompletedTask;
+    }
+
+    private Task OnEmojiChangedAsync(string? value)
+    {
+        _model.Emoji = value;
+        ClearFieldError(nameof(CreateHabitDialogInputModel.Emoji));
+        _submitError = null;
+
+        return Task.CompletedTask;
+    }
+
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+
+    private async Task SaveAsync()
+    {
+        if (_isSaving)
+        {
+            return;
+        }
+
+        _submitError = null;
+        _isSaving = true;
+
+        try
+        {
+            var existingHabitNames = (await HabitService.GetAllAsync())
+                .Select(x => x.Name)
+                .ToArray();
+
+            var validationModel = new CreateHabitDialogInputModel
+            {
+                Name = _model.Name,
+                Emoji = _model.Emoji,
+                ExistingHabitNames = existingHabitNames
+            };
+
+            var validationResult = await CreateHabitDialogInputModelValidator.ValidateAsync(validationModel);
+            ApplyValidationResult(validationResult);
+
+            if (!validationResult.IsValid)
+            {
+                return;
+            }
+
+            var resultModel = validationModel.ToResultModel();
+
+            await HabitService.CreateAsync(new Habit
+            {
+                Id = 0,
+                Name = resultModel.Name,
+                Emoji = resultModel.Emoji,
+                DisplayOrder = 0
+            });
+
+            MudDialog.Close(resultModel);
+        }
+        catch (Exception ex) when (ex is ArgumentException or InvalidOperationException)
+        {
+            _submitError = ex.Message;
+        }
+        finally
+        {
+            _isSaving = false;
+            await (_form?.ValidateAsync() ?? Task.CompletedTask);
+        }
+    }
+
+    private void ApplyValidationResult(ValidationResult validationResult)
+    {
+        _validationErrors.Clear();
+
+        foreach (var errorGroup in validationResult.Errors
+                     .GroupBy(x => x.PropertyName, StringComparer.Ordinal))
+        {
+            _validationErrors[errorGroup.Key] = [.. errorGroup.Select(x => x.ErrorMessage)];
+        }
+    }
+
+    private bool HasFieldError(string fieldName)
+    {
+        return _validationErrors.TryGetValue(fieldName, out var errors) && errors.Length > 0;
+    }
+
+    private string? GetFieldError(string fieldName)
+    {
+        return _validationErrors.TryGetValue(fieldName, out var errors) ? errors.FirstOrDefault() : null;
+    }
+
+    private void ClearFieldError(string fieldName)
+    {
+        _validationErrors.Remove(fieldName);
+    }
+}

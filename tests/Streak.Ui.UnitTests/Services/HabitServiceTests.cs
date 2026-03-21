@@ -1,3 +1,4 @@
+using Streak.Core.Constants;
 using Streak.Core.Services.Implementations;
 using Streak.Core.Services.Interfaces;
 
@@ -306,15 +307,9 @@ public class HabitServiceTests
     [Fact]
     public async Task CreateAsync_ShouldThrowInvalidOperationException_WhenHabitLimitIsReached()
     {
-        var existingHabits = new List<Habit>
-        {
-            new() { Id = 1, Name = "Habit 1", DisplayOrder = 1 },
-            new() { Id = 2, Name = "Habit 2", DisplayOrder = 2 },
-            new() { Id = 3, Name = "Habit 3", DisplayOrder = 3 },
-            new() { Id = 4, Name = "Habit 4", DisplayOrder = 4 },
-            new() { Id = 5, Name = "Habit 5", DisplayOrder = 5 },
-            new() { Id = 6, Name = "Habit 6", DisplayOrder = 6 }
-        };
+        var existingHabits = Enumerable.Range(1, CoreConstants.MaxHabitCount)
+            .Select(index => new Habit { Id = index, Name = $"Habit {index}", DisplayOrder = index })
+            .ToList();
 
         var habitRepositoryMock = new Mock<IHabitRepository>(MockBehavior.Strict);
         habitRepositoryMock
@@ -327,9 +322,31 @@ public class HabitServiceTests
         var act = () => sut.CreateAsync(habitToCreate);
 
         var exception = await act.Should().ThrowAsync<InvalidOperationException>();
-        exception.Which.Message.Should().Contain("Cannot create more than 6 habits.");
+        exception.Which.Message.Should().Contain($"Cannot create more than {CoreConstants.MaxHabitCount} habits.");
         habitRepositoryMock.Verify(x => x.GetAllAsync(It.IsAny<CancellationToken>()), Times.Once);
         habitRepositoryMock.Verify(x => x.AddAsync(It.IsAny<Habit>(), It.IsAny<CancellationToken>()), Times.Never);
+        habitRepositoryMock.VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task CreateAsync_ShouldThrowArgumentException_WhenHabitNameExceedsConfiguredMaximum()
+    {
+        var habitRepositoryMock = new Mock<IHabitRepository>(MockBehavior.Strict);
+        IHabitService sut = new HabitService(habitRepositoryMock.Object);
+        var invalidHabit = new Habit
+        {
+            Id = 1,
+            Name = new string('R', CoreConstants.HabitNameMaxLength + 1),
+            Emoji = "📖",
+            DisplayOrder = 1
+        };
+
+        var act = () => sut.CreateAsync(invalidHabit);
+
+        var exception = await act.Should().ThrowAsync<ArgumentException>();
+        exception.Which.ParamName.Should().Be("Name");
+        exception.Which.Message.Should().Contain(
+            $"Habit name must be between {CoreConstants.HabitNameMinLength} and {CoreConstants.HabitNameMaxLength} characters.");
         habitRepositoryMock.VerifyNoOtherCalls();
     }
 

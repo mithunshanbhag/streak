@@ -40,6 +40,13 @@ Each card shows:
 - Tapping anywhere on a habit card **except** the checkin toggle navigates to that habit's [Habit Details page](./habit-details-page.md).
 - Prefer `MudCard` or `MudPaper` plus `MudStack`, `MudText`, and utility classes before introducing any custom card-specific CSS.
 
+### New Habit CTA
+
+- When the user already has habits and is still below the 6-habit limit, show a full-width **`+ New Habit`** button below the list.
+- Separate the list from this CTA with a subtle horizontal divider.
+- Tapping **`+ New Habit`** opens the [Quick Add Habit dialog](./create-habit-page.md) over the homepage.
+- Hide the CTA when the user is already at the maximum habit count.
+
 ## Checkin Toggle Behavior
 
 - **Default state**: Empty circle (not done) at the start of each new calendar day.
@@ -69,9 +76,9 @@ Each card shows:
 
 When the user has no habits configured:
 
-- Display a friendly message: *"No habits yet. Tap **+** to add one."*
+- Display a friendly message: *"No habits yet. Tap **New Habit** to add one."*
 - Show a 🌱 emoji or illustration above the message.
-- Optionally include a CTA button ("Add Habit") that opens the [Quick Add Habit dialog](./create-habit-page.md).
+- Include a CTA button (`+ New Habit`) that opens the [Quick Add Habit dialog](./create-habit-page.md).
 - Prefer a centered `MudStack` with `MudText` and `MudButton`.
 
 ## Interaction Summary
@@ -80,6 +87,7 @@ When the user has no habits configured:
 | -------------------------------- | ------------------------------------------------------------------ |
 | Toggle a habit's check icon      | Immediately records checkin for today; updates streak count        |
 | Tap a habit card (except toggle) | Navigates to the Habit Details page for that habit                 |
-| Tap **+** in app bar             | Opens the Quick Add Habit dialog over the homepage                 |
+| Tap **+ New Habit** on homepage  | Opens the Quick Add Habit dialog over the homepage                 |
 | Tap **⚙** in app bar             | Navigates to the Settings page                                     |
+| Tap GitHub icon in app bar       | Opens the public GitHub repository                                 |
 | Tap **Streak** logo              | No-op (already on the homepage)                                    |
