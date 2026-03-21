@@ -1,62 +1,216 @@
 # Streak
 
+[![Status](https://img.shields.io/badge/status-early%20preview-orange)](#current-status)
 [![Build](https://img.shields.io/badge/build-placeholder-lightgrey)](#build-and-run-locally)
 [![Tests](https://img.shields.io/badge/tests-placeholder-lightgrey)](#run-tests)
-[![Coverage](https://img.shields.io/badge/coverage-placeholder-lightgrey)](#run-tests)
+[![Platform](https://img.shields.io/badge/platform-.NET%2010%20%7C%20MAUI%20%7C%20Blazor-512BD4)](#tech-stack)
 
-Streak is a .NET MAUI + Blazor habit tracking app for Android with local SQLite storage, focused on quick daily check-ins, streak visibility, habit management, and reminder settings.
+> A lightweight habit-tracking app designed around one idea: make daily check-ins fast enough that you actually keep coming back.
 
-![Screenshot / GIF placeholder](https://via.placeholder.com/960x540.png?text=Streak+App+Screenshot+or+GIF)
+Streak is an indie-SaaS-style mobile app concept for tracking a small set of daily habits, seeing streak momentum at a glance, and keeping the experience intentionally simple.
+
+This README is intentionally ahead of implementation. The product direction, screen specs, and mockups are already taking shape, while much of the source code and automated coverage are still in progress.
+
+![Homepage mockup](docs/readme-assets/homepage.png)
+
+## Current status
+
+Streak is currently in the **specification + mockup** phase.
+
+- Product specs are being written under [`docs/specs`](docs/specs).
+- Interactive HTML mockups are available under [`docs/ui-mockups`](docs/ui-mockups).
+- The repository contains early project scaffolding for the eventual app and tests.
+- Some README sections below are intentionally placeholder-friendly so the project can still be presented clearly before full implementation lands.
+
+## Why Streak?
+
+The goal is not to build the biggest habit app. The goal is to build a habit app that feels:
+
+- **Fast** for daily check-ins
+- **Calm** instead of over-featured
+- **Offline-first** with local device storage
+- **Focused** on a maximum of six habits at a time
+
+If the product direction holds, the primary workflow should feel like: open app, scan progress, tap what you completed, move on with your day.
+
+## Mockup gallery
+
+These screenshots were captured from the current HTML mockups in `docs\ui-mockups`.
+
+### Homepage
+
+The homepage is the main surface of the app: today's progress, quick check-ins, and direct access to each habit.
+
+![Homepage screen](docs/readme-assets/homepage.png)
+
+Mockup source: [`docs/ui-mockups/Homepage/index.html`](docs/ui-mockups/Homepage/index.html)
+
+### Quick Add Habit
+
+The quick-add flow keeps habit creation lightweight so new habits can be added without interrupting the main workflow.
+
+![Quick add habit screen](docs/readme-assets/quick-add-habit.png)
+
+Mockup source: [`docs/ui-mockups/CreateHabitPage/index.html`](docs/ui-mockups/CreateHabitPage/index.html)
+
+### Habit Details
+
+The habit details experience is focused on streak visibility, inline editing, and a compact history view.
+
+![Habit details screen](docs/readme-assets/habit-details.png)
+
+Mockup source: [`docs/ui-mockups/HabitDetailsPage/index.html`](docs/ui-mockups/HabitDetailsPage/index.html)
+
+### Settings
+
+Settings currently focus on reminder preferences and keeping the app configuration intentionally small.
+
+![Settings screen](docs/readme-assets/settings.png)
+
+Mockup source: [`docs/ui-mockups/SettingsPage/index.html`](docs/ui-mockups/SettingsPage/index.html)
+
+## Product direction
+
+Based on the current specs, Streak is shaping up around the following ideas:
+
+- Daily binary check-ins: done or not done
+- A shallow navigation model with **Homepage** as the primary surface
+- A hard cap of **6 habits**
+- Local-only persistence with no account system
+- Simple reminder settings instead of complex automation
+
+For the latest written product direction, start here:
+
+- [`docs/specs/README.md`](docs/specs/README.md)
+- [`docs/specs/ui.md`](docs/specs/ui.md)
+
+## Tech stack
+
+The preferred stack for this project is:
+
+- **Frontend:** Blazor WebAssembly-style UI patterns adapted within the app experience
+- **UI library:** MudBlazor
+- **Mobile app shell:** .NET MAUI / Blazor Hybrid
+- **Language/runtime:** .NET 10
+- **Data storage:** local SQLite today, with room for future Azure-backed evolution if the product grows
+
+This may continue to evolve as the implementation becomes more concrete.
 
 ## Installation
 
-1. Install **.NET 10 SDK**.
-2. Install MAUI Android workload (for app run): `dotnet workload install maui-android`.
-3. From repo root, restore dependencies: `dotnet restore .\Streak.slnx`.
+Because the app is still being built, installation is currently closer to **setting up a contributor workstation** than installing a finished product.
+
+1. Install the **.NET 10 SDK**.
+2. Install the MAUI workloads you expect to use for local development.
+3. Clone this repository.
+4. Restore the solution dependencies:
+
+```powershell
+dotnet restore .\Streak.slnx
+```
+
+5. If you only want to review the planned experience, open the files in `docs\ui-mockups` or browse the screenshots in this README.
 
 ## Usage
 
-After launching the app on Android/emulator:
-- Add, edit, delete, and reorder habits on **Manage Habits**.
-- Toggle today’s check-in on **Home**.
-- Open **Trends** for streak count + heatmap.
-- Configure reminder enable/time in **Settings**.
+Today, the most useful way to "use" this repository is to explore the planned product and follow the implementation as it comes together.
+
+Recommended path:
+
+1. Read the product overview in [`docs/specs/README.md`](docs/specs/README.md).
+2. Review shared UI guidance in [`docs/specs/ui.md`](docs/specs/ui.md).
+3. Open the interactive mockups under [`docs/ui-mockups`](docs/ui-mockups).
+4. Use the screenshots in this README as a quick visual overview when sharing the project.
+
+Once the app is fully wired up, the expected end-user flow will be:
+
+- Launch the app
+- Review today's progress on the homepage
+- Check off completed habits
+- Open a habit to inspect streak history
+- Adjust reminder preferences in settings
 
 ## Build and run locally
 
-Use the convenience script from repo root:
+This section is intentionally a mix of **current scaffolding commands** and **placeholder developer workflow**.
 
-- Build + generate local SQLite db: `pwsh .\run-local.ps1 -Task build`
-- Run unit tests: `pwsh .\run-local.ps1 -Task test`
-- Run app on Android target: `pwsh .\run-local.ps1 -Task run`
-- Build + test: `pwsh .\run-local.ps1 -Task all`
+Restore everything:
 
-Equivalent direct commands:
+```powershell
+dotnet restore .\Streak.slnx
+```
 
-- `dotnet build .\tests\Streak.Ui.UnitTests\Streak.Ui.UnitTests.csproj -c Debug`
-- `dotnet test .\tests\Streak.Ui.UnitTests\Streak.Ui.UnitTests.csproj -c Debug --no-build`
-- `dotnet build -t:Run .\src\Streak.Ui\Streak.Ui.csproj -f net10.0-android -c Debug`
+Build the repository:
+
+```powershell
+dotnet build .\Streak.slnx -c Debug --nologo
+```
+
+If you want to validate the Windows UI target specifically:
+
+```powershell
+dotnet build --nologo --no-restore .\src\Streak.Ui\Streak.Ui.csproj -f net10.0-windows10.0.19041.0 -p:RuntimeIdentifier=win-x64
+```
+
+There is also a convenience script at [`run-local.ps1`](run-local.ps1) that is expected to become the main local entrypoint as the repository matures.
 
 ## Run tests
 
-From repo root:
+Automated testing is still early, but the repository already has a test project scaffold you can run.
 
-1. `dotnet build .\tests\Streak.Ui.UnitTests\Streak.Ui.UnitTests.csproj -c Debug`
-2. `dotnet test .\tests\Streak.Ui.UnitTests\Streak.Ui.UnitTests.csproj -c Debug --no-build`
+Build the test project:
 
-## SQLite SQL-first + scaffolding workflow
+```powershell
+dotnet build .\tests\Streak.Ui.UnitTests\Streak.Core.UnitTests.csproj -c Debug --nologo
+```
 
-- SQL schema: `src\Streak.Ui\Repositories\Implementations\Sqlite\streak-schema.sql`
-- DbContext: `src\Streak.Ui\Repositories\Implementations\Sqlite\StreakDbContext.cs`
-- Scaffolded entities: `src\Streak.Ui\Repositories\Implementations\Sqlite\Entities\`
-- SQLite generation script: `src\Streak.Ui\Repositories\Implementations\Sqlite\CreateLocalSqliteDb.ps1`
+Run the tests:
 
-Workflow when schema changes:
+```powershell
+dotnet test .\tests\Streak.Ui.UnitTests\Streak.Core.UnitTests.csproj -c Debug --no-build --nologo
+```
 
-1. Update `streak-schema.sql`.
-2. Regenerate db file from SQL schema:
-   - `pwsh .\src\Streak.Ui\Repositories\Implementations\Sqlite\CreateLocalSqliteDb.ps1`
-3. Regenerate EF Core model (DbContext + Entities):
-   - Install EF tool (once): `dotnet tool install --global dotnet-ef --version 10.*`
-   - From `src\Streak.Ui`, run:
-   - `dotnet ef dbcontext scaffold "Data Source=Repositories\Implementations\Sqlite\streak.local.db" Microsoft.EntityFrameworkCore.Sqlite --context StreakDbContext --context-dir Repositories\Implementations\Sqlite --output-dir Repositories\Implementations\Sqlite\Entities --force --no-onconfiguring`
+As implementation expands, this section will be updated to describe the full testing story more accurately.
+
+## Repository structure
+
+```text
+.
+├── docs
+│   ├── specs
+│   └── ui-mockups
+├── src
+├── tests
+├── infra
+├── run-local.ps1
+└── Streak.slnx
+```
+
+## Roadmap snapshot
+
+Placeholder roadmap themes for the near term:
+
+- Turn the mockups into implemented UI screens
+- Wire up local persistence and check-in behavior
+- Add reliable unit and integration coverage
+- Tighten the local development workflow
+- Replace placeholder badges and sections with real project signals
+
+## Contributing
+
+If you want to contribute while the project is still taking shape:
+
+- Review the specs first
+- Keep the implementation aligned with the mockups
+- Prefer small, focused pull requests
+- Update docs when product direction changes
+
+Additional repo guidance lives in:
+
+- [`CONTRIBUTING.md`](CONTRIBUTING.md)
+- [`SECURITY.md`](SECURITY.md)
+- [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md)
+
+---
+
+Built with a healthy amount of optimism, placeholders, and UI-first momentum.
