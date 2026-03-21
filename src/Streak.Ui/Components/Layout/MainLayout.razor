@@ -1,4 +1,6 @@
 ﻿@inherits LayoutComponentBase
+@implements IDisposable
+@inject NavigationManager NavigationManager
 
 <MudThemeProvider/>
 <MudPopoverProvider/>
@@ -9,36 +11,50 @@
     <MudAppBar Color="Color.Primary"
                Dense="true"
                Elevation="1">
-        <MudTooltip Text="Let your habits compound">
-            <MudText Typo="Typo.h5">
-                Streak
-            </MudText>
-        </MudTooltip>
-        <MudSpacer/>
-        <MudTooltip Text="Manage habits">
-            @* TODO: Change this icon later *@
-            <MudIconButton Class="mr-4"
-                           Href="@RouteConstants.ManageHabits"
-                           Icon="@Icons.Material.Filled.Add"
-                           Color="Color.Inherit"
-                           aria-label="Manage habits"/>
-        </MudTooltip>
-        <MudTooltip Text="Settings">
-            <MudIconButton Class="mr-4"
-                           Href="@RouteConstants.Home"
-                           Icon="@Icons.Material.Filled.Settings"
-                           Color="Color.Inherit"
-                           aria-label="Settings"/>
-        </MudTooltip>
-        <MudTooltip Text="View source code"
-                    Placement="Placement.Left">
-            <MudIconButton Class="mr-4"
-                           Href="@UrlConstants.GitHubRepo"
-                           Target="_blank"
-                           Icon="@Icons.Custom.Brands.GitHub"
-                           Color="Color.Inherit"
-                           aria-label="View source code on GitHub"/>
-        </MudTooltip>
+        @if (_isHomePage)
+        {
+            <MudTooltip Text="Let your habits compound">
+                <MudText Typo="Typo.h5">
+                    Streak
+                </MudText>
+            </MudTooltip>
+            <MudSpacer/>
+            <MudTooltip Text="Manage habits">
+                @* TODO: Change this icon later *@
+                <MudIconButton Class="mr-4"
+                               Href="@RouteConstants.ManageHabits"
+                               Icon="@Icons.Material.Filled.Add"
+                               Color="Color.Inherit"
+                               aria-label="Manage habits"/>
+            </MudTooltip>
+            <MudTooltip Text="Settings">
+                <MudIconButton Class="mr-4"
+                               Href="@RouteConstants.Home"
+                               Icon="@Icons.Material.Filled.Settings"
+                               Color="Color.Inherit"
+                               aria-label="Settings"/>
+            </MudTooltip>
+            <MudTooltip Text="View source code"
+                        Placement="Placement.Left">
+                <MudIconButton Class="mr-4"
+                               Href="@UrlConstants.GitHubRepo"
+                               Target="_blank"
+                               Icon="@Icons.Custom.Brands.GitHub"
+                               Color="Color.Inherit"
+                               aria-label="View source code on GitHub"/>
+            </MudTooltip>
+        }
+        else
+        {
+            <MudTooltip Text="Back to habits">
+                <MudIconButton Class="mr-2"
+                               Icon="@Icons.Material.Filled.ArrowBack"
+                               Color="Color.Inherit"
+                               Href="@RouteConstants.Home"
+                               aria-label="Back to habits"/>
+            </MudTooltip>
+            <MudSpacer/>
+        }
     </MudAppBar>
 
     <MudMainContent>
@@ -61,4 +77,40 @@
 
 @code
 {
+    private bool _isHomePage = false;
+
+    protected override void OnInitialized()
+    {
+        CheckIfHomePage(NavigationManager.Uri);
+        NavigationManager.LocationChanged += HandleLocationChanged;
+    }
+
+    public void Dispose()
+    {
+        NavigationManager.LocationChanged -= HandleLocationChanged;
+    }
+
+    private void HandleLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        CheckIfHomePage(e.Location);
+
+        // @TODO: Check if this line is really needed.
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    private void CheckIfHomePage(string uri)
+    {
+        var relativePath = NavigationManager.ToBaseRelativePath(uri);
+
+        var separatorIndex = relativePath.IndexOfAny(['?', '#']);
+        
+        var normalizedPath = separatorIndex >= 0
+            ? relativePath[..separatorIndex]
+            : relativePath;
+
+        var normalizedPathTrimmed = normalizedPath.Trim('/');
+
+        _isHomePage = string.IsNullOrEmpty(normalizedPathTrimmed);
+    }
+
 }
