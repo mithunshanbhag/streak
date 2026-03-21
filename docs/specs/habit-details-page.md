@@ -6,9 +6,9 @@ The habit details page shows a **detailed view of a single habit**, including ed
 
 ## Navigation
 
-- The user arrives here by **tapping a habit card** on the [Habits page](./habits-page.md), including its visible streak badge.
+- The user arrives here by **tapping a habit card** on the [Homepage](./homepage.md), including its visible streak badge.
 - The page title in the app bar shows the habit's current emoji and name (e.g., "🧘 Meditate").
-- A **back arrow** in the app bar returns the user to the previous in-app page. If there is no in-app history, it falls back to the [Habits page](./habits-page.md).
+- A **back arrow** in the app bar returns the user to the previous in-app page. If there is no in-app history, it falls back to the [Homepage](./homepage.md).
 - Secondary-screen chrome stays focused: use **Back** + title only. Do not repeat the root-screen `+` or `Settings` actions here.
 
 ## Layout
@@ -52,7 +52,7 @@ When the user chooses **Delete** from the overflow menu:
 
 - Show a confirmation dialog over the current page.
 - Message: *"Delete '{habit name}'? All checkin history for this habit will be permanently lost."*
-- **Delete** permanently deletes the habit and all associated checkin history, then returns the user to the previous in-app page (or [Habits](./habits-page.md) if there is no in-app history).
+- **Delete** permanently deletes the habit and all associated checkin history, then returns the user to the previous in-app page (or [Homepage](./homepage.md) if there is no in-app history).
 - **Cancel** closes the dialog and keeps the user on the page.
 - Prefer a standard `MudDialog` rather than a custom destructive modal treatment.
 

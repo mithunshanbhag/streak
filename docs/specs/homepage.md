@@ -1,15 +1,15 @@
-# Habits Page (Landing / Checkin)
+# Homepage (Landing / Check-in)
 
-> **Routes**: `/` (default landing page), `/habits`
+> **Route**: `/`
 
-The habits page is the **primary surface** of the Streak app. Users should be able to open the app, check in their habits for the day, and leave — all without navigating anywhere.
+The homepage is the **primary surface** of the Streak app. Users should be able to open the app, check in their habits for the day, and leave — all without navigating anywhere.
 
 ## Layout
 
 The page displays a **vertical list of habit cards**, one per habit.
 
 - Habits are sorted **alphabetically by name**.
-- There is no separate manage-habits screen; the Habits page is the main habit list surface.
+- There is no separate manage-habits screen; the homepage is the main habit list surface.
 - Prefer a `MudContainer` + `MudStack` composition with built-in spacing utilities rather than custom page layout CSS.
 
 ### Progress Summary
@@ -80,6 +80,6 @@ When the user has no habits configured:
 | -------------------------------- | ------------------------------------------------------------------ |
 | Toggle a habit's check icon      | Immediately records checkin for today; updates streak count        |
 | Tap a habit card (except toggle) | Navigates to the Habit Details page for that habit                 |
-| Tap **+** in app bar             | Opens the Quick Add Habit dialog over the Habits page              |
+| Tap **+** in app bar             | Opens the Quick Add Habit dialog over the homepage                 |
 | Tap **⚙** in app bar             | Navigates to the Settings page                                     |
-| Tap **Streak** logo              | No-op (already on the Habits page)                                 |
+| Tap **Streak** logo              | No-op (already on the homepage)                                    |

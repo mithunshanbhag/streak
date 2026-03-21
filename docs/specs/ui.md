@@ -55,7 +55,7 @@ This document covers shared UI conventions that apply across all screens in the 
 - **Habit detail actions**:
   - Edit habit: `Edit` (pencil) icon
   - Delete habit: `Delete` (bin) icon
-- **Checkin toggle**: Use MudBlazor's `MudToggleIconButton` for the checkin toggle on the Habits page. Done = green filled check-circle icon. Not done = empty circle icon.
+- **Checkin toggle**: Use MudBlazor's `MudToggleIconButton` for the checkin toggle on the Homepage. Done = green filled check-circle icon. Not done = empty circle icon.
 - Icon sizes follow MudBlazor defaults. App bar icons should be sized at 24dp.
 
 ## App Bar
@@ -64,12 +64,12 @@ The app uses a **top app bar** that is compact/dense to maximize the content are
 
 | Position               | Element              | Behavior                                                                                               |
 | ---------------------- | -------------------- | ------------------------------------------------------------------------------------------------------ |
-| Left                   | "Streak" logo text   | Tapping navigates to the Habits page. Tooltip on hover: *"Let your habits compound"*.                  |
+| Left                   | "Streak" logo text   | Tapping navigates to the Homepage. Tooltip on hover: *"Let your habits compound"*.                     |
 | Right (1st from right) | Settings icon (gear) | Navigates to the [Settings page](./settings-page.md).                                                  |
-| Right (2nd from right) | Add icon (plus)      | Opens the [Quick Add Habit dialog](./create-habit-page.md) over the Habits page.                      |
+| Right (2nd from right) | Add icon (plus)      | Opens the [Quick Add Habit dialog](./create-habit-page.md) over the Homepage.                         |
 
 - The app bar is **fixed** at the top and does not scroll with content.
-- The full `Streak` + `Add` + `Settings` action set is present on the **Habits** page.
+- The full `Streak` + `Add` + `Settings` action set is present on the **Homepage**.
 - Every routed secondary screen uses a simpler app bar pattern: **Back** + page title only.
 - The quick-add flow itself does **not** introduce a separate full-screen app bar.
 - Use `MudAppBar` plus `MudIconButton`, `MudText`, and `MudSpacer` rather than custom toolbar markup.
@@ -77,15 +77,15 @@ The app uses a **top app bar** that is compact/dense to maximize the content are
 ## Navigation
 
 - The app uses a **shallow routed navigation model**:
-  - **Habits page** is the landing page and the root of the navigation stack. It is accessible via both `/` and `/habits`.
-  - **Habit Details** and **Settings** are one level deep from Habits.
-  - **Quick Add Habit** is launched from the global **+** action (and may also be reached from Habits empty-state CTAs) as a compact dialog over the Habits page.
+  - **Homepage** is the landing page and the root of the navigation stack. It is accessible via `/`.
+  - **Habit Details** and **Settings** are one level deep from Homepage.
+  - **Quick Add Habit** is launched from the global **+** action (and may also be reached from Homepage empty-state CTAs) as a compact dialog over the Homepage.
 - Habit edit is performed **inline on the Habit Details page**.
 - Habit delete is confirmed with a **dialog launched from the Habit Details page**, not a dedicated route.
-- Every non-Habits routed page displays a **Back arrow** in the app bar (replacing the logo position).
-  - From **Settings**, the back arrow returns the **Habits** page.
-  - From **Habit Details**, the back arrow returns the previous in-app page; if there is no in-app history, it falls back to **Habits**.
-  - From the **Quick Add Habit** dialog, Android back dismisses the dialog and returns focus to **Habits**.
+- Every non-Homepage routed page displays a **Back arrow** in the app bar (replacing the logo position).
+  - From **Settings**, the back arrow returns the **Homepage**.
+  - From **Habit Details**, the back arrow returns the previous in-app page; if there is no in-app history, it falls back to **Homepage**.
+  - From the **Quick Add Habit** dialog, Android back dismisses the dialog and returns focus to **Homepage**.
 - Android hardware/gesture back follows the same route hierarchy.
 - Navigation transitions should be fast with no perceptible delay.
 
@@ -93,9 +93,9 @@ The app uses a **top app bar** that is compact/dense to maximize the content are
 
 | Surface        | Route / Trigger     |
 | -------------- | ------------------- |
-| Habits         | `/`, `/habits`      |
+| Homepage       | `/`                 |
 | Habit Details  | `/habits/{habitId}` |
-| Quick Add Habit| `+` from Habits (dialog) |
+| Quick Add Habit| `+` from Homepage (dialog) |
 | Settings       | `/settings`         |
 
 ## Breadcrumbs
@@ -109,7 +109,7 @@ The app uses a **top app bar** that is compact/dense to maximize the content are
 - The app targets **mobile (Android)** screens only. No tablet or desktop layout is needed.
 - Content is laid out in a **single column**, full-width, with consistent horizontal padding (16dp).
 - Prefer `MudContainer` and `MudStack` for page composition.
-- Cards (`MudCard` or `MudPaper`) are used to group related content (e.g., each habit on the Habits page).
+- Cards (`MudCard` or `MudPaper`) are used to group related content (e.g., each habit on the Homepage).
 - Vertical spacing between cards: 12dp.
 - Prefer MudBlazor spacing utilities or stack spacing over custom margin rules.
 

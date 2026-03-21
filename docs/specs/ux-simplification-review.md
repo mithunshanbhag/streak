@@ -8,12 +8,12 @@ The current direction is already strong: one primary screen, binary check-ins, a
 
 After review, the following decisions were made:
 
-- **Accepted**: simplify the Habits screen header into a compact progress summary
+- **Accepted**: simplify the Homepage header into a compact progress summary
 - **Accepted**: replace the create habit full-page concept with a compact quick-add dialog
 - **Accepted**: favor MudBlazor controls and built-in CSS utilities over bespoke CSS where possible
 - **Rejected**: compact Habit Details sheet
 
-The accepted directions now live in the primary `HabitsPage` and `CreateHabitPage` mockups.
+The accepted directions now live in the primary `Homepage` and `CreateHabitPage` mockups.
 
 ## Goal
 
@@ -26,7 +26,7 @@ Optimize for the two priorities captured during planning:
 
 - The app's mental model is small: habits, today's check-in, streaks, reminders.
 - The habit limit keeps the list short enough to scan quickly.
-- The Habits page is already intended to be the default landing surface.
+- The Homepage is already intended to be the default landing surface.
 - Streak logic is binary and easy to understand.
 
 These should remain intact.
@@ -35,7 +35,7 @@ These should remain intact.
 
 | Surface | Why it still feels heavy | Simplification opportunity |
 | --- | --- | --- |
-| Habits page header | Explanatory copy, sort labeling, and decorative chips add scan cost to the most frequently used screen. | Keep a compact status summary instead of instructional text. |
+| Homepage header | Explanatory copy, sort labeling, and decorative chips add scan cost to the most frequently used screen. | Keep a compact status summary instead of instructional text. |
 | App-bar chrome on secondary screens | Global actions on every screen compete with the main task and add visual noise. | Show the full action set only on the root screen. |
 | Create Habit flow | A dedicated routed page is clear, but it costs a full navigation step for a tiny form. | Consider a compact dialog for quick add. |
 | Habit Details layout | Identity, streak, actions, and heatmap each claim their own visual block, so the page feels longer and busier. | Simplify within the existing page rather than replacing the page with a sheet. |
@@ -47,7 +47,7 @@ These should remain intact.
 
 These are the safest changes and best fit the current product direction.
 
-#### A. Strip the Habits page down to the essentials
+#### A. Strip the Homepage down to the essentials
 
 Recommended:
 
@@ -59,15 +59,15 @@ Recommended:
 
 Why:
 
-- The Habits screen is the highest-frequency screen.
+- The Homepage is the highest-frequency screen.
 - Returning users do not need the interaction model explained on every visit.
 - This reduces both reading effort and visual density.
 
-#### B. Keep the full app-bar action set only on the Habits screen
+#### B. Keep the full app-bar action set only on the Homepage
 
 Recommended:
 
-- On **Habits**: keep `Streak`, `+`, and `Settings`.
+- On **Homepage**: keep `Streak`, `+`, and `Settings`.
 - On **Habit Details**, **Create Habit**, and **Settings**: show only `Back` + page title.
 
 Why:
@@ -107,10 +107,10 @@ These reduce taps more aggressively while preserving the app's core model.
 
 Recommended concept:
 
-- Open `+` into a compact dialog from the Habits page.
+- Open `+` into a compact dialog from the Homepage.
 - Show a required name field first.
 - Keep emoji optional and visually secondary.
-- Save returns the user to the same scroll position on the Habits page.
+- Save returns the user to the same scroll position on the Homepage.
 
 Why:
 
@@ -141,7 +141,7 @@ These can simplify the app further, but they also change the feel of the product
 
 Possible approach:
 
-- Open Settings as a small sheet from the Habits page app bar.
+- Open Settings as a small sheet from the Homepage app bar.
 
 Why:
 
@@ -174,8 +174,8 @@ If the goal is to improve the app without overcomplicating the redesign, the str
 
 ### Recommended Package: "Single-Screen First"
 
-1. Keep **Habits** as the only full-screen view most users need daily.
-2. Reduce the Habits header to a compact progress summary.
+1. Keep **Homepage** as the only full-screen view most users need daily.
+2. Reduce the Homepage header to a compact progress summary.
 3. Remove extra app-bar actions from secondary screens.
 4. Turn **Create Habit** into a quick-add dialog.
 5. Keep **Habit Details** as a dedicated page for now and simplify within that page if needed later.
@@ -210,7 +210,7 @@ Removing or weakening these would likely make the product less clear, not more s
 
 The accepted directions now live in the primary mockups:
 
-- [`../ui-mockups/HabitsPage/index.html`](../ui-mockups/HabitsPage/index.html)
+- [`../ui-mockups/Homepage/index.html`](../ui-mockups/Homepage/index.html)
 - [`../ui-mockups/CreateHabitPage/index.html`](../ui-mockups/CreateHabitPage/index.html)
 
 The decision summary page lives here:

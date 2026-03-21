@@ -1,14 +1,14 @@
 # Quick Add Habit Dialog
 
-> **Trigger**: Global **+** action on the [Habits page](./habits-page.md)
+> **Trigger**: Global **+** action on the [Homepage](./homepage.md)
 
-The create habit experience is a **compact dialog** launched over the [Habits page](./habits-page.md). It is used for adding a new habit without taking the user away from the primary daily check-in surface.
+The create habit experience is a **compact dialog** launched over the [Homepage](./homepage.md). It is used for adding a new habit without taking the user away from the primary daily check-in surface.
 
 ## Navigation
 
-- Users open the dialog by tapping the **+** icon in the app bar or by tapping **"Add Habit"** from the [Habits page](./habits-page.md) empty state.
-- The [Habits page](./habits-page.md) remains visible behind the dialog, dimmed.
-- The dialog may be dismissed with an explicit close/cancel action. Android back should dismiss the dialog and return focus to the Habits page.
+- Users open the dialog by tapping the **+** icon in the app bar or by tapping **"Add Habit"** from the [Homepage](./homepage.md) empty state.
+- The [Homepage](./homepage.md) remains visible behind the dialog, dimmed.
+- The dialog may be dismissed with an explicit close/cancel action. Android back should dismiss the dialog and return focus to the Homepage.
 
 ## Layout
 
@@ -30,8 +30,8 @@ The dialog presents a compact form for creating a habit.
 
 ## Actions
 
-- **Save**: Creates the habit, dismisses the dialog, and returns the user to the same [Habits page](./habits-page.md) context. The new habit appears in the correct alphabetical position.
-- **Cancel / Close**: Dismisses the dialog without creating anything and keeps the user on the [Habits page](./habits-page.md).
+- **Save**: Creates the habit, dismisses the dialog, and returns the user to the same [Homepage](./homepage.md) context. The new habit appears in the correct alphabetical position.
+- **Cancel / Close**: Dismisses the dialog without creating anything and keeps the user on the [Homepage](./homepage.md).
 
 ## Constraints
 

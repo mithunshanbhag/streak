@@ -6,8 +6,8 @@ The settings page lets users configure **daily reminders**. Users access it from
 
 ## Navigation
 
-- Accessible from the **⚙** icon in the Habits page app bar.
-- A **back arrow** in the app bar returns the user to the [Habits page](./habits-page.md).
+- Accessible from the **⚙** icon in the Homepage app bar.
+- A **back arrow** in the app bar returns the user to the [Homepage](./homepage.md).
 - Secondary-screen chrome stays focused: show **Back** + `Settings` only.
 
 ## Layout
@@ -35,7 +35,7 @@ The page contains a single reminders section presented as one clean card.
 - The notification content should include:
   - Title: *"Streak Reminder"*
   - Body: *"You have {N} habit(s) pending today."* (where N is the count of unchecked habits).
-- Tapping the notification opens the app to the [Habits page](./habits-page.md).
+- Tapping the notification opens the app to the [Homepage](./homepage.md).
 
 ## Defaults
 
