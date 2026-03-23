@@ -17,7 +17,7 @@
                 <MudStack AlignItems="AlignItems.Center"
                           Justify="Justify.Center"
                           Style="width: 40px; height: 40px;">
-                    @if (string.IsNullOrWhiteSpace(Habit.Emoji))
+                    @if (string.IsNullOrWhiteSpace(ViewModel.HabitEmoji))
                     {
                         <MudIcon Icon="@Icons.Material.Filled.Circle"
                                  Size="Size.Small"
@@ -25,7 +25,7 @@
                     }
                     else
                     {
-                        <MudText Typo="Typo.h6">@Habit.Emoji</MudText>
+                        <MudText Typo="Typo.h6">@ViewModel.HabitEmoji</MudText>
                     }
                 </MudStack>
             </MudPaper>
@@ -34,7 +34,7 @@
                       Style="min-width: 0; flex: 1;">
                 <MudText Typo="Typo.body1"
                          Style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                    @Habit.Name
+                    @ViewModel.HabitName
                 </MudText>
                 <MudText Typo="Typo.body2"
                          Style="@StreakTextStyle">
@@ -54,46 +54,37 @@
 @code {
 
     [Parameter]
-    public required Habit Habit { get; set; }
+    public required HabitCheckinCardViewModel ViewModel { get; set; }
 
-    [Parameter]
-    public required int CurrentStreak { get; set; }
-
-    [Parameter]
-    public required bool IsCheckedToday { get; set; }
-
-    private string CardStyle => IsCheckedToday
+    private string CardStyle => ViewModel.IsDoneForToday
         ? "width: 100%; border-left: 4px solid var(--mud-palette-success);"
         : "width: 100%; border-left: 4px solid transparent;";
 
-    private string ToggleIcon => IsCheckedToday
+    private string ToggleIcon => ViewModel.IsDoneForToday
         ? Icons.Material.Filled.CheckCircle
         : Icons.Material.Filled.RadioButtonUnchecked;
 
-    private Color ToggleIconColor => IsCheckedToday
+    private Color ToggleIconColor => ViewModel.IsDoneForToday
         ? Color.Success
         : Color.Inherit;
 
-    private string? ToggleIconStyle => IsCheckedToday
+    private string? ToggleIconStyle => ViewModel.IsDoneForToday
         ? null
         : "color: var(--mud-palette-text-secondary);";
 
-    private string ToggleAriaLabel => IsCheckedToday
-        ? $"Habit '{Habit.Name}' is checked in for today."
-        : $"Habit '{Habit.Name}' is not checked in for today.";
+    private string ToggleAriaLabel => ViewModel.IsDoneForToday
+        ? $"Habit '{ViewModel.HabitName}' is checked in for today."
+        : $"Habit '{ViewModel.HabitName}' is not checked in for today.";
 
-    private string StreakTextStyle => CurrentStreak switch
+    private string StreakTextStyle => ViewModel.CurrentStreak switch
     {
         >= 7 => "color: var(--mud-palette-warning);",
         >= 1 => "color: var(--mud-palette-info);",
         _ => "color: var(--mud-palette-text-secondary);"
     };
 
-    private string StreakText => CurrentStreak switch
-    {
-        >= 7 => $"🔥 {CurrentStreak} day streak",
-        >= 1 => $"😎 {CurrentStreak} day streak",
-        _ => "0 streak"
-    };
+    private string StreakText => ViewModel.StreakEmoji is null
+        ? "0 streak"
+        : $"{ViewModel.StreakEmoji} {ViewModel.CurrentStreak} day streak";
 
 }

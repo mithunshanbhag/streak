@@ -39,9 +39,7 @@ else
             <MudStack Spacing="3">
                 @foreach (var habitCheckin in _habitCheckins)
                 {
-                    <HabitCheckin Habit="@habitCheckin.Habit"
-                                  CurrentStreak="@habitCheckin.CurrentStreak"
-                                  IsCheckedToday="@habitCheckin.IsCheckedToday"/>
+                    <HabitCheckin ViewModel="@habitCheckin"/>
                 }
 
                 @if (_habitCheckins.Count < CoreConstants.MaxHabitCount)
@@ -60,7 +58,7 @@ else
 
 @code
 {
-    private IReadOnlyList<HabitCheckinDisplayItem> _habitCheckins = [];
+    private IReadOnlyList<HabitCheckinCardViewModel> _habitCheckins = [];
 
     private bool _loadingData;
 
@@ -80,14 +78,14 @@ else
             .FromDateTime(DateTime.UtcNow)
             .ToString(CoreConstants.CheckinDateFormat, global::System.Globalization.CultureInfo.InvariantCulture);
 
-        var habitCheckinTasks = habits.Select(habit => CreateHabitCheckinDisplayItemAsync(habit, todayDate));
+        var habitCheckinTasks = habits.Select(habit => CreateHabitCheckinCardViewModelAsync(habit, todayDate));
 
         _habitCheckins = await Task.WhenAll(habitCheckinTasks);
 
         _loadingData = false;
     }
 
-    private async Task<HabitCheckinDisplayItem> CreateHabitCheckinDisplayItemAsync(Habit habit, string todayDate)
+    private async Task<HabitCheckinCardViewModel> CreateHabitCheckinCardViewModelAsync(Habit habit, string todayDate)
     {
         var currentStreakTask = CheckinService.GetCurrentStreakAsync(habit.Name);
         var todayCheckinTask = CheckinService.GetByHabitNameAndDateAsync(habit.Name, todayDate);
@@ -96,10 +94,14 @@ else
 
         var todayCheckin = await todayCheckinTask;
 
-        return new HabitCheckinDisplayItem(
-            habit,
-            await currentStreakTask,
-            todayCheckin?.IsDone == 1);
+        return new HabitCheckinCardViewModel
+        {
+            HabitId = habit.Id,
+            HabitName = habit.Name,
+            HabitEmoji = habit.Emoji,
+            CurrentStreak = await currentStreakTask,
+            IsDoneForToday = todayCheckin?.IsDone == 1
+        };
     }
 
     private async Task OpenQuickAddDialogAsync()
@@ -117,11 +119,6 @@ else
 
         await LoadDataAsync();
     }
-
-    private sealed record HabitCheckinDisplayItem(
-        Habit Habit,
-        int CurrentStreak,
-        bool IsCheckedToday);
 
     #endregion
 

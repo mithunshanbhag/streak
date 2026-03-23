@@ -1,6 +1,6 @@
 ﻿namespace Streak.Core.Models.ViewModels;
 
-public class HabitCheckinCardViewModel
+public sealed class HabitCheckinCardViewModel
 {
     public required int HabitId { get; set; }
 
@@ -8,7 +8,14 @@ public class HabitCheckinCardViewModel
 
     public string? HabitEmoji { get; set; }
 
-    public string? StreakEmoji { get; set; }
+    public required int CurrentStreak { get; set; }
 
-    public bool IsDoneForToday { get; set; } = false;
+    public required bool IsDoneForToday { get; set; }
+
+    public string? StreakEmoji => CurrentStreak switch
+    {
+        >= 7 => "🔥",
+        >= 1 => "😎",
+        _ => null
+    };
 }
