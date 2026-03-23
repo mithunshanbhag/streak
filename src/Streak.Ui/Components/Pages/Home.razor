@@ -1,4 +1,4 @@
-﻿@page "/"
+@page "/"
 @using Streak.Ui.Components.Cards
 @inject IHabitService HabitService
 @inject IDialogService DialogService
@@ -16,44 +16,50 @@
 @* Page initialized *@
 else
 {
-    if (_habits.Count == 0)
+    if (_habitCheckins.Count == 0)
     {
-        <MudStack Style="min-height: 100vh"
-                  Justify="Justify.Center"
-                  AlignItems="AlignItems.Center">
-            <MudFab Color="Color.Tertiary"
-                    StartIcon="@Icons.Material.Filled.Add"
-                    Label="New Habit"
-                    Size="Size.Large"
-                    OnClick="@(() => DialogService.ShowAsync<NewHabitDialog>())"/>
-        </MudStack>
-    }
-    else
-    {
-        <MudStack Justify="Justify.Center"
-                  AlignItems="AlignItems.Center"
-                  Spacing="2">
-            @foreach (var habit in _habits)
-            {
-                <HabitCheckin Habit="habit"></HabitCheckin>
-            }
-
-            @if (_habits.Count < CoreConstants.MaxHabitCount)
-            {
-                <MudDivider Class="my-2"/>
+        <MudContainer MaxWidth="MaxWidth.Small"
+                      Class="pa-4">
+            <MudStack Style="min-height: 100vh"
+                      Justify="Justify.Center"
+                      AlignItems="AlignItems.Center">
                 <MudFab Color="Color.Tertiary"
                         StartIcon="@Icons.Material.Filled.Add"
                         Label="New Habit"
                         Size="Size.Large"
-                        OnClick="@(() => DialogService.ShowAsync<NewHabitDialog>())"/>
-            }
-        </MudStack>
+                        OnClick="OpenQuickAddDialogAsync"/>
+            </MudStack>
+        </MudContainer>
+    }
+    else
+    {
+        <MudContainer MaxWidth="MaxWidth.Small"
+                      Class="pa-4">
+            <MudStack Spacing="3">
+                @foreach (var habitCheckin in _habitCheckins)
+                {
+                    <HabitCheckin Habit="@habitCheckin.Habit"
+                                  CurrentStreak="@habitCheckin.CurrentStreak"
+                                  IsCheckedToday="@habitCheckin.IsCheckedToday"/>
+                }
+
+                @if (_habitCheckins.Count < CoreConstants.MaxHabitCount)
+                {
+                    <MudDivider Class="my-1"/>
+                    <MudFab Color="Color.Tertiary"
+                            StartIcon="@Icons.Material.Filled.Add"
+                            Label="New Habit"
+                            Size="Size.Large"
+                            OnClick="OpenQuickAddDialogAsync"/>
+                }
+            </MudStack>
+        </MudContainer>
     }
 }
 
 @code
 {
-    private IReadOnlyList<Habit> _habits = [];
+    private IReadOnlyList<HabitCheckinDisplayItem> _habitCheckins = [];
 
     private bool _loadingData;
 
@@ -68,7 +74,10 @@ else
     {
         _loadingData = true;
 
-        _habits = await HabitService.GetAllAsync();
+        var habits = await HabitService.GetAllAsync();
+        _habitCheckins = habits
+            .Select(habit => new HabitCheckinDisplayItem(habit, 0, false))
+            .ToArray();
 
         _loadingData = false;
     }
@@ -88,6 +97,11 @@ else
 
         await LoadDataAsync();
     }
+
+    private sealed record HabitCheckinDisplayItem(
+        Habit Habit,
+        int CurrentStreak,
+        bool IsCheckedToday);
 
     #endregion
 
