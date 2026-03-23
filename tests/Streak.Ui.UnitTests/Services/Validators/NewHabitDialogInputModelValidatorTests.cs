@@ -1,7 +1,3 @@
-using Streak.Core.Constants;
-using Streak.Core.Models.ViewModels.InputModels;
-using Streak.Core.Services.Validators;
-
 namespace Streak.Core.UnitTests.Services.Validators;
 
 public class NewHabitDialogInputModelValidatorTests

@@ -1,5 +1,3 @@
-using Streak.Core.Constants;
-
 namespace Streak.Core.Services.Implementations;
 
 public sealed class HabitService(IHabitRepository habitRepository) : StreakServiceBase, IHabitService

@@ -1,9 +1,16 @@
+global using System.Globalization;
 global using FluentAssertions;
 global using Microsoft.Data.Sqlite;
 global using Microsoft.EntityFrameworkCore;
 global using Moq;
+global using Streak.Core.Constants;
 global using Streak.Core.Models.Storage;
+global using Streak.Core.Models.ViewModels;
+global using Streak.Core.Models.ViewModels.InputModels;
 global using Streak.Core.Repositories.DbContexts;
 global using Streak.Core.Repositories.Implementations;
 global using Streak.Core.Repositories.Interfaces;
+global using Streak.Core.Services.Implementations;
+global using Streak.Core.Services.Interfaces;
+global using Streak.Core.Services.Validators;
 global using Xunit;

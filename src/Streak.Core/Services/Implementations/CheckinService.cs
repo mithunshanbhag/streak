@@ -1,5 +1,3 @@
-using System.Globalization;
-
 namespace Streak.Core.Services.Implementations;
 
 public class CheckinService(

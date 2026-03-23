@@ -1,6 +1,3 @@
-using System.Globalization;
-using System.Text;
-
 namespace Streak.Core.Services.Validators;
 
 internal static class EmojiValidationHelper

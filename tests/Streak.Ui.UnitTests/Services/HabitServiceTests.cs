@@ -1,7 +1,3 @@
-using Streak.Core.Constants;
-using Streak.Core.Services.Implementations;
-using Streak.Core.Services.Interfaces;
-
 namespace Streak.Core.UnitTests.Services;
 
 public class HabitServiceTests

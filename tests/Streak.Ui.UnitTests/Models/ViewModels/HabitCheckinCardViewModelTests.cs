@@ -1,5 +1,3 @@
-using Streak.Core.Models.ViewModels;
-
 namespace Streak.Core.UnitTests.Models.ViewModels;
 
 public class HabitCheckinCardViewModelTests

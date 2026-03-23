@@ -1,6 +1,3 @@
-using System.Globalization;
-using Streak.Core.Services.Implementations;
-
 namespace Streak.Core.UnitTests.Services;
 
 public class CheckinServiceTests

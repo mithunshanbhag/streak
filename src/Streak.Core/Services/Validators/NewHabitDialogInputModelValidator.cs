@@ -1,7 +1,3 @@
-using FluentValidation;
-using Streak.Core.Constants;
-using Streak.Core.Models.ViewModels.InputModels;
-
 namespace Streak.Core.Services.Validators;
 
 public sealed class NewHabitDialogInputModelValidator : AbstractValidator<NewHabitInputModel>
