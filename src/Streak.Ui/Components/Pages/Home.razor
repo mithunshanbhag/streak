@@ -1,14 +1,8 @@
 ﻿@page "/"
-@using Streak.Core.Models.ViewModels.ResultModels
 @inject IHabitService HabitService
 @inject IDialogService DialogService
 
 <PageTitle>Streak</PageTitle>
-
-<PageHeader BreadcrumbItems="@(
-                             [
-                                 new BreadcrumbItem("Home", "#", true)
-                             ])"/>
 
 @* Page has not been initialized yet. *@
 @if (_loadingData)
@@ -30,12 +24,14 @@ else
                     StartIcon="@Icons.Material.Filled.Add"
                     Label="New Habit"
                     Size="Size.Large"
-                    OnClick="OpenQuickAddDialogAsync"/>
+                    OnClick="@(() => DialogService.ShowAsync<NewHabitDialog>())"/>
         </MudStack>
     }
     else
     {
-        <MudStack Spacing="2">
+        <MudStack Justify="Justify.Center"
+                  AlignItems="AlignItems.Center"
+                  Spacing="2">
             @foreach (var habit in _habits)
             {
                 <MudText Typo="Typo.h6">
@@ -46,13 +42,11 @@ else
             @if (_habits.Count < CoreConstants.MaxHabitCount)
             {
                 <MudDivider Class="my-2"/>
-                <MudButton StartIcon="@Icons.Material.Filled.Add"
-                           Variant="Variant.Outlined"
-                           Color="Color.Primary"
-                           FullWidth="true"
-                           OnClick="OpenQuickAddDialogAsync">
-                    New Habit
-                </MudButton>
+                <MudFab Color="Color.Tertiary"
+                        StartIcon="@Icons.Material.Filled.Add"
+                        Label="New Habit"
+                        Size="Size.Large"
+                        OnClick="@(() => DialogService.ShowAsync<NewHabitDialog>())"/>
             }
         </MudStack>
     }
@@ -63,60 +57,39 @@ else
     private IReadOnlyList<Habit> _habits = [];
 
     private bool _loadingData;
-    private bool _isQuickAddOpen;
 
     protected override async Task OnInitializedAsync()
     {
         await LoadDataAsync();
     }
 
-    private async Task LoadDataAsync(bool showLoadingIndicator = true)
-    {
-        if (showLoadingIndicator)
-        {
-            _loadingData = true;
-        }
+    #region Private Helper Methods
 
-        try
-        {
-            _habits = await HabitService.GetAllAsync();
-        }
-        finally
-        {
-            if (showLoadingIndicator)
-            {
-                _loadingData = false;
-            }
-        }
+    private async Task LoadDataAsync()
+    {
+        _loadingData = true;
+
+        _habits = await HabitService.GetAllAsync();
+
+        _loadingData = false;
     }
 
     private async Task OpenQuickAddDialogAsync()
     {
-        if (_isQuickAddOpen || _habits.Count >= CoreConstants.MaxHabitCount)
+        var dialog = await DialogService.ShowAsync<NewHabitDialog>();
+
+        var dialogResult = await dialog.Result;
+
+        if (dialogResult is null ||
+            dialogResult.Canceled ||
+            dialogResult.Data is not CreateHabitDialogResultModel)
         {
             return;
         }
 
-        _isQuickAddOpen = true;
-
-        try
-        {
-            var dialog = await DialogService.ShowAsync<CreateHabitDialog>();
-
-            var dialogResult = await dialog.Result;
-
-            if (dialogResult is null ||
-                dialogResult.Canceled ||
-                dialogResult.Data is not CreateHabitDialogResultModel)
-            {
-                return;
-            }
-
-            await LoadDataAsync(false);
-        }
-        finally
-        {
-            _isQuickAddOpen = false;
-        }
+        await LoadDataAsync();
     }
+
+    #endregion
+
 }

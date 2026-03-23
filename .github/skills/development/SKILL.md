@@ -22,6 +22,7 @@ description: Guidelines and best practices for development with .NET.
 - Services are centralized under: `src\{AppName}\Services\` or `src\{AppName}.Core\Services\`.
 - Define three sub-folders:
   - `Interfaces` for service interfaces.
+    - All methods, properties and events on service interfaces should be documented with XML comments to describe their purpose, expected inputs and outputs, and any exceptions they might throw.
   - `Implementations` for concrete service implementations. 
     - To the greatest extent possible, try to use the service base classes defined in the Nucleus nuget package (see details below).
     - Else if necessary, create new service base classes.
@@ -44,6 +45,7 @@ description: Guidelines and best practices for development with .NET.
 - Define two sub-folders:
   - `Interfaces` for repository interfaces.
     - To the greatest extent possible, try to use the generic repository interfaces defined in the Nucleus nuget package. Else create a new generic repository interface, operating on a `TEntity` type (basically a storage/entity/persistence model).
+    - All methods, properties and events on repository interfaces should be documented with XML comments to describe their purpose, expected inputs and outputs, and any exceptions they might throw.
   - `Implementations` for concrete repository implementations.
     - To the greatest extent possible, try to use the repository base classes defined in the Nucleus nuget package (see details below).
     - When using EFCore, the DBContext class should be defined in the `Implementations` folder, and repository implementations can depend on it for data access.

@@ -4,16 +4,16 @@ using Streak.Core.Services.Validators;
 
 namespace Streak.Core.UnitTests.Services.Validators;
 
-public class CreateHabitDialogInputModelValidatorTests
+public class NewHabitDialogInputModelValidatorTests
 {
-    private readonly CreateHabitDialogInputModelValidator _sut = new();
+    private readonly NewHabitDialogInputModelValidator _sut = new();
 
     #region Positive tests
 
     [Fact]
     public void Validate_ShouldPass_WhenNameAndEmojiAreValid()
     {
-        var model = new CreateHabitDialogInputModel
+        var model = new NewHabitInputModel
         {
             Name = "  Read  ",
             Emoji = "  📚  ",
@@ -28,7 +28,7 @@ public class CreateHabitDialogInputModelValidatorTests
     [Fact]
     public void Validate_ShouldPass_WhenEmojiIsAFlag()
     {
-        var model = new CreateHabitDialogInputModel
+        var model = new NewHabitInputModel
         {
             Name = "Travel",
             Emoji = "🇺🇸"
@@ -42,7 +42,7 @@ public class CreateHabitDialogInputModelValidatorTests
     [Fact]
     public void ToResultModel_ShouldTrimNameAndNormalizeEmptyEmoji()
     {
-        var model = new CreateHabitDialogInputModel
+        var model = new NewHabitInputModel
         {
             Name = "  Read  ",
             Emoji = "   "
@@ -61,7 +61,7 @@ public class CreateHabitDialogInputModelValidatorTests
     [Fact]
     public void Validate_ShouldFail_WhenNameIsMissing()
     {
-        var model = new CreateHabitDialogInputModel
+        var model = new NewHabitInputModel
         {
             Name = "   ",
             Emoji = "📚"
@@ -71,14 +71,14 @@ public class CreateHabitDialogInputModelValidatorTests
 
         result.IsValid.Should().BeFalse();
         result.Errors.Should().ContainSingle(x =>
-            x.PropertyName == nameof(CreateHabitDialogInputModel.Name) &&
+            x.PropertyName == nameof(NewHabitInputModel.Name) &&
             x.ErrorMessage == "Habit name is required.");
     }
 
     [Fact]
     public void Validate_ShouldFail_WhenNameAlreadyExistsIgnoringCase()
     {
-        var model = new CreateHabitDialogInputModel
+        var model = new NewHabitInputModel
         {
             Name = "  READ  ",
             ExistingHabitNames = ["Run", "  read  "]
@@ -88,7 +88,7 @@ public class CreateHabitDialogInputModelValidatorTests
 
         result.IsValid.Should().BeFalse();
         result.Errors.Should().ContainSingle(x =>
-            x.PropertyName == nameof(CreateHabitDialogInputModel.Name) &&
+            x.PropertyName == nameof(NewHabitInputModel.Name) &&
             x.ErrorMessage == "A habit with this name already exists.");
     }
 
@@ -99,7 +99,7 @@ public class CreateHabitDialogInputModelValidatorTests
     [InlineData("ab")]
     public void Validate_ShouldFail_WhenEmojiIsNotASingleEmoji(string emoji)
     {
-        var model = new CreateHabitDialogInputModel
+        var model = new NewHabitInputModel
         {
             Name = "Read",
             Emoji = emoji
@@ -109,7 +109,7 @@ public class CreateHabitDialogInputModelValidatorTests
 
         result.IsValid.Should().BeFalse();
         result.Errors.Should().ContainSingle(x =>
-            x.PropertyName == nameof(CreateHabitDialogInputModel.Emoji) &&
+            x.PropertyName == nameof(NewHabitInputModel.Emoji) &&
             x.ErrorMessage == "Emoji must be a single emoji.");
     }
 
@@ -120,7 +120,7 @@ public class CreateHabitDialogInputModelValidatorTests
     [Fact]
     public void Validate_ShouldPass_WhenNameLengthMatchesMaximum()
     {
-        var model = new CreateHabitDialogInputModel
+        var model = new NewHabitInputModel
         {
             Name = new string('R', CoreConstants.HabitNameMaxLength),
             Emoji = "1️⃣"
@@ -134,7 +134,7 @@ public class CreateHabitDialogInputModelValidatorTests
     [Fact]
     public void Validate_ShouldFail_WhenNameLengthExceedsMaximum()
     {
-        var model = new CreateHabitDialogInputModel
+        var model = new NewHabitInputModel
         {
             Name = new string('R', CoreConstants.HabitNameMaxLength + 1)
         };
@@ -143,7 +143,7 @@ public class CreateHabitDialogInputModelValidatorTests
 
         result.IsValid.Should().BeFalse();
         result.Errors.Should().ContainSingle(x =>
-            x.PropertyName == nameof(CreateHabitDialogInputModel.Name) &&
+            x.PropertyName == nameof(NewHabitInputModel.Name) &&
             x.ErrorMessage == $"Habit name must be between {CoreConstants.HabitNameMinLength} and {CoreConstants.HabitNameMaxLength} characters.");
     }
 

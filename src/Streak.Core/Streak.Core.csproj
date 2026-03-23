@@ -7,11 +7,9 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Folder Include="Models\ViewModels\InputModels\" />
         <Folder Include="Models\ViewModels\ResultModels\" />
         <Folder Include="Services\Implementations\" />
         <Folder Include="Services\Interfaces\" />
-        <Folder Include="Services\Validators\" />
     </ItemGroup>
 
     <ItemGroup>

@@ -4,9 +4,9 @@ using Streak.Core.Models.ViewModels.InputModels;
 
 namespace Streak.Core.Services.Validators;
 
-public sealed class CreateHabitDialogInputModelValidator : AbstractValidator<CreateHabitDialogInputModel>
+public sealed class NewHabitDialogInputModelValidator : AbstractValidator<NewHabitInputModel>
 {
-    public CreateHabitDialogInputModelValidator()
+    public NewHabitDialogInputModelValidator()
     {
         RuleFor(x => x.Name)
             .Cascade(CascadeMode.Stop)
