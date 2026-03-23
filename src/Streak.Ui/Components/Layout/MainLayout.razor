@@ -69,7 +69,7 @@
 
 @code
 {
-    private bool _isHomePage = false;
+    private bool _isHomePage;
 
     protected override void OnInitialized()
     {
@@ -95,7 +95,7 @@
         var relativePath = NavigationManager.ToBaseRelativePath(uri);
 
         var separatorIndex = relativePath.IndexOfAny(['?', '#']);
-        
+
         var normalizedPath = separatorIndex >= 0
             ? relativePath[..separatorIndex]
             : relativePath;

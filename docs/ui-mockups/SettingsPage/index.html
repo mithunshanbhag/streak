@@ -1,67 +1,67 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Streak – Settings Page (Mockup)</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Streak – Settings Page (Mockup)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="phone-frame">
+<div class="phone-frame">
     <header class="app-bar">
-      <div class="app-bar-left">
-        <a class="icon-btn" href="../Homepage/index.html" title="Back to Homepage">
-          <span class="material-icons">arrow_back</span>
-        </a>
-        <span class="app-bar-title">Settings</span>
-      </div>
+        <div class="app-bar-left">
+            <a class="icon-btn" href="../Homepage/index.html" title="Back to Homepage">
+                <span class="material-icons">arrow_back</span>
+            </a>
+            <span class="app-bar-title">Settings</span>
+        </div>
     </header>
 
     <main class="page-content">
-      <section class="settings-card">
-        <div class="section-header-row">
-          <div>
-            <p class="section-eyebrow">Reminders</p>
-            <h1 class="section-header">Daily reminder</h1>
-            <p class="section-description">You will only be reminded if at least one habit is still pending.</p>
-          </div>
-          <span class="section-chip">9:00 PM</span>
-        </div>
-
-        <div class="setting-row">
-          <div>
-            <div class="setting-label">Enable reminders</div>
-            <div class="setting-caption">Uses a standard switch with immediate persistence.</div>
-          </div>
-          <label class="toggle-switch">
-            <input type="checkbox" id="reminderToggle" checked>
-            <span class="toggle-track"></span>
-            <span class="toggle-thumb"></span>
-          </label>
-        </div>
-
-        <div class="time-picker-row" id="timePickerRow">
-          <div class="setting-row setting-row--divider">
-            <div>
-              <div class="setting-label">Reminder time</div>
-              <div class="setting-caption">Pick once and save automatically.</div>
+        <section class="settings-card">
+            <div class="section-header-row">
+                <div>
+                    <p class="section-eyebrow">Reminders</p>
+                    <h1 class="section-header">Daily reminder</h1>
+                    <p class="section-description">You will only be reminded if at least one habit is still pending.</p>
+                </div>
+                <span class="section-chip">9:00 PM</span>
             </div>
-            <label class="time-display">
-              <input type="time" class="time-input-native" id="timeInput" value="21:00">
-              <span class="material-icons">schedule</span>
-              <span class="time-text" id="timeText">9:00 PM</span>
-            </label>
-          </div>
-        </div>
-      </section>
-    </main>
-  </div>
 
-  <script>
+            <div class="setting-row">
+                <div>
+                    <div class="setting-label">Enable reminders</div>
+                    <div class="setting-caption">Uses a standard switch with immediate persistence.</div>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="reminderToggle" checked>
+                    <span class="toggle-track"></span>
+                    <span class="toggle-thumb"></span>
+                </label>
+            </div>
+
+            <div class="time-picker-row" id="timePickerRow">
+                <div class="setting-row setting-row--divider">
+                    <div>
+                        <div class="setting-label">Reminder time</div>
+                        <div class="setting-caption">Pick once and save automatically.</div>
+                    </div>
+                    <label class="time-display">
+                        <input type="time" class="time-input-native" id="timeInput" value="21:00">
+                        <span class="material-icons">schedule</span>
+                        <span class="time-text" id="timeText">9:00 PM</span>
+                    </label>
+                </div>
+            </div>
+        </section>
+    </main>
+</div>
+
+<script>
     const toggle = document.getElementById('reminderToggle');
     const timePickerRow = document.getElementById('timePickerRow');
     const timeInput = document.getElementById('timeInput');

@@ -7,7 +7,7 @@
 
 <PageHeader BreadcrumbItems="@(
                              [
-                                 new BreadcrumbItem("Home", "#", disabled: true)
+                                 new BreadcrumbItem("Home", "#", true)
                              ])"/>
 
 @* Page has not been initialized yet. *@
@@ -112,7 +112,7 @@ else
                 return;
             }
 
-            await LoadDataAsync(showLoadingIndicator: false);
+            await LoadDataAsync(false);
         }
         finally
         {

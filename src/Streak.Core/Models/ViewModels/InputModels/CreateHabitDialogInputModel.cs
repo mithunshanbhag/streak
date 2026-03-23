@@ -1,5 +1,3 @@
-using Streak.Core.Models.ViewModels.ResultModels;
-
 namespace Streak.Core.Models.ViewModels.InputModels;
 
 public sealed class CreateHabitDialogInputModel

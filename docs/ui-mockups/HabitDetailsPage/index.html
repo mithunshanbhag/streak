@@ -1,122 +1,122 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=393, initial-scale=1.0">
-  <title>Streak — Habit Details Page Mockup</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=393, initial-scale=1.0">
+    <title>Streak — Habit Details Page Mockup</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="phone-frame">
+<div class="phone-frame">
     <header class="app-bar">
-      <div class="app-bar-left">
-        <a class="app-bar-btn" href="../Homepage/index.html" title="Back to Homepage">
-          <span class="material-icons">arrow_back</span>
-        </a>
-        <span class="app-bar-title" id="appBarTitle">🧘 Meditate</span>
-      </div>
+        <div class="app-bar-left">
+            <a class="app-bar-btn" href="../Homepage/index.html" title="Back to Homepage">
+                <span class="material-icons">arrow_back</span>
+            </a>
+            <span class="app-bar-title" id="appBarTitle">🧘 Meditate</span>
+        </div>
     </header>
 
     <main class="page-content">
-      <section class="card summary-card">
-        <div class="summary-view" id="summaryView">
-          <div class="summary-header-row">
-            <div class="habit-identity">
-              <span class="habit-identity__emoji" id="habitEmojiDisplay">🧘</span>
-              <div>
-                <h1 class="habit-identity__name" id="habitNameDisplay">Meditate</h1>
-                <p class="habit-identity__meta">Focused secondary chrome, quick edits, and a lighter details hierarchy.</p>
-              </div>
-            </div>
-            <div class="summary-actions">
-              <button class="icon-action" id="editButton" aria-label="Edit habit">
-                <span class="material-icons">edit</span>
-              </button>
-              <div class="menu-anchor">
-                <button class="icon-action" id="menuButton" aria-label="More actions">
-                  <span class="material-icons">more_vert</span>
-                </button>
-                <div class="overflow-menu hidden" id="overflowMenu">
-                  <button class="menu-item menu-item--danger" id="deleteButton">Delete habit</button>
+        <section class="card summary-card">
+            <div class="summary-view" id="summaryView">
+                <div class="summary-header-row">
+                    <div class="habit-identity">
+                        <span class="habit-identity__emoji" id="habitEmojiDisplay">🧘</span>
+                        <div>
+                            <h1 class="habit-identity__name" id="habitNameDisplay">Meditate</h1>
+                            <p class="habit-identity__meta">Focused secondary chrome, quick edits, and a lighter details hierarchy.</p>
+                        </div>
+                    </div>
+                    <div class="summary-actions">
+                        <button class="icon-action" id="editButton" aria-label="Edit habit">
+                            <span class="material-icons">edit</span>
+                        </button>
+                        <div class="menu-anchor">
+                            <button class="icon-action" id="menuButton" aria-label="More actions">
+                                <span class="material-icons">more_vert</span>
+                            </button>
+                            <div class="overflow-menu hidden" id="overflowMenu">
+                                <button class="menu-item menu-item--danger" id="deleteButton">Delete habit</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-              </div>
+
+                <div class="streak-block">
+                    <div class="streak-number-row">
+                        <span class="streak-number">12</span>
+                        <span class="streak-fire">🔥</span>
+                    </div>
+                    <span class="streak-label">days streak</span>
+                    <p class="streak-support">Checked in for the last 12 days in a row.</p>
+                </div>
             </div>
-          </div>
 
-          <div class="streak-block">
-            <div class="streak-number-row">
-              <span class="streak-number">12</span>
-              <span class="streak-fire">🔥</span>
+            <div class="summary-edit hidden" id="summaryEdit">
+                <div class="edit-fields">
+                    <label class="inline-field inline-field--emoji">
+                        <span>Emoji</span>
+                        <input id="habitEmojiInput" type="text" value="🧘" maxlength="2">
+                    </label>
+                    <label class="inline-field">
+                        <span>Name</span>
+                        <input id="habitNameInput" type="text" value="Meditate" maxlength="30">
+                    </label>
+                </div>
+                <div class="inline-actions">
+                    <button class="btn-text" id="cancelEditButton">Cancel</button>
+                    <button class="btn-contained" id="saveEditButton">Save</button>
+                </div>
             </div>
-            <span class="streak-label">days streak</span>
-            <p class="streak-support">Checked in for the last 12 days in a row.</p>
-          </div>
-        </div>
+        </section>
 
-        <div class="summary-edit hidden" id="summaryEdit">
-          <div class="edit-fields">
-            <label class="inline-field inline-field--emoji">
-              <span>Emoji</span>
-              <input id="habitEmojiInput" type="text" value="🧘" maxlength="2">
-            </label>
-            <label class="inline-field">
-              <span>Name</span>
-              <input id="habitNameInput" type="text" value="Meditate" maxlength="30">
-            </label>
-          </div>
-          <div class="inline-actions">
-            <button class="btn-text" id="cancelEditButton">Cancel</button>
-            <button class="btn-contained" id="saveEditButton">Save</button>
-          </div>
-        </div>
-      </section>
+        <section class="card history-card">
+            <button class="history-toggle" id="historyToggle" aria-expanded="true">
+                <span>
+                    <strong>Show history</strong>
+                    <small>Collapsed by default in product; expanded here to show the simplified structure.</small>
+                </span>
+                <span class="material-icons" id="historyIcon">expand_less</span>
+            </button>
 
-      <section class="card history-card">
-        <button class="history-toggle" id="historyToggle" aria-expanded="true">
-          <span>
-            <strong>Show history</strong>
-            <small>Collapsed by default in product; expanded here to show the simplified structure.</small>
-          </span>
-          <span class="material-icons" id="historyIcon">expand_less</span>
-        </button>
-
-        <div class="history-body" id="historyBody">
-          <div class="heatmap-wrapper">
-            <div class="heatmap-container">
-              <div class="heatmap-months" id="month-labels"></div>
-              <div class="heatmap-grid">
-                <div class="day-labels" id="day-labels"></div>
-                <div class="weeks-container" id="weeks-container"></div>
-              </div>
+            <div class="history-body" id="historyBody">
+                <div class="heatmap-wrapper">
+                    <div class="heatmap-container">
+                        <div class="heatmap-months" id="month-labels"></div>
+                        <div class="heatmap-grid">
+                            <div class="day-labels" id="day-labels"></div>
+                            <div class="weeks-container" id="weeks-container"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="heatmap-legend">
+                    <span class="legend-item"><span class="legend-swatch missed"></span> Missed</span>
+                    <span class="legend-item"><span class="legend-swatch done"></span> Done</span>
+                </div>
             </div>
-          </div>
-          <div class="heatmap-legend">
-            <span class="legend-item"><span class="legend-swatch missed"></span> Missed</span>
-            <span class="legend-item"><span class="legend-swatch done"></span> Done</span>
-          </div>
-        </div>
-      </section>
+        </section>
     </main>
-  </div>
+</div>
 
-  <div class="dialog-backdrop hidden" id="deleteDialog">
+<div class="dialog-backdrop hidden" id="deleteDialog">
     <div class="dialog">
-      <h2 class="dialog__title">Delete “<span id="deleteHabitName">Meditate</span>”?</h2>
-      <p class="dialog__body">All check-in history for this habit will be permanently lost.</p>
-      <div class="dialog__actions">
-        <button class="btn-text" id="cancelDeleteButton">Cancel</button>
-        <a class="btn-contained btn-contained--danger" href="../Homepage/index.html">Delete habit</a>
-      </div>
+        <h2 class="dialog__title">Delete “<span id="deleteHabitName">Meditate</span>”?</h2>
+        <p class="dialog__body">All check-in history for this habit will be permanently lost.</p>
+        <div class="dialog__actions">
+            <button class="btn-text" id="cancelDeleteButton">Cancel</button>
+            <a class="btn-contained btn-contained--danger" href="../Homepage/index.html">Delete habit</a>
+        </div>
     </div>
-  </div>
+</div>
 
-  <div class="tooltip" id="tooltip"></div>
+<div class="tooltip" id="tooltip"></div>
 
-  <script>
+<script>
     const summaryView = document.getElementById('summaryView');
     const summaryEdit = document.getElementById('summaryEdit');
     const editButton = document.getElementById('editButton');

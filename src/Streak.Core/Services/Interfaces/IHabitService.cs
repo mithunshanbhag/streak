@@ -15,6 +15,4 @@ public interface IHabitService
     Task<Habit> UpdateAsync(Habit habit, CancellationToken cancellationToken = default);
 
     Task DeleteAsync(int id, CancellationToken cancellationToken = default);
-
-    Task ReorderAsync(IReadOnlyList<int> habitIdsInDisplayOrder, CancellationToken cancellationToken = default);
 }

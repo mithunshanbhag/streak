@@ -29,8 +29,8 @@ public class CheckinRepositoryTests
         await using (connection)
         {
             context.Habits.AddRange(
-                new Habit { Id = 1, Name = "Run", DisplayOrder = 1 },
-                new Habit { Id = 2, Name = "Read", DisplayOrder = 2 });
+                new Habit { Id = 1, Name = "Run" },
+                new Habit { Id = 2, Name = "Read" });
 
             context.Checkins.AddRange(
                 new Checkin { HabitName = "Run", CheckinDate = "2025-01-01", IsDone = 1 },
@@ -55,7 +55,7 @@ public class CheckinRepositoryTests
         await using var context = TestDbContextFactory.CreateContext(out var connection);
         await using (connection)
         {
-            context.Habits.Add(new Habit { Id = 1, Name = "Run", DisplayOrder = 1 });
+            context.Habits.Add(new Habit { Id = 1, Name = "Run" });
             await context.SaveChangesAsync();
 
             context.ChangeTracker.Clear();
@@ -75,7 +75,7 @@ public class CheckinRepositoryTests
         await using var context = TestDbContextFactory.CreateContext(out var connection);
         await using (connection)
         {
-            context.Habits.Add(new Habit { Id = 1, Name = "Run", DisplayOrder = 1 });
+            context.Habits.Add(new Habit { Id = 1, Name = "Run" });
             context.Checkins.Add(new Checkin { HabitName = "Run", CheckinDate = "2025-01-01", IsDone = 0 });
             await context.SaveChangesAsync();
             context.ChangeTracker.Clear();
@@ -105,7 +105,7 @@ public class CheckinRepositoryTests
         await using var context = TestDbContextFactory.CreateContext(out var connection);
         await using (connection)
         {
-            context.Habits.Add(new Habit { Id = 1, Name = "Run", DisplayOrder = 1 });
+            context.Habits.Add(new Habit { Id = 1, Name = "Run" });
             context.Checkins.Add(new Checkin { HabitName = "Run", CheckinDate = "2025-01-01", IsDone = 1 });
             await context.SaveChangesAsync();
 
@@ -125,7 +125,7 @@ public class CheckinRepositoryTests
         await using var context = TestDbContextFactory.CreateContext(out var connection);
         await using (connection)
         {
-            context.Habits.Add(new Habit { Id = 1, Name = "Run", DisplayOrder = 1 });
+            context.Habits.Add(new Habit { Id = 1, Name = "Run" });
             context.Checkins.Add(new Checkin { HabitName = "Run", CheckinDate = "2025-01-01", IsDone = 1 });
             await context.SaveChangesAsync();
 
@@ -144,7 +144,7 @@ public class CheckinRepositoryTests
         await using var context = TestDbContextFactory.CreateContext(out var connection);
         await using (connection)
         {
-            context.Habits.Add(new Habit { Id = 1, Name = "Run", DisplayOrder = 1 });
+            context.Habits.Add(new Habit { Id = 1, Name = "Run" });
             context.Checkins.Add(new Checkin { HabitName = "Run", CheckinDate = "2025-01-01", IsDone = 1 });
             await context.SaveChangesAsync();
 
@@ -167,7 +167,7 @@ public class CheckinRepositoryTests
         await using var context = TestDbContextFactory.CreateContext(out var connection);
         await using (connection)
         {
-            context.Habits.Add(new Habit { Id = 1, Name = "Run", DisplayOrder = 1 });
+            context.Habits.Add(new Habit { Id = 1, Name = "Run" });
             await context.SaveChangesAsync();
 
             var sut = new CheckinRepository(context);
@@ -184,7 +184,7 @@ public class CheckinRepositoryTests
         await using var context = TestDbContextFactory.CreateContext(out var connection);
         await using (connection)
         {
-            context.Habits.Add(new Habit { Id = 1, Name = "Run", DisplayOrder = 1 });
+            context.Habits.Add(new Habit { Id = 1, Name = "Run" });
             context.Checkins.Add(new Checkin { HabitName = "Run", CheckinDate = "2025-01-01", IsDone = 1 });
             await context.SaveChangesAsync();
 
@@ -202,7 +202,7 @@ public class CheckinRepositoryTests
         await using var context = TestDbContextFactory.CreateContext(out var connection);
         await using (connection)
         {
-            context.Habits.Add(new Habit { Id = 1, Name = "Run", DisplayOrder = 1 });
+            context.Habits.Add(new Habit { Id = 1, Name = "Run" });
             await context.SaveChangesAsync();
 
             ISqlGenericRepository<Checkin, CheckinKey> sut = new CheckinRepository(context);

@@ -27,8 +27,8 @@ public sealed class CreateHabitDialogInputModelValidator : AbstractValidator<Cre
         var normalizedName = name?.Trim();
 
         return normalizedName is not null
-            && normalizedName.Length >= CoreConstants.HabitNameMinLength
-            && normalizedName.Length <= CoreConstants.HabitNameMaxLength;
+               && normalizedName.Length >= CoreConstants.HabitNameMinLength
+               && normalizedName.Length <= CoreConstants.HabitNameMaxLength;
     }
 
     private static bool HasDuplicateName(string? name, IReadOnlyCollection<string>? existingHabitNames)

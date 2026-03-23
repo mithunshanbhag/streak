@@ -13,8 +13,7 @@ public sealed class HabitService(IHabitRepository habitRepository) : StreakServi
         return
         [
             .. habits
-                .OrderBy(x => x.DisplayOrder)
-                .ThenBy(x => x.Name, StringComparer.OrdinalIgnoreCase)
+                .OrderBy(x => x.Name, StringComparer.OrdinalIgnoreCase)
         ];
     }
 
@@ -48,14 +47,12 @@ public sealed class HabitService(IHabitRepository habitRepository) : StreakServi
         EnsureHabitNameIsUnique(normalizedHabit.Name, existingHabits);
 
         var nextId = existingHabits.Count == 0 ? 1 : existingHabits.Max(x => x.Id) + 1;
-        var nextDisplayOrder = existingHabits.Count == 0 ? 1 : existingHabits.Max(x => x.DisplayOrder) + 1;
 
         var createdHabit = new Habit
         {
             Id = nextId,
             Name = normalizedHabit.Name,
-            Emoji = normalizedHabit.Emoji,
-            DisplayOrder = nextDisplayOrder
+            Emoji = normalizedHabit.Emoji
         };
 
         var isCreated = await _habitRepository.AddAsync(createdHabit, cancellationToken);
@@ -70,7 +67,7 @@ public sealed class HabitService(IHabitRepository habitRepository) : StreakServi
         ValidateHabitId(normalizedHabit.Id, nameof(Habit.Id));
 
         var existingHabit = await _habitRepository.GetAsync(normalizedHabit.Id, cancellationToken)
-            ?? throw new KeyNotFoundException($"Habit with id '{normalizedHabit.Id}' was not found.");
+                            ?? throw new KeyNotFoundException($"Habit with id '{normalizedHabit.Id}' was not found.");
 
         var existingHabits = await _habitRepository.GetAllAsync(cancellationToken);
 
@@ -96,51 +93,6 @@ public sealed class HabitService(IHabitRepository habitRepository) : StreakServi
         if (!isDeleted) throw new InvalidOperationException($"Failed to delete habit with id '{id}'.");
     }
 
-    public async Task ReorderAsync(IReadOnlyList<int> habitIdsInDisplayOrder, CancellationToken cancellationToken = default)
-    {
-        ArgumentNullException.ThrowIfNull(habitIdsInDisplayOrder);
-
-        if (habitIdsInDisplayOrder.Any(x => x <= 0)) throw new ArgumentOutOfRangeException(nameof(habitIdsInDisplayOrder), "Habit IDs must be greater than zero.");
-
-        var duplicateIds = habitIdsInDisplayOrder
-            .GroupBy(x => x)
-            .Where(x => x.Count() > 1)
-            .Select(x => x.Key)
-            .ToArray();
-
-        if (duplicateIds.Length > 0) throw new ArgumentException("Habit IDs must be unique.", nameof(habitIdsInDisplayOrder));
-
-        var existingHabits = await _habitRepository.GetAllAsync(cancellationToken);
-        if (existingHabits.Count == 0)
-        {
-            if (habitIdsInDisplayOrder.Count == 0) return;
-
-            throw new KeyNotFoundException("No habits exist to reorder.");
-        }
-
-        if (habitIdsInDisplayOrder.Count != existingHabits.Count)
-            throw new ArgumentException(
-                "The reorder input must include every existing habit exactly once.",
-                nameof(habitIdsInDisplayOrder));
-
-        var existingHabitsById = existingHabits.ToDictionary(x => x.Id);
-        var missingHabitIds = habitIdsInDisplayOrder
-            .Where(x => !existingHabitsById.ContainsKey(x))
-            .Distinct()
-            .ToArray();
-
-        if (missingHabitIds.Length > 0)
-            throw new KeyNotFoundException(
-                $"Cannot reorder habits because the following habit IDs do not exist: {string.Join(", ", missingHabitIds)}.");
-
-        var orderedHabits = habitIdsInDisplayOrder
-            .Select(x => existingHabitsById[x])
-            .ToArray();
-
-        var isReordered = await _habitRepository.ReorderAsync(orderedHabits, cancellationToken);
-        if (!isReordered) throw new InvalidOperationException("Failed to reorder habits.");
-    }
-
     private static Habit NormalizeHabitForWrite(Habit habit, string paramName)
     {
         var nonNullHabit = RequireNotNull(habit, paramName);
@@ -149,8 +101,7 @@ public sealed class HabitService(IHabitRepository habitRepository) : StreakServi
         {
             Id = nonNullHabit.Id,
             Name = NormalizeAndValidateHabitName(nonNullHabit.Name, nameof(Habit.Name)),
-            Emoji = NormalizeOptionalText(nonNullHabit.Emoji),
-            DisplayOrder = nonNullHabit.DisplayOrder
+            Emoji = NormalizeOptionalText(nonNullHabit.Emoji)
         };
     }
 

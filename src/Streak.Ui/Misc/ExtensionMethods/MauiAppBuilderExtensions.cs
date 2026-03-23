@@ -28,10 +28,8 @@ public static class MauiAppBuilderExtensions
 
             // validators
             foreach (var validatorAssembly in new[] { Assembly.GetExecutingAssembly(), typeof(MapperProfile).Assembly }.Distinct())
-            {
-                foreach (var validatorRegistration in AssemblyScanner.FindValidatorsInAssembly(validatorAssembly))
-                    builder.Services.AddSingleton(validatorRegistration.InterfaceType, validatorRegistration.ValidatorType);
-            }
+            foreach (var validatorRegistration in AssemblyScanner.FindValidatorsInAssembly(validatorAssembly))
+                builder.Services.AddSingleton(validatorRegistration.InterfaceType, validatorRegistration.ValidatorType);
 
             builder.Services.AddSingleton<SqliteDatabaseBootstrapper>();
             builder.Services.AddDbContext<StreakDbContext>(options => { options.UseSqlite(SqliteDatabaseBootstrapper.ConnectionString); });

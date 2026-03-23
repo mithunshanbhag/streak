@@ -26,8 +26,6 @@ public partial class StreakDbContext(DbContextOptions<StreakDbContext> options) 
 
         modelBuilder.Entity<Habit>(entity =>
         {
-            entity.HasIndex(e => e.DisplayOrder, "IX_Habits_DisplayOrder").IsUnique();
-
             entity.HasIndex(e => e.Name, "IX_Habits_Name").IsUnique();
 
             entity.Property(e => e.Id).ValueGeneratedNever();
