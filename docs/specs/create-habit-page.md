@@ -19,7 +19,6 @@ The dialog presents a compact form for creating a habit.
   - a close action
 - The required **Name** field appears first.
 - The **Emoji** field is optional and visually secondary.
-- A lightweight preview card may appear below the fields to show how the habit will appear in the list.
 - Prefer `MudDialog`, `MudTextField`, `MudButton`, and `MudPaper` before introducing any custom structure.
 - Prefer spacing and border-radius utility classes before adding custom dialog CSS. A small inline width or max-height adjustment is acceptable if needed.
 

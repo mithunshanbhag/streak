@@ -77,19 +77,6 @@ body {
     opacity: 0.28;
 }
 
-.summary-strip {
-    margin-bottom: 12px;
-    padding: 14px 16px;
-    border-radius: 16px;
-    background: linear-gradient(180deg, #F7F1FF 0%, #FFFFFF 100%);
-    border: 1px solid #EEE6FF;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-}
-
-.summary-strip__eyebrow,
 .dialog-eyebrow {
     font-size: 11px;
     font-weight: 500;
@@ -98,25 +85,11 @@ body {
     color: #757575;
 }
 
-.summary-strip__title,
 .dialog-title {
     margin-top: 2px;
     font-size: 20px;
     font-weight: 500;
     color: #1F1F1F;
-}
-
-.summary-pill {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 64px;
-    padding: 6px 12px;
-    border-radius: 999px;
-    background: #EDE7F6;
-    color: #6200EE;
-    font-size: 12px;
-    font-weight: 500;
 }
 
 .habit-card {
@@ -265,47 +238,6 @@ body {
     font: inherit;
 }
 
-.preview-card {
-    margin-top: 18px;
-    padding: 14px 16px;
-    border-radius: 16px;
-    background: #F6F1FF;
-    border: 1px solid #EEE6FF;
-}
-
-.preview-card__label {
-    display: block;
-    font-size: 12px;
-    font-weight: 500;
-    text-transform: uppercase;
-    color: #6200EE;
-}
-
-.preview-card__habit {
-    margin-top: 10px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.preview-card__emoji {
-    width: 36px;
-    height: 36px;
-    border-radius: 12px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    background: #FFFFFF;
-    font-size: 18px;
-}
-
-.preview-card__name {
-    font-size: 15px;
-    font-weight: 500;
-    color: #1F1F1F;
-}
-
-.preview-card__meta,
 .helper-text {
     font-size: 12px;
     line-height: 1.45;

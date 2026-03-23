@@ -85,7 +85,7 @@ Each major surface has its own detailed spec:
 - The Homepage app bar keeps **Settings** plus a right-most **GitHub** repo link instead of a global create icon.
 - The **Habit Details** page contains the heatmap, inline edit experience, and delete confirmation dialog for a single habit.
 - **Settings** is now focused only on notification reminder preferences.
-- The top of **Homepage** uses a compact progress summary instead of instructional header copy.
+- **Homepage** opens directly into the habit list without instructional header copy, progress summary text, or a habit-count chip.
 - There is no dedicated habit-list routed page separate from **Homepage**.
 - There is no dedicated routed **Create Habit** page in the simplified direction.
 - Separate **Edit Habit** and **Delete Habit** routed pages are no longer part of the app structure.

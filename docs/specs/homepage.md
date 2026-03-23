@@ -12,17 +12,11 @@ The page displays a **vertical list of habit cards**, one per habit.
 - There is no separate manage-habits screen; the homepage is the main habit list surface.
 - Prefer a `MudContainer` + `MudStack` composition with built-in spacing utilities rather than custom page layout CSS.
 
-### Progress Summary
+### List Start
 
-At the top of the page, above the habit cards, show a **compact progress summary strip**.
-
-- This summary is intentionally brief and should replace instructional header copy.
-- It should include:
-  - a small `Today` eyebrow
-  - a short status line such as `2 left today` or `All done today`
-  - a small pill showing the total number of habits (for example, `4 habits`)
+- The page should open directly into the habit list with no separate progress summary section above it.
+- Do **not** show a `Today` status line, a remaining-habits message such as `2 left today`, or a total-habit-count chip on this screen.
 - Do **not** show an A-Z sort chip or explanatory helper text on this screen.
-- A `MudPaper` or low-elevation `MudCard` plus `MudText` and a compact `MudChip`/`MudBadge` is the preferred implementation shape.
 
 ### Habit Card
 

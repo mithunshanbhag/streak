@@ -8,7 +8,7 @@ The current direction is already strong: one primary screen, binary check-ins, a
 
 After review, the following decisions were made:
 
-- **Accepted**: simplify the Homepage header into a compact progress summary
+- **Accepted**: remove the Homepage summary/header chrome so the list starts immediately
 - **Accepted**: replace the create habit full-page concept with a compact quick-add dialog
 - **Accepted**: favor MudBlazor controls and built-in CSS utilities over bespoke CSS where possible
 - **Rejected**: compact Habit Details sheet
@@ -35,7 +35,7 @@ These should remain intact.
 
 | Surface | Why it still feels heavy | Simplification opportunity |
 | --- | --- | --- |
-| Homepage header | Explanatory copy, sort labeling, and decorative chips add scan cost to the most frequently used screen. | Keep a compact status summary instead of instructional text. |
+| Homepage header | Explanatory copy, status summaries, and decorative chips add scan cost to the most frequently used screen. | Start directly with the habit list and remove extra header chrome. |
 | App-bar chrome on secondary screens | Global actions on every screen compete with the main task and add visual noise. | Show the full action set only on the root screen. |
 | Create Habit flow | A dedicated routed page is clear, but it costs a full navigation step for a tiny form. | Consider a compact dialog for quick add. |
 | Habit Details layout | Identity, streak, actions, and heatmap each claim their own visual block, so the page feels longer and busier. | Simplify within the existing page rather than replacing the page with a sheet. |
@@ -51,9 +51,7 @@ These are the safest changes and best fit the current product direction.
 
 Recommended:
 
-- Replace the larger header copy with a single compact summary like:
-  - `2 left today`
-  - `All done today`
+- Remove the separate Homepage summary/header section entirely.
 - Remove the visible `A-Z` chip.
 - Remove explanatory helper text like "Tap a habit for details. Toggle today on the right."
 
@@ -175,7 +173,7 @@ If the goal is to improve the app without overcomplicating the redesign, the str
 ### Recommended Package: "Single-Screen First"
 
 1. Keep **Homepage** as the only full-screen view most users need daily.
-2. Reduce the Homepage header to a compact progress summary.
+2. Start the Homepage directly with the habit list.
 3. Remove extra app-bar actions from secondary screens.
 4. Turn **Create Habit** into a quick-add dialog.
 5. Keep **Habit Details** as a dedicated page for now and simplify within that page if needed later.
