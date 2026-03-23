@@ -19,9 +19,4 @@ public abstract class StreakServiceBase
     {
         return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
     }
-
-    protected static string FormatUtcTimestamp(DateTimeOffset value)
-    {
-        return value.ToUniversalTime().ToString("O");
-    }
 }

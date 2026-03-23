@@ -73,7 +73,6 @@ public class CheckinService(
         }
 
         existingCheckin.IsDone = normalizedCheckin.IsDone;
-        existingCheckin.LastUpdatedUtc = normalizedCheckin.LastUpdatedUtc;
 
         var updated = await _checkinRepository.UpdateAsync(existingCheckin, cancellationToken);
         if (!updated)
@@ -179,8 +178,7 @@ public class CheckinService(
         {
             HabitName = normalizedHabitName,
             CheckinDate = normalizedCheckinDate,
-            IsDone = checkin.IsDone,
-            LastUpdatedUtc = FormatUtcTimestamp(DateTimeOffset.UtcNow)
+            IsDone = checkin.IsDone
         };
     }
 

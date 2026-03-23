@@ -85,8 +85,7 @@ public class CheckinRepositoryTests
             {
                 HabitName = "Run",
                 CheckinDate = "2025-01-01",
-                IsDone = 1,
-                LastUpdatedUtc = "2025-01-01T10:00:00Z"
+                IsDone = 1
             };
 
             var result = await sut.UpdateAsync(updatedCheckin);
@@ -95,7 +94,6 @@ public class CheckinRepositoryTests
             context.ChangeTracker.Clear();
             var savedCheckin = await context.Checkins.SingleAsync();
             savedCheckin.IsDone.Should().Be(1);
-            savedCheckin.LastUpdatedUtc.Should().Be("2025-01-01T10:00:00Z");
         }
     }
 

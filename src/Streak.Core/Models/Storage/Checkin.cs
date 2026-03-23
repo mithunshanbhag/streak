@@ -8,7 +8,5 @@ public class Checkin
 
     public required int IsDone { get; set; }
 
-    public string? LastUpdatedUtc { get; set; }
-
     public virtual Habit HabitNameNavigation { get; set; } = null!;
 }

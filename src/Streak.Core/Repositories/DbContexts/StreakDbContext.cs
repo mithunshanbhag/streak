@@ -16,8 +16,6 @@ public partial class StreakDbContext(DbContextOptions<StreakDbContext> options) 
         {
             entity.HasKey(e => new { e.HabitName, e.CheckinDate });
 
-            entity.Property(e => e.LastUpdatedUtc).HasDefaultValueSql("CURRENT_TIMESTAMP");
-
             entity.HasOne(d => d.HabitNameNavigation).WithMany(p => p.Checkins)
                 .HasPrincipalKey(p => p.Name)
                 .HasForeignKey(d => d.HabitName)

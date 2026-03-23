@@ -110,14 +110,6 @@ public class CheckinServiceTests
         addedCheckin!.HabitName.Should().Be("Run");
         addedCheckin.CheckinDate.Should().Be("2025-01-10");
         addedCheckin.IsDone.Should().Be(1);
-        addedCheckin.LastUpdatedUtc.Should().NotBeNullOrWhiteSpace();
-
-        DateTimeOffset.TryParse(
-            addedCheckin.LastUpdatedUtc,
-            CultureInfo.InvariantCulture,
-            DateTimeStyles.RoundtripKind,
-            out var addedTimestamp).Should().BeTrue();
-        addedTimestamp.Offset.Should().Be(TimeSpan.Zero);
 
         result.Should().BeSameAs(addedCheckin);
         checkinRepositoryMock.Verify(x => x.UpdateAsync(It.IsAny<Checkin>(), It.IsAny<CancellationToken>()), Times.Never);
@@ -131,8 +123,7 @@ public class CheckinServiceTests
         {
             HabitName = "Run",
             CheckinDate = "2025-01-10",
-            IsDone = 0,
-            LastUpdatedUtc = "2000-01-01T00:00:00.0000000Z"
+            IsDone = 0
         };
 
         var sut = CreateSut(out var checkinRepositoryMock, out var habitRepositoryMock);
@@ -157,7 +148,6 @@ public class CheckinServiceTests
 
         result.Should().BeSameAs(existingCheckin);
         existingCheckin.IsDone.Should().Be(1);
-        existingCheckin.LastUpdatedUtc.Should().NotBe("2000-01-01T00:00:00.0000000Z");
         checkinRepositoryMock.Verify(x => x.AddAsync(It.IsAny<Checkin>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
