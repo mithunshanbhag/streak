@@ -16,8 +16,7 @@ public class NewHabitDialogInputModelValidatorTests
         var model = new NewHabitInputModel
         {
             Name = "  Read  ",
-            Emoji = "  📚  ",
-            ExistingHabitNames = ["Run", "Meditate"]
+            Emoji = "  📚  "
         };
 
         var result = _sut.Validate(model);
@@ -73,23 +72,6 @@ public class NewHabitDialogInputModelValidatorTests
         result.Errors.Should().ContainSingle(x =>
             x.PropertyName == nameof(NewHabitInputModel.Name) &&
             x.ErrorMessage == "Habit name is required.");
-    }
-
-    [Fact]
-    public void Validate_ShouldFail_WhenNameAlreadyExistsIgnoringCase()
-    {
-        var model = new NewHabitInputModel
-        {
-            Name = "  READ  ",
-            ExistingHabitNames = ["Run", "  read  "]
-        };
-
-        var result = _sut.Validate(model);
-
-        result.IsValid.Should().BeFalse();
-        result.Errors.Should().ContainSingle(x =>
-            x.PropertyName == nameof(NewHabitInputModel.Name) &&
-            x.ErrorMessage == "A habit with this name already exists.");
     }
 
     [Theory]

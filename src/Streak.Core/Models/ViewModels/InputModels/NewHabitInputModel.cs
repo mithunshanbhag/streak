@@ -6,8 +6,7 @@ public sealed class NewHabitInputModel
 
     public string? Emoji { get; set; }
 
-    public IReadOnlyCollection<string> ExistingHabitNames { get; init; } = [];
-
+    // @TODO: Remove this later.
     public CreateHabitDialogResultModel ToResultModel()
     {
         return new CreateHabitDialogResultModel

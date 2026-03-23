@@ -13,9 +13,7 @@ public sealed class NewHabitDialogInputModelValidator : AbstractValidator<NewHab
             .Must(name => !string.IsNullOrWhiteSpace(name))
             .WithMessage("Habit name is required.")
             .Must(BeWithinConfiguredLength)
-            .WithMessage($"Habit name must be between {CoreConstants.HabitNameMinLength} and {CoreConstants.HabitNameMaxLength} characters.")
-            .Must((model, name) => !HasDuplicateName(name, model.ExistingHabitNames))
-            .WithMessage("A habit with this name already exists.");
+            .WithMessage($"Habit name must be between {CoreConstants.HabitNameMinLength} and {CoreConstants.HabitNameMaxLength} characters.");
 
         RuleFor(x => x.Emoji)
             .Must(EmojiValidationHelper.IsEmptyOrSingleEmoji)
@@ -29,15 +27,5 @@ public sealed class NewHabitDialogInputModelValidator : AbstractValidator<NewHab
         return normalizedName is not null
                && normalizedName.Length >= CoreConstants.HabitNameMinLength
                && normalizedName.Length <= CoreConstants.HabitNameMaxLength;
-    }
-
-    private static bool HasDuplicateName(string? name, IReadOnlyCollection<string>? existingHabitNames)
-    {
-        var normalizedName = name?.Trim();
-        if (string.IsNullOrEmpty(normalizedName) || existingHabitNames is null || existingHabitNames.Count == 0)
-            return false;
-
-        return existingHabitNames.Any(existingName =>
-            string.Equals(existingName?.Trim(), normalizedName, StringComparison.OrdinalIgnoreCase));
     }
 }
