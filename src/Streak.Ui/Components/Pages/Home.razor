@@ -1,6 +1,7 @@
 @page "/"
 @using Streak.Ui.Components.Cards
 @inject IHabitService HabitService
+@inject ICheckinService CheckinService
 @inject IDialogService DialogService
 
 <PageTitle>Streak</PageTitle>
@@ -75,11 +76,30 @@ else
         _loadingData = true;
 
         var habits = await HabitService.GetAllAsync();
-        _habitCheckins = habits
-            .Select(habit => new HabitCheckinDisplayItem(habit, 0, false))
-            .ToArray();
+        var todayDate = DateOnly
+            .FromDateTime(DateTime.UtcNow)
+            .ToString(CoreConstants.CheckinDateFormat, global::System.Globalization.CultureInfo.InvariantCulture);
+
+        var habitCheckinTasks = habits.Select(habit => CreateHabitCheckinDisplayItemAsync(habit, todayDate));
+
+        _habitCheckins = await Task.WhenAll(habitCheckinTasks);
 
         _loadingData = false;
+    }
+
+    private async Task<HabitCheckinDisplayItem> CreateHabitCheckinDisplayItemAsync(Habit habit, string todayDate)
+    {
+        var currentStreakTask = CheckinService.GetCurrentStreakAsync(habit.Name);
+        var todayCheckinTask = CheckinService.GetByHabitNameAndDateAsync(habit.Name, todayDate);
+
+        await Task.WhenAll(currentStreakTask, todayCheckinTask);
+
+        var todayCheckin = await todayCheckinTask;
+
+        return new HabitCheckinDisplayItem(
+            habit,
+            await currentStreakTask,
+            todayCheckin?.IsDone == 1);
     }
 
     private async Task OpenQuickAddDialogAsync()

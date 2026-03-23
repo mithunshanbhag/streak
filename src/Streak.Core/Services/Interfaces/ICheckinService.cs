@@ -55,8 +55,11 @@ public interface ICheckinService
     /// <param name="cancellationToken">A token that can be used to cancel the asynchronous operation.</param>
     /// <returns>The persisted check-in instance.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="checkin" /> is <see langword="null" />.</exception>
-    /// <exception cref="ArgumentException">Thrown when the check-in habit name or date is invalid.</exception>
-    /// <exception cref="ArgumentOutOfRangeException">Thrown when <see cref="Checkin.IsDone" /> is not 0 or 1.</exception>
+    /// <exception cref="ArgumentException">Thrown when the check-in date is invalid.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">
+    ///     Thrown when <see cref="Checkin.HabitId" /> is less than or equal to zero or when
+    ///     <see cref="Checkin.IsDone" /> is not 0 or 1.
+    /// </exception>
     /// <exception cref="InvalidOperationException">Thrown when the related habit does not exist or when persistence fails.</exception>
     /// <exception cref="OperationCanceledException">
     ///     Thrown when the operation is canceled via

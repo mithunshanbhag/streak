@@ -1,11 +1,11 @@
 namespace Streak.Core.Repositories.Interfaces;
 
 /// <summary>
-///     Represents the composite key used to identify a check-in by habit name and calendar date.
+///     Represents the composite key used to identify a check-in by habit identifier and calendar date.
 /// </summary>
-/// <param name="HabitName">The habit name portion of the key.</param>
+/// <param name="HabitId">The habit identifier portion of the key.</param>
 /// <param name="CheckinDate">The check-in date portion of the key.</param>
-public readonly record struct CheckinKey(string HabitName, string CheckinDate);
+public readonly record struct CheckinKey(int HabitId, string CheckinDate);
 
 /// <summary>
 ///     Provides persistence operations specific to <see cref="Checkin" /> entities.
