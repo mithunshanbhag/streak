@@ -113,9 +113,7 @@
 
     #region Text, Label Properties
 
-    private string StreakText => ViewModel.StreakEmoji is null
-        ? "0 streak"
-        : $"{ViewModel.StreakEmoji} {ViewModel.Streak} day streak";
+    private string StreakText => ViewModel.StreakText;
 
     private string CardAriaLabel => $"Open details for habit '{ViewModel.HabitName}'.";
 

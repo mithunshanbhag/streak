@@ -55,15 +55,17 @@ Each card shows:
 | State             | Toggle               | Streak Badge                                                | Card Appearance                           |
 | ----------------- | -------------------- | ----------------------------------------------------------- | ----------------------------------------- |
 | Not done (today)  | Empty circle / muted | Shows current streak (may be 0)                             | Default surface color                     |
-| Done (today)      | Green check circle   | Shows updated streak count with 😎 (1–6 days) or 🔥 (7+ days) | Subtle success tint or left border accent |
+| Done (today)      | Green check circle   | Shows updated streak count with 👏 (3–5 days), 😎 (6–9 days), 🔥 (10–29 days), or 🐐 (30+ days) | Subtle success tint or left border accent |
 | Streak broken (0) | Empty circle / muted | Shows "0" in muted text (no emoji)                          | Default surface color                     |
 
 ## Streak Counter Display
 
 - The streak count is displayed in the secondary line below the habit name:
-  - **🔥** (fire) when the streak is **7 or more** consecutive days.
-  - **😎** (cool) when the streak is **1–6** consecutive days.
-  - No emoji when the streak is **0** (just muted text such as `0 streak`).
+  - **🐐** (goat) when the streak is **30 or more** consecutive days.
+  - **🔥** (fire) when the streak is **10–29** consecutive days.
+  - **😎** (cool) when the streak is **6–9** consecutive days.
+  - **👏** (clapping) when the streak is **3–5** consecutive days.
+  - No emoji when the streak is **0–2** (for example, `0 streak` or `2 day streak`).
 - The streak count is part of the tappable habit card and opens the [Habit Details page](./habit-details-page.md) for that specific habit.
 
 ## Empty State
