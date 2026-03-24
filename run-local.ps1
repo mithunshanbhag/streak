@@ -1,38 +1,110 @@
 param(
-    [ValidateSet('build', 'test', 'run', 'all')]
-    [string]$Task = 'all',
+    [ValidateSet('app', 'tests', 'unit-tests', 'e2e-tests')]
+    [string]$Target = 'app',
     [ValidateSet('Debug', 'Release')]
-    [string]$Configuration = 'Debug'
+    [string]$Configuration = 'Debug',
+    [string]$WindowsTargetFramework = 'net10.0-windows10.0.19041.0',
+    [string]$WindowsRuntimeIdentifier = 'win-x64'
 )
 
+Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
 $solutionFilePath = Join-Path -Path $PSScriptRoot -ChildPath 'Streak.slnx'
-$testProjectFilePath = Join-Path -Path $PSScriptRoot -ChildPath 'tests\Streak.Ui.UnitTests\Streak.Ui.UnitTests.csproj'
 $appProjectFilePath = Join-Path -Path $PSScriptRoot -ChildPath 'src\Streak.Ui\Streak.Ui.csproj'
-$sqliteScriptFilePath = Join-Path -Path $PSScriptRoot -ChildPath 'src\Streak.Ui\Repositories\Implementations\Sqlite\CreateLocalSqliteDb.ps1'
+$testsRootPath = Join-Path -Path $PSScriptRoot -ChildPath 'tests'
 
-dotnet restore $solutionFilePath
+$allTestProjects = @(
+    Get-ChildItem -Path $testsRootPath -Filter *.csproj -Recurse |
+        Sort-Object -Property FullName
+)
 
-if ($Task -in @('build', 'all'))
+$unitTestProjects = @(
+    $allTestProjects |
+        Where-Object { $_.BaseName -match 'UnitTests' }
+)
+
+$e2eTestProjects = @(
+    $allTestProjects |
+        Where-Object { $_.BaseName -match 'E2E|E2e' }
+)
+
+function Invoke-DotnetCommand
 {
-    dotnet build $testProjectFilePath -c $Configuration
-    & $sqliteScriptFilePath
+    param(
+        [Parameter(Mandatory = $true)]
+        [string[]]$Arguments
+    )
+
+    Write-Host ("`n> dotnet {0}" -f ($Arguments -join ' '))
+    & dotnet @Arguments
+
+    if ($LASTEXITCODE -ne 0)
+    {
+        throw "The dotnet command failed with exit code $LASTEXITCODE."
+    }
 }
 
-if ($Task -in @('test', 'all'))
+function Invoke-TestProjects
 {
-    if ($Task -eq 'all')
+    param(
+        [System.IO.FileInfo[]]$Projects = @(),
+        [Parameter(Mandatory = $true)]
+        [string]$Label
+    )
+
+    if ($Projects.Count -eq 0)
     {
-        dotnet test $testProjectFilePath -c $Configuration --no-build
+        Write-Host "No $Label projects were found."
+        return
     }
-    else
+
+    foreach ($project in $Projects)
     {
-        dotnet test $testProjectFilePath -c $Configuration
+        Invoke-DotnetCommand -Arguments @(
+            'test'
+            $project.FullName
+            '-c'
+            $Configuration
+            '--no-restore'
+            '--nologo'
+        )
     }
 }
 
-if ($Task -eq 'run')
+Invoke-DotnetCommand -Arguments @(
+    'restore'
+    $solutionFilePath
+    '--nologo'
+)
+
+switch ($Target)
 {
-    dotnet build -t:Run $appProjectFilePath -f net10.0-android -c $Configuration
+    'app'
+    {
+        Invoke-DotnetCommand -Arguments @(
+            'build'
+            $appProjectFilePath
+            '-t:Run'
+            '-f'
+            $WindowsTargetFramework
+            '-c'
+            $Configuration
+            "-p:RuntimeIdentifier=$WindowsRuntimeIdentifier"
+            '--no-restore'
+            '--nologo'
+        )
+    }
+    'tests'
+    {
+        Invoke-TestProjects -Projects $allTestProjects -Label 'test'
+    }
+    'unit-tests'
+    {
+        Invoke-TestProjects -Projects $unitTestProjects -Label 'unit test'
+    }
+    'e2e-tests'
+    {
+        Invoke-TestProjects -Projects $e2eTestProjects -Label 'E2E test'
+    }
 }
