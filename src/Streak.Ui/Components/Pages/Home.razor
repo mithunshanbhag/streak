@@ -1,5 +1,4 @@
 @page "/"
-@using Streak.Ui.Components.Cards
 @inject IHabitService HabitService
 @inject ICheckinService CheckinService
 @inject IDialogService DialogService
@@ -10,10 +9,14 @@
 @* Page has not been initialized yet. *@
 @if (_loadingData)
 {
-    <MudAlert ContentAlignment="HorizontalAlignment.Center"
-              Severity="Severity.Info">
-        Loading Data...
-    </MudAlert>
+    <MudStack Style="min-height: 80vh"
+              Justify="Justify.Center"
+              AlignItems="AlignItems.Center">
+        <MudAlert ContentAlignment="HorizontalAlignment.Center"
+                  Severity="Severity.Info">
+            Loading Data...
+        </MudAlert>
+    </MudStack>
 }
 @* Page initialized *@
 else
@@ -35,7 +38,7 @@ else
     }
     else
     {
-        <MudContainer MaxWidth="MaxWidth.Small"
+        <MudContainer MaxWidth="MaxWidth.ExtraSmall"
                       Class="pa-4">
             <MudStack Spacing="3">
                 @foreach (var habitCheckin in _habitCheckins)
@@ -60,7 +63,7 @@ else
 
 @code
 {
-    private IReadOnlyList<HabitCheckinCardViewModel> _habitCheckins = [];
+    private IReadOnlyList<HabitCheckinViewModel> _habitCheckins = [];
 
     private bool _loadingData;
 
@@ -87,7 +90,7 @@ else
         _loadingData = false;
     }
 
-    private async Task<HabitCheckinCardViewModel> CreateHabitCheckinCardViewModelAsync(Habit habit, string todayDate)
+    private async Task<HabitCheckinViewModel> CreateHabitCheckinCardViewModelAsync(Habit habit, string todayDate)
     {
         var currentStreakTask = CheckinService.GetCurrentStreakAsync(habit.Name);
         var todayCheckinTask = CheckinService.GetByHabitNameAndDateAsync(habit.Name, todayDate);
@@ -96,30 +99,19 @@ else
 
         var todayCheckin = await todayCheckinTask;
 
-        return new HabitCheckinCardViewModel
+        return new HabitCheckinViewModel
         {
             HabitId = habit.Id,
             HabitName = habit.Name,
             HabitEmoji = habit.Emoji,
-            CurrentStreak = await currentStreakTask,
+            Streak = await currentStreakTask,
             IsDoneForToday = todayCheckin is not null
         };
     }
 
     private async Task OpenQuickAddDialogAsync()
     {
-        var dialog = await DialogService.ShowAsync<NewHabitDialog>();
-
-        var dialogResult = await dialog.Result;
-
-        if (dialogResult is null ||
-            dialogResult.Canceled ||
-            dialogResult.Data is not CreateHabitDialogResultModel)
-        {
-            return;
-        }
-
-        await LoadDataAsync();
+        await DialogService.ShowAsync<NewHabitDialog>();
     }
 
     private Task OpenHabitDetailsAsync(int habitId)

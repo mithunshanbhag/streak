@@ -1,6 +1,6 @@
 namespace Streak.Core.UnitTests.Models.ViewModels;
 
-public class HabitCheckinCardViewModelTests
+public class HabitCheckinViewModelTests
 {
     [Theory]
     [InlineData(0, null)]
@@ -10,12 +10,12 @@ public class HabitCheckinCardViewModelTests
     [InlineData(12, "🔥")]
     public void StreakEmoji_ShouldMatchConfiguredThresholds(int currentStreak, string? expectedEmoji)
     {
-        var viewModel = new HabitCheckinCardViewModel
+        var viewModel = new HabitCheckinViewModel
         {
             HabitId = 1,
             HabitName = "Read",
             HabitEmoji = "📚",
-            CurrentStreak = currentStreak,
+            Streak = currentStreak,
             IsDoneForToday = currentStreak > 0
         };
 

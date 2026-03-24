@@ -11,17 +11,22 @@
               Justify="Justify.SpaceBetween"
               Wrap="Wrap.NoWrap"
               Spacing="2">
+        @* 
+            Everything except the checkbox is wrapped in a button-like stack to allow 
+            clicking anywhere on the card to open details, while still allowing the checkbox 
+            to be interactive without triggering card click. 
+        *@
         <MudStack Row="true"
                   AlignItems="AlignItems.Center"
                   Wrap="Wrap.NoWrap"
-                  Spacing="2"
-                  Style="min-width: 0; flex: 1;">
+                  Spacing="5"
+                  Style="@ContentStyle">
             <MudPaper Elevation="0"
                       Class="rounded-lg"
-                      Style="width: 40px; height: 40px; background-color: var(--mud-palette-primary-hover);">
+                      Style="@EmojiContainerStyle">
                 <MudStack AlignItems="AlignItems.Center"
                           Justify="Justify.Center"
-                          Style="width: 40px; height: 40px;">
+                          Style="@EmojiContentStyle">
                     @if (string.IsNullOrWhiteSpace(ViewModel.HabitEmoji))
                     {
                         <MudIcon Icon="@Icons.Material.Filled.Circle"
@@ -30,15 +35,17 @@
                     }
                     else
                     {
-                        <MudText Typo="Typo.h6">@ViewModel.HabitEmoji</MudText>
+                        <MudText Typo="Typo.h6">
+                            @ViewModel.HabitEmoji
+                        </MudText>
                     }
                 </MudStack>
             </MudPaper>
 
             <MudStack Spacing="0"
-                      Style="min-width: 0; flex: 1;">
+                      Style="@TextContentStyle">
                 <MudText Typo="Typo.body1"
-                         Style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                         Style="@HabitNameStyle">
                     @ViewModel.HabitName
                 </MudText>
                 <MudText Typo="Typo.body2"
@@ -48,56 +55,81 @@
             </MudStack>
         </MudStack>
 
-        <MudIconButton Icon="@ToggleIcon"
-                       Color="@ToggleIconColor"
-                       Size="Size.Large"
-                       Style="@ToggleIconStyle"
-                       aria-label="@ToggleAriaLabel"
-                       @onclick:stopPropagation="true"
-                       @onkeydown:stopPropagation="true"/>
+        @* Checkbox for marking habit as done for today. *@
+        @* Note: StopClickPropagation is set to true to prevent triggering card click when toggling checkbox. *@
+        <MudCheckBox @bind-Value="ViewModel.IsDoneForToday"
+                     Color="Color.Success"
+                     CheckedIcon="@Icons.Material.Filled.CheckCircle"
+                     UncheckedIcon="@Icons.Material.Filled.RadioButtonUnchecked"
+                     UncheckedColor="Color.Inherit"
+                     AriaLabel="@CheckBoxAriaLabel"
+                     Size="Size.Large"
+                     StopClickPropagation="true"/>
     </MudStack>
 </MudPaper>
 
 @code {
 
-    [Parameter]
-    public required HabitCheckinCardViewModel ViewModel { get; set; }
+    #region Parameters
 
-    [Parameter]
-    public EventCallback<int> OnCardClick { get; set; }
+    [Parameter] public required HabitCheckinViewModel ViewModel { get; set; }
+
+    [Parameter] public EventCallback<int> OnCardClick { get; set; }
+
+    #endregion
+
+    #region Properties
+
+    // #TODO
+
+    #endregion
+
+    #region CSS Style Properties
 
     private string CardStyle => ViewModel.IsDoneForToday
         ? "width: 100%; border-left: 4px solid var(--mud-palette-success); cursor: pointer;"
         : "width: 100%; border-left: 4px solid transparent; cursor: pointer;";
 
-    private string CardAriaLabel => $"Open details for habit '{ViewModel.HabitName}'.";
+    private const string ContentStyle = "min-width: 0; flex: 1;";
 
-    private string ToggleIcon => ViewModel.IsDoneForToday
-        ? Icons.Material.Filled.CheckCircle
-        : Icons.Material.Filled.RadioButtonUnchecked;
+    private const string EmojiContainerStyle = "width: 40px; height: 40px; background-color: var(--mud-palette-primary-hover);";
 
-    private Color ToggleIconColor => ViewModel.IsDoneForToday
-        ? Color.Success
-        : Color.Inherit;
+    private const string EmojiContentStyle = "width: 40px; height: 40px;";
 
-    private string? ToggleIconStyle => ViewModel.IsDoneForToday
-        ? null
-        : "color: var(--mud-palette-text-secondary);";
+    private const string TextContentStyle = "min-width: 0; flex: 1;";
 
-    private string ToggleAriaLabel => ViewModel.IsDoneForToday
-        ? $"Habit '{ViewModel.HabitName}' is checked in for today."
-        : $"Habit '{ViewModel.HabitName}' is not checked in for today.";
+    private const string HabitNameStyle = "overflow: hidden; text-overflow: ellipsis; white-space: nowrap;";
 
-    private string StreakTextStyle => ViewModel.CurrentStreak switch
+    private string StreakTextStyle => ViewModel.Streak switch
     {
         >= 7 => "color: var(--mud-palette-warning);",
         >= 1 => "color: var(--mud-palette-info);",
         _ => "color: var(--mud-palette-text-secondary);"
     };
 
+    #endregion
+
+    #region Text, Label Properties
+
     private string StreakText => ViewModel.StreakEmoji is null
         ? "0 streak"
-        : $"{ViewModel.StreakEmoji} {ViewModel.CurrentStreak} day streak";
+        : $"{ViewModel.StreakEmoji} {ViewModel.Streak} day streak";
+
+    private string CardAriaLabel => $"Open details for habit '{ViewModel.HabitName}'.";
+
+    private string CheckBoxAriaLabel => ViewModel.IsDoneForToday
+        ? $"Habit '{ViewModel.HabitName}' is checked in for today."
+        : $"Habit '{ViewModel.HabitName}' is not checked in for today.";
+
+    #endregion
+
+    #region Lifecycle Methods
+
+    // @TODO
+
+    #endregion
+
+    #region Event Handlers
 
     private Task HandleCardClickAsync()
     {
@@ -111,5 +143,7 @@
 
         return Task.CompletedTask;
     }
+
+    #endregion
 
 }

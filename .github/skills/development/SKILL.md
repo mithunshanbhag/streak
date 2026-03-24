@@ -9,6 +9,14 @@ description: Guidelines and best practices for development with .NET.
 - The various components are organized by feature area, with a general pattern of having sub-folders for `Pages`, `Shared`, and `Layout` components:
 - The various UI components will inject services to perform any necessary business logic or data fetching, but should not contain any complex logic themselves. They should be thin and focused on rendering the UI and handling user interactions.
 - To the greatest extent possible, try to use built-in the defined themes, styles, typography, color palettes, and components from MudBlazor when implementing the UI in Blazor. This will help maintain a consistent look and feel across the app and also speed up development. Try to avoid custom CSS and styles unless absolutely necessary.
+- The @code block in the Razor components should include the following \#region, \#endregion blocks:
+  - `#region Parameters` for any [Parameter] properties.
+  - `#region Private Fields, Properties` for any private fields & properties.
+  - `#region Event Handlers` for any event handler methods (for example, button click handlers).
+  - `#region Lifecycle Methods` for any Blazor lifecycle methods (for example, OnInitializedAsync).
+  - `#region Private Helper Methods` for any other private helper methods.
+  - `#region CSS Style Properties` for any CSS 'style' attribute properties (for example, `private string _buttonColor = "red";`).
+  - `#region Text, Label Properties ` for any text/label properties (for example, `private string _buttonText = "Click Me";`). This include ARIA labels and accessibility text.
 
 ## Controllers
 
