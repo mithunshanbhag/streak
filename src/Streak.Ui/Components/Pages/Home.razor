@@ -3,6 +3,7 @@
 @inject IHabitService HabitService
 @inject ICheckinService CheckinService
 @inject IDialogService DialogService
+@inject NavigationManager NavigationManager
 
 <PageTitle>Streak</PageTitle>
 
@@ -39,7 +40,8 @@ else
             <MudStack Spacing="3">
                 @foreach (var habitCheckin in _habitCheckins)
                 {
-                    <HabitCheckin ViewModel="@habitCheckin"/>
+                    <HabitCheckin ViewModel="@habitCheckin"
+                                  OnCardClick="OpenHabitDetailsAsync"/>
                 }
 
                 @if (_habitCheckins.Count < CoreConstants.MaxHabitCount)
@@ -118,6 +120,12 @@ else
         }
 
         await LoadDataAsync();
+    }
+
+    private Task OpenHabitDetailsAsync(int habitId)
+    {
+        NavigationManager.NavigateTo(RouteConstants.GetHabitDetails(habitId));
+        return Task.CompletedTask;
     }
 
     #endregion

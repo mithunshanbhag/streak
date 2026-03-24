@@ -1,0 +1,18 @@
+﻿@page "/habits/{HabitId:int}"
+
+<PageTitle>Habit Details</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Small"
+              Class="pa-4">
+    <MudStack Spacing="2">
+        <MudText Typo="Typo.h4">Habit details</MudText>
+        <MudText Typo="Typo.body1">
+            Placeholder page for habit ID <strong>@HabitId</strong>.
+        </MudText>
+    </MudStack>
+</MudContainer>
+
+@code {
+    [Parameter]
+    public int HabitId { get; set; }
+}

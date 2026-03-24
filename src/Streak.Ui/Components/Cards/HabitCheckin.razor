@@ -1,6 +1,11 @@
 <MudPaper Elevation="1"
           Class="px-4 py-3 rounded-lg"
-          Style="@CardStyle">
+          Style="@CardStyle"
+          role="button"
+          tabindex="0"
+          aria-label="@CardAriaLabel"
+          @onclick="HandleCardClickAsync"
+          @onkeydown="HandleCardKeyDownAsync">
     <MudStack Row="true"
               AlignItems="AlignItems.Center"
               Justify="Justify.SpaceBetween"
@@ -47,7 +52,9 @@
                        Color="@ToggleIconColor"
                        Size="Size.Large"
                        Style="@ToggleIconStyle"
-                       aria-label="@ToggleAriaLabel"/>
+                       aria-label="@ToggleAriaLabel"
+                       @onclick:stopPropagation="true"
+                       @onkeydown:stopPropagation="true"/>
     </MudStack>
 </MudPaper>
 
@@ -56,9 +63,14 @@
     [Parameter]
     public required HabitCheckinCardViewModel ViewModel { get; set; }
 
+    [Parameter]
+    public EventCallback<int> OnCardClick { get; set; }
+
     private string CardStyle => ViewModel.IsDoneForToday
-        ? "width: 100%; border-left: 4px solid var(--mud-palette-success);"
-        : "width: 100%; border-left: 4px solid transparent;";
+        ? "width: 100%; border-left: 4px solid var(--mud-palette-success); cursor: pointer;"
+        : "width: 100%; border-left: 4px solid transparent; cursor: pointer;";
+
+    private string CardAriaLabel => $"Open details for habit '{ViewModel.HabitName}'.";
 
     private string ToggleIcon => ViewModel.IsDoneForToday
         ? Icons.Material.Filled.CheckCircle
@@ -86,5 +98,18 @@
     private string StreakText => ViewModel.StreakEmoji is null
         ? "0 streak"
         : $"{ViewModel.StreakEmoji} {ViewModel.CurrentStreak} day streak";
+
+    private Task HandleCardClickAsync()
+    {
+        return OnCardClick.InvokeAsync(ViewModel.HabitId);
+    }
+
+    private Task HandleCardKeyDownAsync(KeyboardEventArgs args)
+    {
+        if (args.Key is "Enter" or " ")
+            return HandleCardClickAsync();
+
+        return Task.CompletedTask;
+    }
 
 }
