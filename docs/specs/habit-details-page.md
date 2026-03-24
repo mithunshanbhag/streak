@@ -64,7 +64,7 @@ Displayed prominently inside the summary card.
 | ------------- | ---------------------------------------------------------------------------------------------------------------------------- |
 | Streak number | Large bold text (32sp) showing the current streak count (e.g., "12").                                                        |
 | Label         | Caption text below the number: *"day streak"* (or *"days streak"* if > 1). Shows *"No active streak"* when the count is 0. |
-| Streak emoji  | 🔥 displayed next to the number when streak ≥ 7 days. 😎 displayed when streak is 1–6 days. No emoji when streak is 0.         |
+| Streak emoji  | 🐐 displayed when streak ≥ 30 days. 🔥 displayed when streak is 10–29 days. 😎 displayed when streak is 6–9 days. 👏 displayed when streak is 3–5 days. 👍 displayed when streak is 1–2 days. No emoji when streak is 0. |
 
 ### 2. History Panel
 

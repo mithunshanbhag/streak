@@ -14,8 +14,17 @@ public sealed class HabitCheckinViewModel
 
     public string? StreakEmoji => Streak switch
     {
-        >= 7 => "🔥",
-        >= 1 => "😎",
+        >= 30 => "🐐",
+        >= 10 => "🔥",
+        >= 6 => "😎",
+        >= 3 => "👏",
+        >= 1 => "👍",
         _ => null
+    };
+
+    public string StreakText => Streak switch
+    {
+        <= 0 => "0 streak",
+        _ => $"{StreakEmoji} {Streak} day streak"
     };
 }
