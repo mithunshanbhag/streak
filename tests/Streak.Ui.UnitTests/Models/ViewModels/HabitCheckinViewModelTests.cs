@@ -4,8 +4,8 @@ public class HabitCheckinViewModelTests
 {
     [Theory]
     [InlineData(0, null)]
-    [InlineData(1, null)]
-    [InlineData(2, null)]
+    [InlineData(1, "👍")]
+    [InlineData(2, "👍")]
     [InlineData(3, "👏")]
     [InlineData(5, "👏")]
     [InlineData(6, "😎")]
@@ -30,8 +30,8 @@ public class HabitCheckinViewModelTests
 
     [Theory]
     [InlineData(0, "0 streak")]
-    [InlineData(1, "1 day streak")]
-    [InlineData(2, "2 day streak")]
+    [InlineData(1, "👍 1 day streak")]
+    [InlineData(2, "👍 2 day streak")]
     [InlineData(3, "👏 3 day streak")]
     [InlineData(6, "😎 6 day streak")]
     [InlineData(10, "🔥 10 day streak")]
