@@ -1,17 +1,220 @@
-﻿@page "/habits/{HabitId:int}"
+@page "/habits/{HabitId:int}"
+@inject IHabitService HabitService
+@inject ICheckinService CheckinService
 
-<PageTitle>Habit Details</PageTitle>
+<PageTitle>@BrowserPageTitle</PageTitle>
 
-<MudContainer MaxWidth="MaxWidth.Small"
-              Class="pa-4">
-    <MudStack Spacing="2">
-        <MudText Typo="Typo.h4">Habit details</MudText>
-        <MudText Typo="Typo.body1">
-            Placeholder page for habit ID <strong>@HabitId</strong>.
-        </MudText>
-    </MudStack>
-</MudContainer>
+@if (_loadingData)
+{
+    <MudContainer MaxWidth="MaxWidth.Small"
+                  Class="pa-4">
+        <MudStack Style="@LoadingStateStyle"
+                  Justify="Justify.Center"
+                  AlignItems="AlignItems.Center">
+            <MudAlert ContentAlignment="HorizontalAlignment.Center"
+                      Severity="Severity.Info">
+                @LoadingDataText
+            </MudAlert>
+        </MudStack>
+    </MudContainer>
+}
+else if (_habitNotFound)
+{
+    <MudContainer MaxWidth="MaxWidth.Small"
+                  Class="pa-4">
+        <MudStack Spacing="3">
+            <MudAlert Severity="Severity.Warning">
+                @HabitNotFoundText
+            </MudAlert>
+
+            <MudButton Href="@RouteConstants.Home"
+                       Variant="Variant.Outlined"
+                       Color="Color.Primary">
+                @BackToHabitsButtonText
+            </MudButton>
+        </MudStack>
+    </MudContainer>
+}
+else if (_viewModel is not null)
+{
+    <MudContainer MaxWidth="MaxWidth.Small"
+                  Class="pa-4">
+        <MudPaper Elevation="1"
+                  Class="pa-4 rounded-lg">
+            <MudStack Spacing="3">
+                <MudStack Row="true"
+                          AlignItems="AlignItems.Center"
+                          Wrap="Wrap.NoWrap"
+                          Spacing="3"
+                          Style="@SummaryHeaderStyle">
+                    <MudPaper Elevation="0"
+                              Class="rounded-lg"
+                              Style="@EmojiContainerStyle">
+                        <MudStack AlignItems="AlignItems.Center"
+                                  Justify="Justify.Center"
+                                  Style="@EmojiContentStyle">
+                            @if (_viewModel.HasHabitEmoji)
+                            {
+                                <MudText Typo="Typo.h6">
+                                    @_viewModel.HabitEmoji
+                                </MudText>
+                            }
+                            else
+                            {
+                                <MudIcon Icon="@Icons.Material.Filled.Circle"
+                                         Size="Size.Small"
+                                         Color="Color.Primary"/>
+                            }
+                        </MudStack>
+                    </MudPaper>
+
+                    <MudText Typo="Typo.h5"
+                             Style="@HabitNameStyle">
+                        @_viewModel.HabitName
+                    </MudText>
+                </MudStack>
+
+                <MudPaper Elevation="0"
+                          Class="pa-4 rounded-lg"
+                          Style="@StreakSurfaceStyle">
+                    <MudStack Spacing="1">
+                        <MudStack Row="true"
+                                  AlignItems="AlignItems.Center"
+                                  Wrap="Wrap.NoWrap"
+                                  Spacing="2">
+                            <MudText Typo="Typo.h4"
+                                     Style="@StreakNumberStyle">
+                                @_viewModel.StreakCountText
+                            </MudText>
+
+                            @if (!string.IsNullOrWhiteSpace(_viewModel.StreakEmoji))
+                            {
+                                <MudText Typo="Typo.h5">
+                                    @_viewModel.StreakEmoji
+                                </MudText>
+                            }
+                        </MudStack>
+
+                        <MudText Typo="Typo.caption"
+                                 Color="Color.Secondary">
+                            @_viewModel.StreakLabel
+                        </MudText>
+
+                        <MudText Typo="Typo.body2"
+                                 Color="Color.Secondary">
+                            @_viewModel.StreakSupportText
+                        </MudText>
+                    </MudStack>
+                </MudPaper>
+            </MudStack>
+        </MudPaper>
+    </MudContainer>
+}
 
 @code {
+
+    #region Parameters
+
     [Parameter] public int HabitId { get; set; }
+
+    #endregion
+
+    #region Private Fields, Properties
+
+    private HabitDetailsSummaryViewModel? _viewModel;
+
+    private bool _loadingData;
+
+    private bool _habitNotFound;
+
+    private string BrowserPageTitle => _viewModel?.AppBarTitle ?? DefaultPageTitle;
+
+    #endregion
+
+    #region Lifecycle Methods
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await LoadDataAsync();
+    }
+
+    #endregion
+
+    #region Event Handlers
+
+    // No event handlers.
+
+    #endregion
+
+    #region Private Helper Methods
+
+    private async Task LoadDataAsync()
+    {
+        _loadingData = true;
+        _habitNotFound = false;
+        _viewModel = null;
+
+        try
+        {
+            if (HabitId <= 0)
+            {
+                _habitNotFound = true;
+                return;
+            }
+
+            var habit = await HabitService.GetByIdAsync(HabitId);
+            if (habit is null)
+            {
+                _habitNotFound = true;
+                return;
+            }
+
+            var streak = await CheckinService.GetCurrentStreakAsync(habit.Name);
+
+            _viewModel = new HabitDetailsSummaryViewModel
+            {
+                HabitId = habit.Id,
+                HabitName = habit.Name,
+                HabitEmoji = habit.Emoji,
+                Streak = streak
+            };
+        }
+        finally
+        {
+            _loadingData = false;
+        }
+    }
+
+    #endregion
+
+    #region CSS Style Properties
+
+    private const string SummaryHeaderStyle = "min-width: 0;";
+
+    private const string EmojiContainerStyle = "width: 48px; height: 48px; background-color: var(--mud-palette-primary-hover); flex-shrink: 0;";
+
+    private const string EmojiContentStyle = "width: 48px; height: 48px;";
+
+    private const string HabitNameStyle = "overflow: hidden; text-overflow: ellipsis; white-space: nowrap;";
+
+    private const string StreakSurfaceStyle = "background: linear-gradient(180deg, var(--mud-palette-primary-hover) 0%, var(--mud-palette-surface) 100%);";
+
+    private const string StreakNumberStyle = "font-size: 32px; font-weight: 700; line-height: 1;";
+
+    private const string LoadingStateStyle = "min-height: 80vh";
+
+    #endregion
+
+    #region Text, Label Properties
+
+    private const string DefaultPageTitle = "Habit Details";
+
+    private const string LoadingDataText = "Loading habit details...";
+
+    private const string HabitNotFoundText = "Habit not found.";
+
+    private const string BackToHabitsButtonText = "Back to habits";
+
+    #endregion
+
 }

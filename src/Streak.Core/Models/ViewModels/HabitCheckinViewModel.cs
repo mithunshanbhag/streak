@@ -12,19 +12,13 @@ public sealed class HabitCheckinViewModel
 
     public required bool IsDoneForToday { get; set; }
 
-    public string? StreakEmoji => Streak switch
-    {
-        >= 30 => "🐐",
-        >= 10 => "🔥",
-        >= 6 => "😎",
-        >= 3 => "👏",
-        >= 1 => "👍",
-        _ => null
-    };
+    private int NormalizedStreak => StreakDisplayHelper.NormalizeStreak(Streak);
 
-    public string StreakText => Streak switch
+    public string? StreakEmoji => StreakDisplayHelper.GetStreakEmoji(NormalizedStreak);
+
+    public string StreakText => NormalizedStreak switch
     {
         <= 0 => "0 streak",
-        _ => $"{StreakEmoji} {Streak} day streak"
+        _ => $"{StreakEmoji} {NormalizedStreak} day streak"
     };
 }
