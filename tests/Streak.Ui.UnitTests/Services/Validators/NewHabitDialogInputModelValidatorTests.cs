@@ -35,6 +35,20 @@ public class NewHabitDialogInputModelValidatorTests
     }
 
     [Fact]
+    public void Validate_ShouldPass_WhenEmojiIsWindowsEmojiKeyboardFace()
+    {
+        var model = new NewHabitInputModel
+        {
+            Name = "Meditate",
+            Emoji = "😎"
+        };
+
+        var result = _sut.Validate(model);
+
+        result.IsValid.Should().BeTrue();
+    }
+
+    [Fact]
     public void ToResultModel_ShouldTrimNameAndNormalizeEmptyEmoji()
     {
         var model = new NewHabitInputModel

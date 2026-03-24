@@ -313,6 +313,28 @@ public class HabitServiceTests
         habitRepositoryMock.VerifyNoOtherCalls();
     }
 
+    [Theory]
+    [InlineData("ab")]
+    [InlineData("📚📖")]
+    public async Task CreateAsync_ShouldThrowArgumentException_WhenEmojiIsNotASingleEmoji(string emoji)
+    {
+        var habitRepositoryMock = new Mock<IHabitRepository>(MockBehavior.Strict);
+        IHabitService sut = new HabitService(habitRepositoryMock.Object);
+        var invalidHabit = new Habit
+        {
+            Id = 1,
+            Name = "Read",
+            Emoji = emoji
+        };
+
+        var act = () => sut.CreateAsync(invalidHabit);
+
+        var exception = await act.Should().ThrowAsync<ArgumentException>();
+        exception.Which.ParamName.Should().Be("Emoji");
+        exception.Which.Message.Should().Contain("single emoji");
+        habitRepositoryMock.VerifyNoOtherCalls();
+    }
+
     [Fact]
     public async Task UpdateAsync_ShouldThrowArgumentNullException_WhenHabitIsNull()
     {
@@ -337,6 +359,28 @@ public class HabitServiceTests
 
         var exception = await act.Should().ThrowAsync<ArgumentException>();
         exception.Which.ParamName.Should().Be("Name");
+        habitRepositoryMock.VerifyNoOtherCalls();
+    }
+
+    [Theory]
+    [InlineData("ab")]
+    [InlineData("📚📖")]
+    public async Task UpdateAsync_ShouldThrowArgumentException_WhenEmojiIsNotASingleEmoji(string emoji)
+    {
+        var habitRepositoryMock = new Mock<IHabitRepository>(MockBehavior.Strict);
+        IHabitService sut = new HabitService(habitRepositoryMock.Object);
+        var invalidHabit = new Habit
+        {
+            Id = 1,
+            Name = "Read",
+            Emoji = emoji
+        };
+
+        var act = () => sut.UpdateAsync(invalidHabit);
+
+        var exception = await act.Should().ThrowAsync<ArgumentException>();
+        exception.Which.ParamName.Should().Be("Emoji");
+        exception.Which.Message.Should().Contain("single emoji");
         habitRepositoryMock.VerifyNoOtherCalls();
     }
 

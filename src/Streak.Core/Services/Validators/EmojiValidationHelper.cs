@@ -1,6 +1,6 @@
 namespace Streak.Core.Services.Validators;
 
-internal static class EmojiValidationHelper
+public static class EmojiValidationHelper
 {
     public static bool IsEmptyOrSingleEmoji(string? value)
     {

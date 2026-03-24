@@ -94,12 +94,16 @@ public sealed class HabitService(IHabitRepository habitRepository) : StreakServi
     private static Habit NormalizeHabitForWrite(Habit habit, string paramName)
     {
         var nonNullHabit = RequireNotNull(habit, paramName);
+        var normalizedEmoji = NormalizeOptionalText(nonNullHabit.Emoji);
+
+        if (!EmojiValidationHelper.IsEmptyOrSingleEmoji(normalizedEmoji))
+            throw new ArgumentException("Emoji must be a single emoji.", nameof(Habit.Emoji));
 
         return new Habit
         {
             Id = nonNullHabit.Id,
             Name = NormalizeAndValidateHabitName(nonNullHabit.Name, nameof(Habit.Name)),
-            Emoji = NormalizeOptionalText(nonNullHabit.Emoji)
+            Emoji = normalizedEmoji
         };
     }
 

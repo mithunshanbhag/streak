@@ -35,8 +35,7 @@
                               Placeholder="🙂"
                               For="@(() => _newHabitInputModel.Emoji!)"
                               Label="Emoji (optional)"
-                              Validation="@((string _) => ValidateNewHabitEmoji())"
-                              MaxLength="2"/>
+                              Validation="@((string _) => ValidateNewHabitEmoji())"/>
 
             </MudStack>
         </MudForm>
@@ -138,7 +137,8 @@
     {
         if (string.IsNullOrWhiteSpace(_newHabitInputModel.Emoji)) return null; // Optional field
 
-        if (_newHabitInputModel.Emoji.Length > 1) return "Must be a single character";
+        if (!EmojiValidationHelper.IsEmptyOrSingleEmoji(_newHabitInputModel.Emoji))
+            return "Emoji must be a single emoji.";
 
         return null; // i.e. valid
     }
