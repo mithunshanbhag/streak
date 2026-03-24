@@ -11,13 +11,12 @@ public class CheckinServiceTests
         return new CheckinService(checkinRepositoryMock.Object, habitRepositoryMock.Object);
     }
 
-    private static Checkin CreateCheckin(int habitId, DateOnly date, int isDone)
+    private static Checkin CreateCheckin(int habitId, DateOnly date)
     {
         return new Checkin
         {
             HabitId = habitId,
-            CheckinDate = ToDateString(date),
-            IsDone = isDone
+            CheckinDate = ToDateString(date)
         };
     }
 
@@ -35,8 +34,7 @@ public class CheckinServiceTests
         var expectedCheckin = new Checkin
         {
             HabitId = 1,
-            CheckinDate = "2025-02-01",
-            IsDone = 1
+            CheckinDate = "2025-02-01"
         };
 
         var sut = CreateSut(out var checkinRepositoryMock, out _);
@@ -58,8 +56,8 @@ public class CheckinServiceTests
         var cancellationToken = new CancellationTokenSource().Token;
         IReadOnlyList<Checkin> expectedHistory =
         [
-            new() { HabitId = 1, CheckinDate = "2025-01-03", IsDone = 1 },
-            new() { HabitId = 1, CheckinDate = "2025-01-02", IsDone = 0 }
+            new() { HabitId = 1, CheckinDate = "2025-01-03" },
+            new() { HabitId = 1, CheckinDate = "2025-01-02" }
         ];
 
         var sut = CreateSut(out var checkinRepositoryMock, out _);
@@ -95,32 +93,29 @@ public class CheckinServiceTests
             .ReturnsAsync(true);
 
         var result = await sut.UpsertAsync(
-            new Checkin
-            {
-                HabitId = 1,
-                CheckinDate = " 2025-01-10 ",
-                IsDone = 1
-            },
+                new Checkin
+                {
+                    HabitId = 1,
+                    CheckinDate = " 2025-01-10 "
+                },
             cancellationToken);
 
         addedCheckin.Should().NotBeNull();
         addedCheckin!.HabitId.Should().Be(1);
         addedCheckin.CheckinDate.Should().Be("2025-01-10");
-        addedCheckin.IsDone.Should().Be(1);
 
         result.Should().BeSameAs(addedCheckin);
         checkinRepositoryMock.Verify(x => x.UpdateAsync(It.IsAny<Checkin>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Fact]
-    public async Task UpsertAsync_ShouldUpdateExistingCheckin_WhenCheckinAlreadyExists()
+    public async Task UpsertAsync_ShouldReturnExistingCheckin_WhenCheckinAlreadyExists()
     {
         var cancellationToken = new CancellationTokenSource().Token;
         var existingCheckin = new Checkin
         {
             HabitId = 1,
-            CheckinDate = "2025-01-10",
-            IsDone = 0
+            CheckinDate = "2025-01-10"
         };
 
         var sut = CreateSut(out var checkinRepositoryMock, out var habitRepositoryMock);
@@ -130,28 +125,22 @@ public class CheckinServiceTests
         checkinRepositoryMock
             .Setup(x => x.GetAsync(new CheckinKey(1, "2025-01-10"), cancellationToken))
             .ReturnsAsync(existingCheckin);
-        checkinRepositoryMock
-            .Setup(x => x.UpdateAsync(existingCheckin, cancellationToken))
-            .ReturnsAsync(true);
 
         var result = await sut.UpsertAsync(
             new Checkin
             {
                 HabitId = 1,
-                CheckinDate = "2025-01-10",
-                IsDone = 1
+                CheckinDate = "2025-01-10"
             },
             cancellationToken);
 
         result.Should().BeSameAs(existingCheckin);
-        existingCheckin.IsDone.Should().Be(1);
         checkinRepositoryMock.Verify(x => x.AddAsync(It.IsAny<Checkin>(), It.IsAny<CancellationToken>()), Times.Never);
+        checkinRepositoryMock.Verify(x => x.UpdateAsync(It.IsAny<Checkin>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
-    [Theory]
-    [InlineData(true, 1)]
-    [InlineData(false, 0)]
-    public async Task ToggleForTodayAsync_ShouldUseUtcDateAndMapDoneFlag(bool isDone, int expectedIsDone)
+    [Fact]
+    public async Task ToggleForTodayAsync_ShouldUseUtcDateAndAddCheckin_WhenDone()
     {
         var beforeUtcDate = ToDateString(DateOnly.FromDateTime(DateTime.UtcNow));
         Checkin? addedCheckin = null;
@@ -171,7 +160,7 @@ public class CheckinServiceTests
             .Callback<Checkin, CancellationToken>((checkin, _) => addedCheckin = checkin)
             .ReturnsAsync(true);
 
-        var result = await sut.ToggleForTodayAsync(" Run ", isDone);
+        var result = await sut.ToggleForTodayAsync(" Run ", true);
 
         var afterUtcDate = ToDateString(DateOnly.FromDateTime(DateTime.UtcNow));
 
@@ -179,9 +168,51 @@ public class CheckinServiceTests
         addedCheckin!.HabitId.Should().Be(7);
         addedCheckin.CheckinDate.Should().MatchRegex("^\\d{4}-\\d{2}-\\d{2}$");
         new[] { beforeUtcDate, afterUtcDate }.Should().Contain(addedCheckin.CheckinDate);
-        addedCheckin.IsDone.Should().Be(expectedIsDone);
+        result.Should().NotBeNull();
         result.CheckinDate.Should().Be(addedCheckin.CheckinDate);
-        result.IsDone.Should().Be(expectedIsDone);
+    }
+
+    [Fact]
+    public async Task ToggleForTodayAsync_ShouldUseUtcDateAndDeleteCheckin_WhenNotDone()
+    {
+        var beforeUtcDate = ToDateString(DateOnly.FromDateTime(DateTime.UtcNow));
+        CheckinKey? deletedKey = null;
+
+        var sut = CreateSut(out var checkinRepositoryMock, out var habitRepositoryMock);
+        habitRepositoryMock
+            .Setup(x => x.GetByNameAsync("Run", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Habit { Id = 7, Name = "Run" });
+        checkinRepositoryMock
+            .Setup(x => x.DeleteAsync(It.IsAny<CheckinKey>(), It.IsAny<CancellationToken>()))
+            .Callback<CheckinKey, CancellationToken>((key, _) => deletedKey = key)
+            .ReturnsAsync(true);
+
+        var result = await sut.ToggleForTodayAsync(" Run ", false);
+
+        var afterUtcDate = ToDateString(DateOnly.FromDateTime(DateTime.UtcNow));
+
+        result.Should().BeNull();
+        deletedKey.Should().NotBeNull();
+        deletedKey!.Value.HabitId.Should().Be(7);
+        deletedKey.Value.CheckinDate.Should().MatchRegex("^\\d{4}-\\d{2}-\\d{2}$");
+        new[] { beforeUtcDate, afterUtcDate }.Should().Contain(deletedKey.Value.CheckinDate);
+        checkinRepositoryMock.Verify(x => x.AddAsync(It.IsAny<Checkin>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task ToggleForTodayAsync_ShouldReturnNull_WhenUncheckedCheckinDoesNotExist()
+    {
+        var sut = CreateSut(out var checkinRepositoryMock, out var habitRepositoryMock);
+        habitRepositoryMock
+            .Setup(x => x.GetByNameAsync("Run", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Habit { Id = 7, Name = "Run" });
+        checkinRepositoryMock
+            .Setup(x => x.DeleteAsync(It.IsAny<CheckinKey>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
+
+        var result = await sut.ToggleForTodayAsync("Run", false);
+
+        result.Should().BeNull();
     }
 
     [Fact]
@@ -213,10 +244,9 @@ public class CheckinServiceTests
         var todayUtc = DateOnly.FromDateTime(DateTime.UtcNow);
         IReadOnlyList<Checkin> checkinHistory =
         [
-            CreateCheckin(1, todayUtc, 1),
-            CreateCheckin(1, todayUtc.AddDays(-1), 1),
-            CreateCheckin(1, todayUtc.AddDays(-2), 1),
-            CreateCheckin(1, todayUtc.AddDays(-3), 0)
+            CreateCheckin(1, todayUtc),
+            CreateCheckin(1, todayUtc.AddDays(-1)),
+            CreateCheckin(1, todayUtc.AddDays(-2))
         ];
 
         var sut = CreateSut(out var checkinRepositoryMock, out _);
@@ -312,10 +342,8 @@ public class CheckinServiceTests
         var todayUtc = DateOnly.FromDateTime(DateTime.UtcNow);
         IReadOnlyList<Checkin> checkinHistory =
         [
-            CreateCheckin(1, todayUtc, 1),
-            CreateCheckin(1, todayUtc.AddDays(-1), 1),
-            CreateCheckin(1, todayUtc.AddDays(-2), 0),
-            CreateCheckin(1, todayUtc.AddDays(-3), 1)
+            CreateCheckin(1, todayUtc.AddDays(-1)),
+            CreateCheckin(1, todayUtc.AddDays(-2))
         ];
 
         var sut = CreateSut(out var checkinRepositoryMock, out _);
@@ -334,9 +362,9 @@ public class CheckinServiceTests
         var todayUtc = DateOnly.FromDateTime(DateTime.UtcNow);
         IReadOnlyList<Checkin> checkinHistory =
         [
-            CreateCheckin(1, todayUtc, 1),
-            CreateCheckin(1, todayUtc.AddDays(-1), 1),
-            CreateCheckin(1, todayUtc.AddDays(-3), 1)
+            CreateCheckin(1, todayUtc),
+            CreateCheckin(1, todayUtc.AddDays(-1)),
+            CreateCheckin(1, todayUtc.AddDays(-3))
         ];
 
         var sut = CreateSut(out var checkinRepositoryMock, out _);

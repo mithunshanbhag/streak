@@ -100,7 +100,7 @@ else
             HabitName = habit.Name,
             HabitEmoji = habit.Emoji,
             CurrentStreak = await currentStreakTask,
-            IsDoneForToday = todayCheckin?.IsDone == 1
+            IsDoneForToday = todayCheckin is not null
         };
     }
 

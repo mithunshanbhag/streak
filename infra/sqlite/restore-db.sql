@@ -16,10 +16,8 @@ CREATE TABLE IF NOT EXISTS Habits (
 CREATE TABLE IF NOT EXISTS Checkins (
     CheckinDate TEXT NOT NULL,
     HabitId INTEGER NOT NULL,
-    IsDone INTEGER NOT NULL DEFAULT 0,
     CONSTRAINT PK_Checkins PRIMARY KEY (HabitId, CheckinDate),
     CONSTRAINT FK_Checkins_Habits FOREIGN KEY (HabitId) REFERENCES Habits (Id) ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT CK_Checkins_IsDone CHECK (IsDone IN (0, 1)),
     -- Because CheckinDate is stored as TEXT, we need to ensure it follows the 'YYYY-MM-DD' format and represents a valid date.
     -- Note: SQLite does not have a native DATE type, so we use a CHECK constraint to enforce the format and validity of the date string.
     CONSTRAINT CK_Checkins_CheckinDate CHECK (

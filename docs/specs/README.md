@@ -27,11 +27,12 @@ A recurring daily activity the user wants to track.
 
 ### Checkin
 
-A daily record that marks a habit as **done** or **not done** for a given calendar day.
+A daily record that exists only when a habit is marked **done** for a given calendar day.
 
-- Checkins are **binary**: done or not done. There is no partial completion or quantity tracking.
+- Checkins are **binary**: a record exists when done, and no record exists when not done. There is no partial completion or quantity tracking.
 - Checkins apply to **today only**. Backdating (marking a past day) is not supported.
 - A habit that has no checkin recorded for a day is treated as **not done**.
+- If the user unchecks a same-day habit, that day's checkin record is deleted.
 - There are two ways a checkin happens:
   1. **Voluntary**: the user taps the toggle on the homepage as soon as they complete the activity.
   2. **Via reminder**: at a user-configured time each day, the app sends a notification prompting the user to check in on any habits that are still pending (not yet marked done).

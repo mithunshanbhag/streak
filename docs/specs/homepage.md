@@ -44,8 +44,8 @@ Each card shows:
 ## Checkin Toggle Behavior
 
 - **Default state**: Empty circle (not done) at the start of each new calendar day.
-- **Toggling to done**: Marks the habit as done for today. The icon changes to a green check circle. The streak count increments immediately (visually).
-- **Toggling to not done**: Un-marks the habit for today. The icon changes back to an empty circle. The streak count updates accordingly.
+- **Toggling to done**: Creates today's checkin record. The icon changes to a green check circle. The streak count increments immediately (visually).
+- **Toggling to not done**: Deletes today's checkin record. The icon changes back to an empty circle. The streak count updates accordingly.
 - After each toggle, the habit remains in the same alphabetical position; checking in does **not** change the list order.
 - Toggling is **instant** — no confirmation dialog, no loading state.
 - The checkin is persisted to local storage immediately on toggle.

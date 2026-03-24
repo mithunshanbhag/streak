@@ -49,17 +49,14 @@ public interface ICheckinService
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    ///     Adds a new check-in or updates the existing check-in for the same habit and date.
+    ///     Adds a new check-in or returns the existing check-in for the same habit and date.
     /// </summary>
     /// <param name="checkin">The check-in to add or update.</param>
     /// <param name="cancellationToken">A token that can be used to cancel the asynchronous operation.</param>
     /// <returns>The persisted check-in instance.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="checkin" /> is <see langword="null" />.</exception>
     /// <exception cref="ArgumentException">Thrown when the check-in date is invalid.</exception>
-    /// <exception cref="ArgumentOutOfRangeException">
-    ///     Thrown when <see cref="Checkin.HabitId" /> is less than or equal to zero or when
-    ///     <see cref="Checkin.IsDone" /> is not 0 or 1.
-    /// </exception>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when <see cref="Checkin.HabitId" /> is less than or equal to zero.</exception>
     /// <exception cref="InvalidOperationException">Thrown when the related habit does not exist or when persistence fails.</exception>
     /// <exception cref="OperationCanceledException">
     ///     Thrown when the operation is canceled via
@@ -68,19 +65,19 @@ public interface ICheckinService
     Task<Checkin> UpsertAsync(Checkin checkin, CancellationToken cancellationToken = default);
 
     /// <summary>
-    ///     Creates or updates today's check-in for a habit.
+    ///     Creates or removes today's check-in for a habit.
     /// </summary>
     /// <param name="habitName">The habit name.</param>
     /// <param name="isDone"><see langword="true" /> to mark the habit done for today; otherwise, <see langword="false" />.</param>
     /// <param name="cancellationToken">A token that can be used to cancel the asynchronous operation.</param>
-    /// <returns>The persisted check-in for today.</returns>
+    /// <returns>The persisted check-in for today when <paramref name="isDone" /> is <see langword="true" />; otherwise, <see langword="null" />.</returns>
     /// <exception cref="ArgumentException">Thrown when <paramref name="habitName" /> is invalid.</exception>
     /// <exception cref="InvalidOperationException">Thrown when the related habit does not exist or when persistence fails.</exception>
     /// <exception cref="OperationCanceledException">
     ///     Thrown when the operation is canceled via
     ///     <paramref name="cancellationToken" />.
     /// </exception>
-    Task<Checkin> ToggleForTodayAsync(
+    Task<Checkin?> ToggleForTodayAsync(
         string habitName,
         bool isDone,
         CancellationToken cancellationToken = default);

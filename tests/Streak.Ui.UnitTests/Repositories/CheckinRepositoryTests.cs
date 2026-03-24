@@ -33,10 +33,10 @@ public class CheckinRepositoryTests
                 new Habit { Id = 2, Name = "Read" });
 
             context.Checkins.AddRange(
-                new Checkin { HabitId = 1, CheckinDate = "2025-01-01", IsDone = 1 },
-                new Checkin { HabitId = 1, CheckinDate = "2025-01-03", IsDone = 1 },
-                new Checkin { HabitId = 2, CheckinDate = "2025-01-02", IsDone = 1 },
-                new Checkin { HabitId = 2, CheckinDate = "2025-01-03", IsDone = 0 });
+                new Checkin { HabitId = 1, CheckinDate = "2025-01-01" },
+                new Checkin { HabitId = 1, CheckinDate = "2025-01-03" },
+                new Checkin { HabitId = 2, CheckinDate = "2025-01-02" },
+                new Checkin { HabitId = 2, CheckinDate = "2025-01-03" });
             await context.SaveChangesAsync();
 
             ICheckinRepository sut = new CheckinRepository(context);
@@ -60,7 +60,7 @@ public class CheckinRepositoryTests
 
             context.ChangeTracker.Clear();
             ISqlGenericRepository<Checkin, CheckinKey> sut = new CheckinRepository(context);
-            var checkin = new Checkin { HabitId = 1, CheckinDate = "2025-01-01", IsDone = 1 };
+            var checkin = new Checkin { HabitId = 1, CheckinDate = "2025-01-01" };
 
             var result = await sut.AddAsync(checkin);
 
@@ -70,30 +70,28 @@ public class CheckinRepositoryTests
     }
 
     [Fact]
-    public async Task UpdateAsync_ShouldUpdateExistingCheckinAndReturnTrue()
+    public async Task GetByHabitNamesAsync_ShouldApplyInclusiveDateRange()
     {
         await using var context = TestDbContextFactory.CreateContext(out var connection);
         await using (connection)
         {
-            context.Habits.Add(new Habit { Id = 1, Name = "Run" });
-            context.Checkins.Add(new Checkin { HabitId = 1, CheckinDate = "2025-01-01", IsDone = 0 });
+            context.Habits.AddRange(
+                new Habit { Id = 1, Name = "Read" },
+                new Habit { Id = 2, Name = "Run" });
+            context.Checkins.AddRange(
+                new Checkin { HabitId = 1, CheckinDate = "2025-01-01" },
+                new Checkin { HabitId = 1, CheckinDate = "2025-01-03" },
+                new Checkin { HabitId = 2, CheckinDate = "2025-01-02" },
+                new Checkin { HabitId = 2, CheckinDate = "2025-01-04" });
             await context.SaveChangesAsync();
-            context.ChangeTracker.Clear();
 
-            ISqlGenericRepository<Checkin, CheckinKey> sut = new CheckinRepository(context);
-            var updatedCheckin = new Checkin
-            {
-                HabitId = 1,
-                CheckinDate = "2025-01-01",
-                IsDone = 1
-            };
+            var sut = new CheckinRepository(context);
 
-            var result = await sut.UpdateAsync(updatedCheckin);
+            var result = await sut.GetByHabitNamesAsync(["Read", "Run"], "2025-01-02", "2025-01-03");
 
-            result.Should().BeTrue();
-            context.ChangeTracker.Clear();
-            var savedCheckin = await context.Checkins.SingleAsync();
-            savedCheckin.IsDone.Should().Be(1);
+            result.Select(x => $"{x.HabitId}:{x.CheckinDate}")
+                .Should()
+                .Equal("1:2025-01-03", "2:2025-01-02");
         }
     }
 
@@ -104,7 +102,7 @@ public class CheckinRepositoryTests
         await using (connection)
         {
             context.Habits.Add(new Habit { Id = 1, Name = "Run" });
-            context.Checkins.Add(new Checkin { HabitId = 1, CheckinDate = "2025-01-01", IsDone = 1 });
+            context.Checkins.Add(new Checkin { HabitId = 1, CheckinDate = "2025-01-01" });
             await context.SaveChangesAsync();
 
             ISqlGenericRepository<Checkin, CheckinKey> sut = new CheckinRepository(context);
@@ -124,7 +122,7 @@ public class CheckinRepositoryTests
         await using (connection)
         {
             context.Habits.Add(new Habit { Id = 1, Name = "Run" });
-            context.Checkins.Add(new Checkin { HabitId = 1, CheckinDate = "2025-01-01", IsDone = 1 });
+            context.Checkins.Add(new Checkin { HabitId = 1, CheckinDate = "2025-01-01" });
             await context.SaveChangesAsync();
 
             ISqlGenericRepository<Checkin, CheckinKey> sut = new CheckinRepository(context);
@@ -143,7 +141,7 @@ public class CheckinRepositoryTests
         await using (connection)
         {
             context.Habits.Add(new Habit { Id = 1, Name = "Run" });
-            context.Checkins.Add(new Checkin { HabitId = 1, CheckinDate = "2025-01-01", IsDone = 1 });
+            context.Checkins.Add(new Checkin { HabitId = 1, CheckinDate = "2025-01-01" });
             await context.SaveChangesAsync();
 
             var sut = new CheckinRepository(context);
@@ -183,7 +181,7 @@ public class CheckinRepositoryTests
         await using (connection)
         {
             context.Habits.Add(new Habit { Id = 1, Name = "Run" });
-            context.Checkins.Add(new Checkin { HabitId = 1, CheckinDate = "2025-01-01", IsDone = 1 });
+            context.Checkins.Add(new Checkin { HabitId = 1, CheckinDate = "2025-01-01" });
             await context.SaveChangesAsync();
 
             var sut = new CheckinRepository(context);

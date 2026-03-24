@@ -62,12 +62,6 @@ CREATE TABLE IF NOT EXISTS Checkins
     TEXT
     NOT
     NULL,
-    IsDone
-    INTEGER
-    NOT
-    NULL
-    DEFAULT
-    1,
     CreatedAtUtc
     TEXT
     NOT
@@ -77,15 +71,6 @@ CREATE TABLE IF NOT EXISTS Checkins
     UpdatedAtUtc
     TEXT
     NULL,
-    CONSTRAINT
-    CK_Checkins_IsDone
-    CHECK (
-    IsDone
-    IN
-(
-    0,
-    1
-)),
     CONSTRAINT UQ_Checkins_HabitId_CheckinDate UNIQUE
 (
     HabitId,

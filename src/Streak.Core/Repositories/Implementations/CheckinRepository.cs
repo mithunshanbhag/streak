@@ -28,13 +28,12 @@ public class CheckinRepository(StreakDbContext dbContext) : SqlGenericRepository
             .ToArray();
 
         var query = Query().Where(x => normalizedHabitNames.Contains(x.HabitNavigation.Name));
-
-        query = ApplyDateRange(query, fromDate, toDate);
-
-        return await query
+        var checkins = await query
             .OrderBy(x => x.HabitNavigation.Name)
             .ThenByDescending(x => x.CheckinDate)
             .ToListAsync(cancellationToken);
+
+        return ApplyDateRange(checkins, fromDate, toDate);
     }
 
     public async Task<Checkin?> GetByHabitNameAndDateAsync(
@@ -76,21 +75,26 @@ public class CheckinRepository(StreakDbContext dbContext) : SqlGenericRepository
         return await DeleteByPredicateAsync(x => habitIds.Contains(x.HabitId), cancellationToken);
     }
 
-    private static IQueryable<Checkin> ApplyDateRange(IQueryable<Checkin> query, string? fromDate, string? toDate)
+    private static IReadOnlyList<Checkin> ApplyDateRange(
+        IReadOnlyList<Checkin> checkins,
+        string? fromDate,
+        string? toDate)
     {
+        IEnumerable<Checkin> filteredCheckins = checkins;
+
         if (!string.IsNullOrWhiteSpace(fromDate))
         {
             var normalizedFromDate = fromDate.Trim();
-            query = query.Where(x => string.CompareOrdinal(x.CheckinDate, normalizedFromDate) >= 0);
+            filteredCheckins = filteredCheckins.Where(x => string.CompareOrdinal(x.CheckinDate, normalizedFromDate) >= 0);
         }
 
         if (!string.IsNullOrWhiteSpace(toDate))
         {
             var normalizedToDate = toDate.Trim();
-            query = query.Where(x => string.CompareOrdinal(x.CheckinDate, normalizedToDate) <= 0);
+            filteredCheckins = filteredCheckins.Where(x => string.CompareOrdinal(x.CheckinDate, normalizedToDate) <= 0);
         }
 
-        return query;
+        return filteredCheckins.ToList();
     }
 
     protected override Expression<Func<Checkin, bool>> BuildKeyPredicate(CheckinKey key)

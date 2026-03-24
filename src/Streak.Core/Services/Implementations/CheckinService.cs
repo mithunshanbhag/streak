@@ -69,17 +69,10 @@ public class CheckinService(
             return normalizedCheckin;
         }
 
-        existingCheckin.IsDone = normalizedCheckin.IsDone;
-
-        var updated = await _checkinRepository.UpdateAsync(existingCheckin, cancellationToken);
-        if (!updated)
-            throw new InvalidOperationException(
-                $"Unable to update checkin for habit id '{normalizedCheckin.HabitId}' on '{normalizedCheckin.CheckinDate}'.");
-
         return existingCheckin;
     }
 
-    public Task<Checkin> ToggleForTodayAsync(
+    public Task<Checkin?> ToggleForTodayAsync(
         string habitName,
         bool isDone,
         CancellationToken cancellationToken = default)
@@ -115,25 +108,24 @@ public class CheckinService(
 
         if (checkinHistory.Count == 0) return 0;
 
-        var checkinsByDate = new Dictionary<DateOnly, bool>();
+        HashSet<DateOnly> checkinDates = [];
         foreach (var checkin in checkinHistory)
         {
-            if (!TryParseDate(checkin.CheckinDate, out var checkinDate) || checkinsByDate.ContainsKey(checkinDate)) continue;
-
-            checkinsByDate.Add(checkinDate, checkin.IsDone == 1);
+            if (!TryParseDate(checkin.CheckinDate, out var checkinDate)) continue;
+            checkinDates.Add(checkinDate);
         }
 
-        if (checkinsByDate.Count == 0) return 0;
+        if (checkinDates.Count == 0) return 0;
 
         var todayUtc = DateOnly.FromDateTime(DateTime.UtcNow);
-        var streakStartDate = checkinsByDate.TryGetValue(todayUtc, out var isDoneToday) && isDoneToday
+        var streakStartDate = checkinDates.Contains(todayUtc)
             ? todayUtc
             : todayUtc.AddDays(-1);
 
         var streak = 0;
         var currentDate = streakStartDate;
 
-        while (checkinsByDate.TryGetValue(currentDate, out var isDone) && isDone)
+        while (checkinDates.Contains(currentDate))
         {
             streak++;
             currentDate = currentDate.AddDays(-1);
@@ -142,18 +134,24 @@ public class CheckinService(
         return streak;
     }
 
-    private async Task<Checkin> ToggleForTodayInternalAsync(
+    private async Task<Checkin?> ToggleForTodayInternalAsync(
         string habitName,
         bool isDone,
         CancellationToken cancellationToken)
     {
         var habit = await GetRequiredHabitByNameAsync(habitName, cancellationToken);
+        var todayDate = GetUtcTodayDateString();
+
+        if (!isDone)
+        {
+            await _checkinRepository.DeleteAsync(new CheckinKey(habit.Id, todayDate), cancellationToken);
+            return null;
+        }
 
         var checkin = new Checkin
         {
             HabitId = habit.Id,
-            CheckinDate = GetUtcTodayDateString(),
-            IsDone = isDone ? 1 : 0
+            CheckinDate = todayDate
         };
 
         return await UpsertAsync(checkin, cancellationToken);
@@ -184,13 +182,10 @@ public class CheckinService(
         if (checkin.HabitId <= 0)
             throw new ArgumentOutOfRangeException(nameof(checkin.HabitId), "Habit ID must be greater than zero.");
 
-        if (checkin.IsDone is not (0 or 1)) throw new ArgumentOutOfRangeException(nameof(checkin.IsDone), "IsDone must be either 0 or 1.");
-
         return new Checkin
         {
             HabitId = checkin.HabitId,
-            CheckinDate = normalizedCheckinDate,
-            IsDone = checkin.IsDone
+            CheckinDate = normalizedCheckinDate
         };
     }
 
