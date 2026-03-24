@@ -2,19 +2,18 @@
 @inject IHabitService HabitService
 @inject ICheckinService CheckinService
 @inject IDialogService DialogService
-@inject NavigationManager NavigationManager
 
 <PageTitle>Streak</PageTitle>
 
 @* Page has not been initialized yet. *@
 @if (_loadingData)
 {
-    <MudStack Style="min-height: 80vh"
+    <MudStack Style="@LoadingStateStyle"
               Justify="Justify.Center"
               AlignItems="AlignItems.Center">
         <MudAlert ContentAlignment="HorizontalAlignment.Center"
                   Severity="Severity.Info">
-            Loading Data...
+            @LoadingDataText
         </MudAlert>
     </MudStack>
 }
@@ -25,12 +24,12 @@ else
     {
         <MudContainer MaxWidth="MaxWidth.Small"
                       Class="pa-4">
-            <MudStack Style="min-height: 100vh"
+            <MudStack Style="@EmptyStateStyle"
                       Justify="Justify.Center"
                       AlignItems="AlignItems.Center">
                 <MudFab Color="Color.Tertiary"
                         StartIcon="@Icons.Material.Filled.Add"
-                        Label="New Habit"
+                        Label="@NewHabitButtonLabel"
                         Size="Size.Large"
                         OnClick="OpenQuickAddDialogAsync"/>
             </MudStack>
@@ -43,8 +42,7 @@ else
             <MudStack Spacing="3">
                 @foreach (var habitCheckin in _habitCheckins)
                 {
-                    <HabitCheckin ViewModel="@habitCheckin"
-                                  OnCardClick="OpenHabitDetailsAsync"/>
+                    <HabitCheckin ViewModel="@habitCheckin"/>
                 }
 
                 @if (_habitCheckins.Count < CoreConstants.MaxHabitCount)
@@ -52,7 +50,7 @@ else
                     <MudDivider Class="my-1"/>
                     <MudFab Color="Color.Tertiary"
                             StartIcon="@Icons.Material.Filled.Add"
-                            Label="New Habit"
+                            Label="@NewHabitButtonLabel"
                             Size="Size.Large"
                             OnClick="OpenQuickAddDialogAsync"/>
                 }
@@ -63,14 +61,32 @@ else
 
 @code
 {
+
+    #region Private Fields, Properties
+
     private IReadOnlyList<HabitCheckinViewModel> _habitCheckins = [];
 
     private bool _loadingData;
+
+    #endregion
+
+    #region Lifecycle Methods
 
     protected override async Task OnInitializedAsync()
     {
         await LoadDataAsync();
     }
+
+    #endregion
+
+    #region Event Handlers
+
+    private async Task OpenQuickAddDialogAsync()
+    {
+        await DialogService.ShowAsync<NewHabitDialog>();
+    }
+
+    #endregion
 
     #region Private Helper Methods
 
@@ -79,9 +95,7 @@ else
         _loadingData = true;
 
         var habits = await HabitService.GetAllAsync();
-        var todayDate = DateOnly
-            .FromDateTime(DateTime.UtcNow)
-            .ToString(CoreConstants.CheckinDateFormat, global::System.Globalization.CultureInfo.InvariantCulture);
+        var todayDate = GetTodayDateString();
 
         var habitCheckinTasks = habits.Select(habit => CreateHabitCheckinCardViewModelAsync(habit, todayDate));
 
@@ -92,33 +106,53 @@ else
 
     private async Task<HabitCheckinViewModel> CreateHabitCheckinCardViewModelAsync(Habit habit, string todayDate)
     {
-        var currentStreakTask = CheckinService.GetCurrentStreakAsync(habit.Name);
-        var todayCheckinTask = CheckinService.GetByHabitNameAndDateAsync(habit.Name, todayDate);
-
-        await Task.WhenAll(currentStreakTask, todayCheckinTask);
-
-        var todayCheckin = await todayCheckinTask;
-
-        return new HabitCheckinViewModel
+        var viewModel = new HabitCheckinViewModel
         {
             HabitId = habit.Id,
             HabitName = habit.Name,
             HabitEmoji = habit.Emoji,
-            Streak = await currentStreakTask,
-            IsDoneForToday = todayCheckin is not null
+            Streak = 0,
+            IsDoneForToday = false
         };
+
+        await LoadHabitCheckinStateAsync(viewModel, todayDate);
+
+        return viewModel;
     }
 
-    private async Task OpenQuickAddDialogAsync()
+    private async Task LoadHabitCheckinStateAsync(HabitCheckinViewModel viewModel, string todayDate)
     {
-        await DialogService.ShowAsync<NewHabitDialog>();
+        var currentStreakTask = CheckinService.GetCurrentStreakAsync(viewModel.HabitName);
+        var todayCheckinTask = CheckinService.GetByHabitNameAndDateAsync(viewModel.HabitName, todayDate);
+
+        await Task.WhenAll(currentStreakTask, todayCheckinTask);
+
+        viewModel.Streak = await currentStreakTask;
+        viewModel.IsDoneForToday = await todayCheckinTask is not null;
     }
 
-    private Task OpenHabitDetailsAsync(int habitId)
+    private static string GetTodayDateString()
     {
-        NavigationManager.NavigateTo(RouteConstants.GetHabitDetails(habitId));
-        return Task.CompletedTask;
+        return DateOnly
+            .FromDateTime(DateTime.UtcNow)
+            .ToString(CoreConstants.CheckinDateFormat, CultureInfo.InvariantCulture);
     }
+
+    #endregion
+
+    #region CSS Style Properties
+
+    private const string LoadingStateStyle = "min-height: 80vh";
+
+    private const string EmptyStateStyle = "min-height: 100vh";
+
+    #endregion
+
+    #region Text, Label Properties
+
+    private const string LoadingDataText = "Loading Data...";
+
+    private const string NewHabitButtonLabel = "New Habit";
 
     #endregion
 

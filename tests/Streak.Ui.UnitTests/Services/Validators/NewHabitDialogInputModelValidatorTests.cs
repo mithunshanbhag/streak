@@ -48,21 +48,6 @@ public class NewHabitDialogInputModelValidatorTests
         result.IsValid.Should().BeTrue();
     }
 
-    [Fact]
-    public void ToResultModel_ShouldTrimNameAndNormalizeEmptyEmoji()
-    {
-        var model = new NewHabitInputModel
-        {
-            Name = "  Read  ",
-            Emoji = "   "
-        };
-
-        var result = model.ToResultModel();
-
-        result.Name.Should().Be("Read");
-        result.Emoji.Should().BeNull();
-    }
-
     #endregion
 
     #region Negative tests

@@ -27,7 +27,7 @@ Each card shows:
 | Emoji / Icon   | Left                | The habit's emoji, or a default icon if none is set.                                                                                               |
 | Habit name     | Main text column    | The habit's name label. Tapping the card body opens the [Habit Details page](./habit-details-page.md) for that habit.                             |
 | Current streak | Secondary text line | A compact secondary line under the habit name showing the streak (for example, `😎 3 day streak`, `🔥 12 day streak`, or `0 streak`).             |
-| Checkin toggle | Right               | A `MudToggleIconButton`. Done = green check circle icon. Not done = empty circle icon.                                                            |
+| Checkin toggle | Right               | A `MudCheckBox` configured with custom icons. Done = green check circle icon. Not done = empty circle icon.                                       |
 
 - Cards use the full width of the screen with standard horizontal padding (16dp).
 - Vertical spacing between cards: 12dp.

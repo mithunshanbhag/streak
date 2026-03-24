@@ -135,6 +135,29 @@ public class CheckinRepositoryTests
     }
 
     [Fact]
+    public async Task AddAsync_ShouldAllowReAddingSameCheckinKey_AfterDeleteInSameContext()
+    {
+        await using var context = TestDbContextFactory.CreateContext(out var connection);
+        await using (connection)
+        {
+            context.Habits.Add(new Habit { Id = 1, Name = "Run" });
+            await context.SaveChangesAsync();
+
+            ISqlGenericRepository<Checkin, CheckinKey> sut = new CheckinRepository(context);
+            var checkinKey = new CheckinKey(1, "2025-01-01");
+
+            await sut.AddAsync(new Checkin { HabitId = 1, CheckinDate = "2025-01-01" });
+
+            var deleteResult = await sut.DeleteAsync(checkinKey);
+            var reAddResult = await sut.AddAsync(new Checkin { HabitId = 1, CheckinDate = "2025-01-01" });
+
+            deleteResult.Should().BeTrue();
+            reAddResult.Should().BeTrue();
+            (await context.Checkins.CountAsync()).Should().Be(1);
+        }
+    }
+
+    [Fact]
     public async Task DeleteByHabitNameAndDateAsync_ShouldDeleteExistingCheckinAndReturnTrue()
     {
         await using var context = TestDbContextFactory.CreateContext(out var connection);

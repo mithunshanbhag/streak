@@ -93,11 +93,11 @@ public class CheckinServiceTests
             .ReturnsAsync(true);
 
         var result = await sut.UpsertAsync(
-                new Checkin
-                {
-                    HabitId = 1,
-                    CheckinDate = " 2025-01-10 "
-                },
+            new Checkin
+            {
+                HabitId = 1,
+                CheckinDate = " 2025-01-10 "
+            },
             cancellationToken);
 
         addedCheckin.Should().NotBeNull();

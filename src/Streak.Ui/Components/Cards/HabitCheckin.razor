@@ -1,3 +1,6 @@
+@inject ICheckinService CheckinService
+@inject NavigationManager NavigationManager
+
 <MudPaper Elevation="1"
           Class="px-4 py-3 rounded-lg"
           Style="@CardStyle"
@@ -57,7 +60,8 @@
 
         @* Checkbox for marking habit as done for today. *@
         @* Note: StopClickPropagation is set to true to prevent triggering card click when toggling checkbox. *@
-        <MudCheckBox @bind-Value="ViewModel.IsDoneForToday"
+        <MudCheckBox Value="@ViewModel.IsDoneForToday"
+                     ValueChanged="@(async (bool isDone) => await HandleCheckinChangedAsync(isDone))"
                      Color="Color.Success"
                      CheckedIcon="@Icons.Material.Filled.CheckCircle"
                      UncheckedIcon="@Icons.Material.Filled.RadioButtonUnchecked"
@@ -74,13 +78,11 @@
 
     [Parameter] public required HabitCheckinViewModel ViewModel { get; set; }
 
-    [Parameter] public EventCallback<int> OnCardClick { get; set; }
-
     #endregion
 
-    #region Properties
+    #region Private Fields, Properties
 
-    // #TODO
+    // No private fields.
 
     #endregion
 
@@ -123,17 +125,18 @@
 
     #endregion
 
-    #region Lifecycle Methods
-
-    // @TODO
-
-    #endregion
-
     #region Event Handlers
 
     private Task HandleCardClickAsync()
     {
-        return OnCardClick.InvokeAsync(ViewModel.HabitId);
+        NavigationManager.NavigateTo(RouteConstants.GetHabitDetails(ViewModel.HabitId));
+        return Task.CompletedTask;
+    }
+
+    private async Task HandleCheckinChangedAsync(bool isDone)
+    {
+        await CheckinService.ToggleForTodayAsync(ViewModel.HabitName, isDone);
+        await LoadHabitCheckinStateAsync();
     }
 
     private Task HandleCardKeyDownAsync(KeyboardEventArgs args)
@@ -142,6 +145,29 @@
             return HandleCardClickAsync();
 
         return Task.CompletedTask;
+    }
+
+    #endregion
+
+    #region Private Helper Methods
+
+    private async Task LoadHabitCheckinStateAsync()
+    {
+        var todayDate = GetTodayDateString();
+        var currentStreakTask = CheckinService.GetCurrentStreakAsync(ViewModel.HabitName);
+        var todayCheckinTask = CheckinService.GetByHabitNameAndDateAsync(ViewModel.HabitName, todayDate);
+
+        await Task.WhenAll(currentStreakTask, todayCheckinTask);
+
+        ViewModel.Streak = await currentStreakTask;
+        ViewModel.IsDoneForToday = await todayCheckinTask is not null;
+    }
+
+    private static string GetTodayDateString()
+    {
+        return DateOnly
+            .FromDateTime(DateTime.UtcNow)
+            .ToString(CoreConstants.CheckinDateFormat, CultureInfo.InvariantCulture);
     }
 
     #endregion

@@ -87,8 +87,4 @@
         <ProjectReference Include="..\Streak.Core\Streak.Core.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-        <Folder Include="Components\Shared\" />
-    </ItemGroup>
-
 </Project>

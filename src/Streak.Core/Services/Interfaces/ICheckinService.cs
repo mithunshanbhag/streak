@@ -70,7 +70,10 @@ public interface ICheckinService
     /// <param name="habitName">The habit name.</param>
     /// <param name="isDone"><see langword="true" /> to mark the habit done for today; otherwise, <see langword="false" />.</param>
     /// <param name="cancellationToken">A token that can be used to cancel the asynchronous operation.</param>
-    /// <returns>The persisted check-in for today when <paramref name="isDone" /> is <see langword="true" />; otherwise, <see langword="null" />.</returns>
+    /// <returns>
+    ///     The persisted check-in for today when <paramref name="isDone" /> is <see langword="true" />; otherwise,
+    ///     <see langword="null" />.
+    /// </returns>
     /// <exception cref="ArgumentException">Thrown when <paramref name="habitName" /> is invalid.</exception>
     /// <exception cref="InvalidOperationException">Thrown when the related habit does not exist or when persistence fails.</exception>
     /// <exception cref="OperationCanceledException">
