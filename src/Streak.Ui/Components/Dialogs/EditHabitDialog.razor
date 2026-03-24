@@ -1,0 +1,237 @@
+@inject IHabitService HabitService
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6"
+                 Class="mb-2">
+            @DialogTitleText
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        @if (!string.IsNullOrWhiteSpace(_submitErrorMessage))
+        {
+            <MudAlert Severity="Severity.Error"
+                      Dense="true"
+                      Class="mb-3">
+                @_submitErrorMessage
+            </MudAlert>
+        }
+
+        <MudForm @bind-IsValid="_isFormValid"
+                 Model="@_editHabitInputModel">
+            <MudStack Spacing="3">
+                <MudTextField T="string"
+                              Margin="Margin.Dense"
+                              ShrinkLabel="true"
+                              Clearable="true"
+                              Immediate="true"
+                              DebounceInterval="200"
+                              @bind-Value="@_editHabitInputModel.Name"
+                              For="@(() => _editHabitInputModel.Name)"
+                              Label="@HabitNameLabel"
+                              Required="true"
+                              Validation="@((string _) => ValidateHabitNameAsync())"
+                              MaxLength="@CoreConstants.HabitNameMaxLength"
+                              Counter="@CoreConstants.HabitNameMaxLength"/>
+                <MudTextField T="string"
+                              Margin="Margin.Dense"
+                              ShrinkLabel="true"
+                              Clearable="true"
+                              Immediate="true"
+                              DebounceInterval="200"
+                              @bind-Value="@_editHabitInputModel.Emoji"
+                              Placeholder="@HabitEmojiPlaceholder"
+                              For="@(() => _editHabitInputModel.Emoji!)"
+                              Label="@HabitEmojiLabel"
+                              Validation="@((string _) => ValidateHabitEmoji())"/>
+            </MudStack>
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Text"
+                   Disabled="@_busyIndicator"
+                   OnClick="Cancel">
+            @CancelButtonText
+        </MudButton>
+        <MudButton Color="Color.Primary"
+                   Variant="Variant.Filled"
+                   Disabled="@(_busyIndicator || !_isFormValid)"
+                   OnClick="SaveChangesAsync">
+            @SaveButtonText
+            @if (_busyIndicator)
+            {
+                <MudProgressCircular Indeterminate="true"
+                                     Size="Size.Small"
+                                     Color="Color.Inherit"
+                                     Class="ml-4"/>
+            }
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code
+{
+
+    #region Parameters
+
+    [Parameter]
+    [EditorRequired]
+    public int HabitId { get; set; }
+
+    [Parameter]
+    [EditorRequired]
+    public string HabitName { get; set; } = string.Empty;
+
+    [Parameter]
+    public string? HabitEmoji { get; set; }
+
+    [CascadingParameter] private IMudDialogInstance? MudDialogInstance { get; set; }
+
+    #endregion
+
+    #region Private Fields, Properties
+
+    private bool _isFormValid;
+
+    private readonly EditHabitInputModel _editHabitInputModel = new();
+
+    private bool _busyIndicator;
+
+    private string? _submitErrorMessage;
+
+    #endregion
+
+    #region Lifecycle Methods
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (MudDialogInstance is not null)
+        {
+            await MudDialogInstance.SetOptionsAsync(CreateDialogOptions());
+        }
+    }
+
+    protected override void OnParametersSet()
+    {
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(HabitId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(HabitName);
+
+        _editHabitInputModel.Name = HabitName;
+        _editHabitInputModel.Emoji = HabitEmoji;
+    }
+
+    #endregion
+
+    #region Event Handlers
+
+    private void Cancel()
+    {
+        MudDialogInstance?.Cancel();
+    }
+
+    private async Task SaveChangesAsync()
+    {
+        try
+        {
+            _busyIndicator = true;
+            _submitErrorMessage = null;
+
+            var updatedHabit = await HabitService.UpdateAsync(CreateUpdatedHabit());
+
+            MudDialogInstance?.Close(DialogResult.Ok(updatedHabit));
+        }
+        catch (KeyNotFoundException)
+        {
+            _submitErrorMessage = HabitNotFoundText;
+        }
+        catch (InvalidOperationException exception)
+        {
+            _submitErrorMessage = exception.Message;
+        }
+        finally
+        {
+            _busyIndicator = false;
+        }
+    }
+
+    #endregion
+
+    #region Private Helper Methods
+
+    private async Task<string?> ValidateHabitNameAsync()
+    {
+        if (string.IsNullOrWhiteSpace(_editHabitInputModel.Name)) return ValidNameRequiredText;
+
+        var normalizedName = _editHabitInputModel.Name.Trim();
+        if (normalizedName.Length < CoreConstants.HabitNameMinLength) return HabitNameTooShortText;
+
+        var existingHabits = await HabitService.GetAllAsync();
+
+        return existingHabits.Any(existingHabit =>
+            existingHabit.Id != HabitId &&
+            string.Equals(existingHabit.Name, normalizedName, StringComparison.OrdinalIgnoreCase))
+            ? DuplicateHabitNameText
+            : null;
+    }
+
+    private string? ValidateHabitEmoji()
+    {
+        if (string.IsNullOrWhiteSpace(_editHabitInputModel.Emoji)) return null;
+
+        if (!EmojiValidationHelper.IsEmptyOrSingleEmoji(_editHabitInputModel.Emoji))
+            return InvalidEmojiText;
+
+        return null;
+    }
+
+    private static DialogOptions CreateDialogOptions()
+    {
+        return new DialogOptions
+        {
+            CloseButton = true,
+            BackdropClick = false,
+            CloseOnEscapeKey = true,
+            FullWidth = true,
+            MaxWidth = MaxWidth.Small
+        };
+    }
+
+    private Habit CreateUpdatedHabit()
+    {
+        return new Habit
+        {
+            Id = HabitId,
+            Name = _editHabitInputModel.Name,
+            Emoji = _editHabitInputModel.Emoji
+        };
+    }
+
+    #endregion
+
+    #region Text, Label Properties
+
+    private const string DialogTitleText = "Edit habit";
+
+    private const string HabitNameLabel = "Name";
+
+    private const string HabitEmojiLabel = "Emoji (optional)";
+
+    private const string HabitEmojiPlaceholder = "🙂";
+
+    private const string SaveButtonText = "SAVE";
+
+    private const string CancelButtonText = "Cancel";
+
+    private const string ValidNameRequiredText = "A valid name is required.";
+
+    private static string HabitNameTooShortText => $"Must be at least {CoreConstants.HabitNameMinLength} characters long";
+
+    private const string DuplicateHabitNameText = "A habit with this name already exists.";
+
+    private const string InvalidEmojiText = "Emoji must be a single emoji.";
+
+    private const string HabitNotFoundText = "This habit no longer exists.";
+
+    #endregion
+
+}

@@ -83,7 +83,7 @@ The app uses a **top app bar** that is compact/dense to maximize the content are
   - **Homepage** is the landing page and the root of the navigation stack. It is accessible via `/`.
   - **Habit Details** and **Settings** are one level deep from Homepage.
   - **Quick Add Habit** is launched from the Homepage **`+ New Habit`** CTA (and may also be reached from Homepage empty-state CTAs) as a compact dialog over the Homepage.
-- Habit edit is performed **inline on the Habit Details page**.
+- Habit edit is performed in a **dialog launched from the Habit Details page**.
 - Habit delete is confirmed with a **dialog launched from the Habit Details page**, not a dedicated route.
 - Every non-Homepage routed page displays a **Back arrow** in the app bar (replacing the logo position).
   - From **Settings**, the back arrow returns the **Homepage**.

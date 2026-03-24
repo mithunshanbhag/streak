@@ -91,15 +91,25 @@ else if (_viewModel is not null)
                         </MudText>
                     </MudStack>
 
-                    <MudMenu Dense="true"
-                             Disabled="@_deletingHabit"
-                             Icon="@Icons.Material.Filled.MoreVert"
-                             aria-label="@MoreActionsAriaLabel">
-                        <MudMenuItem Icon="@Icons.Material.Filled.Delete"
-                                     OnClick="OpenDeleteDialogAsync">
-                            @DeleteHabitMenuText
-                        </MudMenuItem>
-                    </MudMenu>
+                    <MudStack Row="true"
+                              AlignItems="AlignItems.Center"
+                              Spacing="1">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                       Disabled="@_deletingHabit"
+                                       Color="Color.Inherit"
+                                       aria-label="@EditHabitAriaLabel"
+                                       OnClick="OpenEditDialogAsync"/>
+
+                        <MudMenu Dense="true"
+                                 Disabled="@_deletingHabit"
+                                 Icon="@Icons.Material.Filled.MoreVert"
+                                 aria-label="@MoreActionsAriaLabel">
+                            <MudMenuItem Icon="@Icons.Material.Filled.Delete"
+                                         OnClick="OpenDeleteDialogAsync">
+                                @DeleteHabitMenuText
+                            </MudMenuItem>
+                        </MudMenu>
+                    </MudStack>
                 </MudStack>
 
                 <MudPaper Elevation="0"
@@ -193,6 +203,25 @@ else if (_viewModel is not null)
         await DeleteHabitAsync(confirmedHabitId);
     }
 
+    private async Task OpenEditDialogAsync()
+    {
+        if (_viewModel is null)
+            throw new InvalidOperationException("Cannot open the edit dialog before the habit details are loaded.");
+
+        var dialog = await DialogService.ShowAsync<EditHabitDialog>(
+            EditDialogTitleText,
+            CreateEditDialogParameters(_viewModel));
+
+        var result = await dialog.Result;
+        if (result is null || result.Canceled)
+            return;
+
+        if (result.Data is not Habit updatedHabit)
+            throw new InvalidOperationException("Edit dialog did not return the updated habit.");
+
+        await RefreshHabitDetailsAsync(updatedHabit);
+    }
+
     #endregion
 
     #region Private Helper Methods
@@ -274,6 +303,27 @@ else if (_viewModel is not null)
         };
     }
 
+    private static DialogParameters<EditHabitDialog> CreateEditDialogParameters(HabitDetailsSummaryViewModel viewModel)
+    {
+        return new DialogParameters<EditHabitDialog>
+        {
+            { x => x.HabitId, viewModel.HabitId },
+            { x => x.HabitName, viewModel.HabitName },
+            { x => x.HabitEmoji, viewModel.HabitEmoji }
+        };
+    }
+
+    private async Task RefreshHabitDetailsAsync(Habit updatedHabit)
+    {
+        if (_viewModel is null)
+            throw new InvalidOperationException("Cannot refresh the habit details before the page is loaded.");
+
+        if (updatedHabit.Id != _viewModel.HabitId)
+            throw new InvalidOperationException("Edit dialog returned a different habit than the one currently being viewed.");
+
+        await LoadDataAsync();
+    }
+
     #endregion
 
     #region CSS Style Properties
@@ -308,7 +358,11 @@ else if (_viewModel is not null)
 
     private const string DeleteDialogTitleText = "Delete habit";
 
+    private const string EditDialogTitleText = "Edit habit";
+
     private const string DeleteHabitMenuText = "Delete habit";
+
+    private const string EditHabitAriaLabel = "Edit habit";
 
     private const string MoreActionsAriaLabel = "More habit actions";
 

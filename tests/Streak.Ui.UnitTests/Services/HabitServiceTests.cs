@@ -180,6 +180,39 @@ public class HabitServiceTests
     }
 
     [Fact]
+    public async Task UpdateAsync_ShouldAllowSameHabitName_WhenOnlyCurrentHabitMatchesIgnoringCase()
+    {
+        var existingHabit = new Habit { Id = 2, Name = "Read", Emoji = "📖" };
+        var existingHabits = new List<Habit>
+        {
+            new() { Id = 1, Name = "Run", Emoji = "🏃" },
+            existingHabit
+        };
+
+        var habitRepositoryMock = new Mock<IHabitRepository>(MockBehavior.Strict);
+        habitRepositoryMock
+            .Setup(x => x.GetAsync(2, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(existingHabit);
+        habitRepositoryMock
+            .Setup(x => x.GetAllAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(existingHabits);
+        habitRepositoryMock
+            .Setup(x => x.UpdateAsync(existingHabit, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+
+        IHabitService sut = new HabitService(habitRepositoryMock.Object);
+
+        var result = await sut.UpdateAsync(new Habit { Id = 2, Name = "  rEaD  ", Emoji = "📚" });
+
+        result.Name.Should().Be("rEaD");
+        result.Emoji.Should().Be("📚");
+        habitRepositoryMock.Verify(x => x.GetAsync(2, It.IsAny<CancellationToken>()), Times.Once);
+        habitRepositoryMock.Verify(x => x.GetAllAsync(It.IsAny<CancellationToken>()), Times.Once);
+        habitRepositoryMock.Verify(x => x.UpdateAsync(existingHabit, It.IsAny<CancellationToken>()), Times.Once);
+        habitRepositoryMock.VerifyNoOtherCalls();
+    }
+
+    [Fact]
     public async Task DeleteAsync_ShouldDeleteHabit_WhenHabitExists()
     {
         var habitRepositoryMock = new Mock<IHabitRepository>(MockBehavior.Strict);
