@@ -101,9 +101,14 @@ public abstract class SqlGenericRepositoryBase<TEntity, TKey>(DbContext dbContex
         Expression<Func<TEntity, bool>> predicate,
         CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(predicate);
+
         var deletedCount = await EntitySet
             .Where(predicate)
             .ExecuteDeleteAsync(cancellationToken);
+
+        if (deletedCount > 0)
+            DetachTrackedEntities(predicate);
 
         return deletedCount > 0;
     }
@@ -136,6 +141,17 @@ public abstract class SqlGenericRepositoryBase<TEntity, TKey>(DbContext dbContex
     private Task<int> GetEntityCountAsync(CancellationToken cancellationToken = default)
     {
         return Query().CountAsync(cancellationToken);
+    }
+
+    private void DetachTrackedEntities(Expression<Func<TEntity, bool>> predicate)
+    {
+        var compiledPredicate = predicate.Compile();
+        var trackedEntities = EntitySet.Local
+            .Where(compiledPredicate)
+            .ToArray();
+
+        foreach (var trackedEntity in trackedEntities)
+            StreakDbContext.Entry(trackedEntity).State = EntityState.Detached;
     }
 
     private async Task<bool> AddEntityAsync(

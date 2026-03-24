@@ -1,12 +1,12 @@
 # Quick Add Habit Dialog
 
-> **Trigger**: Global **+** action on the [Homepage](./homepage.md)
+> **Trigger**: **`+ New Habit`** on the [Homepage](./homepage.md)
 
 The create habit experience is a **compact dialog** launched over the [Homepage](./homepage.md). It is used for adding a new habit without taking the user away from the primary daily check-in surface.
 
 ## Navigation
 
-- Users open the dialog by tapping the **+** icon in the app bar or by tapping **"Add Habit"** from the [Homepage](./homepage.md) empty state.
+- Users open the dialog by tapping the **`+ New Habit`** CTA below the habit list or by tapping the Homepage empty-state CTA.
 - The [Homepage](./homepage.md) remains visible behind the dialog, dimmed.
 - The dialog may be dismissed with an explicit close/cancel action. Android back should dismiss the dialog and return focus to the Homepage.
 
@@ -19,7 +19,6 @@ The dialog presents a compact form for creating a habit.
   - a close action
 - The required **Name** field appears first.
 - The **Emoji** field is optional and visually secondary.
-- A lightweight preview card may appear below the fields to show how the habit will appear in the list.
 - Prefer `MudDialog`, `MudTextField`, `MudButton`, and `MudPaper` before introducing any custom structure.
 - Prefer spacing and border-radius utility classes before adding custom dialog CSS. A small inline width or max-height adjustment is acceptable if needed.
 

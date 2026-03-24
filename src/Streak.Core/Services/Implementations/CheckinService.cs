@@ -1,5 +1,3 @@
-using System.Globalization;
-
 namespace Streak.Core.Services.Implementations;
 
 public class CheckinService(
@@ -55,11 +53,10 @@ public class CheckinService(
     {
         var normalizedCheckin = NormalizeRequiredCheckin(checkin);
 
-        await EnsureHabitExistsAsync(normalizedCheckin.HabitName, cancellationToken);
+        await EnsureHabitExistsAsync(normalizedCheckin.HabitId, cancellationToken);
 
-        var existingCheckin = await _checkinRepository.GetByHabitNameAndDateAsync(
-            normalizedCheckin.HabitName,
-            normalizedCheckin.CheckinDate,
+        var existingCheckin = await _checkinRepository.GetAsync(
+            new CheckinKey(normalizedCheckin.HabitId, normalizedCheckin.CheckinDate),
             cancellationToken);
 
         if (existingCheckin is null)
@@ -67,37 +64,20 @@ public class CheckinService(
             var added = await _checkinRepository.AddAsync(normalizedCheckin, cancellationToken);
             if (!added)
                 throw new InvalidOperationException(
-                    $"Unable to add checkin for habit '{normalizedCheckin.HabitName}' on '{normalizedCheckin.CheckinDate}'.");
+                    $"Unable to add checkin for habit id '{normalizedCheckin.HabitId}' on '{normalizedCheckin.CheckinDate}'.");
 
             return normalizedCheckin;
         }
 
-        existingCheckin.IsDone = normalizedCheckin.IsDone;
-        existingCheckin.LastUpdatedUtc = normalizedCheckin.LastUpdatedUtc;
-
-        var updated = await _checkinRepository.UpdateAsync(existingCheckin, cancellationToken);
-        if (!updated)
-            throw new InvalidOperationException(
-                $"Unable to update checkin for habit '{normalizedCheckin.HabitName}' on '{normalizedCheckin.CheckinDate}'.");
-
         return existingCheckin;
     }
 
-    public Task<Checkin> ToggleForTodayAsync(
+    public Task<Checkin?> ToggleForTodayAsync(
         string habitName,
         bool isDone,
         CancellationToken cancellationToken = default)
     {
-        var normalizedHabitName = NormalizeRequiredText(habitName, nameof(habitName));
-
-        var checkin = new Checkin
-        {
-            HabitName = normalizedHabitName,
-            CheckinDate = GetUtcTodayDateString(),
-            IsDone = isDone ? 1 : 0
-        };
-
-        return UpsertAsync(checkin, cancellationToken);
+        return ToggleForTodayInternalAsync(habitName, isDone, cancellationToken);
     }
 
     public async Task DeleteForHabitAndDateAsync(
@@ -105,25 +85,20 @@ public class CheckinService(
         string checkinDate,
         CancellationToken cancellationToken = default)
     {
-        var normalizedHabitName = NormalizeRequiredText(habitName, nameof(habitName));
+        var habit = await GetRequiredHabitByNameAsync(habitName, cancellationToken);
         var normalizedCheckinDate = NormalizeRequiredDate(checkinDate, nameof(checkinDate));
 
-        await EnsureHabitExistsAsync(normalizedHabitName, cancellationToken);
-
-        var checkinKey = new CheckinKey(normalizedHabitName, normalizedCheckinDate);
+        var checkinKey = new CheckinKey(habit.Id, normalizedCheckinDate);
         var checkinExists = await _checkinRepository.ExistsAsync(checkinKey, cancellationToken);
         if (!checkinExists)
             throw new InvalidOperationException(
-                $"Checkin for habit '{normalizedHabitName}' on '{normalizedCheckinDate}' does not exist.");
+                $"Checkin for habit '{habit.Name}' on '{normalizedCheckinDate}' does not exist.");
 
-        var deleted = await _checkinRepository.DeleteByHabitNameAndDateAsync(
-            normalizedHabitName,
-            normalizedCheckinDate,
-            cancellationToken);
+        var deleted = await _checkinRepository.DeleteAsync(checkinKey, cancellationToken);
 
         if (!deleted)
             throw new InvalidOperationException(
-                $"Unable to delete checkin for habit '{normalizedHabitName}' on '{normalizedCheckinDate}'.");
+                $"Unable to delete checkin for habit '{habit.Name}' on '{normalizedCheckinDate}'.");
     }
 
     public async Task<int> GetCurrentStreakAsync(string habitName, CancellationToken cancellationToken = default)
@@ -133,25 +108,24 @@ public class CheckinService(
 
         if (checkinHistory.Count == 0) return 0;
 
-        var checkinsByDate = new Dictionary<DateOnly, bool>();
+        HashSet<DateOnly> checkinDates = [];
         foreach (var checkin in checkinHistory)
         {
-            if (!TryParseDate(checkin.CheckinDate, out var checkinDate) || checkinsByDate.ContainsKey(checkinDate)) continue;
-
-            checkinsByDate.Add(checkinDate, checkin.IsDone == 1);
+            if (!TryParseDate(checkin.CheckinDate, out var checkinDate)) continue;
+            checkinDates.Add(checkinDate);
         }
 
-        if (checkinsByDate.Count == 0) return 0;
+        if (checkinDates.Count == 0) return 0;
 
         var todayUtc = DateOnly.FromDateTime(DateTime.UtcNow);
-        var streakStartDate = checkinsByDate.TryGetValue(todayUtc, out var isDoneToday) && isDoneToday
+        var streakStartDate = checkinDates.Contains(todayUtc)
             ? todayUtc
             : todayUtc.AddDays(-1);
 
         var streak = 0;
         var currentDate = streakStartDate;
 
-        while (checkinsByDate.TryGetValue(currentDate, out var isDone) && isDone)
+        while (checkinDates.Contains(currentDate))
         {
             streak++;
             currentDate = currentDate.AddDays(-1);
@@ -160,27 +134,58 @@ public class CheckinService(
         return streak;
     }
 
-    private async Task EnsureHabitExistsAsync(string habitName, CancellationToken cancellationToken)
+    private async Task<Checkin?> ToggleForTodayInternalAsync(
+        string habitName,
+        bool isDone,
+        CancellationToken cancellationToken)
     {
-        var habitExists = await _habitRepository.ExistsByNameAsync(habitName, cancellationToken);
-        if (!habitExists) throw new InvalidOperationException($"Habit '{habitName}' does not exist.");
+        var habit = await GetRequiredHabitByNameAsync(habitName, cancellationToken);
+        var todayDate = GetUtcTodayDateString();
+
+        if (!isDone)
+        {
+            await _checkinRepository.DeleteAsync(new CheckinKey(habit.Id, todayDate), cancellationToken);
+            return null;
+        }
+
+        var checkin = new Checkin
+        {
+            HabitId = habit.Id,
+            CheckinDate = todayDate
+        };
+
+        return await UpsertAsync(checkin, cancellationToken);
+    }
+
+    private async Task<Habit> GetRequiredHabitByNameAsync(string habitName, CancellationToken cancellationToken)
+    {
+        var normalizedHabitName = NormalizeRequiredText(habitName, nameof(habitName));
+
+        return await _habitRepository.GetByNameAsync(normalizedHabitName, cancellationToken)
+               ?? throw new InvalidOperationException($"Habit '{normalizedHabitName}' does not exist.");
+    }
+
+    private async Task EnsureHabitExistsAsync(int habitId, CancellationToken cancellationToken)
+    {
+        if (habitId <= 0)
+            throw new ArgumentOutOfRangeException(nameof(habitId), "Habit ID must be greater than zero.");
+
+        var habitExists = await _habitRepository.ExistsAsync(habitId, cancellationToken);
+        if (!habitExists) throw new InvalidOperationException($"Habit id '{habitId}' does not exist.");
     }
 
     private static Checkin NormalizeRequiredCheckin(Checkin checkin)
     {
         RequireNotNull(checkin, nameof(checkin));
 
-        var normalizedHabitName = NormalizeRequiredText(checkin.HabitName, nameof(checkin.HabitName));
         var normalizedCheckinDate = NormalizeRequiredDate(checkin.CheckinDate, nameof(checkin.CheckinDate));
-
-        if (checkin.IsDone is not (0 or 1)) throw new ArgumentOutOfRangeException(nameof(checkin.IsDone), "IsDone must be either 0 or 1.");
+        if (checkin.HabitId <= 0)
+            throw new ArgumentOutOfRangeException(nameof(checkin.HabitId), "Habit ID must be greater than zero.");
 
         return new Checkin
         {
-            HabitName = normalizedHabitName,
-            CheckinDate = normalizedCheckinDate,
-            IsDone = checkin.IsDone,
-            LastUpdatedUtc = FormatUtcTimestamp(DateTimeOffset.UtcNow)
+            HabitId = checkin.HabitId,
+            CheckinDate = normalizedCheckinDate
         };
     }
 

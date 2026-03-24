@@ -13,45 +13,37 @@
                Elevation="1">
         @if (_isHomePage)
         {
-            <MudTooltip Text="Let your habits compound">
+            <MudTooltip Text="@HomeLogoTooltipText">
                 <MudText Typo="Typo.h5">
-                    Streak
+                    @AppTitleText
                 </MudText>
             </MudTooltip>
             <MudSpacer/>
-            <MudTooltip Text="Manage habits">
-                @* TODO: Change this icon later *@
+            <MudTooltip Text="@SettingsTooltipText">
                 <MudIconButton Class="mr-4"
-                               Href="@RouteConstants.ManageHabits"
-                               Icon="@Icons.Material.Filled.Add"
-                               Color="Color.Inherit"
-                               aria-label="Manage habits"/>
-            </MudTooltip>
-            <MudTooltip Text="Settings">
-                <MudIconButton Class="mr-4"
-                               Href="@RouteConstants.Home"
+                               Href="@RouteConstants.Settings"
                                Icon="@Icons.Material.Filled.Settings"
                                Color="Color.Inherit"
-                               aria-label="Settings"/>
+                               aria-label="@SettingsAriaLabel"/>
             </MudTooltip>
-            <MudTooltip Text="View source code"
+            <MudTooltip Text="@GitHubTooltipText"
                         Placement="Placement.Left">
                 <MudIconButton Class="mr-4"
                                Href="@UrlConstants.GitHubRepo"
                                Target="_blank"
                                Icon="@Icons.Custom.Brands.GitHub"
                                Color="Color.Inherit"
-                               aria-label="View source code on GitHub"/>
+                               aria-label="@GitHubAriaLabel"/>
             </MudTooltip>
         }
         else
         {
-            <MudTooltip Text="Back to habits">
+            <MudTooltip Text="@BackTooltipText">
                 <MudIconButton Class="mr-2"
                                Icon="@Icons.Material.Filled.ArrowBack"
                                Color="Color.Inherit"
                                Href="@RouteConstants.Home"
-                               aria-label="Back to habits"/>
+                               aria-label="@BackAriaLabel"/>
             </MudTooltip>
             <MudSpacer/>
         }
@@ -64,12 +56,12 @@
     </MudMainContent>
 
     <MudScrollToTop>
-        <MudTooltip Text="Scroll to top">
+        <MudTooltip Text="@ScrollToTopTooltipText">
             <MudFab Color="Color.Primary"
                     IconSize="Size.Large"
                     Size="Size.Large"
                     StartIcon="@Icons.Material.Filled.ArrowUpward"
-                    aria-label="Scroll to top of page"/>
+                    aria-label="@ScrollToTopAriaLabel"/>
         </MudTooltip>
     </MudScrollToTop>
 
@@ -77,13 +69,24 @@
 
 @code
 {
-    private bool _isHomePage = false;
+
+    #region Private Fields, Properties
+
+    private bool _isHomePage;
+
+    #endregion
+
+    #region Lifecycle Methods
 
     protected override void OnInitialized()
     {
         CheckIfHomePage(NavigationManager.Uri);
         NavigationManager.LocationChanged += HandleLocationChanged;
     }
+
+    #endregion
+
+    #region Event Handlers
 
     public void Dispose()
     {
@@ -98,12 +101,16 @@
         _ = InvokeAsync(StateHasChanged);
     }
 
+    #endregion
+
+    #region Private Helper Methods
+
     private void CheckIfHomePage(string uri)
     {
         var relativePath = NavigationManager.ToBaseRelativePath(uri);
 
         var separatorIndex = relativePath.IndexOfAny(['?', '#']);
-        
+
         var normalizedPath = separatorIndex >= 0
             ? relativePath[..separatorIndex]
             : relativePath;
@@ -112,5 +119,31 @@
 
         _isHomePage = string.IsNullOrEmpty(normalizedPathTrimmed);
     }
+
+    #endregion
+
+    #region Text, Label Properties
+
+    private const string AppTitleText = "Streak";
+
+    private const string HomeLogoTooltipText = "Let your habits compound";
+
+    private const string SettingsTooltipText = "Settings";
+
+    private const string SettingsAriaLabel = "Settings";
+
+    private const string GitHubTooltipText = "View source code";
+
+    private const string GitHubAriaLabel = "View source code on GitHub";
+
+    private const string BackTooltipText = "Back to habits";
+
+    private const string BackAriaLabel = "Back to habits";
+
+    private const string ScrollToTopTooltipText = "Scroll to top";
+
+    private const string ScrollToTopAriaLabel = "Scroll to top of page";
+
+    #endregion
 
 }

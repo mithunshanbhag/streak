@@ -27,11 +27,12 @@ A recurring daily activity the user wants to track.
 
 ### Checkin
 
-A daily record that marks a habit as **done** or **not done** for a given calendar day.
+A daily record that exists only when a habit is marked **done** for a given calendar day.
 
-- Checkins are **binary**: done or not done. There is no partial completion or quantity tracking.
+- Checkins are **binary**: a record exists when done, and no record exists when not done. There is no partial completion or quantity tracking.
 - Checkins apply to **today only**. Backdating (marking a past day) is not supported.
 - A habit that has no checkin recorded for a day is treated as **not done**.
+- If the user unchecks a same-day habit, that day's checkin record is deleted.
 - There are two ways a checkin happens:
   1. **Voluntary**: the user taps the toggle on the homepage as soon as they complete the activity.
   2. **Via reminder**: at a user-configured time each day, the app sends a notification prompting the user to check in on any habits that are still pending (not yet marked done).
@@ -74,17 +75,18 @@ Each major surface has its own detailed spec:
 | ---------------------------- | ----------------------- | -------------------------------------------------------- | -------------------------------------------------------- |
 | Homepage                     | `/`                    | [homepage.md](./homepage.md)                             | Landing page, daily checkin surface, and habit list      |
 | Habit Details                | `/habits/{habitId}`    | [habit-details-page.md](./habit-details-page.md)         | Habit details, trends, inline editing, and deletion      |
-| Quick Add Habit              | `+` action on Homepage | [create-habit-page.md](./create-habit-page.md)           | Create a new habit in a compact dialog without leaving the homepage |
+| Quick Add Habit              | `+ New Habit` on Homepage | [create-habit-page.md](./create-habit-page.md)        | Create a new habit in a compact dialog without leaving the homepage |
 | Settings                     | `/settings`            | [settings-page.md](./settings-page.md)                   | Configure reminder preferences                           |
 
 ## Information Architecture Notes
 
 - The app remains **shallow by default**: **Homepage** is the landing page, with **Habit Details** and **Settings** as the primary secondary destinations.
-- The global **+** app-bar action opens a compact **Quick Add Habit** dialog over **Homepage**.
+- The Homepage includes a dedicated **`+ New Habit`** CTA below the habit list, which opens a compact **Quick Add Habit** dialog over **Homepage**.
 - The **Homepage** doubles as the habit-list maintenance surface: habits are shown alphabetically and each habit opens its details on the Habit Details page.
+- The Homepage app bar keeps **Settings** plus a right-most **GitHub** repo link instead of a global create icon.
 - The **Habit Details** page contains the heatmap, inline edit experience, and delete confirmation dialog for a single habit.
 - **Settings** is now focused only on notification reminder preferences.
-- The top of **Homepage** uses a compact progress summary instead of instructional header copy.
+- **Homepage** opens directly into the habit list without instructional header copy, progress summary text, or a habit-count chip.
 - There is no dedicated habit-list routed page separate from **Homepage**.
 - There is no dedicated routed **Create Habit** page in the simplified direction.
 - Separate **Edit Habit** and **Delete Habit** routed pages are no longer part of the app structure.

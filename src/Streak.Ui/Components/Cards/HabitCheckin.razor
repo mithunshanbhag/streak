@@ -1,0 +1,175 @@
+@inject ICheckinService CheckinService
+@inject NavigationManager NavigationManager
+
+<MudPaper Elevation="1"
+          Class="px-4 py-3 rounded-lg"
+          Style="@CardStyle"
+          role="button"
+          tabindex="0"
+          aria-label="@CardAriaLabel"
+          @onclick="HandleCardClickAsync"
+          @onkeydown="HandleCardKeyDownAsync">
+    <MudStack Row="true"
+              AlignItems="AlignItems.Center"
+              Justify="Justify.SpaceBetween"
+              Wrap="Wrap.NoWrap"
+              Spacing="2">
+        @* 
+            Everything except the checkbox is wrapped in a button-like stack to allow 
+            clicking anywhere on the card to open details, while still allowing the checkbox 
+            to be interactive without triggering card click. 
+        *@
+        <MudStack Row="true"
+                  AlignItems="AlignItems.Center"
+                  Wrap="Wrap.NoWrap"
+                  Spacing="5"
+                  Style="@ContentStyle">
+            <MudPaper Elevation="0"
+                      Class="rounded-lg"
+                      Style="@EmojiContainerStyle">
+                <MudStack AlignItems="AlignItems.Center"
+                          Justify="Justify.Center"
+                          Style="@EmojiContentStyle">
+                    @if (string.IsNullOrWhiteSpace(ViewModel.HabitEmoji))
+                    {
+                        <MudIcon Icon="@Icons.Material.Filled.Circle"
+                                 Size="Size.Small"
+                                 Color="Color.Primary"/>
+                    }
+                    else
+                    {
+                        <MudText Typo="Typo.h6">
+                            @ViewModel.HabitEmoji
+                        </MudText>
+                    }
+                </MudStack>
+            </MudPaper>
+
+            <MudStack Spacing="0"
+                      Style="@TextContentStyle">
+                <MudText Typo="Typo.body1"
+                         Style="@HabitNameStyle">
+                    @ViewModel.HabitName
+                </MudText>
+                <MudText Typo="Typo.body2"
+                         Style="@StreakTextStyle">
+                    @StreakText
+                </MudText>
+            </MudStack>
+        </MudStack>
+
+        @* Checkbox for marking habit as done for today. *@
+        @* Note: StopClickPropagation is set to true to prevent triggering card click when toggling checkbox. *@
+        <MudCheckBox Value="@ViewModel.IsDoneForToday"
+                     ValueChanged="@(async (bool isDone) => await HandleCheckinChangedAsync(isDone))"
+                     Color="Color.Success"
+                     CheckedIcon="@Icons.Material.Filled.CheckCircle"
+                     UncheckedIcon="@Icons.Material.Filled.RadioButtonUnchecked"
+                     UncheckedColor="Color.Inherit"
+                     AriaLabel="@CheckBoxAriaLabel"
+                     Size="Size.Large"
+                     StopClickPropagation="true"/>
+    </MudStack>
+</MudPaper>
+
+@code {
+
+    #region Parameters
+
+    [Parameter] public required HabitCheckinViewModel ViewModel { get; set; }
+
+    #endregion
+
+    #region Private Fields, Properties
+
+    // No private fields.
+
+    #endregion
+
+    #region CSS Style Properties
+
+    private string CardStyle => ViewModel.IsDoneForToday
+        ? "width: 100%; border-left: 4px solid var(--mud-palette-success); cursor: pointer;"
+        : "width: 100%; border-left: 4px solid transparent; cursor: pointer;";
+
+    private const string ContentStyle = "min-width: 0; flex: 1;";
+
+    private const string EmojiContainerStyle = "width: 40px; height: 40px; background-color: var(--mud-palette-primary-hover);";
+
+    private const string EmojiContentStyle = "width: 40px; height: 40px;";
+
+    private const string TextContentStyle = "min-width: 0; flex: 1;";
+
+    private const string HabitNameStyle = "overflow: hidden; text-overflow: ellipsis; white-space: nowrap;";
+
+    private string StreakTextStyle => ViewModel.Streak switch
+    {
+        >= 7 => "color: var(--mud-palette-warning);",
+        >= 1 => "color: var(--mud-palette-info);",
+        _ => "color: var(--mud-palette-text-secondary);"
+    };
+
+    #endregion
+
+    #region Text, Label Properties
+
+    private string StreakText => ViewModel.StreakEmoji is null
+        ? "0 streak"
+        : $"{ViewModel.StreakEmoji} {ViewModel.Streak} day streak";
+
+    private string CardAriaLabel => $"Open details for habit '{ViewModel.HabitName}'.";
+
+    private string CheckBoxAriaLabel => ViewModel.IsDoneForToday
+        ? $"Habit '{ViewModel.HabitName}' is checked in for today."
+        : $"Habit '{ViewModel.HabitName}' is not checked in for today.";
+
+    #endregion
+
+    #region Event Handlers
+
+    private Task HandleCardClickAsync()
+    {
+        NavigationManager.NavigateTo(RouteConstants.GetHabitDetails(ViewModel.HabitId));
+        return Task.CompletedTask;
+    }
+
+    private async Task HandleCheckinChangedAsync(bool isDone)
+    {
+        await CheckinService.ToggleForTodayAsync(ViewModel.HabitName, isDone);
+        await LoadHabitCheckinStateAsync();
+    }
+
+    private Task HandleCardKeyDownAsync(KeyboardEventArgs args)
+    {
+        if (args.Key is "Enter" or " ")
+            return HandleCardClickAsync();
+
+        return Task.CompletedTask;
+    }
+
+    #endregion
+
+    #region Private Helper Methods
+
+    private async Task LoadHabitCheckinStateAsync()
+    {
+        var todayDate = GetTodayDateString();
+        var currentStreakTask = CheckinService.GetCurrentStreakAsync(ViewModel.HabitName);
+        var todayCheckinTask = CheckinService.GetByHabitNameAndDateAsync(ViewModel.HabitName, todayDate);
+
+        await Task.WhenAll(currentStreakTask, todayCheckinTask);
+
+        ViewModel.Streak = await currentStreakTask;
+        ViewModel.IsDoneForToday = await todayCheckinTask is not null;
+    }
+
+    private static string GetTodayDateString()
+    {
+        return DateOnly
+            .FromDateTime(DateTime.UtcNow)
+            .ToString(CoreConstants.CheckinDateFormat, CultureInfo.InvariantCulture);
+    }
+
+    #endregion
+
+}

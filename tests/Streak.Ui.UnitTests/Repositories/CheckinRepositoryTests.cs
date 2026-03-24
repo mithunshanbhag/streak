@@ -29,23 +29,23 @@ public class CheckinRepositoryTests
         await using (connection)
         {
             context.Habits.AddRange(
-                new Habit { Id = 1, Name = "Run", DisplayOrder = 1 },
-                new Habit { Id = 2, Name = "Read", DisplayOrder = 2 });
+                new Habit { Id = 1, Name = "Run" },
+                new Habit { Id = 2, Name = "Read" });
 
             context.Checkins.AddRange(
-                new Checkin { HabitName = "Run", CheckinDate = "2025-01-01", IsDone = 1 },
-                new Checkin { HabitName = "Run", CheckinDate = "2025-01-03", IsDone = 1 },
-                new Checkin { HabitName = "Read", CheckinDate = "2025-01-02", IsDone = 1 },
-                new Checkin { HabitName = "Read", CheckinDate = "2025-01-03", IsDone = 0 });
+                new Checkin { HabitId = 1, CheckinDate = "2025-01-01" },
+                new Checkin { HabitId = 1, CheckinDate = "2025-01-03" },
+                new Checkin { HabitId = 2, CheckinDate = "2025-01-02" },
+                new Checkin { HabitId = 2, CheckinDate = "2025-01-03" });
             await context.SaveChangesAsync();
 
             ICheckinRepository sut = new CheckinRepository(context);
 
             var result = await sut.GetByHabitNamesAsync([" Run ", "Read", "Run"]);
 
-            result.Select(x => $"{x.HabitName}:{x.CheckinDate}")
+            result.Select(x => $"{x.HabitId}:{x.CheckinDate}")
                 .Should()
-                .Equal("Read:2025-01-03", "Read:2025-01-02", "Run:2025-01-03", "Run:2025-01-01");
+                .Equal("2:2025-01-03", "2:2025-01-02", "1:2025-01-03", "1:2025-01-01");
         }
     }
 
@@ -55,12 +55,12 @@ public class CheckinRepositoryTests
         await using var context = TestDbContextFactory.CreateContext(out var connection);
         await using (connection)
         {
-            context.Habits.Add(new Habit { Id = 1, Name = "Run", DisplayOrder = 1 });
+            context.Habits.Add(new Habit { Id = 1, Name = "Run" });
             await context.SaveChangesAsync();
 
             context.ChangeTracker.Clear();
             ISqlGenericRepository<Checkin, CheckinKey> sut = new CheckinRepository(context);
-            var checkin = new Checkin { HabitName = "Run", CheckinDate = "2025-01-01", IsDone = 1 };
+            var checkin = new Checkin { HabitId = 1, CheckinDate = "2025-01-01" };
 
             var result = await sut.AddAsync(checkin);
 
@@ -70,32 +70,28 @@ public class CheckinRepositoryTests
     }
 
     [Fact]
-    public async Task UpdateAsync_ShouldUpdateExistingCheckinAndReturnTrue()
+    public async Task GetByHabitNamesAsync_ShouldApplyInclusiveDateRange()
     {
         await using var context = TestDbContextFactory.CreateContext(out var connection);
         await using (connection)
         {
-            context.Habits.Add(new Habit { Id = 1, Name = "Run", DisplayOrder = 1 });
-            context.Checkins.Add(new Checkin { HabitName = "Run", CheckinDate = "2025-01-01", IsDone = 0 });
+            context.Habits.AddRange(
+                new Habit { Id = 1, Name = "Read" },
+                new Habit { Id = 2, Name = "Run" });
+            context.Checkins.AddRange(
+                new Checkin { HabitId = 1, CheckinDate = "2025-01-01" },
+                new Checkin { HabitId = 1, CheckinDate = "2025-01-03" },
+                new Checkin { HabitId = 2, CheckinDate = "2025-01-02" },
+                new Checkin { HabitId = 2, CheckinDate = "2025-01-04" });
             await context.SaveChangesAsync();
-            context.ChangeTracker.Clear();
 
-            ISqlGenericRepository<Checkin, CheckinKey> sut = new CheckinRepository(context);
-            var updatedCheckin = new Checkin
-            {
-                HabitName = "Run",
-                CheckinDate = "2025-01-01",
-                IsDone = 1,
-                LastUpdatedUtc = "2025-01-01T10:00:00Z"
-            };
+            var sut = new CheckinRepository(context);
 
-            var result = await sut.UpdateAsync(updatedCheckin);
+            var result = await sut.GetByHabitNamesAsync(["Read", "Run"], "2025-01-02", "2025-01-03");
 
-            result.Should().BeTrue();
-            context.ChangeTracker.Clear();
-            var savedCheckin = await context.Checkins.SingleAsync();
-            savedCheckin.IsDone.Should().Be(1);
-            savedCheckin.LastUpdatedUtc.Should().Be("2025-01-01T10:00:00Z");
+            result.Select(x => $"{x.HabitId}:{x.CheckinDate}")
+                .Should()
+                .Equal("1:2025-01-03", "2:2025-01-02");
         }
     }
 
@@ -105,16 +101,16 @@ public class CheckinRepositoryTests
         await using var context = TestDbContextFactory.CreateContext(out var connection);
         await using (connection)
         {
-            context.Habits.Add(new Habit { Id = 1, Name = "Run", DisplayOrder = 1 });
-            context.Checkins.Add(new Checkin { HabitName = "Run", CheckinDate = "2025-01-01", IsDone = 1 });
+            context.Habits.Add(new Habit { Id = 1, Name = "Run" });
+            context.Checkins.Add(new Checkin { HabitId = 1, CheckinDate = "2025-01-01" });
             await context.SaveChangesAsync();
 
             ISqlGenericRepository<Checkin, CheckinKey> sut = new CheckinRepository(context);
 
-            var result = await sut.GetAsync(new CheckinKey(" Run ", " 2025-01-01 "));
+            var result = await sut.GetAsync(new CheckinKey(1, " 2025-01-01 "));
 
             result.Should().NotBeNull();
-            result.HabitName.Should().Be("Run");
+            result.HabitId.Should().Be(1);
             result.CheckinDate.Should().Be("2025-01-01");
         }
     }
@@ -125,16 +121,39 @@ public class CheckinRepositoryTests
         await using var context = TestDbContextFactory.CreateContext(out var connection);
         await using (connection)
         {
-            context.Habits.Add(new Habit { Id = 1, Name = "Run", DisplayOrder = 1 });
-            context.Checkins.Add(new Checkin { HabitName = "Run", CheckinDate = "2025-01-01", IsDone = 1 });
+            context.Habits.Add(new Habit { Id = 1, Name = "Run" });
+            context.Checkins.Add(new Checkin { HabitId = 1, CheckinDate = "2025-01-01" });
             await context.SaveChangesAsync();
 
             ISqlGenericRepository<Checkin, CheckinKey> sut = new CheckinRepository(context);
 
-            var result = await sut.DeleteAsync(new CheckinKey(" Run ", "2025-01-01"));
+            var result = await sut.DeleteAsync(new CheckinKey(1, "2025-01-01"));
 
             result.Should().BeTrue();
             (await context.Checkins.CountAsync()).Should().Be(0);
+        }
+    }
+
+    [Fact]
+    public async Task AddAsync_ShouldAllowReAddingSameCheckinKey_AfterDeleteInSameContext()
+    {
+        await using var context = TestDbContextFactory.CreateContext(out var connection);
+        await using (connection)
+        {
+            context.Habits.Add(new Habit { Id = 1, Name = "Run" });
+            await context.SaveChangesAsync();
+
+            ISqlGenericRepository<Checkin, CheckinKey> sut = new CheckinRepository(context);
+            var checkinKey = new CheckinKey(1, "2025-01-01");
+
+            await sut.AddAsync(new Checkin { HabitId = 1, CheckinDate = "2025-01-01" });
+
+            var deleteResult = await sut.DeleteAsync(checkinKey);
+            var reAddResult = await sut.AddAsync(new Checkin { HabitId = 1, CheckinDate = "2025-01-01" });
+
+            deleteResult.Should().BeTrue();
+            reAddResult.Should().BeTrue();
+            (await context.Checkins.CountAsync()).Should().Be(1);
         }
     }
 
@@ -144,8 +163,8 @@ public class CheckinRepositoryTests
         await using var context = TestDbContextFactory.CreateContext(out var connection);
         await using (connection)
         {
-            context.Habits.Add(new Habit { Id = 1, Name = "Run", DisplayOrder = 1 });
-            context.Checkins.Add(new Checkin { HabitName = "Run", CheckinDate = "2025-01-01", IsDone = 1 });
+            context.Habits.Add(new Habit { Id = 1, Name = "Run" });
+            context.Checkins.Add(new Checkin { HabitId = 1, CheckinDate = "2025-01-01" });
             await context.SaveChangesAsync();
 
             var sut = new CheckinRepository(context);
@@ -167,7 +186,7 @@ public class CheckinRepositoryTests
         await using var context = TestDbContextFactory.CreateContext(out var connection);
         await using (connection)
         {
-            context.Habits.Add(new Habit { Id = 1, Name = "Run", DisplayOrder = 1 });
+            context.Habits.Add(new Habit { Id = 1, Name = "Run" });
             await context.SaveChangesAsync();
 
             var sut = new CheckinRepository(context);
@@ -179,18 +198,18 @@ public class CheckinRepositoryTests
     }
 
     [Fact]
-    public async Task DeleteByHabitIdAsync_ShouldReturnFalse_WhenHabitDoesNotExist()
+    public async Task DeleteByIdAsync_ShouldReturnFalse_WhenCheckinDoesNotExist()
     {
         await using var context = TestDbContextFactory.CreateContext(out var connection);
         await using (connection)
         {
-            context.Habits.Add(new Habit { Id = 1, Name = "Run", DisplayOrder = 1 });
-            context.Checkins.Add(new Checkin { HabitName = "Run", CheckinDate = "2025-01-01", IsDone = 1 });
+            context.Habits.Add(new Habit { Id = 1, Name = "Run" });
+            context.Checkins.Add(new Checkin { HabitId = 1, CheckinDate = "2025-01-01" });
             await context.SaveChangesAsync();
 
             var sut = new CheckinRepository(context);
 
-            var result = await sut.DeleteAsync(new CheckinKey("NonExistentHabit", "2025-01-01"));
+            var result = await sut.DeleteAsync(new CheckinKey(999, "2025-01-01"));
 
             result.Should().BeFalse();
         }
@@ -202,12 +221,12 @@ public class CheckinRepositoryTests
         await using var context = TestDbContextFactory.CreateContext(out var connection);
         await using (connection)
         {
-            context.Habits.Add(new Habit { Id = 1, Name = "Run", DisplayOrder = 1 });
+            context.Habits.Add(new Habit { Id = 1, Name = "Run" });
             await context.SaveChangesAsync();
 
             ISqlGenericRepository<Checkin, CheckinKey> sut = new CheckinRepository(context);
 
-            var result = await sut.ExistsAsync(new CheckinKey("Run", "2025-01-01"));
+            var result = await sut.ExistsAsync(new CheckinKey(1, "2025-01-01"));
 
             result.Should().BeFalse();
         }

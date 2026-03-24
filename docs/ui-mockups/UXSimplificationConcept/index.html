@@ -11,76 +11,76 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <main class="gallery">
-        <section class="intro-card">
-            <p class="eyebrow">Decision summary</p>
-            <h1>UX simplification follow-up</h1>
-            <p class="intro-copy">
-                This page records the simplified direction that the primary specs and mockups now follow:
-                a Homepage-first shell, a compact Quick Add dialog, quieter secondary screens, and a stronger bias toward MudBlazor controls plus built-in utility classes.
-            </p>
-        </section>
+<main class="gallery">
+    <section class="intro-card">
+        <p class="eyebrow">Decision summary</p>
+        <h1>UX simplification follow-up</h1>
+        <p class="intro-copy">
+            This page records the simplified direction that the primary specs and mockups now follow:
+            a Homepage-first shell, a compact Quick Add dialog, quieter secondary screens, and a stronger bias toward MudBlazor controls plus built-in utility classes.
+        </p>
+    </section>
 
-        <section class="decision-grid">
-            <article class="decision-card decision-card--accepted">
-                <div class="decision-card__icon">
-                    <span class="material-icons">check_circle</span>
-                </div>
-                <div>
-                    <p class="decision-card__eyebrow">Accepted</p>
-                    <h2>Simplified Homepage</h2>
-                    <p>The primary Homepage mockup keeps only the compact progress summary, the daily list, and the root-screen app-bar actions.</p>
-                    <a class="decision-link" href="../Homepage/index.html">Open `Homepage` mockup</a>
-                </div>
-            </article>
+    <section class="decision-grid">
+        <article class="decision-card decision-card--accepted">
+            <div class="decision-card__icon">
+                <span class="material-icons">check_circle</span>
+            </div>
+            <div>
+                <p class="decision-card__eyebrow">Accepted</p>
+                <h2>Simplified Homepage</h2>
+                <p>The primary Homepage mockup now starts directly with the daily list, keeps the footer `+ New Habit` CTA, and preserves the root-screen Settings plus GitHub actions.</p>
+                <a class="decision-link" href="../Homepage/index.html">Open `Homepage` mockup</a>
+            </div>
+        </article>
 
-            <article class="decision-card decision-card--accepted">
-                <div class="decision-card__icon">
-                    <span class="material-icons">check_circle</span>
-                </div>
-                <div>
-                    <p class="decision-card__eyebrow">Accepted</p>
-                    <h2>Quick Add dialog</h2>
-                    <p>The create flow is now represented as a compact dialog over the Homepage instead of a routed page or custom bottom sheet.</p>
-                    <a class="decision-link" href="../CreateHabitPage/index.html">Open `CreateHabitPage` mockup</a>
-                </div>
-            </article>
+        <article class="decision-card decision-card--accepted">
+            <div class="decision-card__icon">
+                <span class="material-icons">check_circle</span>
+            </div>
+            <div>
+                <p class="decision-card__eyebrow">Accepted</p>
+                <h2>Quick Add dialog</h2>
+                <p>The create flow is now represented as a compact dialog over the Homepage instead of a routed page or custom bottom sheet.</p>
+                <a class="decision-link" href="../CreateHabitPage/index.html">Open `CreateHabitPage` mockup</a>
+            </div>
+        </article>
 
-            <article class="decision-card decision-card--accepted">
-                <div class="decision-card__icon">
-                    <span class="material-icons">check_circle</span>
-                </div>
-                <div>
-                    <p class="decision-card__eyebrow">Accepted</p>
-                    <h2>MudBlazor-first surfaces</h2>
-                    <p>Specs now explicitly favor built-in MudBlazor controls, theme semantics, and CSS utilities before any bespoke layout styling.</p>
-                    <a class="decision-link" href="../../specs/ui.md">Open `ui.md`</a>
-                </div>
-            </article>
+        <article class="decision-card decision-card--accepted">
+            <div class="decision-card__icon">
+                <span class="material-icons">check_circle</span>
+            </div>
+            <div>
+                <p class="decision-card__eyebrow">Accepted</p>
+                <h2>MudBlazor-first surfaces</h2>
+                <p>Specs now explicitly favor built-in MudBlazor controls, theme semantics, and CSS utilities before any bespoke layout styling.</p>
+                <a class="decision-link" href="../../specs/ui.md">Open `ui.md`</a>
+            </div>
+        </article>
 
-            <article class="decision-card decision-card--accepted">
-                <div class="decision-card__icon">
-                    <span class="material-icons">check_circle</span>
-                </div>
-                <div>
-                    <p class="decision-card__eyebrow">Accepted</p>
-                    <h2>Lighter Habit Details hierarchy</h2>
-                    <p>Habit Details keeps its dedicated route, but combines identity and streak at the top and treats history as a secondary disclosure.</p>
-                    <a class="decision-link" href="../HabitDetailsPage/index.html">Open `HabitDetailsPage` mockup</a>
-                </div>
-            </article>
+        <article class="decision-card decision-card--accepted">
+            <div class="decision-card__icon">
+                <span class="material-icons">check_circle</span>
+            </div>
+            <div>
+                <p class="decision-card__eyebrow">Accepted</p>
+                <h2>Lighter Habit Details hierarchy</h2>
+                <p>Habit Details keeps its dedicated route, but combines identity and streak at the top and treats history as a secondary disclosure.</p>
+                <a class="decision-link" href="../HabitDetailsPage/index.html">Open `HabitDetailsPage` mockup</a>
+            </div>
+        </article>
 
-            <article class="decision-card decision-card--discarded">
-                <div class="decision-card__icon">
-                    <span class="material-icons">cancel</span>
-                </div>
-                <div>
-                    <p class="decision-card__eyebrow">Discarded</p>
-                    <h2>Compact details sheet</h2>
-                    <p>This direction remains intentionally dropped. Habit details stay as a dedicated route in both the specs and the primary mockups.</p>
-                </div>
-            </article>
-        </section>
-    </main>
+        <article class="decision-card decision-card--discarded">
+            <div class="decision-card__icon">
+                <span class="material-icons">cancel</span>
+            </div>
+            <div>
+                <p class="decision-card__eyebrow">Discarded</p>
+                <h2>Compact details sheet</h2>
+                <p>This direction remains intentionally dropped. Habit details stay as a dedicated route in both the specs and the primary mockups.</p>
+            </div>
+        </article>
+    </section>
+</main>
 </body>
 </html>

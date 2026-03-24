@@ -1,20 +1,34 @@
-using Streak.Core.Services.Implementations;
-using Streak.Core.Services.Interfaces;
-
 namespace Streak.Core.UnitTests.Services;
 
 public class HabitServiceTests
 {
+    #region Boundary tests
+
+    [Fact]
+    public async Task GetByIdAsync_ShouldThrowArgumentOutOfRangeException_WhenIdIsNotPositive()
+    {
+        var habitRepositoryMock = new Mock<IHabitRepository>(MockBehavior.Strict);
+        IHabitService sut = new HabitService(habitRepositoryMock.Object);
+
+        var act = () => sut.GetByIdAsync(0);
+
+        var exception = await act.Should().ThrowAsync<ArgumentOutOfRangeException>();
+        exception.Which.ParamName.Should().Be("id");
+        habitRepositoryMock.VerifyNoOtherCalls();
+    }
+
+    #endregion
+
     #region Positive tests
 
     [Fact]
-    public async Task GetAllAsync_ShouldReturnHabitsOrderedByDisplayOrderThenName()
+    public async Task GetAllAsync_ShouldReturnHabitsOrderedByNameIgnoringCase()
     {
         var existingHabits = new List<Habit>
         {
-            new() { Id = 1, Name = "Zulu", DisplayOrder = 2 },
-            new() { Id = 2, Name = "beta", DisplayOrder = 1 },
-            new() { Id = 3, Name = "Alpha", DisplayOrder = 1 }
+            new() { Id = 1, Name = "Zulu" },
+            new() { Id = 2, Name = "beta" },
+            new() { Id = 3, Name = "Alpha" }
         };
 
         var habitRepositoryMock = new Mock<IHabitRepository>(MockBehavior.Strict);
@@ -34,7 +48,7 @@ public class HabitServiceTests
     [Fact]
     public async Task GetByIdAsync_ShouldReturnHabit_WhenIdExists()
     {
-        var expectedHabit = new Habit { Id = 3, Name = "Read", Emoji = "📖", DisplayOrder = 2 };
+        var expectedHabit = new Habit { Id = 3, Name = "Read", Emoji = "📖" };
         var habitRepositoryMock = new Mock<IHabitRepository>(MockBehavior.Strict);
         habitRepositoryMock
             .Setup(x => x.GetAsync(3, It.IsAny<CancellationToken>()))
@@ -54,8 +68,8 @@ public class HabitServiceTests
     {
         var existingHabits = new List<Habit>
         {
-            new() { Id = 1, Name = "Run", DisplayOrder = 1 },
-            new() { Id = 2, Name = "Read", DisplayOrder = 2 }
+            new() { Id = 1, Name = "Run" },
+            new() { Id = 2, Name = "Read" }
         };
 
         var habitRepositoryMock = new Mock<IHabitRepository>(MockBehavior.Strict);
@@ -92,12 +106,12 @@ public class HabitServiceTests
     }
 
     [Fact]
-    public async Task CreateAsync_ShouldCreateHabitWithNextIdAndDisplayOrder_WhenInputIsValid()
+    public async Task CreateAsync_ShouldCreateHabitWithNextId_WhenInputIsValid()
     {
         var existingHabits = new List<Habit>
         {
-            new() { Id = 1, Name = "Run", Emoji = "🏃", DisplayOrder = 2 },
-            new() { Id = 4, Name = "Read", Emoji = "📖", DisplayOrder = 5 }
+            new() { Id = 1, Name = "Run", Emoji = "🏃" },
+            new() { Id = 4, Name = "Read", Emoji = "📖" }
         };
 
         Habit? persistedHabit = null;
@@ -111,7 +125,7 @@ public class HabitServiceTests
             .ReturnsAsync(true);
 
         IHabitService sut = new HabitService(habitRepositoryMock.Object);
-        var habitToCreate = new Habit { Id = 99, Name = "  Meditate  ", Emoji = "  🧘  ", DisplayOrder = 0 };
+        var habitToCreate = new Habit { Id = 99, Name = "  Meditate  ", Emoji = "  🧘  " };
 
         var result = await sut.CreateAsync(habitToCreate);
 
@@ -120,8 +134,7 @@ public class HabitServiceTests
             {
                 Id = 5,
                 Name = "Meditate",
-                Emoji = "🧘",
-                DisplayOrder = 6
+                Emoji = "🧘"
             });
 
         persistedHabit.Should().NotBeNull();
@@ -134,11 +147,11 @@ public class HabitServiceTests
     [Fact]
     public async Task UpdateAsync_ShouldUpdateAndPersistHabit_WhenInputIsValid()
     {
-        var existingHabit = new Habit { Id = 2, Name = "Read", Emoji = "📖", DisplayOrder = 3 };
+        var existingHabit = new Habit { Id = 2, Name = "Read", Emoji = "📖" };
         var existingHabits = new List<Habit>
         {
             existingHabit,
-            new() { Id = 1, Name = "Run", Emoji = "🏃", DisplayOrder = 1 }
+            new() { Id = 1, Name = "Run", Emoji = "🏃" }
         };
 
         var habitRepositoryMock = new Mock<IHabitRepository>(MockBehavior.Strict);
@@ -153,14 +166,13 @@ public class HabitServiceTests
             .ReturnsAsync(true);
 
         IHabitService sut = new HabitService(habitRepositoryMock.Object);
-        var updatedInput = new Habit { Id = 2, Name = "  Read Daily  ", Emoji = "  📚  ", DisplayOrder = 999 };
+        var updatedInput = new Habit { Id = 2, Name = "  Read Daily  ", Emoji = "  📚  " };
 
         var result = await sut.UpdateAsync(updatedInput);
 
         result.Should().BeSameAs(existingHabit);
         result.Name.Should().Be("Read Daily");
         result.Emoji.Should().Be("📚");
-        result.DisplayOrder.Should().Be(3);
         habitRepositoryMock.Verify(x => x.GetAsync(2, It.IsAny<CancellationToken>()), Times.Once);
         habitRepositoryMock.Verify(x => x.GetAllAsync(It.IsAny<CancellationToken>()), Times.Once);
         habitRepositoryMock.Verify(x => x.UpdateAsync(existingHabit, It.IsAny<CancellationToken>()), Times.Once);
@@ -184,53 +196,6 @@ public class HabitServiceTests
 
         habitRepositoryMock.Verify(x => x.ExistsAsync(4, It.IsAny<CancellationToken>()), Times.Once);
         habitRepositoryMock.Verify(x => x.DeleteAsync(4, It.IsAny<CancellationToken>()), Times.Once);
-        habitRepositoryMock.VerifyNoOtherCalls();
-    }
-
-    [Fact]
-    public async Task ReorderAsync_ShouldApplySequentialDisplayOrder_WhenInputMatchesExistingHabits()
-    {
-        var existingHabits = new List<Habit>
-        {
-            new() { Id = 1, Name = "Run", DisplayOrder = 20 },
-            new() { Id = 2, Name = "Read", DisplayOrder = 30 },
-            new() { Id = 3, Name = "Code", DisplayOrder = 10 }
-        };
-
-        IReadOnlyList<Habit>? reorderedHabits = null;
-        var habitRepositoryMock = new Mock<IHabitRepository>(MockBehavior.Strict);
-        habitRepositoryMock
-            .Setup(x => x.GetAllAsync(It.IsAny<CancellationToken>()))
-            .ReturnsAsync(existingHabits);
-        habitRepositoryMock
-            .Setup(x => x.ReorderAsync(It.IsAny<IReadOnlyList<Habit>>(), It.IsAny<CancellationToken>()))
-            .Callback<IReadOnlyList<Habit>, CancellationToken>((habits, _) => reorderedHabits = habits)
-            .ReturnsAsync(true);
-
-        IHabitService sut = new HabitService(habitRepositoryMock.Object);
-
-        await sut.ReorderAsync([3, 1, 2]);
-
-        reorderedHabits.Should().NotBeNull();
-        reorderedHabits!.Select(x => x.Id).Should().Equal(3, 1, 2);
-        habitRepositoryMock.Verify(x => x.GetAllAsync(It.IsAny<CancellationToken>()), Times.Once);
-        habitRepositoryMock.Verify(x => x.ReorderAsync(It.IsAny<IReadOnlyList<Habit>>(), It.IsAny<CancellationToken>()), Times.Once);
-        habitRepositoryMock.VerifyNoOtherCalls();
-    }
-
-    [Fact]
-    public async Task ReorderAsync_ShouldReturnWithoutUpdates_WhenNoHabitsExistAndInputIsEmpty()
-    {
-        var habitRepositoryMock = new Mock<IHabitRepository>(MockBehavior.Strict);
-        habitRepositoryMock
-            .Setup(x => x.GetAllAsync(It.IsAny<CancellationToken>()))
-            .ReturnsAsync([]);
-
-        IHabitService sut = new HabitService(habitRepositoryMock.Object);
-
-        await sut.ReorderAsync([]);
-
-        habitRepositoryMock.Verify(x => x.GetAllAsync(It.IsAny<CancellationToken>()), Times.Once);
         habitRepositoryMock.VerifyNoOtherCalls();
     }
 
@@ -269,7 +234,7 @@ public class HabitServiceTests
     {
         var habitRepositoryMock = new Mock<IHabitRepository>(MockBehavior.Strict);
         IHabitService sut = new HabitService(habitRepositoryMock.Object);
-        var invalidHabit = new Habit { Id = 1, Name = "   ", Emoji = "📖", DisplayOrder = 1 };
+        var invalidHabit = new Habit { Id = 1, Name = "   ", Emoji = "📖" };
 
         var act = () => sut.CreateAsync(invalidHabit);
 
@@ -283,7 +248,7 @@ public class HabitServiceTests
     {
         var existingHabits = new List<Habit>
         {
-            new() { Id = 1, Name = "Read", DisplayOrder = 1 }
+            new() { Id = 1, Name = "Read" }
         };
 
         var habitRepositoryMock = new Mock<IHabitRepository>(MockBehavior.Strict);
@@ -292,7 +257,7 @@ public class HabitServiceTests
             .ReturnsAsync(existingHabits);
 
         IHabitService sut = new HabitService(habitRepositoryMock.Object);
-        var habitToCreate = new Habit { Id = 2, Name = "  rEaD  ", Emoji = "📚", DisplayOrder = 2 };
+        var habitToCreate = new Habit { Id = 2, Name = "  rEaD  ", Emoji = "📚" };
 
         var act = () => sut.CreateAsync(habitToCreate);
 
@@ -306,15 +271,9 @@ public class HabitServiceTests
     [Fact]
     public async Task CreateAsync_ShouldThrowInvalidOperationException_WhenHabitLimitIsReached()
     {
-        var existingHabits = new List<Habit>
-        {
-            new() { Id = 1, Name = "Habit 1", DisplayOrder = 1 },
-            new() { Id = 2, Name = "Habit 2", DisplayOrder = 2 },
-            new() { Id = 3, Name = "Habit 3", DisplayOrder = 3 },
-            new() { Id = 4, Name = "Habit 4", DisplayOrder = 4 },
-            new() { Id = 5, Name = "Habit 5", DisplayOrder = 5 },
-            new() { Id = 6, Name = "Habit 6", DisplayOrder = 6 }
-        };
+        var existingHabits = Enumerable.Range(1, CoreConstants.MaxHabitCount)
+            .Select(index => new Habit { Id = index, Name = $"Habit {index}" })
+            .ToList();
 
         var habitRepositoryMock = new Mock<IHabitRepository>(MockBehavior.Strict);
         habitRepositoryMock
@@ -322,14 +281,57 @@ public class HabitServiceTests
             .ReturnsAsync(existingHabits);
 
         IHabitService sut = new HabitService(habitRepositoryMock.Object);
-        var habitToCreate = new Habit { Id = 7, Name = "New Habit", Emoji = "✨", DisplayOrder = 7 };
+        var habitToCreate = new Habit { Id = 7, Name = "New Habit", Emoji = "✨" };
 
         var act = () => sut.CreateAsync(habitToCreate);
 
         var exception = await act.Should().ThrowAsync<InvalidOperationException>();
-        exception.Which.Message.Should().Contain("Cannot create more than 6 habits.");
+        exception.Which.Message.Should().Contain($"Cannot create more than {CoreConstants.MaxHabitCount} habits.");
         habitRepositoryMock.Verify(x => x.GetAllAsync(It.IsAny<CancellationToken>()), Times.Once);
         habitRepositoryMock.Verify(x => x.AddAsync(It.IsAny<Habit>(), It.IsAny<CancellationToken>()), Times.Never);
+        habitRepositoryMock.VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task CreateAsync_ShouldThrowArgumentException_WhenHabitNameExceedsConfiguredMaximum()
+    {
+        var habitRepositoryMock = new Mock<IHabitRepository>(MockBehavior.Strict);
+        IHabitService sut = new HabitService(habitRepositoryMock.Object);
+        var invalidHabit = new Habit
+        {
+            Id = 1,
+            Name = new string('R', CoreConstants.HabitNameMaxLength + 1),
+            Emoji = "📖"
+        };
+
+        var act = () => sut.CreateAsync(invalidHabit);
+
+        var exception = await act.Should().ThrowAsync<ArgumentException>();
+        exception.Which.ParamName.Should().Be("Name");
+        exception.Which.Message.Should().Contain(
+            $"Habit name must be between {CoreConstants.HabitNameMinLength} and {CoreConstants.HabitNameMaxLength} characters.");
+        habitRepositoryMock.VerifyNoOtherCalls();
+    }
+
+    [Theory]
+    [InlineData("ab")]
+    [InlineData("📚📖")]
+    public async Task CreateAsync_ShouldThrowArgumentException_WhenEmojiIsNotASingleEmoji(string emoji)
+    {
+        var habitRepositoryMock = new Mock<IHabitRepository>(MockBehavior.Strict);
+        IHabitService sut = new HabitService(habitRepositoryMock.Object);
+        var invalidHabit = new Habit
+        {
+            Id = 1,
+            Name = "Read",
+            Emoji = emoji
+        };
+
+        var act = () => sut.CreateAsync(invalidHabit);
+
+        var exception = await act.Should().ThrowAsync<ArgumentException>();
+        exception.Which.ParamName.Should().Be("Emoji");
+        exception.Which.Message.Should().Contain("single emoji");
         habitRepositoryMock.VerifyNoOtherCalls();
     }
 
@@ -351,12 +353,34 @@ public class HabitServiceTests
     {
         var habitRepositoryMock = new Mock<IHabitRepository>(MockBehavior.Strict);
         IHabitService sut = new HabitService(habitRepositoryMock.Object);
-        var invalidHabit = new Habit { Id = 1, Name = "   ", Emoji = "📖", DisplayOrder = 1 };
+        var invalidHabit = new Habit { Id = 1, Name = "   ", Emoji = "📖" };
 
         var act = () => sut.UpdateAsync(invalidHabit);
 
         var exception = await act.Should().ThrowAsync<ArgumentException>();
         exception.Which.ParamName.Should().Be("Name");
+        habitRepositoryMock.VerifyNoOtherCalls();
+    }
+
+    [Theory]
+    [InlineData("ab")]
+    [InlineData("📚📖")]
+    public async Task UpdateAsync_ShouldThrowArgumentException_WhenEmojiIsNotASingleEmoji(string emoji)
+    {
+        var habitRepositoryMock = new Mock<IHabitRepository>(MockBehavior.Strict);
+        IHabitService sut = new HabitService(habitRepositoryMock.Object);
+        var invalidHabit = new Habit
+        {
+            Id = 1,
+            Name = "Read",
+            Emoji = emoji
+        };
+
+        var act = () => sut.UpdateAsync(invalidHabit);
+
+        var exception = await act.Should().ThrowAsync<ArgumentException>();
+        exception.Which.ParamName.Should().Be("Emoji");
+        exception.Which.Message.Should().Contain("single emoji");
         habitRepositoryMock.VerifyNoOtherCalls();
     }
 
@@ -369,7 +393,7 @@ public class HabitServiceTests
             .ReturnsAsync((Habit?)null);
 
         IHabitService sut = new HabitService(habitRepositoryMock.Object);
-        var habitToUpdate = new Habit { Id = 42, Name = "Read", Emoji = "📚", DisplayOrder = 1 };
+        var habitToUpdate = new Habit { Id = 42, Name = "Read", Emoji = "📚" };
 
         var act = () => sut.UpdateAsync(habitToUpdate);
 
@@ -382,10 +406,10 @@ public class HabitServiceTests
     [Fact]
     public async Task UpdateAsync_ShouldThrowInvalidOperationException_WhenNameConflictsWithAnotherHabit()
     {
-        var existingHabit = new Habit { Id = 2, Name = "Read", Emoji = "📖", DisplayOrder = 2 };
+        var existingHabit = new Habit { Id = 2, Name = "Read", Emoji = "📖" };
         var existingHabits = new List<Habit>
         {
-            new() { Id = 1, Name = "Run", Emoji = "🏃", DisplayOrder = 1 },
+            new() { Id = 1, Name = "Run", Emoji = "🏃" },
             existingHabit
         };
 
@@ -398,7 +422,7 @@ public class HabitServiceTests
             .ReturnsAsync(existingHabits);
 
         IHabitService sut = new HabitService(habitRepositoryMock.Object);
-        var habitToUpdate = new Habit { Id = 2, Name = " RUN ", Emoji = "🏃‍♂️", DisplayOrder = 2 };
+        var habitToUpdate = new Habit { Id = 2, Name = " RUN ", Emoji = "🏃‍♂️" };
 
         var act = () => sut.UpdateAsync(habitToUpdate);
 
@@ -426,141 +450,6 @@ public class HabitServiceTests
         exception.Which.Message.Should().Contain("8");
         habitRepositoryMock.Verify(x => x.ExistsAsync(8, It.IsAny<CancellationToken>()), Times.Once);
         habitRepositoryMock.Verify(x => x.DeleteAsync(It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.Never);
-        habitRepositoryMock.VerifyNoOtherCalls();
-    }
-
-    [Fact]
-    public async Task ReorderAsync_ShouldThrowArgumentNullException_WhenHabitIdsAreNull()
-    {
-        var habitRepositoryMock = new Mock<IHabitRepository>(MockBehavior.Strict);
-        IHabitService sut = new HabitService(habitRepositoryMock.Object);
-
-        var act = () => sut.ReorderAsync(null!);
-
-        var exception = await act.Should().ThrowAsync<ArgumentNullException>();
-        exception.Which.ParamName.Should().Be("habitIdsInDisplayOrder");
-        habitRepositoryMock.VerifyNoOtherCalls();
-    }
-
-    [Fact]
-    public async Task ReorderAsync_ShouldThrowArgumentException_WhenHabitIdsContainDuplicates()
-    {
-        var habitRepositoryMock = new Mock<IHabitRepository>(MockBehavior.Strict);
-        IHabitService sut = new HabitService(habitRepositoryMock.Object);
-
-        var act = () => sut.ReorderAsync([1, 1]);
-
-        var exception = await act.Should().ThrowAsync<ArgumentException>();
-        exception.Which.ParamName.Should().Be("habitIdsInDisplayOrder");
-        habitRepositoryMock.VerifyNoOtherCalls();
-    }
-
-    [Fact]
-    public async Task ReorderAsync_ShouldThrowArgumentException_WhenInputIsEmptyButHabitsExist()
-    {
-        var existingHabits = new List<Habit>
-        {
-            new() { Id = 1, Name = "Read", DisplayOrder = 1 }
-        };
-
-        var habitRepositoryMock = new Mock<IHabitRepository>(MockBehavior.Strict);
-        habitRepositoryMock
-            .Setup(x => x.GetAllAsync(It.IsAny<CancellationToken>()))
-            .ReturnsAsync(existingHabits);
-
-        IHabitService sut = new HabitService(habitRepositoryMock.Object);
-
-        var act = () => sut.ReorderAsync([]);
-
-        var exception = await act.Should().ThrowAsync<ArgumentException>();
-        exception.Which.ParamName.Should().Be("habitIdsInDisplayOrder");
-        habitRepositoryMock.Verify(x => x.GetAllAsync(It.IsAny<CancellationToken>()), Times.Once);
-        habitRepositoryMock.Verify(x => x.ReorderAsync(It.IsAny<IReadOnlyList<Habit>>(), It.IsAny<CancellationToken>()), Times.Never);
-        habitRepositoryMock.VerifyNoOtherCalls();
-    }
-
-    [Fact]
-    public async Task ReorderAsync_ShouldThrowKeyNotFoundException_WhenInputContainsUnknownHabitId()
-    {
-        var existingHabits = new List<Habit>
-        {
-            new() { Id = 1, Name = "Run", DisplayOrder = 1 },
-            new() { Id = 2, Name = "Read", DisplayOrder = 2 },
-            new() { Id = 3, Name = "Code", DisplayOrder = 3 }
-        };
-
-        var habitRepositoryMock = new Mock<IHabitRepository>(MockBehavior.Strict);
-        habitRepositoryMock
-            .Setup(x => x.GetAllAsync(It.IsAny<CancellationToken>()))
-            .ReturnsAsync(existingHabits);
-
-        IHabitService sut = new HabitService(habitRepositoryMock.Object);
-
-        var act = () => sut.ReorderAsync([1, 2, 99]);
-
-        var exception = await act.Should().ThrowAsync<KeyNotFoundException>();
-        exception.Which.Message.Should().Contain("99");
-        habitRepositoryMock.Verify(x => x.GetAllAsync(It.IsAny<CancellationToken>()), Times.Once);
-        habitRepositoryMock.Verify(x => x.ReorderAsync(It.IsAny<IReadOnlyList<Habit>>(), It.IsAny<CancellationToken>()), Times.Never);
-        habitRepositoryMock.VerifyNoOtherCalls();
-    }
-
-    [Fact]
-    public async Task ReorderAsync_ShouldThrowInvalidOperationException_WhenAtomicReorderFails()
-    {
-        var existingHabits = new List<Habit>
-        {
-            new() { Id = 1, Name = "Run", DisplayOrder = 1 },
-            new() { Id = 2, Name = "Read", DisplayOrder = 2 },
-            new() { Id = 3, Name = "Code", DisplayOrder = 3 }
-        };
-
-        var habitRepositoryMock = new Mock<IHabitRepository>(MockBehavior.Strict);
-        habitRepositoryMock
-            .Setup(x => x.GetAllAsync(It.IsAny<CancellationToken>()))
-            .ReturnsAsync(existingHabits);
-        habitRepositoryMock
-            .Setup(x => x.ReorderAsync(It.IsAny<IReadOnlyList<Habit>>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(false);
-
-        IHabitService sut = new HabitService(habitRepositoryMock.Object);
-
-        var act = () => sut.ReorderAsync([3, 1, 2]);
-
-        var exception = await act.Should().ThrowAsync<InvalidOperationException>();
-        exception.Which.Message.Should().Contain("Failed to reorder habits.");
-        habitRepositoryMock.Verify(x => x.GetAllAsync(It.IsAny<CancellationToken>()), Times.Once);
-        habitRepositoryMock.Verify(x => x.ReorderAsync(It.IsAny<IReadOnlyList<Habit>>(), It.IsAny<CancellationToken>()), Times.Once);
-        habitRepositoryMock.VerifyNoOtherCalls();
-    }
-
-    #endregion
-
-    #region Boundary tests
-
-    [Fact]
-    public async Task GetByIdAsync_ShouldThrowArgumentOutOfRangeException_WhenIdIsNotPositive()
-    {
-        var habitRepositoryMock = new Mock<IHabitRepository>(MockBehavior.Strict);
-        IHabitService sut = new HabitService(habitRepositoryMock.Object);
-
-        var act = () => sut.GetByIdAsync(0);
-
-        var exception = await act.Should().ThrowAsync<ArgumentOutOfRangeException>();
-        exception.Which.ParamName.Should().Be("id");
-        habitRepositoryMock.VerifyNoOtherCalls();
-    }
-
-    [Fact]
-    public async Task ReorderAsync_ShouldThrowArgumentOutOfRangeException_WhenHabitIdsContainNonPositiveValue()
-    {
-        var habitRepositoryMock = new Mock<IHabitRepository>(MockBehavior.Strict);
-        IHabitService sut = new HabitService(habitRepositoryMock.Object);
-
-        var act = () => sut.ReorderAsync([2, 0, 1]);
-
-        var exception = await act.Should().ThrowAsync<ArgumentOutOfRangeException>();
-        exception.Which.ParamName.Should().Be("habitIdsInDisplayOrder");
         habitRepositoryMock.VerifyNoOtherCalls();
     }
 

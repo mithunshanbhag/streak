@@ -50,8 +50,10 @@ This document covers shared UI conventions that apply across all screens in the 
 
 - **Habit icons**: Users may select a single emoji to represent each habit. If no emoji is selected, a default filled-circle icon is used.
 - **App bar icons**: Material Design icons from MudBlazor's built-in icon set:
-  - Create habit: `Add` (plus) icon
   - Settings: `Settings` (gear) icon
+  - GitHub repo: GitHub brand icon (`Icons.Custom.Brands.GitHub`)
+- **Homepage create CTA**:
+  - New habit button: `Add` (plus) icon paired with `New Habit` text
 - **Habit detail actions**:
   - Edit habit: `Edit` (pencil) icon
   - Delete habit: `Delete` (bin) icon
@@ -65,11 +67,12 @@ The app uses a **top app bar** that is compact/dense to maximize the content are
 | Position               | Element              | Behavior                                                                                               |
 | ---------------------- | -------------------- | ------------------------------------------------------------------------------------------------------ |
 | Left                   | "Streak" logo text   | Tapping navigates to the Homepage. Tooltip on hover: *"Let your habits compound"*.                     |
-| Right (1st from right) | Settings icon (gear) | Navigates to the [Settings page](./settings-page.md).                                                  |
-| Right (2nd from right) | Add icon (plus)      | Opens the [Quick Add Habit dialog](./create-habit-page.md) over the Homepage.                         |
+| Right (2nd from right) | Settings icon (gear) | Navigates to the [Settings page](./settings-page.md).                                                  |
+| Right (1st from right) | GitHub icon          | Opens the public GitHub repository in an external browser/tab.                                         |
 
 - The app bar is **fixed** at the top and does not scroll with content.
-- The full `Streak` + `Add` + `Settings` action set is present on the **Homepage**.
+- The full `Streak` + `Settings` + `GitHub` action set is present on the **Homepage**.
+- The Homepage's primary create entry point is a dedicated **`+ New Habit`** button placed below the habit list.
 - Every routed secondary screen uses a simpler app bar pattern: **Back** + page title only.
 - The quick-add flow itself does **not** introduce a separate full-screen app bar.
 - Use `MudAppBar` plus `MudIconButton`, `MudText`, and `MudSpacer` rather than custom toolbar markup.
@@ -79,7 +82,7 @@ The app uses a **top app bar** that is compact/dense to maximize the content are
 - The app uses a **shallow routed navigation model**:
   - **Homepage** is the landing page and the root of the navigation stack. It is accessible via `/`.
   - **Habit Details** and **Settings** are one level deep from Homepage.
-  - **Quick Add Habit** is launched from the global **+** action (and may also be reached from Homepage empty-state CTAs) as a compact dialog over the Homepage.
+  - **Quick Add Habit** is launched from the Homepage **`+ New Habit`** CTA (and may also be reached from Homepage empty-state CTAs) as a compact dialog over the Homepage.
 - Habit edit is performed **inline on the Habit Details page**.
 - Habit delete is confirmed with a **dialog launched from the Habit Details page**, not a dedicated route.
 - Every non-Homepage routed page displays a **Back arrow** in the app bar (replacing the logo position).
@@ -95,7 +98,7 @@ The app uses a **top app bar** that is compact/dense to maximize the content are
 | -------------- | ------------------- |
 | Homepage       | `/`                 |
 | Habit Details  | `/habits/{habitId}` |
-| Quick Add Habit| `+` from Homepage (dialog) |
+| Quick Add Habit| `+ New Habit` from Homepage (dialog) |
 | Settings       | `/settings`         |
 
 ## Breadcrumbs
@@ -117,6 +120,6 @@ The app uses a **top app bar** that is compact/dense to maximize the content are
 
 - When there is no content to display (e.g., no habits created), the page shows:
   - A friendly illustration or emoji (e.g., 🌱).
-  - A short message (e.g., "No habits yet. Tap + to add one.").
+  - A short message (e.g., "No habits yet. Tap New Habit to add one.").
   - Optionally, a call-to-action button that opens the Quick Add Habit dialog.
 - Empty states should be composed from `MudStack`, `MudText`, and `MudButton` before adding custom layout styling.
