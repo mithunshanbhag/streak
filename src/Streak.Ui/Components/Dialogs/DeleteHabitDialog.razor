@@ -1,0 +1,102 @@
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            @DeleteDialogTitle
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudText Typo="Typo.body2">
+            @DeleteDialogMessageText
+        </MudText>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Text"
+                   OnClick="Cancel">
+            @CancelButtonText
+        </MudButton>
+        <MudButton Color="Color.Error"
+                   Variant="Variant.Filled"
+                   OnClick="ConfirmDelete">
+            @DeleteButtonText
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code
+{
+
+    #region Parameters
+
+    [Parameter]
+    [EditorRequired]
+    public int HabitId { get; set; }
+
+    [Parameter]
+    [EditorRequired]
+    public string HabitName { get; set; } = string.Empty;
+
+    [CascadingParameter] private IMudDialogInstance? MudDialogInstance { get; set; }
+
+    #endregion
+
+    #region Lifecycle Methods
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (MudDialogInstance is not null)
+        {
+            await MudDialogInstance.SetOptionsAsync(CreateDialogOptions());
+        }
+    }
+
+    protected override void OnParametersSet()
+    {
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(HabitId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(HabitName);
+    }
+
+    #endregion
+
+    #region Event Handlers
+
+    private void ConfirmDelete()
+    {
+        MudDialogInstance?.Close(DialogResult.Ok(HabitId));
+    }
+
+    private void Cancel()
+    {
+        MudDialogInstance?.Cancel();
+    }
+
+    #endregion
+
+    #region Private Helper Methods
+
+    private static DialogOptions CreateDialogOptions()
+    {
+        return new DialogOptions
+        {
+            BackdropClick = false,
+            CloseButton = true,
+            CloseOnEscapeKey = true,
+            FullWidth = true,
+            MaxWidth = MaxWidth.ExtraSmall
+        };
+    }
+
+    #endregion
+
+    #region Text, Label Properties
+
+    private string DeleteDialogTitle => $"Delete '{HabitName}'?";
+
+    private const string DeleteDialogMessageText = "All checkin history for this habit will be permanently lost.";
+
+    private const string CancelButtonText = "Cancel";
+
+    private const string DeleteButtonText = "Delete habit";
+
+    #endregion
+
+}

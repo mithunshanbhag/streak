@@ -1,6 +1,8 @@
 @page "/habits/{HabitId:int}"
 @inject IHabitService HabitService
 @inject ICheckinService CheckinService
+@inject IDialogService DialogService
+@inject NavigationManager NavigationManager
 
 <PageTitle>@BrowserPageTitle</PageTitle>
 
@@ -39,39 +41,65 @@ else if (_viewModel is not null)
 {
     <MudContainer MaxWidth="MaxWidth.Small"
                   Class="pa-4">
+        @if (!string.IsNullOrWhiteSpace(_deleteErrorMessage))
+        {
+            <MudAlert Severity="Severity.Error"
+                      Dense="true"
+                      Class="mb-4">
+                @_deleteErrorMessage
+            </MudAlert>
+        }
+
         <MudPaper Elevation="1"
                   Class="pa-4 rounded-lg">
             <MudStack Spacing="3">
                 <MudStack Row="true"
-                          AlignItems="AlignItems.Center"
+                          AlignItems="AlignItems.Start"
+                          Justify="Justify.SpaceBetween"
                           Wrap="Wrap.NoWrap"
-                          Spacing="3"
+                          Spacing="2"
                           Style="@SummaryHeaderStyle">
-                    <MudPaper Elevation="0"
-                              Class="rounded-lg"
-                              Style="@EmojiContainerStyle">
-                        <MudStack AlignItems="AlignItems.Center"
-                                  Justify="Justify.Center"
-                                  Style="@EmojiContentStyle">
-                            @if (_viewModel.HasHabitEmoji)
-                            {
-                                <MudText Typo="Typo.h6">
-                                    @_viewModel.HabitEmoji
-                                </MudText>
-                            }
-                            else
-                            {
-                                <MudIcon Icon="@Icons.Material.Filled.Circle"
-                                         Size="Size.Small"
-                                         Color="Color.Primary"/>
-                            }
-                        </MudStack>
-                    </MudPaper>
+                    <MudStack Row="true"
+                              AlignItems="AlignItems.Center"
+                              Wrap="Wrap.NoWrap"
+                              Spacing="3"
+                              Style="@SummaryIdentityStyle">
+                        <MudPaper Elevation="0"
+                                  Class="rounded-lg"
+                                  Style="@EmojiContainerStyle">
+                            <MudStack AlignItems="AlignItems.Center"
+                                      Justify="Justify.Center"
+                                      Style="@EmojiContentStyle">
+                                @if (_viewModel.HasHabitEmoji)
+                                {
+                                    <MudText Typo="Typo.h6">
+                                        @_viewModel.HabitEmoji
+                                    </MudText>
+                                }
+                                else
+                                {
+                                    <MudIcon Icon="@Icons.Material.Filled.Circle"
+                                             Size="Size.Small"
+                                             Color="Color.Primary"/>
+                                }
+                            </MudStack>
+                        </MudPaper>
 
-                    <MudText Typo="Typo.h5"
-                             Style="@HabitNameStyle">
-                        @_viewModel.HabitName
-                    </MudText>
+                        <MudText Typo="Typo.h5"
+                                 Style="@HabitNameStyle">
+                            @_viewModel.HabitName
+                        </MudText>
+                    </MudStack>
+
+                    <MudMenu Dense="true"
+                             Disabled="@_deletingHabit"
+                             Icon="@Icons.Material.Filled.MoreVert"
+                             aria-label="@MoreActionsAriaLabel">
+                        <MudMenuItem Icon="@Icons.Material.Filled.Delete"
+                                     OnClick="OpenDeleteDialogAsync">
+                            @DeleteHabitMenuText
+                        </MudMenuItem>
+                    </MudMenu>
                 </MudStack>
 
                 <MudPaper Elevation="0"
@@ -127,6 +155,10 @@ else if (_viewModel is not null)
 
     private bool _habitNotFound;
 
+    private bool _deletingHabit;
+
+    private string? _deleteErrorMessage;
+
     private string BrowserPageTitle => _viewModel?.AppBarTitle ?? DefaultPageTitle;
 
     #endregion
@@ -142,7 +174,24 @@ else if (_viewModel is not null)
 
     #region Event Handlers
 
-    // No event handlers.
+    private async Task OpenDeleteDialogAsync()
+    {
+        if (_viewModel is null)
+            throw new InvalidOperationException("Cannot open the delete dialog before the habit details are loaded.");
+
+        var dialog = await DialogService.ShowAsync<DeleteHabitDialog>(
+            DeleteDialogTitleText,
+            CreateDeleteDialogParameters(_viewModel));
+
+        var result = await dialog.Result;
+        if (result is null || result.Canceled)
+            return;
+
+        if (result.Data is not int confirmedHabitId)
+            throw new InvalidOperationException("Delete dialog did not return the confirmed habit identifier.");
+
+        await DeleteHabitAsync(confirmedHabitId);
+    }
 
     #endregion
 
@@ -152,6 +201,7 @@ else if (_viewModel is not null)
     {
         _loadingData = true;
         _habitNotFound = false;
+        _deleteErrorMessage = null;
         _viewModel = null;
 
         try
@@ -185,11 +235,52 @@ else if (_viewModel is not null)
         }
     }
 
+    private async Task DeleteHabitAsync(int confirmedHabitId)
+    {
+        if (_viewModel is null)
+            throw new InvalidOperationException("Cannot delete a habit before the habit details are loaded.");
+
+        if (confirmedHabitId != _viewModel.HabitId)
+            throw new InvalidOperationException("Delete confirmation did not match the currently loaded habit.");
+
+        _deleteErrorMessage = null;
+        _deletingHabit = true;
+
+        try
+        {
+            await HabitService.DeleteAsync(confirmedHabitId);
+            NavigationManager.NavigateTo(RouteConstants.Home);
+        }
+        catch (KeyNotFoundException)
+        {
+            _deleteErrorMessage = HabitAlreadyDeletedText;
+        }
+        catch (InvalidOperationException)
+        {
+            _deleteErrorMessage = DeleteHabitFailedText;
+        }
+        finally
+        {
+            _deletingHabit = false;
+        }
+    }
+
+    private static DialogParameters<DeleteHabitDialog> CreateDeleteDialogParameters(HabitDetailsSummaryViewModel viewModel)
+    {
+        return new DialogParameters<DeleteHabitDialog>
+        {
+            { x => x.HabitId, viewModel.HabitId },
+            { x => x.HabitName, viewModel.HabitName }
+        };
+    }
+
     #endregion
 
     #region CSS Style Properties
 
     private const string SummaryHeaderStyle = "min-width: 0;";
+
+    private const string SummaryIdentityStyle = "min-width: 0; flex: 1 1 auto;";
 
     private const string EmojiContainerStyle = "width: 48px; height: 48px; background-color: var(--mud-palette-primary-hover); flex-shrink: 0;";
 
@@ -214,6 +305,16 @@ else if (_viewModel is not null)
     private const string HabitNotFoundText = "Habit not found.";
 
     private const string BackToHabitsButtonText = "Back to habits";
+
+    private const string DeleteDialogTitleText = "Delete habit";
+
+    private const string DeleteHabitMenuText = "Delete habit";
+
+    private const string MoreActionsAriaLabel = "More habit actions";
+
+    private const string HabitAlreadyDeletedText = "This habit no longer exists.";
+
+    private const string DeleteHabitFailedText = "Unable to delete this habit right now. Please try again.";
 
     #endregion
 
