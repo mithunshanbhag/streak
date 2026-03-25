@@ -27,13 +27,9 @@
 
     #region Parameters
 
-    [Parameter]
-    [EditorRequired]
-    public int HabitId { get; set; }
+    [Parameter] [EditorRequired] public int HabitId { get; set; }
 
-    [Parameter]
-    [EditorRequired]
-    public string HabitName { get; set; } = string.Empty;
+    [Parameter] [EditorRequired] public string HabitName { get; set; } = string.Empty;
 
     [CascadingParameter] private IMudDialogInstance? MudDialogInstance { get; set; }
 

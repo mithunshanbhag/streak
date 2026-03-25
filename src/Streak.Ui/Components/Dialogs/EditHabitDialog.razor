@@ -74,16 +74,11 @@
 
     #region Parameters
 
-    [Parameter]
-    [EditorRequired]
-    public int HabitId { get; set; }
+    [Parameter] [EditorRequired] public int HabitId { get; set; }
 
-    [Parameter]
-    [EditorRequired]
-    public string HabitName { get; set; } = string.Empty;
+    [Parameter] [EditorRequired] public string HabitName { get; set; } = string.Empty;
 
-    [Parameter]
-    public string? HabitEmoji { get; set; }
+    [Parameter] public string? HabitEmoji { get; set; }
 
     [CascadingParameter] private IMudDialogInstance? MudDialogInstance { get; set; }
 

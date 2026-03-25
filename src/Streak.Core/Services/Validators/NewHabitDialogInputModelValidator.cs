@@ -20,8 +20,6 @@ public sealed class NewHabitDialogInputModelValidator : AbstractValidator<NewHab
     {
         var normalizedName = name?.Trim();
 
-        return normalizedName is not null
-               && normalizedName.Length >= CoreConstants.HabitNameMinLength
-               && normalizedName.Length <= CoreConstants.HabitNameMaxLength;
+        return normalizedName?.Length is >= CoreConstants.HabitNameMinLength and <= CoreConstants.HabitNameMaxLength;
     }
 }

@@ -72,7 +72,7 @@ public class HabitDetailsSummaryViewModelTests
     [Fact]
     public void AppBarTitle_ShouldFallbackToHabitName_WhenEmojiIsMissing()
     {
-        var viewModel = CreateViewModel(12, habitEmoji: null);
+        var viewModel = CreateViewModel(12, null);
 
         viewModel.AppBarTitle.Should().Be("Read");
     }

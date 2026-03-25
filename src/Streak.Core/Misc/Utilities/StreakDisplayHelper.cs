@@ -1,4 +1,4 @@
-namespace Streak.Core.Models.ViewModels;
+namespace Streak.Core.Misc.Utilities;
 
 public static class StreakDisplayHelper
 {
