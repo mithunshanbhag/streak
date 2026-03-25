@@ -4,3 +4,4 @@
 - Checkin records are presence-only: a `Checkins` row should exist only for completed days, and same-day uncheck should delete the row rather than persist a false state.
 - Habit deletion is confirmed through a `MudDialog` on the Habit Details page, while the page itself owns the `IHabitService.DeleteAsync(...)` call, redirects to home on success, and relies on SQLite cascade delete to remove related `Checkins`.
 - Habit editing now uses a separate `MudDialog` form from the Habit Details page; the dialog performs `IHabitService.UpdateAsync(...)`, then the page reloads in place so the user stays on Habit Details.
+- The core unit test project now lives under `tests\Streak.Core.UnitTests` to mirror `src\Streak.Core`, and individual unit test files should group scenarios with `#region Positive tests`, `#region Negative tests`, and `#region Boundary tests` where applicable.

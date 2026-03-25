@@ -2,6 +2,8 @@ namespace Streak.Core.UnitTests.Constants;
 
 public sealed class RouteConstantsTests
 {
+    #region Positive tests
+
     [Fact]
     public void GetHabitDetails_ShouldReturnConcreteRoute()
     {
@@ -10,6 +12,10 @@ public sealed class RouteConstantsTests
         result.Should().Be("/habits/42");
     }
 
+    #endregion
+
+    #region Negative tests
+
     [Fact]
     public void GetHabitDetails_ShouldThrow_WhenHabitIdIsNotPositive()
     {
@@ -17,4 +23,6 @@ public sealed class RouteConstantsTests
 
         act.Should().Throw<ArgumentOutOfRangeException>();
     }
+
+    #endregion
 }
