@@ -57,7 +57,7 @@ This document covers shared UI conventions that apply across all screens in the 
 - **Habit detail actions**:
   - Edit habit: `Edit` (pencil) icon
   - Delete habit: `Delete` (bin) icon
-- **Checkin toggle**: Use MudBlazor's `MudToggleIconButton` for the checkin toggle on the Homepage. Done = green filled check-circle icon. Not done = empty circle icon.
+- **Checkin toggle**: Use MudBlazor's `MudCheckBox` for the checkin toggle on the Homepage, configured with custom icons. Done = green filled check-circle icon (`CheckedIcon`). Not done = empty circle icon (`UncheckedIcon`).
 - Icon sizes follow MudBlazor defaults. App bar icons should be sized at 24dp.
 
 ## App Bar
@@ -86,8 +86,7 @@ The app uses a **top app bar** that is compact/dense to maximize the content are
 - Habit edit is performed in a **dialog launched from the Habit Details page**.
 - Habit delete is confirmed with a **dialog launched from the Habit Details page**, not a dedicated route.
 - Every non-Homepage routed page displays a **Back arrow** in the app bar (replacing the logo position).
-  - From **Settings**, the back arrow returns the **Homepage**.
-  - From **Habit Details**, the back arrow returns the previous in-app page; if there is no in-app history, it falls back to **Homepage**.
+  - The back arrow always returns the user to the **Homepage**.
   - From the **Quick Add Habit** dialog, Android back dismisses the dialog and returns focus to **Homepage**.
 - Android hardware/gesture back follows the same route hierarchy.
 - Navigation transitions should be fast with no perceptible delay.
@@ -118,8 +117,5 @@ The app uses a **top app bar** that is compact/dense to maximize the content are
 
 ## Empty States
 
-- When there is no content to display (e.g., no habits created), the page shows:
-  - A friendly illustration or emoji (e.g., 🌱).
-  - A short message (e.g., "No habits yet. Tap New Habit to add one.").
-  - Optionally, a call-to-action button that opens the Quick Add Habit dialog.
-- Empty states should be composed from `MudStack`, `MudText`, and `MudButton` before adding custom layout styling.
+- When there is no content to display (e.g., no habits created), the page shows a centered `+ New Habit` button that opens the Quick Add Habit dialog.
+- Empty states should be composed from `MudStack` and a `MudFab` or `MudButton`.

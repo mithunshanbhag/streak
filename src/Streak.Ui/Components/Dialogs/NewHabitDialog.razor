@@ -41,6 +41,11 @@
         </MudForm>
     </DialogContent>
     <DialogActions>
+        <MudButton Variant="Variant.Text"
+                   Disabled="@_busyIndicator"
+                   OnClick="Cancel">
+            @CancelButtonText
+        </MudButton>
         <MudButton Color="Color.Primary"
                    Variant="Variant.Filled"
                    Disabled="@(_busyIndicator || !_isFormValid)"
@@ -89,6 +94,11 @@
     #endregion
 
     #region Event Handlers
+
+    private void Cancel()
+    {
+        MudDialogInstance?.Cancel();
+    }
 
     private async Task CreateNewHabitAsync()
     {
@@ -172,6 +182,8 @@
     private const string HabitEmojiLabel = "Emoji (optional)";
 
     private const string HabitEmojiPlaceholder = "🙂";
+
+    private const string CancelButtonText = "Cancel";
 
     private const string SaveButtonText = "SAVE";
 

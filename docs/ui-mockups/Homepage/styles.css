@@ -151,6 +151,14 @@ body {
     color: #1565C0;
 }
 
+.habit-card__meta--clap {
+    color: #1565C0;
+}
+
+.habit-card__meta--thumbs {
+    color: #388E3C;
+}
+
 .habit-card__meta--zero {
     color: #9E9E9E;
 }

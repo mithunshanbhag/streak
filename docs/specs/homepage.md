@@ -73,10 +73,8 @@ Each card shows:
 
 When the user has no habits configured:
 
-- Display a friendly message: *"No habits yet. Tap **New Habit** to add one."*
-- Show a 🌱 emoji or illustration above the message.
-- Include a CTA button (`+ New Habit`) that opens the [Quick Add Habit dialog](./create-habit-page.md).
-- Prefer a centered `MudStack` with `MudText` and `MudButton`.
+- Show a centered `+ New Habit` button that opens the [Quick Add Habit dialog](./create-habit-page.md).
+- Prefer a centered `MudStack` with a `MudFab` or `MudButton`.
 
 ## Interaction Summary
 

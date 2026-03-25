@@ -8,7 +8,7 @@ The habit details page shows a **detailed view of a single habit**, including ed
 
 - The user arrives here by **tapping a habit card** on the [Homepage](./homepage.md), including its visible streak badge.
 - The page title in the app bar shows the habit's current emoji and name (e.g., "🧘 Meditate").
-- A **back arrow** in the app bar returns the user to the previous in-app page. If there is no in-app history, it falls back to the [Homepage](./homepage.md).
+- A **back arrow** in the app bar always returns the user to the [Homepage](./homepage.md).
 - Secondary-screen chrome stays focused: use **Back** + title only. Do not repeat the root-screen `+` or `Settings` actions here.
 
 ## Layout
