@@ -67,6 +67,10 @@ description: Guidelines and best practices for development with .NET.
 
 - Models are centralized under: `src\{AppName}\Models\` or `src\{AppName}.Core\Models\`.
 - For UI: Create a `ViewModels` sub-folder:
+  - The view model types should include the following \#region, \#endregion blocks (more blocks can be added as needed):
+    - `#region Display Properties` for properties that are directly displayed as-is on the UI.
+    - `#region Computed Properties` for properties that are not directly stored, but are computed based on other properties and displayed on the UI.
+    - `#region Hidden Properties` for properties that are not directly displayed on the UI, but are necessary for internal logic or computations.
   - Input models go into a `InputModels` sub-folder.
   - Result models go into a `ResultModels` sub-folder.
     - Result models include computed display properties (for example, currency-formatted strings) to keep display formatting out of core math logic.
