@@ -2,7 +2,7 @@
 @implements IDisposable
 @inject NavigationManager NavigationManager
 
-<MudThemeProvider/>
+<MudThemeProvider Theme="@AppTheme"/>
 <MudPopoverProvider/>
 <MudDialogProvider/>
 <MudSnackbarProvider/>
@@ -73,6 +73,28 @@
     #region Private Fields, Properties
 
     private bool _isHomePage;
+
+    private static readonly MudTheme AppTheme = new()
+    {
+        PaletteLight = new PaletteLight
+        {
+            Primary = "#6200EE",
+            Secondary = "#03DAC6",
+            Success = "#4CAF50",
+            Surface = "#FFFFFF",
+            TextPrimary = "#000000",
+            TextSecondary = "#757575"
+        },
+        PaletteDark = new PaletteDark
+        {
+            Primary = "#BB86FC",
+            Secondary = "#03DAC6",
+            Success = "#81C784",
+            Surface = "#121212",
+            TextPrimary = "#FFFFFF",
+            TextSecondary = "#757575"
+        }
+    };
 
     #endregion
 

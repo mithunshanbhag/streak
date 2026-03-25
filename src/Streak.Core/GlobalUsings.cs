@@ -9,6 +9,7 @@ global using Microsoft.EntityFrameworkCore;
 global using Streak.Core.Constants;
 global using Streak.Core.Misc.Utilities;
 global using Streak.Core.Models.Storage;
+global using Streak.Core.Models.ViewModels;
 global using Streak.Core.Models.ViewModels.InputModels;
 global using Streak.Core.Repositories.DbContexts;
 global using Streak.Core.Repositories.Interfaces;
