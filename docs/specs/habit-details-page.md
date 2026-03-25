@@ -8,7 +8,7 @@ The habit details page shows a **detailed view of a single habit**, including ed
 
 - The user arrives here by **tapping a habit card** on the [Homepage](./homepage.md), including its visible streak badge.
 - The page title in the app bar shows the habit's current emoji and name (e.g., "🧘 Meditate").
-- A **back arrow** in the app bar returns the user to the previous in-app page. If there is no in-app history, it falls back to the [Homepage](./homepage.md).
+- A **back arrow** in the app bar always returns the user to the [Homepage](./homepage.md).
 - Secondary-screen chrome stays focused: use **Back** + title only. Do not repeat the root-screen `+` or `Settings` actions here.
 
 ## Layout
@@ -26,25 +26,26 @@ Displayed at the top of the page. This section combines identity, current streak
 | Emoji / icon   | The habit's emoji or default icon                                                        |
 | Habit name     | Primary label for the habit                                                              |
 | Current streak | Large streak number plus supporting label in the same card                               |
-| Edit action    | Pencil icon. Switches the summary card into inline edit mode                             |
+| Edit action    | Pencil icon. Opens the edit dialog for the current habit                                 |
 | More actions   | Overflow menu (`MoreVert`). Contains the delete action                                   |
 
 - Prefer `MudCard` or `MudPaper`, `MudText`, `MudIconButton`, and `MudMenu`.
 - Use built-in spacing utilities rather than custom section wrappers.
 
-#### Inline Edit Mode
+#### Edit Habit Dialog
 
-When the user taps the edit icon, the summary card switches into an inline editing state.
+When the user taps the edit icon, show a standard dialog over the current page with the habit's current values prefilled.
 
 | Field | Type                       | Required | Validation                                                                                                  |
 | ----- | -------------------------- | -------- | ----------------------------------------------------------------------------------------------------------- |
 | Name  | Text input                 | Yes      | 1–30 characters. Must be unique among the user's habits (case-insensitive), excluding the current habit.   |
 | Emoji | Emoji picker or text input | No       | Single emoji character. If left empty, a default icon is used.                                              |
 
-- **Save** applies the updated name and/or emoji without leaving the page.
-- **Cancel** discards any unsaved edits and returns to view mode.
+- **Save** applies the updated name and/or emoji, closes the dialog, and keeps the user on the Habit Details page.
+- **Cancel** closes the dialog and leaves the current habit unchanged.
 - Editing a habit's name or emoji does **not** affect its checkin history or streak.
-- Prefer `MudTextField` and standard `MudButton` actions before creating any custom inline form styling.
+- After save, the app-bar title, summary card, and any dependent habit-name displays should refresh immediately.
+- Prefer a standard `MudDialog`, `MudForm`, `MudTextField`, and standard `MudButton` actions before creating any custom form styling.
 
 #### Delete Confirmation Dialog
 

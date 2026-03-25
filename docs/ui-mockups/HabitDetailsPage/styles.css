@@ -221,8 +221,6 @@ input {
   color: #5F6368;
 }
 
-.summary-edit.hidden,
-.summary-view.hidden,
 .overflow-menu.hidden,
 .history-body.hidden,
 .dialog-backdrop.hidden,
@@ -468,6 +466,10 @@ input {
   font-size: 14px;
   color: #4B5563;
   line-height: 1.5;
+}
+
+.dialog__fields {
+  margin-top: 16px;
 }
 
 .tooltip {

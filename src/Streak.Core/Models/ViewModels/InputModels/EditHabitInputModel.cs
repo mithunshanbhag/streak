@@ -1,6 +1,6 @@
 namespace Streak.Core.Models.ViewModels.InputModels;
 
-public sealed class NewHabitInputModel
+public sealed class EditHabitInputModel
 {
     public required string Name { get; set; }
 

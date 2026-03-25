@@ -4,5 +4,5 @@
   <Project Path="src/Streak.Ui/Streak.Ui.csproj" Id="c2a78bb7-d076-4c14-a143-df834c9948dd">
     <Deploy Solution="Debug|*" />
   </Project>
-  <Project Path="tests/Streak.Ui.UnitTests/Streak.Core.UnitTests.csproj" />
+  <Project Path="tests/Streak.Core.UnitTests/Streak.Core.UnitTests.csproj" />
 </Solution>

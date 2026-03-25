@@ -9,18 +9,17 @@
 
 Streak is an indie-SaaS-style mobile app concept for tracking a small set of daily habits, seeing streak momentum at a glance, and keeping the experience intentionally simple.
 
-This README is intentionally ahead of implementation. The product direction, screen specs, and mockups are already taking shape, while much of the source code and automated coverage are still in progress.
-
 ![Homepage mockup](docs/readme-assets/homepage.png)
 
 ## Current status
 
-Streak is currently in the **specification + mockup** phase.
+Streak is currently in **active development**.
 
-- Product specs are being written under [`docs/specs`](docs/specs).
+- Product specs are finalized under [`docs/specs`](docs/specs).
 - Interactive HTML mockups are available under [`docs/ui-mockups`](docs/ui-mockups).
-- The repository contains early project scaffolding for the eventual app and tests.
-- Some README sections below are intentionally placeholder-friendly so the project can still be presented clearly before full implementation lands.
+- Core UI screens are implemented: Homepage, Habit Details, Quick Add Habit dialog, Edit Habit dialog, Delete Habit dialog, and a placeholder Settings page.
+- Local SQLite persistence is wired up with habits and checkins.
+- Unit test coverage exists for core services and view models under [`tests/`](tests/).
 
 ## Why Streak?
 
@@ -132,8 +131,6 @@ Once the app is fully wired up, the expected end-user flow will be:
 
 ## Build and run locally
 
-This section is intentionally a mix of **current scaffolding commands** and **placeholder developer workflow**.
-
 Restore everything:
 
 ```powershell
@@ -161,13 +158,13 @@ Automated testing is still early, but the repository already has a test project 
 Build the test project:
 
 ```powershell
-dotnet build .\tests\Streak.Ui.UnitTests\Streak.Core.UnitTests.csproj -c Debug --nologo
+dotnet build .\tests\Streak.Core.UnitTests\Streak.Core.UnitTests.csproj -c Debug --nologo
 ```
 
 Run the tests:
 
 ```powershell
-dotnet test .\tests\Streak.Ui.UnitTests\Streak.Core.UnitTests.csproj -c Debug --no-build --nologo
+dotnet test .\tests\Streak.Core.UnitTests\Streak.Core.UnitTests.csproj -c Debug --no-build --nologo
 ```
 
 As implementation expands, this section will be updated to describe the full testing story more accurately.

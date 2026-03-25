@@ -176,6 +176,33 @@ public class CheckinRepositoryTests
         }
     }
 
+    [Fact]
+    public async Task GetByHabitNameAsync_ShouldReturnExistingCheckins_AfterHabitRename()
+    {
+        await using var context = TestDbContextFactory.CreateContext(out var connection);
+        await using (connection)
+        {
+            context.Habits.Add(new Habit { Id = 1, Name = "Read", Emoji = "📖" });
+            context.Checkins.Add(new Checkin { HabitId = 1, CheckinDate = "2025-01-01" });
+            await context.SaveChangesAsync();
+
+            var persistedHabit = await context.Habits.SingleAsync();
+            persistedHabit.Name = "Read Daily";
+            persistedHabit.Emoji = "📚";
+            await context.SaveChangesAsync();
+            context.ChangeTracker.Clear();
+
+            var sut = new CheckinRepository(context);
+
+            var updatedNameResult = await sut.GetByHabitNameAsync("Read Daily");
+            var originalNameResult = await sut.GetByHabitNameAsync("Read");
+
+            updatedNameResult.Should().ContainSingle();
+            updatedNameResult[0].HabitId.Should().Be(1);
+            originalNameResult.Should().BeEmpty();
+        }
+    }
+
     #endregion
 
     #region Negative tests

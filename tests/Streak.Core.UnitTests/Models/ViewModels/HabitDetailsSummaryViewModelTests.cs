@@ -2,6 +2,8 @@ namespace Streak.Core.UnitTests.Models.ViewModels;
 
 public class HabitDetailsSummaryViewModelTests
 {
+    #region Boundary tests
+
     [Theory]
     [InlineData(0, null)]
     [InlineData(1, "👍")]
@@ -32,6 +34,10 @@ public class HabitDetailsSummaryViewModelTests
 
         viewModel.StreakCountText.Should().Be(expectedText);
     }
+
+    #endregion
+
+    #region Positive tests
 
     [Theory]
     [InlineData(0, "No active streak")]
@@ -81,4 +87,6 @@ public class HabitDetailsSummaryViewModelTests
             Streak = currentStreak
         };
     }
+
+    #endregion
 }

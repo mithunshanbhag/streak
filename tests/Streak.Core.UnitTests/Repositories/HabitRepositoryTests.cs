@@ -64,6 +64,29 @@ public class HabitRepositoryTests
         }
     }
 
+    [Fact]
+    public async Task DeleteAsync_ShouldCascadeDeleteRelatedCheckins_WhenHabitExists()
+    {
+        await using var context = TestDbContextFactory.CreateContext(out var connection);
+        await using (connection)
+        {
+            context.Habits.Add(new Habit { Id = 1, Name = "Read", Emoji = "📖" });
+            context.Checkins.AddRange(
+                new Checkin { HabitId = 1, CheckinDate = "2026-03-20" },
+                new Checkin { HabitId = 1, CheckinDate = "2026-03-21" });
+            await context.SaveChangesAsync();
+            context.ChangeTracker.Clear();
+
+            IHabitRepository sut = new HabitRepository(context);
+
+            var result = await sut.DeleteAsync(1);
+
+            result.Should().BeTrue();
+            (await context.Habits.CountAsync()).Should().Be(0);
+            (await context.Checkins.CountAsync()).Should().Be(0);
+        }
+    }
+
     #endregion
 
     #region Negative tests

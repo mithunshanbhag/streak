@@ -29,7 +29,7 @@
                         <span class="habit-identity__emoji" id="habitEmojiDisplay">🧘</span>
                         <div>
                             <h1 class="habit-identity__name" id="habitNameDisplay">Meditate</h1>
-                            <p class="habit-identity__meta">Focused secondary chrome, quick edits, and a lighter details hierarchy.</p>
+                            <p class="habit-identity__meta">Focused secondary chrome, dialog-based edits, and a lighter details hierarchy.</p>
                         </div>
                     </div>
                     <div class="summary-actions">
@@ -53,26 +53,10 @@
                         <span class="streak-fire">🔥</span>
                     </div>
                     <span class="streak-label">days streak</span>
-                    <p class="streak-support">Checked in for the last 12 days in a row.</p>
+                    <p class="streak-support">Checked in for 12 days in a row.</p>
                 </div>
             </div>
 
-            <div class="summary-edit hidden" id="summaryEdit">
-                <div class="edit-fields">
-                    <label class="inline-field inline-field--emoji">
-                        <span>Emoji</span>
-                        <input id="habitEmojiInput" type="text" value="🧘" maxlength="2">
-                    </label>
-                    <label class="inline-field">
-                        <span>Name</span>
-                        <input id="habitNameInput" type="text" value="Meditate" maxlength="30">
-                    </label>
-                </div>
-                <div class="inline-actions">
-                    <button class="btn-text" id="cancelEditButton">Cancel</button>
-                    <button class="btn-contained" id="saveEditButton">Save</button>
-                </div>
-            </div>
         </section>
 
         <section class="card history-card">
@@ -103,6 +87,26 @@
     </main>
 </div>
 
+<div class="dialog-backdrop hidden" id="editDialog">
+    <div class="dialog">
+        <h2 class="dialog__title">Edit habit</h2>
+        <div class="edit-fields dialog__fields">
+            <label class="inline-field inline-field--emoji">
+                <span>Emoji</span>
+                <input id="habitEmojiInput" type="text" value="🧘" maxlength="2">
+            </label>
+            <label class="inline-field">
+                <span>Name</span>
+                <input id="habitNameInput" type="text" value="Meditate" maxlength="30">
+            </label>
+        </div>
+        <div class="dialog__actions">
+            <button class="btn-text" id="cancelEditButton">Cancel</button>
+            <button class="btn-contained" id="saveEditButton">Save changes</button>
+        </div>
+    </div>
+</div>
+
 <div class="dialog-backdrop hidden" id="deleteDialog">
     <div class="dialog">
         <h2 class="dialog__title">Delete “<span id="deleteHabitName">Meditate</span>”?</h2>
@@ -117,8 +121,6 @@
 <div class="tooltip" id="tooltip"></div>
 
 <script>
-    const summaryView = document.getElementById('summaryView');
-    const summaryEdit = document.getElementById('summaryEdit');
     const editButton = document.getElementById('editButton');
     const cancelEditButton = document.getElementById('cancelEditButton');
     const saveEditButton = document.getElementById('saveEditButton');
@@ -126,6 +128,7 @@
     const overflowMenu = document.getElementById('overflowMenu');
     const deleteButton = document.getElementById('deleteButton');
     const cancelDeleteButton = document.getElementById('cancelDeleteButton');
+    const editDialog = document.getElementById('editDialog');
     const deleteDialog = document.getElementById('deleteDialog');
     const habitEmojiInput = document.getElementById('habitEmojiInput');
     const habitNameInput = document.getElementById('habitNameInput');
@@ -139,14 +142,14 @@
 
     editButton.addEventListener('click', () => {
       overflowMenu.classList.add('hidden');
-      summaryView.classList.add('hidden');
-      summaryEdit.classList.remove('hidden');
+      habitEmojiInput.value = habitEmojiDisplay.textContent === '●' ? '' : habitEmojiDisplay.textContent;
+      habitNameInput.value = habitNameDisplay.textContent;
+      editDialog.classList.remove('hidden');
       habitNameInput.focus();
     });
 
     cancelEditButton.addEventListener('click', () => {
-      summaryEdit.classList.add('hidden');
-      summaryView.classList.remove('hidden');
+      editDialog.classList.add('hidden');
       habitEmojiInput.value = habitEmojiDisplay.textContent === '●' ? '' : habitEmojiDisplay.textContent;
       habitNameInput.value = habitNameDisplay.textContent;
     });
@@ -160,8 +163,7 @@
       deleteHabitName.textContent = nextName;
       appBarTitle.textContent = nextEmoji + ' ' + nextName;
 
-      summaryEdit.classList.add('hidden');
-      summaryView.classList.remove('hidden');
+      editDialog.classList.add('hidden');
     });
 
     menuButton.addEventListener('click', () => {

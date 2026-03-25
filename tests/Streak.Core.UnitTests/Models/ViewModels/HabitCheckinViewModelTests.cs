@@ -2,6 +2,8 @@ namespace Streak.Core.UnitTests.Models.ViewModels;
 
 public class HabitCheckinViewModelTests
 {
+    #region Boundary tests
+
     [Theory]
     [InlineData(0, null)]
     [InlineData(1, "👍")]
@@ -28,6 +30,10 @@ public class HabitCheckinViewModelTests
         viewModel.StreakEmoji.Should().Be(expectedEmoji);
     }
 
+    #endregion
+
+    #region Positive tests
+
     [Theory]
     [InlineData(0, "0 streak")]
     [InlineData(1, "👍 1 day streak")]
@@ -49,4 +55,6 @@ public class HabitCheckinViewModelTests
 
         viewModel.StreakText.Should().Be(expectedText);
     }
+
+    #endregion
 }

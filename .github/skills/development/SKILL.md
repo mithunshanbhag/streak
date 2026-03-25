@@ -82,6 +82,13 @@ description: Guidelines and best practices for development with .NET.
 - Custom exception types are centralized under `src\{AppName}\Exceptions\` or `src\{AppName}.Core\Exceptions\`.
 - To the greatest extent possible, the custom exceptions should inherit from base exception classes defined in the Nucleus nuget package. This allows the custom exception to define its own conversion to an ActionResult or HTTP response.
 
+## Miscellaneous Helpers
+
+- Any other helper classes, extension classes, utilities, or miscellaneous code can be centralized under `src\{AppName}\Misc\` or `src\{AppName}.Core\Misc\`.
+- Here is the general pattern for organizing code in the `Misc` folder:
+  - `ExtensionMethods` sub-folder for any extension classes/methods.
+  - `Utilities` sub-folder for any other helper utilities that don't fit into the above categories.
+
 ## Global Constants / Routing / Config Keys
 
 - Constants are centralized under: `src\{AppName}\Constants\` or `src\{AppName}.Core\Constants\`.

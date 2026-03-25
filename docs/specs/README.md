@@ -74,7 +74,7 @@ Each major surface has its own detailed spec:
 | Surface                      | Route / Trigger         | Spec                                                     | Purpose                                                  |
 | ---------------------------- | ----------------------- | -------------------------------------------------------- | -------------------------------------------------------- |
 | Homepage                     | `/`                    | [homepage.md](./homepage.md)                             | Landing page, daily checkin surface, and habit list      |
-| Habit Details                | `/habits/{habitId}`    | [habit-details-page.md](./habit-details-page.md)         | Habit details, trends, inline editing, and deletion      |
+| Habit Details                | `/habits/{habitId}`    | [habit-details-page.md](./habit-details-page.md)         | Habit details, trends, edit dialog, and deletion         |
 | Quick Add Habit              | `+ New Habit` on Homepage | [create-habit-page.md](./create-habit-page.md)        | Create a new habit in a compact dialog without leaving the homepage |
 | Settings                     | `/settings`            | [settings-page.md](./settings-page.md)                   | Configure reminder preferences                           |
 
@@ -84,7 +84,7 @@ Each major surface has its own detailed spec:
 - The Homepage includes a dedicated **`+ New Habit`** CTA below the habit list, which opens a compact **Quick Add Habit** dialog over **Homepage**.
 - The **Homepage** doubles as the habit-list maintenance surface: habits are shown alphabetically and each habit opens its details on the Habit Details page.
 - The Homepage app bar keeps **Settings** plus a right-most **GitHub** repo link instead of a global create icon.
-- The **Habit Details** page contains the heatmap, inline edit experience, and delete confirmation dialog for a single habit.
+- The **Habit Details** page contains the heatmap, edit dialog flow, and delete confirmation dialog for a single habit.
 - **Settings** is now focused only on notification reminder preferences.
 - **Homepage** opens directly into the habit list without instructional header copy, progress summary text, or a habit-count chip.
 - There is no dedicated habit-list routed page separate from **Homepage**.
