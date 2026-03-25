@@ -86,7 +86,7 @@ description: Guidelines and best practices for development with .NET.
 
 - Any other helper classes, extension classes, utilities, or miscellaneous code can be centralized under `src\{AppName}\Misc\` or `src\{AppName}.Core\Misc\`.
 - Here is the general pattern for organizing code in the `Misc` folder:
-  - `ExtensionMethods` sub-folder for any extension methods.
+  - `ExtensionMethods` sub-folder for any extension classes/methods.
   - `Utilities` sub-folder for any other helper utilities that don't fit into the above categories.
 
 ## Global Constants / Routing / Config Keys
