@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <resources>
-	<style name="AppTheme" parent="Maui.SplashTheme">
+	<style name="AppTheme" parent="Maui.MainTheme">
 		<item name="android:windowOptOutEdgeToEdgeEnforcement">true</item>
 	</style>
 </resources>
