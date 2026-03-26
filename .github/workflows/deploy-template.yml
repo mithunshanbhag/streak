@@ -27,4 +27,4 @@ jobs:
           name: Streak.Core.UnitTests
           path: ./tests/Streak.Core.UnitTests/TestResults-${{ github.run_id }}-${{ github.run_attempt }}
       - name: build streak app
-        run: dotnet publish ./src/Streak/Streak.csproj -c Release -o ./Publish/Streak
+        run: dotnet publish ./src/Streak.Ui/Streak.Ui.csproj -c Release -o ./Publish/Streak.Ui
