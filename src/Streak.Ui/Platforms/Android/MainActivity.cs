@@ -4,7 +4,7 @@ using Android.Content.PM;
 namespace Streak.Ui.Platforms.Android;
 
 [Activity(
-    Theme = "@style/Maui.SplashTheme",
+    Theme = "@style/AppTheme",
     MainLauncher = true,
     ConfigurationChanges = ConfigChanges.ScreenSize
                            | ConfigChanges.Orientation
