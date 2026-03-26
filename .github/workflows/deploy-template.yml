@@ -31,4 +31,37 @@ jobs:
       - name: build streak app (windows)
         run: dotnet publish ./src/Streak.Ui/Streak.Ui.csproj -f ${{ env.WINDOWS_TARGET_FRAMEWORK }} -c Release -o ./Publish/Streak.Ui --nologo
       - name: build streak app (android)
-        run: dotnet publish ./src/Streak.Ui/Streak.Ui.csproj -f ${{ env.ANDROID_TARGET_FRAMEWORK }} -c Release -o ./Publish/Streak.Ui.Android --nologo
+        run: dotnet publish ./src/Streak.Ui/Streak.Ui.csproj -f ${{ env.ANDROID_TARGET_FRAMEWORK }} -c Release -p:AndroidPackageFormat=apk -o ./Publish/Streak.Ui.Android --nologo
+      - name: collect streak app artifact (android apk)
+        shell: pwsh
+        run: |
+          $searchPaths = @(
+            "./Publish/Streak.Ui.Android",
+            "./src/Streak.Ui/bin/Release/${{ env.ANDROID_TARGET_FRAMEWORK }}/publish",
+            "./src/Streak.Ui/bin/Release/${{ env.ANDROID_TARGET_FRAMEWORK }}"
+          )
+
+          $apk = $null
+          foreach ($path in $searchPaths) {
+            if (-not (Test-Path $path)) {
+              continue
+            }
+
+            $apk = Get-ChildItem -Path $path -Filter "*-Signed.apk" -File -Recurse | Select-Object -First 1
+            if ($apk) {
+              break
+            }
+          }
+
+          if (-not $apk) {
+            throw "No signed APK was generated."
+          }
+
+          New-Item -ItemType Directory -Path ./Publish/Streak.Ui.Android.Apk -Force | Out-Null
+          Copy-Item -Path $apk.FullName -Destination ./Publish/Streak.Ui.Android.Apk/
+      - name: publish streak app artifact (android apk)
+        uses: actions/upload-artifact@v4.3.1
+        with:
+          name: Streak.Ui.Android.apk
+          path: ./Publish/Streak.Ui.Android.Apk/*.apk
+          if-no-files-found: error
