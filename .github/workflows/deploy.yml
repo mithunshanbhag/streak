@@ -1,0 +1,17 @@
+name: streak-deploy
+run-name: deploy streak
+
+on:
+  push:
+    branches:
+      - main
+    # do not trigger on changes to documentation
+    paths-ignore:
+      - 'docs/**'
+      - '**/*.md'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    uses: ./.github/workflows/deploy-template.yml
+    secrets: inherit
