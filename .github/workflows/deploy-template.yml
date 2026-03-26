@@ -5,6 +5,7 @@ on:
 
 env:
   DOTNET_VERSION_10: "10.0.x"
+  WINDOWS_TARGET_FRAMEWORK: "net10.0-windows10.0.19041.0"
 
 jobs:
   build-deploy-streak-app:
@@ -27,4 +28,4 @@ jobs:
           name: Streak.Core.UnitTests
           path: ./tests/Streak.Core.UnitTests/TestResults-${{ github.run_id }}-${{ github.run_attempt }}
       - name: build streak app
-        run: dotnet publish ./src/Streak.Ui/Streak.Ui.csproj -c Release -o ./Publish/Streak.Ui
+        run: dotnet publish ./src/Streak.Ui/Streak.Ui.csproj -f ${{ env.WINDOWS_TARGET_FRAMEWORK }} -c Release -o ./Publish/Streak.Ui --nologo
