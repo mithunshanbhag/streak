@@ -2,17 +2,15 @@ namespace Streak.Core.Models.ViewModels;
 
 public sealed class HabitDetailsSummaryViewModel
 {
-    public required int HabitId { get; set; }
+    #region Display Properties
 
     public required string HabitName { get; set; }
 
     public string? HabitEmoji { get; set; }
 
-    public required int Streak { get; set; }
+    #endregion
 
-    private int NormalizedStreak => StreakDisplayHelper.NormalizeStreak(Streak);
-
-    public bool HasHabitEmoji => !string.IsNullOrWhiteSpace(HabitEmoji);
+    #region Computed Properties
 
     public string? StreakEmoji => StreakDisplayHelper.GetStreakEmoji(NormalizedStreak);
 
@@ -35,4 +33,18 @@ public sealed class HabitDetailsSummaryViewModel
     public string AppBarTitle => HasHabitEmoji
         ? $"{HabitEmoji} {HabitName}"
         : HabitName;
+
+    #endregion
+
+    #region Hidden Properties
+
+    public required int HabitId { get; set; }
+
+    public required int Streak { get; set; }
+
+    public bool HasHabitEmoji => !string.IsNullOrWhiteSpace(HabitEmoji);
+
+    private int NormalizedStreak => StreakDisplayHelper.NormalizeStreak(Streak);
+
+    #endregion
 }

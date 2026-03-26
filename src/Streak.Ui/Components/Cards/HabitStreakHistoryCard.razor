@@ -1,0 +1,275 @@
+@inject IJSRuntime JSRuntime
+
+@if (SummaryViewModel is not null && HistoryViewModel is not null)
+{
+    <MudPaper Elevation="1"
+              Class="pa-4 rounded-lg">
+        <MudStack Spacing="3">
+            <MudPaper Elevation="0"
+                      Class="pa-4 rounded-lg"
+                      Style="@StreakSurfaceStyle">
+                <MudStack Spacing="1">
+                    <MudStack Row="true"
+                              AlignItems="AlignItems.Center"
+                              Wrap="Wrap.NoWrap"
+                              Spacing="2">
+                        <MudText Typo="Typo.h4"
+                                 Style="@StreakNumberStyle">
+                            @SummaryViewModel.StreakCountText
+                        </MudText>
+
+                        @if (!string.IsNullOrWhiteSpace(SummaryViewModel.StreakEmoji))
+                        {
+                            <MudText Typo="Typo.h5">
+                                @SummaryViewModel.StreakEmoji
+                            </MudText>
+                        }
+                    </MudStack>
+
+                    <MudText Typo="Typo.caption"
+                             Style="@MutedTextStyle">
+                        @SummaryViewModel.StreakLabel
+                    </MudText>
+
+                    <MudText Typo="Typo.body2"
+                             Style="@MutedTextStyle">
+                        @SummaryViewModel.StreakSupportText
+                    </MudText>
+                </MudStack>
+            </MudPaper>
+
+            <MudExpansionPanels>
+                <MudExpansionPanel Dense="true">
+                    <TitleContent>
+                        <MudStack Row="true"
+                                  AlignItems="AlignItems.Center"
+                                  Justify="Justify.SpaceBetween"
+                                  Class="flex-1"
+                                  Spacing="2">
+                            <MudStack Spacing="0"
+                                      Style="@PanelTextStyle">
+                                <MudText Typo="Typo.body1">
+                                    @ShowHistoryText
+                                </MudText>
+
+                                <MudText Typo="Typo.caption"
+                                         Style="@MutedTextStyle">
+                                    @HistoryViewModel.DisclosureSummaryText
+                                </MudText>
+                            </MudStack>
+                        </MudStack>
+                    </TitleContent>
+
+                    <ChildContent>
+                        <MudStack Spacing="2"
+                                  Class="pt-2">
+                            <div @ref="_scrollContainer"
+                                 style="@HeatmapScrollStyle">
+                                <div style="@HeatmapContainerStyle">
+                                    <div style="@MonthLabelsShellStyle">
+                                        <div style="@DayLabelSpacerStyle"></div>
+
+                                        <div style="@MonthLabelsRowStyle">
+                                            @foreach (var week in HistoryViewModel.Weeks)
+                                            {
+                                                <div style="@MonthLabelSlotStyle">
+                                                    @if (!string.IsNullOrWhiteSpace(week.MonthLabel))
+                                                    {
+                                                        <span style="@MonthLabelTextStyle">@week.MonthLabel</span>
+                                                    }
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+
+                                    <div style="@HeatmapGridStyle">
+                                        <div style="@DayLabelsColumnStyle">
+                                            @foreach (var dayLabel in HistoryViewModel.DayLabels)
+                                            {
+                                                <div style="@DayLabelStyle">@dayLabel</div>
+                                            }
+                                        </div>
+
+                                        <div style="@WeekColumnsStyle">
+                                            @foreach (var week in HistoryViewModel.Weeks)
+                                            {
+                                                <div style="@WeekColumnStyle">
+                                                    @foreach (var cell in week.Cells)
+                                                    {
+                                                        @if (cell.IsPlaceholder)
+                                                        {
+                                                            <div aria-hidden="true"
+                                                                 style="@PlaceholderCellStyle"></div>
+                                                        }
+                                                        else
+                                                        {
+                                                            <MudTooltip Text="@cell.TooltipText"
+                                                                        Placement="Placement.Top">
+                                                                <button type="button"
+                                                                        title="@cell.TooltipText"
+                                                                        aria-label="@cell.TooltipText"
+                                                                        style="@GetHeatmapCellStyle(cell)"></button>
+                                                            </MudTooltip>
+                                                        }
+                                                    }
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <MudStack Row="true"
+                                      Justify="Justify.FlexEnd"
+                                      AlignItems="AlignItems.Center"
+                                      Spacing="3">
+                                <MudStack Row="true"
+                                          AlignItems="AlignItems.Center"
+                                          Spacing="1">
+                                    <span aria-hidden="true"
+                                          style="@MissedLegendSwatchStyle"></span>
+                                    <MudText Typo="Typo.caption"
+                                             Style="@MutedTextStyle">
+                                        @MissedLegendText
+                                    </MudText>
+                                </MudStack>
+
+                                <MudStack Row="true"
+                                          AlignItems="AlignItems.Center"
+                                          Spacing="1">
+                                    <span aria-hidden="true"
+                                          style="@DoneLegendSwatchStyle"></span>
+                                    <MudText Typo="Typo.caption"
+                                             Style="@MutedTextStyle">
+                                        @DoneLegendText
+                                    </MudText>
+                                </MudStack>
+                            </MudStack>
+                        </MudStack>
+                    </ChildContent>
+                </MudExpansionPanel>
+            </MudExpansionPanels>
+        </MudStack>
+    </MudPaper>
+}
+
+@code {
+
+    #region Parameters
+
+    [Parameter] public HabitDetailsSummaryViewModel? SummaryViewModel { get; set; }
+
+    [Parameter] public HabitHistoryHeatmapViewModel? HistoryViewModel { get; set; }
+
+    #endregion
+
+    #region Private Fields
+
+    private ElementReference _scrollContainer;
+
+    private int _lastRenderedWeekCount = -1;
+
+    private bool _scrollToLatestRequested;
+
+    #endregion
+
+    #region Lifecycle Methods
+
+    protected override void OnParametersSet()
+    {
+        var currentWeekCount = HistoryViewModel?.Weeks.Count ?? 0;
+        if (currentWeekCount <= 0 || currentWeekCount == _lastRenderedWeekCount)
+            return;
+
+        _scrollToLatestRequested = true;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!_scrollToLatestRequested || HistoryViewModel is null)
+            return;
+
+        await JSRuntime.InvokeVoidAsync("streakHeatmap.scrollToLatest", _scrollContainer);
+
+        _lastRenderedWeekCount = HistoryViewModel.Weeks.Count;
+        _scrollToLatestRequested = false;
+    }
+
+    #endregion
+
+    #region Private Helper Methods
+
+    private static string GetHeatmapCellStyle(HabitHistoryHeatmapCellViewModel cell)
+    {
+        var outlineStyle = cell.IsToday
+            ? "outline: 2px solid var(--mud-palette-primary); outline-offset: -1px;"
+            : string.Empty;
+        var backgroundColor = cell.IsDone
+            ? "var(--mud-palette-secondary)"
+            : "rgba(158, 158, 158, 0.35)";
+        var borderStyle = cell.IsDone
+            ? "border: none;"
+            : "border: 1px solid rgba(158, 158, 158, 0.2);";
+
+        return $"{HeatmapCellBaseStyle} background-color: {backgroundColor}; {borderStyle} {outlineStyle}";
+    }
+
+    #endregion
+
+    #region CSS Style Properties
+
+    private const string StreakSurfaceStyle = "background: linear-gradient(180deg, var(--mud-palette-primary-hover) 0%, var(--mud-palette-surface) 100%);";
+
+    private const string StreakNumberStyle = "font-size: 32px; font-weight: 700; line-height: 1;";
+
+    private const string PanelTextStyle = "min-width: 0;";
+
+    private const string MutedTextStyle = "color: var(--mud-palette-text-secondary);";
+
+    private const string HeatmapScrollStyle = "overflow-x: auto; padding-bottom: 4px;";
+
+    private const string HeatmapContainerStyle = "display: flex; flex-direction: column; gap: 4px; min-width: max-content;";
+
+    private const string MonthLabelsShellStyle = "display: flex; align-items: flex-end; gap: 4px;";
+
+    private const string DayLabelSpacerStyle = "width: 20px; min-width: 20px;";
+
+    private const string MonthLabelsRowStyle = "display: flex; gap: 2px; min-height: 16px;";
+
+    private const string MonthLabelSlotStyle = "width: 14px; min-width: 14px; position: relative; overflow: visible;";
+
+    private const string MonthLabelTextStyle = "position: absolute; left: 0; top: 0; font-size: 10px; line-height: 1; color: var(--mud-palette-text-secondary); white-space: nowrap;";
+
+    private const string HeatmapGridStyle = "display: flex; gap: 4px;";
+
+    private const string DayLabelsColumnStyle = "display: flex; flex-direction: column; gap: 2px; width: 20px; min-width: 20px;";
+
+    private const string DayLabelStyle = "display: flex; align-items: center; justify-content: flex-end; height: 14px; font-size: 10px; color: var(--mud-palette-text-secondary); padding-right: 2px;";
+
+    private const string WeekColumnsStyle = "display: flex; gap: 2px;";
+
+    private const string WeekColumnStyle = "display: flex; flex-direction: column; gap: 2px;";
+
+    private const string HeatmapCellBaseStyle = "display: block; width: 14px; height: 14px; min-width: 14px; padding: 0; border-radius: 2px; cursor: pointer;";
+
+    private const string PlaceholderCellStyle = "display: block; width: 14px; height: 14px; min-width: 14px; border-radius: 2px; background-color: transparent;";
+
+    private const string LegendSwatchBaseStyle = "display: inline-block; width: 10px; height: 10px; min-width: 10px; border-radius: 2px;";
+
+    private const string MissedLegendSwatchStyle = LegendSwatchBaseStyle + " background-color: rgba(158, 158, 158, 0.35); border: 1px solid rgba(158, 158, 158, 0.2);";
+
+    private const string DoneLegendSwatchStyle = LegendSwatchBaseStyle + " background-color: var(--mud-palette-secondary);";
+
+    #endregion
+
+    #region Text Properties
+
+    private const string ShowHistoryText = "Show history";
+
+    private const string MissedLegendText = "Missed";
+
+    private const string DoneLegendText = "Done";
+
+    #endregion
+
+}

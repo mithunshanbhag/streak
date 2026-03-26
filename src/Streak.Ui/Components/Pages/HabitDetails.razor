@@ -1,4 +1,5 @@
 @page "/habits/{HabitId:int}"
+@using Streak.Core.Misc.Utilities
 @inject IHabitService HabitService
 @inject ICheckinService CheckinService
 @inject IDialogService DialogService
@@ -50,9 +51,9 @@ else if (_viewModel is not null)
             </MudAlert>
         }
 
-        <MudPaper Elevation="1"
-                  Class="pa-4 rounded-lg">
-            <MudStack Spacing="3">
+        <MudStack Spacing="3">
+            <MudPaper Elevation="1"
+                      Class="pa-4 rounded-lg">
                 <MudStack Row="true"
                           AlignItems="AlignItems.Start"
                           Justify="Justify.SpaceBetween"
@@ -111,41 +112,11 @@ else if (_viewModel is not null)
                         </MudMenu>
                     </MudStack>
                 </MudStack>
+            </MudPaper>
 
-                <MudPaper Elevation="0"
-                          Class="pa-4 rounded-lg"
-                          Style="@StreakSurfaceStyle">
-                    <MudStack Spacing="1">
-                        <MudStack Row="true"
-                                  AlignItems="AlignItems.Center"
-                                  Wrap="Wrap.NoWrap"
-                                  Spacing="2">
-                            <MudText Typo="Typo.h4"
-                                     Style="@StreakNumberStyle">
-                                @_viewModel.StreakCountText
-                            </MudText>
-
-                            @if (!string.IsNullOrWhiteSpace(_viewModel.StreakEmoji))
-                            {
-                                <MudText Typo="Typo.h5">
-                                    @_viewModel.StreakEmoji
-                                </MudText>
-                            }
-                        </MudStack>
-
-                        <MudText Typo="Typo.caption"
-                                 Color="Color.Secondary">
-                            @_viewModel.StreakLabel
-                        </MudText>
-
-                        <MudText Typo="Typo.body2"
-                                 Color="Color.Secondary">
-                            @_viewModel.StreakSupportText
-                        </MudText>
-                    </MudStack>
-                </MudPaper>
-            </MudStack>
-        </MudPaper>
+            <HabitStreakHistoryCard SummaryViewModel="@_viewModel"
+                                    HistoryViewModel="@_historyViewModel"/>
+        </MudStack>
     </MudContainer>
 }
 
@@ -160,6 +131,8 @@ else if (_viewModel is not null)
     #region Private Fields, Properties
 
     private HabitDetailsSummaryViewModel? _viewModel;
+
+    private HabitHistoryHeatmapViewModel? _historyViewModel;
 
     private bool _loadingData;
 
@@ -232,6 +205,7 @@ else if (_viewModel is not null)
         _habitNotFound = false;
         _deleteErrorMessage = null;
         _viewModel = null;
+        _historyViewModel = null;
 
         try
         {
@@ -248,7 +222,12 @@ else if (_viewModel is not null)
                 return;
             }
 
-            var streak = await CheckinService.GetCurrentStreakAsync(habit.Name);
+            var streakTask = CheckinService.GetCurrentStreakAsync(habit.Name);
+            var historyTask = CheckinService.GetHistoryAsync(habit.Name);
+
+            await Task.WhenAll(streakTask, historyTask);
+
+            var streak = await streakTask;
 
             _viewModel = new HabitDetailsSummaryViewModel
             {
@@ -257,6 +236,10 @@ else if (_viewModel is not null)
                 HabitEmoji = habit.Emoji,
                 Streak = streak
             };
+
+            _historyViewModel = HabitHistoryHeatmapBuilder.Build(
+                await historyTask,
+                DateOnly.FromDateTime(DateTime.UtcNow));
         }
         finally
         {
@@ -337,10 +320,6 @@ else if (_viewModel is not null)
     private const string EmojiContentStyle = "width: 48px; height: 48px;";
 
     private const string HabitNameStyle = "overflow: hidden; text-overflow: ellipsis; white-space: nowrap;";
-
-    private const string StreakSurfaceStyle = "background: linear-gradient(180deg, var(--mud-palette-primary-hover) 0%, var(--mud-palette-surface) 100%);";
-
-    private const string StreakNumberStyle = "font-size: 32px; font-weight: 700; line-height: 1;";
 
     private const string LoadingStateStyle = "min-height: 80vh";
 
