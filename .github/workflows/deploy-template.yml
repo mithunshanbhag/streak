@@ -5,6 +5,7 @@ on:
 
 env:
   DOTNET_VERSION_10: "10.0.x"
+  ANDROID_TARGET_FRAMEWORK: "net10.0-android"
   WINDOWS_TARGET_FRAMEWORK: "net10.0-windows10.0.19041.0"
 
 jobs:
@@ -27,5 +28,7 @@ jobs:
         with:
           name: Streak.Core.UnitTests
           path: ./tests/Streak.Core.UnitTests/TestResults-${{ github.run_id }}-${{ github.run_attempt }}
-      - name: build streak app
+      - name: build streak app (windows)
         run: dotnet publish ./src/Streak.Ui/Streak.Ui.csproj -f ${{ env.WINDOWS_TARGET_FRAMEWORK }} -c Release -o ./Publish/Streak.Ui --nologo
+      - name: build streak app (android)
+        run: dotnet publish ./src/Streak.Ui/Streak.Ui.csproj -f ${{ env.ANDROID_TARGET_FRAMEWORK }} -c Release -o ./Publish/Streak.Ui.Android --nologo
