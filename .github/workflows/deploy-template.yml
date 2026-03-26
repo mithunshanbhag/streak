@@ -19,7 +19,6 @@ jobs:
           dotnet-version: ${{ env.DOTNET_VERSION_10 }}
       - name: dotnet restore
         run: dotnet restore
-        working-directory: ./src/Streak
       - name: run unit tests (core)
         run: dotnet test ./tests/Streak.Core.UnitTests/Streak.Core.UnitTests.csproj --logger trx --results-directory ./tests/Streak.Core.UnitTests/TestResults-${{ github.run_id }}-${{ github.run_attempt }}
       - name: publish unit test results (core)
