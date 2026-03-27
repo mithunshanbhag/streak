@@ -140,5 +140,6 @@ Before completing changes, run formatting and verification:
 ### Other Conventions
 
 1. Prefer primary constructors for classes with dependencies.
-2. Have a `GlobalUsings.cs` file in each project for common namespaces.
-3. Only one .cs file per class/interface/struct/type, and the file name should match the type name.
+2. Have a `GlobalUsings.cs` file in each project for common namespaces. Declare all possible global usings here to minimize the need for `using` statements in individual files.
+3. Similarly, prefer the `_Imports.razor` file for Razor components to centralize common `@using` directives.
+4. Only one .cs file per class/interface/struct/type, and the file name should match the type name.

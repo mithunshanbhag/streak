@@ -40,6 +40,20 @@ else
         <MudContainer MaxWidth="MaxWidth.ExtraSmall"
                       Class="pa-4">
             <MudStack Spacing="3">
+                <MudPaper Elevation="0"
+                          Class="px-3 py-1 rounded-pill"
+                          Style="@DateBannerStyle">
+                    <MudStack Row="true"
+                              AlignItems="AlignItems.Center"
+                              Spacing="1">
+                        <MudIcon Icon="@Icons.Material.Filled.Today"
+                                 Size="Size.Small"/>
+                        <MudText Typo="Typo.body2">
+                            @DateBannerText
+                        </MudText>
+                    </MudStack>
+                </MudPaper>
+
                 @foreach (var habitCheckin in _habitCheckins)
                 {
                     <HabitCheckin ViewModel="@habitCheckin"/>
@@ -146,6 +160,8 @@ else
 
     private const string EmptyStateStyle = "min-height: 100vh";
 
+    private const string DateBannerStyle = "align-self: center; background-color: var(--mud-palette-primary-hover); color: var(--mud-palette-primary);";
+
     #endregion
 
     #region Text, Label Properties
@@ -153,6 +169,8 @@ else
     private const string LoadingDataText = "Loading Data...";
 
     private const string NewHabitButtonLabel = "New Habit";
+
+    private string DateBannerText => DateDisplayHelper.FormatDateBanner(DateTime.Now);
 
     #endregion
 

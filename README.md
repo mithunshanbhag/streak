@@ -38,7 +38,7 @@ These screenshots were captured from the current HTML mockups in `docs\ui-mockup
 
 ### Homepage
 
-The homepage is the main surface of the app: today's progress, quick check-ins, direct access to each habit, and a footer `+ New Habit` CTA.
+The homepage is the main surface of the app: a prominent current-date banner, quick check-ins, direct access to each habit, and a footer `+ New Habit` CTA.
 
 ![Homepage screen](docs/readme-assets/homepage.png)
 

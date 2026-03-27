@@ -99,7 +99,8 @@
                                                         @if (cell.IsPlaceholder)
                                                         {
                                                             <div aria-hidden="true"
-                                                                 style="@PlaceholderCellStyle"></div>
+                                                                 style="@PlaceholderCellStyle">
+                                                            </div>
                                                         }
                                                         else
                                                         {
@@ -108,7 +109,8 @@
                                                                 <button type="button"
                                                                         title="@cell.TooltipText"
                                                                         aria-label="@cell.TooltipText"
-                                                                        style="@GetHeatmapCellStyle(cell)"></button>
+                                                                        style="@GetHeatmapCellStyle(cell)">
+                                                                </button>
                                                             </MudTooltip>
                                                         }
                                                     }
@@ -127,7 +129,8 @@
                                           AlignItems="AlignItems.Center"
                                           Spacing="1">
                                     <span aria-hidden="true"
-                                          style="@MissedLegendSwatchStyle"></span>
+                                          style="@MissedLegendSwatchStyle">
+                                    </span>
                                     <MudText Typo="Typo.caption"
                                              Style="@MutedTextStyle">
                                         @MissedLegendText
@@ -138,7 +141,8 @@
                                           AlignItems="AlignItems.Center"
                                           Spacing="1">
                                     <span aria-hidden="true"
-                                          style="@DoneLegendSwatchStyle"></span>
+                                          style="@DoneLegendSwatchStyle">
+                                    </span>
                                     <MudText Typo="Typo.caption"
                                              Style="@MutedTextStyle">
                                         @DoneLegendText

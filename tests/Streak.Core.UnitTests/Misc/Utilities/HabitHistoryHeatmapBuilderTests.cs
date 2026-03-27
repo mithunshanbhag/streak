@@ -2,6 +2,50 @@ namespace Streak.Core.UnitTests.Misc.Utilities;
 
 public class HabitHistoryHeatmapBuilderTests
 {
+    #region Negative tests
+
+    [Fact]
+    public void Build_ShouldIgnoreInvalidAndFutureCheckinDates()
+    {
+        var today = new DateOnly(2026, 3, 25);
+        IReadOnlyList<Checkin> history =
+        [
+            new() { HabitId = 1, CheckinDate = "not-a-date" },
+            CreateCheckin(today.AddDays(1)),
+            CreateCheckin(today)
+        ];
+
+        var result = HabitHistoryHeatmapBuilder.Build(history, today);
+
+        FindCell(result, today)!.IsDone.Should().BeTrue();
+        FindCell(result, today.AddDays(1)).Should().BeNull();
+        result.Weeks
+            .SelectMany(x => x.Cells)
+            .Count(x => x.IsDone)
+            .Should()
+            .Be(1);
+    }
+
+    #endregion
+
+    private static Checkin CreateCheckin(DateOnly date)
+    {
+        return new Checkin
+        {
+            HabitId = 1,
+            CheckinDate = date.ToString(CoreConstants.CheckinDateFormat, CultureInfo.InvariantCulture)
+        };
+    }
+
+    private static HabitHistoryHeatmapCellViewModel? FindCell(
+        HabitHistoryHeatmapViewModel viewModel,
+        DateOnly date)
+    {
+        return viewModel.Weeks
+            .SelectMany(x => x.Cells)
+            .SingleOrDefault(x => x.Date == date);
+    }
+
     #region Positive tests
 
     [Fact]
@@ -43,32 +87,6 @@ public class HabitHistoryHeatmapBuilderTests
             .ToArray();
 
         monthLabels.Should().ContainInOrder("Dec", "Jan", "Feb", "Mar");
-    }
-
-    #endregion
-
-    #region Negative tests
-
-    [Fact]
-    public void Build_ShouldIgnoreInvalidAndFutureCheckinDates()
-    {
-        var today = new DateOnly(2026, 3, 25);
-        IReadOnlyList<Checkin> history =
-        [
-            new() { HabitId = 1, CheckinDate = "not-a-date" },
-            CreateCheckin(today.AddDays(1)),
-            CreateCheckin(today)
-        ];
-
-        var result = HabitHistoryHeatmapBuilder.Build(history, today);
-
-        FindCell(result, today)!.IsDone.Should().BeTrue();
-        FindCell(result, today.AddDays(1)).Should().BeNull();
-        result.Weeks
-            .SelectMany(x => x.Cells)
-            .Count(x => x.IsDone)
-            .Should()
-            .Be(1);
     }
 
     #endregion
@@ -133,22 +151,4 @@ public class HabitHistoryHeatmapBuilderTests
     }
 
     #endregion
-
-    private static Checkin CreateCheckin(DateOnly date)
-    {
-        return new Checkin
-        {
-            HabitId = 1,
-            CheckinDate = date.ToString(CoreConstants.CheckinDateFormat, CultureInfo.InvariantCulture)
-        };
-    }
-
-    private static HabitHistoryHeatmapCellViewModel? FindCell(
-        HabitHistoryHeatmapViewModel viewModel,
-        DateOnly date)
-    {
-        return viewModel.Weeks
-            .SelectMany(x => x.Cells)
-            .SingleOrDefault(x => x.Date == date);
-    }
 }
