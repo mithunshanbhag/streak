@@ -15,11 +15,11 @@ public static class MauiAppBuilderExtensions
 
         public MauiAppBuilder ConfigureServices()
         {
-            // automapper
-            builder.Services.AddAutoMapper(cfg => { cfg.AddProfile<MapperProfile>(); });
+            //// automapper
+            //builder.Services.AddAutoMapper(cfg => { cfg.AddProfile<MapperProfile>(); });
 
-            // mediatr
-            builder.Services.AddMediatR(cfg => { cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()); });
+            //// mediatr
+            //builder.Services.AddMediatR(cfg => { cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()); });
 
             // named http clients
 
@@ -27,7 +27,7 @@ public static class MauiAppBuilderExtensions
             builder.Services.AddMudServices();
 
             // validators
-            foreach (var validatorAssembly in new[] { Assembly.GetExecutingAssembly(), typeof(MapperProfile).Assembly }.Distinct())
+            foreach (var validatorAssembly in new[] { Assembly.GetExecutingAssembly(), typeof(StreakDbContext).Assembly }.Distinct())
             foreach (var validatorRegistration in AssemblyScanner.FindValidatorsInAssembly(validatorAssembly))
                 builder.Services.AddSingleton(validatorRegistration.InterfaceType, validatorRegistration.ValidatorType);
 

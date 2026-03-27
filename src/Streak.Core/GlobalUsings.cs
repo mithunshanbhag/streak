@@ -3,7 +3,6 @@
 global using System.Globalization;
 global using System.Linq.Expressions;
 global using System.Text;
-global using AutoMapper;
 global using FluentValidation;
 global using Microsoft.EntityFrameworkCore;
 global using Streak.Core.Constants;
