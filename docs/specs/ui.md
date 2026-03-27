@@ -115,6 +115,16 @@ The app uses a **top app bar** that is compact/dense to maximize the content are
 - Vertical spacing between cards: 12dp.
 - Prefer MudBlazor spacing utilities or stack spacing over custom margin rules.
 
+## Date Banner
+
+- The **Homepage** displays the current calendar day at the top of the content area, above the habit list.
+- Use a `MudChip` with `Color.Default` (or equivalent `MudText` wrapped in a `MudPaper` pill) for the date pill.
+  - Apply `rounded-pill` and subtle elevation (`Elevation="0"`) so it reads as a non-interactive label.
+  - Do **not** use `Clickable`, `OnClick`, or any navigation binding.
+- Format the date with MudBlazor's `MudText` or inside the chip label using `DateTime.Now.ToString("dddd, MMM d", CultureInfo.CurrentCulture)` — for example `Friday, Mar 27`.
+- Center-align the chip horizontally above the habit list.
+- The chip sits **inside** the scrollable content area (not in the app bar), so it scrolls with the list.
+
 ## Empty States
 
 - When there is no content to display (e.g., no habits created), the page shows a centered `+ New Habit` button that opens the Quick Add Habit dialog.
