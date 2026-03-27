@@ -16,7 +16,9 @@
         <span class="app-bar__logo" title="Let your habits compound">Streak</span>
         <div class="app-bar__actions">
             <a class="app-bar__btn" href="../SettingsPage/index.html" aria-label="Settings" title="Settings">
-                <span class="material-icons">settings</span>
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                    <path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94L14.4 2.81C14.36 2.57 14.16 2.4 13.92 2.4H10.08c-.24 0-.43.17-.47.41L9.25 5.35c-.59.24-1.13.56-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.07.63-.07.94s.02.64.07.94L2.86 14.52c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>
+                </svg>
             </a>
             <a class="app-bar__btn" href="https://github.com/mithunshanbhag/streak" aria-label="View source code on GitHub" title="View source code on GitHub" target="_blank" rel="noreferrer">
                 <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
@@ -27,6 +29,11 @@
     </header>
 
     <main class="content" id="habitList">
+        <div class="date-banner" aria-label="Today's date">
+            <span class="date-banner__icon" aria-hidden="true">📅</span>
+            <span class="date-banner__text" id="todayDate">Friday, Mar 27</span>
+        </div>
+
         <article class="habit-card habit-card--done" data-name="Exercise">
             <a class="habit-card__details" href="../HabitDetailsPage/index.html" title="Open Exercise details">
                 <span class="habit-card__emoji">💪</span>
@@ -36,7 +43,7 @@
                 </span>
             </a>
             <button class="habit-card__toggle habit-card__toggle--done" aria-label="Toggle Exercise" aria-pressed="true">
-                <span class="material-icons">check_circle</span>
+                <svg class="toggle-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5-4.5-4.5 1.41-1.41L10 13.67l7.09-7.09 1.41 1.41L10 16.5z"/></svg>
             </button>
         </article>
 
@@ -49,7 +56,7 @@
                 </span>
             </a>
             <button class="habit-card__toggle habit-card__toggle--done" aria-label="Toggle Meditate" aria-pressed="true">
-                <span class="material-icons">check_circle</span>
+                <svg class="toggle-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5-4.5-4.5 1.41-1.41L10 13.67l7.09-7.09 1.41 1.41L10 16.5z"/></svg>
             </button>
         </article>
 
@@ -62,7 +69,7 @@
                 </span>
             </a>
             <button class="habit-card__toggle habit-card__toggle--not-done" aria-label="Toggle Read" aria-pressed="false">
-                <span class="material-icons">radio_button_unchecked</span>
+                <svg class="toggle-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"/></svg>
             </button>
         </article>
 
@@ -75,14 +82,14 @@
                 </span>
             </a>
             <button class="habit-card__toggle habit-card__toggle--not-done" aria-label="Toggle Run" aria-pressed="false">
-                <span class="material-icons">radio_button_unchecked</span>
+                <svg class="toggle-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"/></svg>
             </button>
         </article>
 
         <section class="habit-list-footer" aria-label="Create a new habit">
             <div class="habit-list-footer__rule"></div>
             <a class="habit-list-footer__btn" href="../CreateHabitPage/index.html">
-                <span class="material-icons">add</span>
+                <svg viewBox="0 0 24 24" style="width:20px;height:20px;fill:currentColor" aria-hidden="true"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
                 <span>New Habit</span>
             </a>
         </section>
@@ -90,17 +97,33 @@
 </div>
 
 <script>
+    const CHECK_PATH   = "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5-4.5-4.5 1.41-1.41L10 13.67l7.09-7.09 1.41 1.41L10 16.5z";
+    const CIRCLE_PATH  = "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z";
+
+    // Populate the date banner with the current date.
+    (function () {
+        const el = document.getElementById('todayDate');
+        if (el) {
+            const now = new Date();
+            el.textContent = now.toLocaleDateString('en-US', {
+                weekday: 'long',
+                month: 'short',
+                day: 'numeric'
+            });
+        }
+    })();
+
     document.querySelectorAll('.habit-card__toggle').forEach(button => {
         button.addEventListener('click', () => {
-            const card = button.closest('.habit-card');
-            const icon = button.querySelector('.material-icons');
+            const card   = button.closest('.habit-card');
+            const svgPath = button.querySelector('.toggle-icon path');
             const isDone = button.classList.contains('habit-card__toggle--done');
 
-            button.classList.toggle('habit-card__toggle--done', !isDone);
-            button.classList.toggle('habit-card__toggle--not-done', isDone);
+            button.classList.toggle('habit-card__toggle--done',     !isDone);
+            button.classList.toggle('habit-card__toggle--not-done',  isDone);
             button.setAttribute('aria-pressed', String(!isDone));
             card.classList.toggle('habit-card--done', !isDone);
-            icon.textContent = isDone ? 'radio_button_unchecked' : 'check_circle';
+            svgPath.setAttribute('d', isDone ? CIRCLE_PATH : CHECK_PATH);
         });
     });
 </script>
