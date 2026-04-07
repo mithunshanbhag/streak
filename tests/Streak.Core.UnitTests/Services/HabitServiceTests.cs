@@ -17,6 +17,36 @@ public class HabitServiceTests
         habitRepositoryMock.VerifyNoOtherCalls();
     }
 
+    [Fact]
+    public async Task CreateAsync_ShouldCreateHabit_WhenExistingCountIsOneBelowConfiguredMaximum()
+    {
+        var existingHabits = Enumerable.Range(1, CoreConstants.MaxHabitCount - 1)
+            .Select(index => new Habit { Id = index, Name = $"Habit {index}" })
+            .ToList();
+
+        Habit? persistedHabit = null;
+        var habitRepositoryMock = new Mock<IHabitRepository>(MockBehavior.Strict);
+        habitRepositoryMock
+            .Setup(x => x.GetAllAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(existingHabits);
+        habitRepositoryMock
+            .Setup(x => x.AddAsync(It.IsAny<Habit>(), It.IsAny<CancellationToken>()))
+            .Callback<Habit, CancellationToken>((habit, _) => persistedHabit = habit)
+            .ReturnsAsync(true);
+
+        IHabitService sut = new HabitService(habitRepositoryMock.Object);
+
+        var result = await sut.CreateAsync(new Habit { Id = 0, Name = "Stretch", Emoji = "🧘" });
+
+        result.Id.Should().Be(CoreConstants.MaxHabitCount);
+        result.Name.Should().Be("Stretch");
+        result.Emoji.Should().Be("🧘");
+        persistedHabit.Should().BeEquivalentTo(result);
+        habitRepositoryMock.Verify(x => x.GetAllAsync(It.IsAny<CancellationToken>()), Times.Once);
+        habitRepositoryMock.Verify(x => x.AddAsync(It.IsAny<Habit>(), It.IsAny<CancellationToken>()), Times.Once);
+        habitRepositoryMock.VerifyNoOtherCalls();
+    }
+
     #endregion
 
     #region Positive tests

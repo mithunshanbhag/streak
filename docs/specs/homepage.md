@@ -44,7 +44,7 @@ Each card shows:
 
 ### New Habit CTA
 
-- When the user already has habits and is still below the 6-habit limit, show a full-width **`+ New Habit`** button below the list.
+- When the user already has habits and is still below the 8-habit limit, show a full-width **`+ New Habit`** button below the list.
 - Separate the list from this CTA with a subtle horizontal divider.
 - Tapping **`+ New Habit`** opens the [Quick Add Habit dialog](./create-habit-page.md) over the homepage.
 - Hide the CTA when the user is already at the maximum habit count.

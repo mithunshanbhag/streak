@@ -28,7 +28,7 @@ The goal is not to build the biggest habit app. The goal is to build a habit app
 - **Fast** for daily check-ins
 - **Calm** instead of over-featured
 - **Offline-first** with local device storage
-- **Focused** on a maximum of six habits at a time
+- **Focused** on a maximum of eight habits at a time
 
 If the product direction holds, the primary workflow should feel like: open app, scan progress, tap what you completed, move on with your day.
 
@@ -74,7 +74,7 @@ Based on the current specs, Streak is shaping up around the following ideas:
 
 - Daily binary check-ins: done or not done
 - A shallow navigation model with **Homepage** as the primary surface
-- A hard cap of **6 habits**
+- A hard cap of **8 habits**
 - Local-only persistence with no account system
 - Simple reminder settings instead of complex automation
 

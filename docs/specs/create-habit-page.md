@@ -36,6 +36,6 @@ The dialog presents a compact form for creating a habit.
 
 | Rule         | Details                                                                                                                 |
 | ------------ | ----------------------------------------------------------------------------------------------------------------------- |
-| Max habits   | 6. This dialog should not be reachable from the normal UI when the limit is already reached.                           |
+| Max habits   | 8. This dialog should not be reachable from the normal UI when the limit is already reached.                           |
 | Unique names | Habit names must be unique (case-insensitive). The Save button shows a validation error if a duplicate name is entered. |
 | Name length  | 1–30 characters.                                                                                                        |

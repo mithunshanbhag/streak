@@ -2,7 +2,7 @@
 
 This document captures brainstorming ideas for making Streak feel even lighter.
 
-The current direction is already strong: one primary screen, binary check-ins, a six-habit cap, and local-only data are all simplicity-friendly choices. The remaining opportunities are mostly about reducing **tap cost** and **visual weight**.
+The current direction is already strong: one primary screen, binary check-ins, an eight-habit cap, and local-only data are all simplicity-friendly choices. The remaining opportunities are mostly about reducing **tap cost** and **visual weight**.
 
 ## Decision Update
 
@@ -190,7 +190,7 @@ Why this package fits Streak:
 These choices are already doing good simplicity work:
 
 - Binary daily check-ins
-- Maximum of six habits
+- Maximum of eight habits
 - Local-only storage
 - Stable habit naming rules
 - A single reminder concept

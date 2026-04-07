@@ -8,7 +8,7 @@ Streak is a simple habit-tracking mobile app for Android. It helps users build a
 
 - **Speed over features.** The daily workflow (check in → exit) should take seconds, not minutes.
 - **Minimal navigation.** The landing page is the primary surface; most tasks require zero page clicks.
-- **Simplicity over completeness.** Binary habits (done / not done), a hard cap of 6 habits, and local-only data storage.
+- **Simplicity over completeness.** Binary habits (done / not done), a hard cap of 8 habits, and local-only data storage.
 
 ## Core Concepts
 
@@ -21,7 +21,7 @@ A recurring daily activity the user wants to track.
 | Name         | Yes      | Short descriptive label (e.g., "Meditate", "Read"). Max 30 characters.                                   |
 | Emoji / Icon | No       | A single emoji to visually represent the habit (e.g., 🧘, 📖). A default icon is used if none is selected. |
 
-- A user can have between 0 and **6** habits at any time.
+- A user can have between 0 and **8** habits at any time.
 - On the [Homepage](./homepage.md), habits are listed in **alphabetical order by name**.
 - Tapping a habit on the Homepage opens that habit's [Habit Details page](./habit-details-page.md).
 
