@@ -62,7 +62,7 @@ Mockup source: [`docs/ui-mockups/HabitDetailsPage/index.html`](docs/ui-mockups/H
 
 ### Settings
 
-Settings currently focus on reminder preferences and keeping the app configuration intentionally small.
+Settings now group reminder preferences with lightweight data-management utilities such as database export, while keeping the overall configuration intentionally small.
 
 ![Settings screen](docs/readme-assets/settings.png)
 
@@ -76,7 +76,7 @@ Based on the current specs, Streak is shaping up around the following ideas:
 - A shallow navigation model with **Homepage** as the primary surface
 - A hard cap of **8 habits**
 - Local-only persistence with no account system
-- Simple reminder settings instead of complex automation
+- Simple reminder settings and lightweight data utilities instead of complex automation
 
 For the latest written product direction, start here:
 
