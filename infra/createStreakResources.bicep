@@ -32,8 +32,11 @@ var minTlsVersionForStorage = 'TLS1_2'
 var suffix = toLower(envName)
 
 // key vault
-// var keyVaultName = '${prefix}-kv-${suffix}'
-// var cosmosDbConnectionStringSecretName = 'cosmosDbConnectionString'
+var keyVaultName = '${prefix}-kv-${suffix}'
+var cosmosDbConnectionStringSecretName = 'CosmosDbConnectionString'
+var cosmosDbNameSecretName = 'CosmosDbName'
+var functionAppHostKeySecretName = 'FunctionAppHostKey'
+var functionAppUrlSecretName = 'FunctionAppUrl'
 
 // cosmos db
 var cosmosAccountName = '${prefix}-cosmos-${suffix}'
@@ -59,6 +62,70 @@ var resourceTags = {
 
 // resources
 ////////////////////////////////////////////////////////////////////////////////
+
+//
+// key vault
+//
+
+resource resKeyVault 'Microsoft.KeyVault/vaults@2022-07-01' = {
+  name: keyVaultName
+  location: resourceLocation
+  tags: resourceTags
+  properties: {
+    sku: {
+      family: 'A'
+      name: 'standard'
+    }
+    accessPolicies: [
+      {
+        tenantId: subscription().tenantId
+        objectId: resFunctionApp.identity.principalId
+        permissions: {
+          secrets: [
+            'get'
+            'list'
+          ]
+        }
+      }
+    ]
+    tenantId: subscription().tenantId
+    softDeleteRetentionInDays: 7
+  }
+
+  resource resFunctionAppUrlSecret 'secrets' = {
+    name: functionAppUrlSecretName
+    tags: resourceTags
+    properties: {
+      value: 'https://${resFunctionApp.properties.defaultHostName}/api'
+    }
+  }
+
+  resource resFunctionAppHostKeySecret 'secrets' = {
+    name: functionAppHostKeySecretName
+    tags: resourceTags
+    properties: {
+      // See: https://stackoverflow.com/a/79467680
+      // See: https://github.com/Azure/azure-quickstart-templates/blob/76cd6e062a55d3db8fb854e04812de9711fc6a82/quickstarts/microsoft.web/function-http-trigger/main.bicep#L160
+      value: listKeys('${resFunctionApp.id}/host/default', resFunctionApp.apiVersion).functionKeys.default
+    }
+  }
+
+  resource resKeyVaultCosmosDbConnectionSecret 'secrets' = {
+    name: cosmosDbConnectionStringSecretName
+    tags: resourceTags
+    properties: {
+      value: resCosmosAccount.listConnectionStrings().connectionStrings[0].connectionString
+    }
+  }
+
+  resource resKeyVaultCosmosDbNameSecret 'secrets' = {
+    name: cosmosDbNameSecretName
+    tags: resourceTags
+    properties: {
+      value: cosmosDbName
+    }
+  }
+}
 
 //
 // Cosmos DB (for Cloud API, Metrics API)
