@@ -36,8 +36,8 @@ var suffix = toLower(envName)
 // var cosmosDbConnectionStringSecretName = 'cosmosDbConnectionString'
 
 // cosmos db
-// var cosmosAccountName = '${prefix}-cosmos-${suffix}'
-// var cosmosDbName = '${prefix}-db'
+var cosmosAccountName = '${prefix}-cosmos-${suffix}'
+var cosmosDbName = '${prefix}-db'
 
 // log analytics & app insights
 var logAnalyticsWSName = '${prefix}-law-${suffix}'
@@ -59,6 +59,41 @@ var resourceTags = {
 
 // resources
 ////////////////////////////////////////////////////////////////////////////////
+
+//
+// Cosmos DB (for Cloud API, Metrics API)
+//
+
+resource resCosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2023-04-15' = {
+  name: cosmosAccountName
+  location: resourceLocation
+  tags: resourceTags
+  properties: {
+    enableFreeTier: true
+    databaseAccountOfferType: 'Standard'
+    locations: [
+      {
+        locationName: resourceLocation
+      }
+    ]
+    capabilities: [
+      {
+        name: 'EnableServerless'
+      }
+    ]
+  }
+
+  resource resCosmosDb 'sqlDatabases@2023-04-15' = {
+    tags: resourceTags
+    location: resourceLocation
+    name: cosmosDbName
+    properties: {
+      resource: {
+        id: cosmosDbName
+      }
+    }
+  }
+}
 
 //
 // log analytics & app insights
