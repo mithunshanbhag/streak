@@ -79,6 +79,8 @@ jobs:
           parameters: envName=${{ inputs.environmentName }} githubCommitSha=${{ github.sha }} githubWorkflowRunId=${{ github.run_id }} githubRef=${{ github.ref }}
 
   build-deploy-streak-ui:
+    # temporarily disabled
+    if: ${{ false }}
     environment: ${{ inputs.environmentName }}
     needs: provision
     runs-on: windows-2025-vs2026
