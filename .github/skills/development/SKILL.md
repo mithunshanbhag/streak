@@ -20,7 +20,7 @@ description: Guidelines and best practices for development with .NET.
 
 ## Controllers
 
-- All API controllers (and trigger-activated Azure functions) are organized under `src\{appName}\Controllers\`.
+- All API controllers (and trigger-activated Azure functions) are organized under `src\{appName}\Controllers\` or `src\{appName}.Api\Controllers\`.
 - Controllers will inject services to perform any necessary business logic or data fetching, but should not contain any complex logic themselves. They should be thin and focused on handling HTTP requests and responses, and delegating to services for the actual work.
 - Controllers should only accept and return DTOs/REST models. Not view/storage/persistence models or database entities.
 - To the greatest extent possible, try to use the controller base classes defined in the Nucleus nuget package. A benefit of this is that it automatically converts any validation exceptions (thrown by FluentValidation) or any custom exceptions (thrown by service layer) into appropriate ActionResult / HTTP responses with error details.

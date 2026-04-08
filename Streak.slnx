@@ -1,4 +1,5 @@
 <Solution>
+  <Project Path="src/Streak.Api/Streak.Api.csproj" Id="7fa21c18-f6ed-4b7c-a909-21ae6c5945f2" />
   <Project Path="src/Streak.Core/Streak.Core.csproj" Id="f60363f6-71e1-4cb9-bbea-79c137a1e3fb" />
   <Project Path="src/Streak.DbScaffold/Streak.DbScaffold.csproj" />
   <Project Path="src/Streak.Ui/Streak.Ui.csproj" Id="c2a78bb7-d076-4c14-a143-df834c9948dd">
