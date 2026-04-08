@@ -237,6 +237,15 @@ resource resFunctionApp 'Microsoft.Web/sites@2024-11-01' = {
           name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
           value: resAppInsights.properties.ConnectionString
         }
+        // key vault references to cosmos db secrets
+        {
+          name: cosmosDbConnectionStringSecretName
+          value: '@Microsoft.KeyVault(VaultName=${keyVaultName};SecretName=${cosmosDbConnectionStringSecretName})'
+        }
+        {
+          name: cosmosDbNameSecretName
+          value: '@Microsoft.KeyVault(VaultName=${keyVaultName};SecretName=${cosmosDbNameSecretName})'
+        }
       ]
     }
   }
