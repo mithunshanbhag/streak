@@ -44,9 +44,9 @@ var logAnalyticsWSName = '${prefix}-law-${suffix}'
 var appInsightsName = '${prefix}-ai-${suffix}'
 
 // function app
-var functionAppName = '${prefix}-api-ptl-${suffix}'
-var functionAppStorageAccountName = '${prefix}ptl${suffix}'
-var functionAppServicePlanName = '${prefix}-ptl-appsvcplan-${suffix}'
+var functionAppName = '${prefix}-api-${suffix}'
+var functionAppStorageAccountName = '${prefix}${suffix}'
+var functionAppServicePlanName = '${prefix}-appsvcplan-${suffix}'
 
 // tags
 var resourceTags = {
