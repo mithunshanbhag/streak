@@ -26,8 +26,8 @@ param prefix string = 'streak'
 // variables
 ////////////////////////////////////////////////////////////////////////////////
 
-// var minTlsVersionForApps = '1.2'
-// var minTlsVersionForStorage = 'TLS1_2'
+var minTlsVersionForApps = '1.2'
+var minTlsVersionForStorage = 'TLS1_2'
 
 var suffix = toLower(envName)
 
@@ -43,10 +43,10 @@ var cosmosDbName = '${prefix}-db'
 var logAnalyticsWSName = '${prefix}-law-${suffix}'
 var appInsightsName = '${prefix}-ai-${suffix}'
 
-// function app (PTL)
-// var functionAppName = '${prefix}-api-ptl-${suffix}'
-// var functionAppStorageAccountName = '${prefix}ptl${suffix}'
-// var functionAppServicePlanName = '${prefix}-ptl-appsvcplan-${suffix}'
+// function app
+var functionAppName = '${prefix}-api-ptl-${suffix}'
+var functionAppStorageAccountName = '${prefix}ptl${suffix}'
+var functionAppServicePlanName = '${prefix}-ptl-appsvcplan-${suffix}'
 
 // tags
 var resourceTags = {
@@ -94,6 +94,87 @@ resource resCosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2023-04-15' = {
     }
   }
 }
+
+//
+// function app
+//
+
+// storage account
+resource resFunctionAppStorageAccount 'Microsoft.Storage/storageAccounts@2024-01-01' = {
+  name: functionAppStorageAccountName
+  location: resourceLocation
+  tags: resourceTags
+  kind: 'StorageV2'
+  sku: {
+    name: 'Standard_LRS'
+  }
+  properties: {
+    allowBlobPublicAccess: false
+    minimumTlsVersion: minTlsVersionForStorage
+  }
+}
+
+// app service plan (consumption plan)
+resource resFunctionAppServicePlan 'Microsoft.Web/serverfarms@2021-03-01' = {
+  name: functionAppServicePlanName
+  location: resourceLocation
+  tags: resourceTags
+  kind: 'linux'
+  properties: {
+    reserved: true
+  }
+  sku: {
+    name: 'Y1'
+    tier: 'Dynamic'
+  }
+}
+
+// function app
+resource resFunctionApp 'Microsoft.Web/sites@2024-11-01' = {
+  name: functionAppName
+  location: resourceLocation
+  tags: resourceTags
+  kind: 'functionapp'
+  identity: {
+    type: 'SystemAssigned'
+  }
+  properties: {
+    httpsOnly: true
+    serverFarmId: resFunctionAppServicePlan.id
+    siteConfig: {
+      minTlsVersion: minTlsVersionForApps
+      linuxFxVersion: 'DOTNET-ISOLATED|9.0'
+      functionAppScaleLimit: 1
+      appSettings: [
+        // app settings required by Azure functions
+        {
+          name: 'FUNCTIONS_WORKER_RUNTIME'
+          value: 'dotnet-isolated'
+        }
+        {
+          name: 'FUNCTIONS_EXTENSION_VERSION'
+          value: '~4'
+        }
+        {
+          name: 'AzureWebJobsStorage'
+          value: 'DefaultEndpointsProtocol=https;AccountName=${resFunctionAppStorageAccount.name};EndpointSuffix=${environment().suffixes.storage};AccountKey=${resFunctionAppStorageAccount.listKeys().keys[0].value}'
+          // Commented out below lines because KV references don't work well with the "Azure/functions-action" github action. 
+          // More details: https://github.com/Azure/functions-action/discussions/140
+          // value: '@Microsoft.KeyVault(VaultName=${keyVaultName};SecretName=${e2eTesterApiStorageAccountConnectionStringSecretName})'
+        }
+        {
+          name: 'APPINSIGHTS_INSTRUMENTATIONKEY'
+          value: resAppInsights.properties.InstrumentationKey
+        }
+        {
+          name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
+          value: resAppInsights.properties.ConnectionString
+        }
+      ]
+    }
+  }
+}
+
 
 //
 // log analytics & app insights
