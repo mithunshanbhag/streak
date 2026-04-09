@@ -4,8 +4,9 @@ targetScope = 'resourceGroup'
 // parameters
 ////////////////////////////////////////////////////////////////////////////////
 
-@minLength(3)
-@maxLength(6)
+@allowed([
+  'test'
+])
 @description('A unique environment name (max 6 characters, alphanumeric only).')
 param envName string
 
@@ -18,303 +19,67 @@ param githubWorkflowRunId string
 @description('Github ref (branch, tag) that triggered this deployment.')
 param githubRef string
 
-@description('Prefix used to compose Azure resource names.')
+param resourceLocation string = resourceGroup().location
+
 param prefix string = 'streak'
-
-@description('The maximum scale-out instance count limit for the function app.')
-@minValue(40)
-@maxValue(1000)
-param maximumInstanceCount int = 100
-
-@description('The memory size of instances used by the function app.')
-@allowed([
-  2048
-  4096
-])
-param instanceMemoryMB int = 2048
 
 // variables
 ////////////////////////////////////////////////////////////////////////////////
 
-var location = resourceGroup().location
-var normalizedPrefix = toLower(prefix)
-var normalizedEnvName = toLower(envName)
-var resourceSuffix = toLower(take(uniqueString(subscription().subscriptionId, resourceGroup().id, normalizedEnvName), 6))
+var minTlsVersionForApps = '1.2'
+var minTlsVersionForStorage = 'TLS1_2'
 
+var suffix = toLower(envName)
+
+// key vault
+var keyVaultName = '${prefix}-kv-${suffix}'
+var cosmosDbConnectionStringSecretName = 'CosmosDbConnectionString'
+var cosmosDbNameSecretName = 'CosmosDbName'
+var functionAppHostKeySecretName = 'FunctionAppHostKey'
+var functionAppUrlSecretName = 'FunctionAppUrl'
+
+// cosmos db
+var cosmosAccountName = '${prefix}-cosmos-${suffix}'
+var cosmosDbName = '${prefix}-db'
+
+// log analytics & app insights
+var logAnalyticsWSName = '${prefix}-law-${suffix}'
+var appInsightsName = '${prefix}-ai-${suffix}'
+
+// function app
+var functionAppName = '${prefix}-api-${suffix}'
+var functionAppStorageAccountName = '${prefix}${suffix}'
+var functionAppServicePlanName = '${prefix}-appsvcplan-${suffix}'
+
+// tags
 var resourceTags = {
-  Product: normalizedPrefix
-  Environment: normalizedEnvName
+  Product: prefix
+  Environment: envName
   GithubCommitSha: githubCommitSha
   GithubWorkflowRunId: githubWorkflowRunId
   GithubRef: githubRef
 }
 
-var cosmosAccountName = toLower(take('${normalizedPrefix}-cosmos-${normalizedEnvName}-${resourceSuffix}', 44))
-var functionAppName = '${normalizedPrefix}-api-${normalizedEnvName}-${resourceSuffix}'
-var functionPlanName = '${normalizedPrefix}-plan-${normalizedEnvName}-${resourceSuffix}'
-var storagePrefixPart = take(normalizedPrefix, 8)
-var storageEnvPart = take(normalizedEnvName, 6)
-var storageAccountName = toLower(replace('${storagePrefixPart}func${storageEnvPart}${resourceSuffix}', '-', ''))
-var keyVaultName = toLower(take('${normalizedPrefix}-kv-${normalizedEnvName}-${resourceSuffix}', 24))
-var applicationInsightsName = '${normalizedPrefix}-ai-${normalizedEnvName}-${resourceSuffix}'
-var logAnalyticsWorkspaceName = '${normalizedPrefix}-law-${normalizedEnvName}-${resourceSuffix}'
-var functionStorageIdentityName = '${normalizedPrefix}-uai-${normalizedEnvName}-${resourceSuffix}'
-
-var deploymentStorageContainerName = 'app-package'
-var cosmosConnectionStringSecretName = 'CosmosDb--ConnectionString'
-
-var storageBlobDataOwnerRoleId = 'b7e6dc6d-f1e8-4753-8033-0f276bb0955b'
-var storageBlobDataContributorRoleId = 'ba92f5b4-2d11-453d-a403-e96b0029c9fe'
-var storageQueueDataContributorRoleId = '974c5e8b-45b9-4653-ba55-5f855dd0fb88'
-var storageTableDataContributorRoleId = '0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3'
-
-// monitoring
+// resources
 ////////////////////////////////////////////////////////////////////////////////
 
-resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2023-09-01' = {
-  name: logAnalyticsWorkspaceName
-  location: location
-  tags: resourceTags
-  properties: {
-    retentionInDays: 30
-    features: {
-      searchVersion: 1
-    }
-    sku: {
-      name: 'PerGB2018'
-    }
-  }
-}
+//
+// key vault
+//
 
-resource applicationInsights 'Microsoft.Insights/components@2020-02-02' = {
-  name: applicationInsightsName
-  location: location
-  kind: 'web'
-  tags: resourceTags
-  properties: {
-    Application_Type: 'web'
-    WorkspaceResourceId: logAnalyticsWorkspace.id
-  }
-}
-
-// storage
-////////////////////////////////////////////////////////////////////////////////
-
-resource storageAccount 'Microsoft.Storage/storageAccounts@2023-05-01' = {
-  name: storageAccountName
-  location: location
-  tags: resourceTags
-  kind: 'StorageV2'
-  sku: {
-    name: 'Standard_LRS'
-  }
-  properties: {
-    accessTier: 'Hot'
-    allowBlobPublicAccess: false
-    allowSharedKeyAccess: false
-    minimumTlsVersion: 'TLS1_2'
-    networkAcls: {
-      bypass: 'AzureServices'
-      defaultAction: 'Allow'
-    }
-    publicNetworkAccess: 'Enabled'
-  }
-
-  resource blobServices 'blobServices' = {
-    name: 'default'
-    properties: {
-      deleteRetentionPolicy: {}
-    }
-
-    resource deploymentContainer 'containers' = {
-      name: deploymentStorageContainerName
-      properties: {
-        publicAccess: 'None'
-      }
-    }
-  }
-}
-
-resource functionStorageIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
-  name: functionStorageIdentityName
-  location: location
-  tags: resourceTags
-}
-
-resource storageBlobDataOwnerRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(subscription().subscriptionId, storageAccount.id, functionStorageIdentity.id, storageBlobDataOwnerRoleId)
-  scope: storageAccount
-  properties: {
-    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', storageBlobDataOwnerRoleId)
-    principalId: functionStorageIdentity.properties.principalId
-    principalType: 'ServicePrincipal'
-  }
-}
-
-resource storageBlobDataContributorRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(subscription().subscriptionId, storageAccount.id, functionStorageIdentity.id, storageBlobDataContributorRoleId)
-  scope: storageAccount
-  properties: {
-    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', storageBlobDataContributorRoleId)
-    principalId: functionStorageIdentity.properties.principalId
-    principalType: 'ServicePrincipal'
-  }
-}
-
-resource storageQueueDataContributorRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(subscription().subscriptionId, storageAccount.id, functionStorageIdentity.id, storageQueueDataContributorRoleId)
-  scope: storageAccount
-  properties: {
-    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', storageQueueDataContributorRoleId)
-    principalId: functionStorageIdentity.properties.principalId
-    principalType: 'ServicePrincipal'
-  }
-}
-
-resource storageTableDataContributorRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(subscription().subscriptionId, storageAccount.id, functionStorageIdentity.id, storageTableDataContributorRoleId)
-  scope: storageAccount
-  properties: {
-    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', storageTableDataContributorRoleId)
-    principalId: functionStorageIdentity.properties.principalId
-    principalType: 'ServicePrincipal'
-  }
-}
-
-// data
-////////////////////////////////////////////////////////////////////////////////
-
-resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2023-04-15' = {
-  name: cosmosAccountName
-  location: location
-  tags: resourceTags
-  kind: 'GlobalDocumentDB'
-  properties: {
-    databaseAccountOfferType: 'Standard'
-    enableAutomaticFailover: false
-    locations: [
-      {
-        failoverPriority: 0
-        isZoneRedundant: false
-        locationName: location
-      }
-    ]
-    consistencyPolicy: {
-      defaultConsistencyLevel: 'Session'
-    }
-    capabilities: [
-      {
-        name: 'EnableServerless'
-      }
-    ]
-    minimalTlsVersion: 'Tls12'
-    publicNetworkAccess: 'Enabled'
-  }
-}
-
-// secrets
-////////////////////////////////////////////////////////////////////////////////
-
-resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
+resource resKeyVault 'Microsoft.KeyVault/vaults@2022-07-01' = {
   name: keyVaultName
-  location: location
+  location: resourceLocation
   tags: resourceTags
   properties: {
-    tenantId: subscription().tenantId
     sku: {
       family: 'A'
       name: 'standard'
     }
-    accessPolicies: []
-    enablePurgeProtection: false
-    enableRbacAuthorization: false
-    enabledForDeployment: false
-    enabledForDiskEncryption: false
-    enabledForTemplateDeployment: true
-    publicNetworkAccess: 'Enabled'
-    softDeleteRetentionInDays: 7
-    networkAcls: {
-      bypass: 'AzureServices'
-      defaultAction: 'Allow'
-    }
-  }
-}
-
-var cosmosPrimaryConnectionString = cosmosDbAccount.listConnectionStrings().connectionStrings[0].connectionString
-
-resource cosmosConnectionStringSecret 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {
-  parent: keyVault
-  name: cosmosConnectionStringSecretName
-  properties: {
-    value: cosmosPrimaryConnectionString
-  }
-}
-
-// function app
-////////////////////////////////////////////////////////////////////////////////
-
-resource functionPlan 'Microsoft.Web/serverfarms@2024-04-01' = {
-  name: functionPlanName
-  location: location
-  kind: 'functionapp'
-  tags: resourceTags
-  sku: {
-    name: 'FC1'
-    tier: 'FlexConsumption'
-  }
-  properties: {
-    reserved: true
-  }
-}
-
-resource functionApp 'Microsoft.Web/sites@2024-04-01' = {
-  name: functionAppName
-  location: location
-  kind: 'functionapp,linux'
-  tags: resourceTags
-  identity: {
-    type: 'SystemAssigned, UserAssigned'
-    userAssignedIdentities: {
-      '${functionStorageIdentity.id}': {}
-    }
-  }
-  properties: {
-    serverFarmId: functionPlan.id
-    httpsOnly: true
-    siteConfig: {
-      minTlsVersion: '1.2'
-    }
-    functionAppConfig: {
-      deployment: {
-        storage: {
-          type: 'blobContainer'
-          value: '${storageAccount.properties.primaryEndpoints.blob}${deploymentStorageContainerName}'
-          authentication: {
-            type: 'UserAssignedIdentity'
-            userAssignedIdentityResourceId: functionStorageIdentity.id
-          }
-        }
-      }
-      scaleAndConcurrency: {
-        maximumInstanceCount: maximumInstanceCount
-        instanceMemoryMB: instanceMemoryMB
-      }
-      runtime: {
-        name: 'dotnet-isolated'
-        version: '10'
-      }
-    }
-  }
-}
-
-resource keyVaultFunctionAccessPolicy 'Microsoft.KeyVault/vaults/accessPolicies@2023-07-01' = {
-  parent: keyVault
-  name: 'add'
-  properties: {
     accessPolicies: [
       {
-        objectId: functionApp.identity.principalId
         tenantId: subscription().tenantId
+        objectId: resFunctionApp.identity.principalId
         permissions: {
           secrets: [
             'get'
@@ -323,34 +88,199 @@ resource keyVaultFunctionAccessPolicy 'Microsoft.KeyVault/vaults/accessPolicies@
         }
       }
     ]
+    tenantId: subscription().tenantId
+    softDeleteRetentionInDays: 7
+  }
+
+  resource resFunctionAppUrlSecret 'secrets' = {
+    name: functionAppUrlSecretName
+    tags: resourceTags
+    properties: {
+      value: 'https://${resFunctionApp.properties.defaultHostName}/api'
+    }
+  }
+
+  resource resFunctionAppHostKeySecret 'secrets' = {
+    name: functionAppHostKeySecretName
+    tags: resourceTags
+    properties: {
+      // See: https://stackoverflow.com/a/79467680
+      // See: https://github.com/Azure/azure-quickstart-templates/blob/76cd6e062a55d3db8fb854e04812de9711fc6a82/quickstarts/microsoft.web/function-http-trigger/main.bicep#L160
+      value: listKeys('${resFunctionApp.id}/host/default', resFunctionApp.apiVersion).functionKeys.default
+    }
+  }
+
+  resource resKeyVaultCosmosDbConnectionSecret 'secrets' = {
+    name: cosmosDbConnectionStringSecretName
+    tags: resourceTags
+    properties: {
+      value: resCosmosAccount.listConnectionStrings().connectionStrings[0].connectionString
+    }
+  }
+
+  resource resKeyVaultCosmosDbNameSecret 'secrets' = {
+    name: cosmosDbNameSecretName
+    tags: resourceTags
+    properties: {
+      value: cosmosDbName
+    }
   }
 }
 
-resource functionAppSettings 'Microsoft.Web/sites/config@2024-04-01' = {
-  parent: functionApp
-  name: 'appsettings'
+//
+// Cosmos DB (for Cloud API, Metrics API)
+//
+
+resource resCosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2023-04-15' = {
+  name: cosmosAccountName
+  location: resourceLocation
+  tags: resourceTags
   properties: {
-    AzureWebJobsStorage__accountName: storageAccount.name
-    AzureWebJobsStorage__credential: 'managedidentity'
-    AzureWebJobsStorage__clientId: functionStorageIdentity.properties.clientId
-    APPLICATIONINSIGHTS_CONNECTION_STRING: applicationInsights.properties.ConnectionString
-    CosmosDb__ConnectionString: '@Microsoft.KeyVault(SecretUri=${cosmosConnectionStringSecret.properties.secretUriWithVersion})'
-    CosmosDb__AccountEndpoint: cosmosDbAccount.properties.documentEndpoint
+    enableFreeTier: true
+    databaseAccountOfferType: 'Standard'
+    locations: [
+      {
+        locationName: resourceLocation
+      }
+    ]
+    capabilities: [
+      {
+        name: 'EnableServerless'
+      }
+    ]
   }
-  dependsOn: [
-    keyVaultFunctionAccessPolicy
-  ]
+
+  resource resCosmosDb 'sqlDatabases@2023-04-15' = {
+    tags: resourceTags
+    location: resourceLocation
+    name: cosmosDbName
+    properties: {
+      resource: {
+        id: cosmosDbName
+      }
+    }
+  }
 }
 
-// outputs
-////////////////////////////////////////////////////////////////////////////////
+//
+// function app
+//
 
-output outputFunctionAppName string = functionApp.name
-output outputFunctionAppHostName string = functionApp.properties.defaultHostName
-output outputFunctionPlanName string = functionPlan.name
-output outputStorageAccountName string = storageAccount.name
-output outputCosmosDbAccountName string = cosmosDbAccount.name
-output outputCosmosDbEndpoint string = cosmosDbAccount.properties.documentEndpoint
-output outputKeyVaultName string = keyVault.name
-output outputCosmosDbConnectionStringSecretUri string = cosmosConnectionStringSecret.properties.secretUriWithVersion
-output outputApplicationInsightsName string = applicationInsights.name
+// storage account
+resource resFunctionAppStorageAccount 'Microsoft.Storage/storageAccounts@2024-01-01' = {
+  name: functionAppStorageAccountName
+  location: resourceLocation
+  tags: resourceTags
+  kind: 'StorageV2'
+  sku: {
+    name: 'Standard_LRS'
+  }
+  properties: {
+    allowBlobPublicAccess: false
+    minimumTlsVersion: minTlsVersionForStorage
+  }
+}
+
+// app service plan (consumption plan)
+resource resFunctionAppServicePlan 'Microsoft.Web/serverfarms@2021-03-01' = {
+  name: functionAppServicePlanName
+  location: resourceLocation
+  tags: resourceTags
+  kind: 'linux'
+  properties: {
+    reserved: true
+  }
+  sku: {
+    name: 'Y1'
+    tier: 'Dynamic'
+  }
+}
+
+// function app
+resource resFunctionApp 'Microsoft.Web/sites@2024-11-01' = {
+  name: functionAppName
+  location: resourceLocation
+  tags: resourceTags
+  kind: 'functionapp'
+  identity: {
+    type: 'SystemAssigned'
+  }
+  properties: {
+    httpsOnly: true
+    serverFarmId: resFunctionAppServicePlan.id
+    siteConfig: {
+      minTlsVersion: minTlsVersionForApps
+      linuxFxVersion: 'DOTNET-ISOLATED|9.0'
+      functionAppScaleLimit: 1
+      appSettings: [
+        // app settings required by Azure functions
+        {
+          name: 'FUNCTIONS_WORKER_RUNTIME'
+          value: 'dotnet-isolated'
+        }
+        {
+          name: 'FUNCTIONS_EXTENSION_VERSION'
+          value: '~4'
+        }
+        {
+          name: 'AzureWebJobsStorage'
+          value: 'DefaultEndpointsProtocol=https;AccountName=${resFunctionAppStorageAccount.name};EndpointSuffix=${environment().suffixes.storage};AccountKey=${resFunctionAppStorageAccount.listKeys().keys[0].value}'
+          // Commented out below lines because KV references don't work well with the "Azure/functions-action" github action. 
+          // More details: https://github.com/Azure/functions-action/discussions/140
+          // value: '@Microsoft.KeyVault(VaultName=${keyVaultName};SecretName=${e2eTesterApiStorageAccountConnectionStringSecretName})'
+        }
+        {
+          name: 'APPINSIGHTS_INSTRUMENTATIONKEY'
+          value: resAppInsights.properties.InstrumentationKey
+        }
+        {
+          name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
+          value: resAppInsights.properties.ConnectionString
+        }
+        // key vault references to cosmos db secrets
+        {
+          name: cosmosDbConnectionStringSecretName
+          value: '@Microsoft.KeyVault(VaultName=${keyVaultName};SecretName=${cosmosDbConnectionStringSecretName})'
+        }
+        {
+          name: cosmosDbNameSecretName
+          value: '@Microsoft.KeyVault(VaultName=${keyVaultName};SecretName=${cosmosDbNameSecretName})'
+        }
+      ]
+    }
+  }
+}
+
+
+//
+// log analytics & app insights
+//
+
+resource resLogAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2022-10-01' = {
+  name: logAnalyticsWSName
+  location: resourceLocation
+  tags: resourceTags
+  properties: {
+    publicNetworkAccessForIngestion: 'Enabled'
+    publicNetworkAccessForQuery: 'Enabled'
+    sku: {
+      name: 'PerGB2018' // pay as you go
+    }
+    retentionInDays: 30
+    workspaceCapping: {
+      dailyQuotaGb: 1
+    }
+  }
+}
+
+// app insights
+resource resAppInsights 'Microsoft.Insights/components@2020-02-02' = {
+  name: appInsightsName
+  tags: resourceTags
+  location: resourceLocation
+  kind: 'web'
+  properties: {
+    Application_Type: 'web'
+    WorkspaceResourceId: resLogAnalyticsWorkspace.id
+  }
+}
