@@ -115,7 +115,6 @@ DI is centralized via startup extension methods:
 
 Registration pattern:
 - AutoMapper profile registration (`MapperProfile`)
-- MediatR registration via assembly scan
 - MudBlazor services registration
 - FluentValidation validators registered by assembly scanning
 - Calculator services registered as `AddSingleton<ICalculator<...>, ...Calculator>()`
