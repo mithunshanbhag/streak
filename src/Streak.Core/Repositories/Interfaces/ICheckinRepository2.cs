@@ -1,5 +1,3 @@
-using Nucleus.Repositories.Interfaces;
-
 namespace Streak.Core.Repositories.Interfaces;
 
 /// <summary>

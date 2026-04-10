@@ -1,5 +1,3 @@
-using Microsoft.Azure.Cosmos;
-
 namespace Streak.Core.Services.Implementations;
 
 public sealed class CheckinService2(

@@ -69,7 +69,7 @@ public sealed class HabitService2(IHabitRepository2 habitRepository)
 
     public async Task<Habit2> CreateAsync(Habit2 habit, CancellationToken cancellationToken = default)
     {
-        var normalizedHabit = NormalizeHabit(habit, nameof(habit), allowEmptyId: true);
+        var normalizedHabit = NormalizeHabit(habit, nameof(habit), true);
         var existingHabits = await GetAllAsync(normalizedHabit.OwnerId, cancellationToken);
 
         if (existingHabits.Count >= CoreConstants.MaxHabitCount)

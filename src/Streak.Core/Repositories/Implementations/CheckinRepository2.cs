@@ -1,6 +1,3 @@
-using Microsoft.Azure.Cosmos;
-using Nucleus.Repositories.Implementations;
-
 namespace Streak.Core.Repositories.Implementations;
 
 public sealed class CheckinRepository2(Database cosmosDatabase)

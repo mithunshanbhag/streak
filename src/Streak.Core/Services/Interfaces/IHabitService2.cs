@@ -33,7 +33,10 @@ public interface IHabitService2
     ///     Thrown when <paramref name="ownerId" /> or <paramref name="id" /> is null, empty,
     ///     or whitespace.
     /// </exception>
-    /// <exception cref="KeyNotFoundException">Thrown when the habit does not exist and <paramref name="throwIfNotExists" /> is <see langword="true" />.</exception>
+    /// <exception cref="KeyNotFoundException">
+    ///     Thrown when the habit does not exist and <paramref name="throwIfNotExists" /> is
+    ///     <see langword="true" />.
+    /// </exception>
     /// <exception cref="OperationCanceledException">
     ///     Thrown when the operation is canceled via
     ///     <paramref name="cancellationToken" />.
@@ -58,7 +61,10 @@ public interface IHabitService2
     /// <exception cref="ArgumentException">
     ///     Thrown when <paramref name="ownerId" /> or <paramref name="name" /> is invalid.
     /// </exception>
-    /// <exception cref="KeyNotFoundException">Thrown when the habit does not exist and <paramref name="throwIfNotExists" /> is <see langword="true" />.</exception>
+    /// <exception cref="KeyNotFoundException">
+    ///     Thrown when the habit does not exist and <paramref name="throwIfNotExists" /> is
+    ///     <see langword="true" />.
+    /// </exception>
     /// <exception cref="OperationCanceledException">
     ///     Thrown when the operation is canceled via
     ///     <paramref name="cancellationToken" />.

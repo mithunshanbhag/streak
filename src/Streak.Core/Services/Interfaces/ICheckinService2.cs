@@ -19,7 +19,10 @@ public interface ICheckinService2
     /// <exception cref="ArgumentException">
     ///     Thrown when <paramref name="habitId" /> or <paramref name="checkinDate" /> is invalid.
     /// </exception>
-    /// <exception cref="KeyNotFoundException">Thrown when the check-in does not exist and <paramref name="throwIfNotExists" /> is <see langword="true" />.</exception>
+    /// <exception cref="KeyNotFoundException">
+    ///     Thrown when the check-in does not exist and <paramref name="throwIfNotExists" />
+    ///     is <see langword="true" />.
+    /// </exception>
     /// <exception cref="OperationCanceledException">
     ///     Thrown when the operation is canceled via
     ///     <paramref name="cancellationToken" />.
