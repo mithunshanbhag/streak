@@ -137,6 +137,10 @@ body {
   padding: 4px 0;
 }
 
+.setting-row--action-only {
+  justify-content: flex-end;
+}
+
 .setting-label {
   font-size: 15px;
   font-weight: 500;
@@ -255,18 +259,9 @@ body {
 
 .support-note {
   margin-top: 14px;
-  padding: 12px 14px;
-  border-radius: 12px;
-  background: #F8F5FF;
-  color: #4A4458;
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
+  color: #5F6368;
   font-size: 13px;
   line-height: 1.45;
-}
-
-.support-note .material-icons {
-  font-size: 18px;
-  color: #6200EE;
+  padding-top: 12px;
+  border-top: 1px solid #F0F0F0;
 }
