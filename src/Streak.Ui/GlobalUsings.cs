@@ -1,7 +1,6 @@
 // Global using directives
 
 global using Microsoft.Extensions.Logging;
-global using Streak.Core.Models;
 global using System.Reflection;
 global using FluentValidation;
 global using Microsoft.Data.Sqlite;

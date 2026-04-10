@@ -64,12 +64,12 @@ public class HabitHistoryHeatmapBuilderTests
         var missedYesterdayCell = FindCell(result, today.AddDays(-1));
 
         todayCell.Should().NotBeNull();
-        todayCell!.IsDone.Should().BeTrue();
+        todayCell.IsDone.Should().BeTrue();
         todayCell.IsToday.Should().BeTrue();
         todayCell.TooltipText.Should().Be("Mar 25 — Done ✅");
 
         missedYesterdayCell.Should().NotBeNull();
-        missedYesterdayCell!.IsDone.Should().BeFalse();
+        missedYesterdayCell.IsDone.Should().BeFalse();
         missedYesterdayCell.IsToday.Should().BeFalse();
         missedYesterdayCell.TooltipText.Should().Be("Mar 24 — Missed");
     }

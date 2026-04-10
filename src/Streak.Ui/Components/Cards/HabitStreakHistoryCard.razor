@@ -1,4 +1,4 @@
-@inject IJSRuntime JSRuntime
+@inject IJSRuntime JsRuntime
 
 @if (SummaryViewModel is not null && HistoryViewModel is not null)
 {
@@ -193,7 +193,7 @@
         if (!_scrollToLatestRequested || HistoryViewModel is null)
             return;
 
-        await JSRuntime.InvokeVoidAsync("streakHeatmap.scrollToLatest", _scrollContainer);
+        await JsRuntime.InvokeVoidAsync("streakHeatmap.scrollToLatest", _scrollContainer);
 
         _lastRenderedWeekCount = HistoryViewModel.Weeks.Count;
         _scrollToLatestRequested = false;

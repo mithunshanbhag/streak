@@ -2,87 +2,15 @@ name: streak-deploy-template
 
 on:
   workflow_call:
-    inputs:
-      environmentName:
-        required: true
-        type: string
 
 env:
   DOTNET_VERSION_10: "10.0.x"
   ANDROID_TARGET_FRAMEWORK: "net10.0-android"
   ANDROID_RUNTIME_IDENTIFIER: "android-arm64"
-  RESOURCE_LOCK_NAME: streak-rg-delete-lock
-  RESOURCE_GROUP_NAME: streak-rg
-  # metadata will be stored, and not where the resource groups will be deployed.
-  # You can specify any location for `SUB_DEPLOYMENT_REGION`. It's the region where the deployment
-  SUB_DEPLOYMENT_REGION: southindia
   WINDOWS_TARGET_FRAMEWORK: "net10.0-windows10.0.19041.0"
 
 jobs:
-  provision:
-    environment: ${{ inputs.environmentName }}
-    runs-on: ubuntu-22.04
-    timeout-minutes: 30
-    steps:
-      - name: checkout code
-        uses: actions/checkout@v6.0.2
-      - name: azure login
-        uses: azure/login@v2.2.0
-        with:
-          creds: ${{ secrets.SERVICEPRINCIPAL }}
-      # temporarily use az cli to upgrade bicep
-      # Context: https://github.com/Azure/bicep/issues/16681#issuecomment-2747568200
-      - name: upgrade bicep
-        uses: azure/CLI@v2.2.0
-        with:
-          inlineScript: az bicep upgrade
-      #
-      # section #1: provisioning the resources on Azure using bicep templates
-      #
-      # The first step is to create the resource group: `streak-rg`.
-      # The below step can also be manually executed as follows:
-      # az deployment sub create --location {LOCATION} --template-file .\createStreakResourceGroup.bicep
-      # Note: You can specify any location for `{LOCATION}`. It's the region where the deployment metadata will be stored, and not
-      # where the resource groups will be deployed.
-      # @TODO: The 'azure/arm-deploy' action will soon be deprecated. Move to the 'azure/bicep-deploy' github action.
-      - name: create resource group
-        uses: Azure/arm-deploy@v2
-        with:
-          scope: subscription
-          region: ${{ env.SUB_DEPLOYMENT_REGION }}
-          template: ./infra/createStreakResourceGroup.bicep
-          parameters: rgName=${{ env.RESOURCE_GROUP_NAME }} envName=${{ inputs.environmentName }} githubCommitSha=${{ github.sha }} githubWorkflowRunId=${{ github.run_id }} githubRef=${{ github.ref }}
-      # Delete resource lock if it exists on the resource group
-      - name: delete any existing resource lock
-        uses: azure/CLI@v2.2.0
-        with:
-          inlineScript: |
-            az lock delete --name ${{ env.RESOURCE_LOCK_NAME }} --resource-group ${{ env.RESOURCE_GROUP_NAME }} || echo "No existing lock to delete"
-      # Next step is to deploy the Azure resources to the resource group `streak-rg` created above. The deployed resources
-      # include storage accounts, function apps, app services cosmos db, and service bus etc.
-      # The below step can also be manually executed as follows:
-      # az deployment group create -g streak-rg --template-file .\createResources.bicep --parameters .\createResources.parameters.json
-      # Note: The `createResources.parameters.json` file contains the parameters for the deployment; specifically the environment name.
-      # You can modify the parameters to customize the deployment.
-      # Note: The bicep template outputs are not shown in the logs. You can extract the outputs as shown here:
-      # https://github.com/Azure/arm-deploy#another-example-on-how-to-use-this-action-to-get-the-output-of-arm-template
-      # @TODO: The 'azure/arm-deploy' action will soon be deprecated. Move to the 'azure/bicep-deploy' github action.
-      - name: create resources
-        uses: Azure/arm-deploy@v2
-        with:
-          scope: resourcegroup
-          region: ${{ env.SUB_DEPLOYMENT_REGION }}
-          resourceGroupName: ${{ env.RESOURCE_GROUP_NAME }}
-          deploymentMode: Complete
-          deploymentName: deployment-run${{ github.run_number }}-attempt${{ github.run_attempt }}
-          template: ./infra/createStreakResources.bicep
-          parameters: envName=${{ inputs.environmentName }} githubCommitSha=${{ github.sha }} githubWorkflowRunId=${{ github.run_id }} githubRef=${{ github.ref }}
-
   build-deploy-streak-ui:
-    # temporarily disabled
-    if: ${{ false }}
-    environment: ${{ inputs.environmentName }}
-    needs: provision
     runs-on: windows-2025-vs2026
     timeout-minutes: 20
     steps:

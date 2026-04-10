@@ -1,18 +1,7 @@
 name: streak-deploy
-run-name: deploy streak to environment '${{ github.event_name == 'push' && 'test' || inputs.environmentName }}'
-
-concurrency:
-  group: ${{ github.event_name == 'push' && 'test' || inputs.environmentName }}
-  cancel-in-progress: false
 
 on:
   workflow_dispatch:
-    inputs:
-      environmentName:
-        type: environment
-        default: test
-        required: true
-        description: Target environment
   push:
     branches:
       - main
@@ -25,5 +14,3 @@ jobs:
   deploy:
     uses: ./.github/workflows/deploy-template.yml
     secrets: inherit
-    with:
-      environmentName: ${{ github.event_name == 'push' && 'test' || inputs.environmentName }} 
