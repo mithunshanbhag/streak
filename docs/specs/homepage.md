@@ -30,12 +30,12 @@ The page displays a **vertical list of habit cards**, one per habit.
 
 Each card shows:
 
-| Element        | Position            | Details                                                                                                                                             |
-| -------------- | ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Emoji / Icon   | Left                | The habit's emoji, or a default icon if none is set.                                                                                               |
-| Habit name     | Main text column    | The habit's name label. Tapping the card body opens the [Habit Details page](./habit-details-page.md) for that habit.                             |
-| Current streak | Secondary text line | A compact secondary line under the habit name showing the streak (for example, `😎 3 day streak`, `🔥 12 day streak`, or `0 streak`).             |
-| Checkin toggle | Right               | A `MudCheckBox` configured with custom icons. Done = green check circle icon. Not done = empty circle icon.                                       |
+| Element        | Position            | Details                                                                                                                             |
+| -------------- | ------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| Emoji / Icon   | Left                | The habit's emoji, or a default icon if none is set.                                                                                |
+| Habit name     | Main text column    | The habit's name label. Tapping the card body opens the [Habit Details page](./habit-details-page.md) for that habit.               |
+| Current streak | Secondary text line | A compact secondary line under the habit name showing the streak (for example, `😎 3 day streak`, `🔥 12 day streak`, or `0 streak`). |
+| Checkin toggle | Right               | A `MudCheckBox` configured with custom icons. Done = green check circle icon. Not done = empty circle icon.                         |
 
 - Cards use the full width of the screen with standard horizontal padding (16dp).
 - Vertical spacing between cards: 12dp.
@@ -60,11 +60,11 @@ Each card shows:
 
 ## Visual States
 
-| State             | Toggle               | Streak Badge                                                | Card Appearance                           |
-| ----------------- | -------------------- | ----------------------------------------------------------- | ----------------------------------------- |
-| Not done (today)  | Empty circle / muted | Shows current streak (may be 0)                             | Default surface color                     |
+| State             | Toggle               | Streak Badge                                                                                              | Card Appearance                           |
+| ----------------- | -------------------- | --------------------------------------------------------------------------------------------------------- | ----------------------------------------- |
+| Not done (today)  | Empty circle / muted | Shows current streak (may be 0)                                                                           | Default surface color                     |
 | Done (today)      | Green check circle   | Shows updated streak count with 👍 (1–2 days), 👏 (3–5 days), 😎 (6–9 days), 🔥 (10–29 days), or 🐐 (30+ days) | Subtle success tint or left border accent |
-| Streak broken (0) | Empty circle / muted | Shows "0" in muted text (no emoji)                          | Default surface color                     |
+| Streak broken (0) | Empty circle / muted | Shows "0" in muted text (no emoji)                                                                        | Default surface color                     |
 
 ## Streak Counter Display
 
@@ -86,11 +86,11 @@ When the user has no habits configured:
 
 ## Interaction Summary
 
-| Action                           | Result                                                             |
-| -------------------------------- | ------------------------------------------------------------------ |
-| Toggle a habit's check icon      | Immediately records checkin for today; updates streak count        |
-| Tap a habit card (except toggle) | Navigates to the Habit Details page for that habit                 |
-| Tap **+ New Habit** on homepage  | Opens the Quick Add Habit dialog over the homepage                 |
-| Tap **⚙** in app bar             | Navigates to the Settings page                                     |
-| Tap GitHub icon in app bar       | Opens the public GitHub repository                                 |
-| Tap **Streak** logo              | No-op (already on the homepage)                                    |
+| Action                           | Result                                                      |
+| -------------------------------- | ----------------------------------------------------------- |
+| Toggle a habit's check icon      | Immediately records checkin for today; updates streak count |
+| Tap a habit card (except toggle) | Navigates to the Habit Details page for that habit          |
+| Tap **+ New Habit** on homepage  | Opens the Quick Add Habit dialog over the homepage          |
+| Tap **⚙** in app bar             | Navigates to the Settings page                              |
+| Tap GitHub icon in app bar       | Opens the public GitHub repository                          |
+| Tap **Streak** logo              | No-op (already on the homepage)                             |

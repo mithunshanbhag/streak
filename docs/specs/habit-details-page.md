@@ -21,13 +21,13 @@ Displayed at the top of the page. This section combines identity, current streak
 
 #### View Mode
 
-| Element        | Details                                                                                  |
-| -------------- | ---------------------------------------------------------------------------------------- |
-| Emoji / icon   | The habit's emoji or default icon                                                        |
-| Habit name     | Primary label for the habit                                                              |
-| Current streak | Large streak number plus supporting label in the same card                               |
-| Edit action    | Pencil icon. Opens the edit dialog for the current habit                                 |
-| More actions   | Overflow menu (`MoreVert`). Contains the delete action                                   |
+| Element        | Details                                                    |
+| -------------- | ---------------------------------------------------------- |
+| Emoji / icon   | The habit's emoji or default icon                          |
+| Habit name     | Primary label for the habit                                |
+| Current streak | Large streak number plus supporting label in the same card |
+| Edit action    | Pencil icon. Opens the edit dialog for the current habit   |
+| More actions   | Overflow menu (`MoreVert`). Contains the delete action     |
 
 - Prefer `MudCard` or `MudPaper`, `MudText`, `MudIconButton`, and `MudMenu`.
 - Use built-in spacing utilities rather than custom section wrappers.
@@ -36,10 +36,10 @@ Displayed at the top of the page. This section combines identity, current streak
 
 When the user taps the edit icon, show a standard dialog over the current page with the habit's current values prefilled.
 
-| Field | Type                       | Required | Validation                                                                                                  |
-| ----- | -------------------------- | -------- | ----------------------------------------------------------------------------------------------------------- |
-| Name  | Text input                 | Yes      | 1–30 characters. Must be unique among the user's habits (case-insensitive), excluding the current habit.   |
-| Emoji | Emoji picker or text input | No       | Single emoji character. If left empty, a default icon is used.                                              |
+| Field | Type                       | Required | Validation                                                                                               |
+| ----- | -------------------------- | -------- | -------------------------------------------------------------------------------------------------------- |
+| Name  | Text input                 | Yes      | 1–30 characters. Must be unique among the user's habits (case-insensitive), excluding the current habit. |
+| Emoji | Emoji picker or text input | No       | Single emoji character. If left empty, a default icon is used.                                           |
 
 - **Save** applies the updated name and/or emoji, closes the dialog, and keeps the user on the Habit Details page.
 - **Cancel** closes the dialog and leaves the current habit unchanged.
@@ -61,10 +61,10 @@ When the user chooses **Delete** from the overflow menu:
 
 Displayed prominently inside the summary card.
 
-| Element       | Details                                                                                                                      |
-| ------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| Streak number | Large bold text (32sp) showing the current streak count (e.g., "12").                                                        |
-| Label         | Caption text below the number: *"day streak"* (or *"days streak"* if > 1). Shows *"No active streak"* when the count is 0. |
+| Element       | Details                                                                                                                                                                                                             |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Streak number | Large bold text (32sp) showing the current streak count (e.g., "12").                                                                                                                                               |
+| Label         | Caption text below the number: *"day streak"* (or *"days streak"* if > 1). Shows *"No active streak"* when the count is 0.                                                                                          |
 | Streak emoji  | 🐐 displayed when streak ≥ 30 days. 🔥 displayed when streak is 10–29 days. 😎 displayed when streak is 6–9 days. 👏 displayed when streak is 3–5 days. 👍 displayed when streak is 1–2 days. No emoji when streak is 0. |
 
 ### 2. History Panel
@@ -99,7 +99,7 @@ The history surface is secondary to the daily flow and should be **collapsed by 
 | Habit with no checkins     | Streak shows 0 / "No active streak". Heatmap shows all cells as muted.                     |
 | Very old habit (> 90 days) | Heatmap initially shows last 90 days; user can scroll to see older data.                   |
 | User renames a habit       | The app-bar title, habit header, and any alphabetical lists update immediately after save. |
-| User clears the emoji      | The default icon is shown after save.                                                       |
+| User clears the emoji      | The default icon is shown after save.                                                      |
 
 ## Visual Style
 

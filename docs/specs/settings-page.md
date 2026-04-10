@@ -33,12 +33,12 @@ The page contains two vertically stacked sections presented as clean cards:
 
 ### Data Section
 
-| Element          | Type        | Details                                                                                               |
-| ---------------- | ----------- | ----------------------------------------------------------------------------------------------------- |
-| Section header   | Text        | **"Data"**                                                                                            |
-| Export action    | `MudButton` | Primary action labeled **"Export Database"**. Starts the database export flow.                       |
-| Helper text      | Caption     | Explains that the export creates a backup of the user's local Streak data for saving or sharing.     |
-| Optional status  | Caption     | May show lightweight metadata such as the last export time when that becomes available in the app.    |
+| Element         | Type        | Details                                                                                            |
+| --------------- | ----------- | -------------------------------------------------------------------------------------------------- |
+| Section header  | Text        | **"Data"**                                                                                         |
+| Export action   | `MudButton` | Primary action labeled **"Export Database"**. Starts the database export flow.                     |
+| Helper text     | Caption     | Explains that the export creates a backup of the user's local Streak data for saving or sharing.   |
+| Optional status | Caption     | May show lightweight metadata such as the last export time when that becomes available in the app. |
 
 ## Export Behavior
 
@@ -73,11 +73,11 @@ The page contains two vertically stacked sections presented as clean cards:
 
 ## Edge Cases
 
-| Scenario                | Behavior                                                                                                                          |
-| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| User has no habits      | Reminder toggle is still available but no notification will fire (0 pending habits).                                              |
-| User has no habits but exports | Export is still allowed so the user can back up reminder settings or an empty database state.                             |
-| User disables reminders | No notifications are scheduled. The time picker is hidden.                                                                        |
-| User changes time       | The next reminder is rescheduled to the new time. If the new time has already passed for today, the next reminder fires tomorrow. |
-| App is force-closed     | Reminders should still fire (use Android's alarm/notification scheduling APIs that persist beyond app lifecycle).                 |
-| Export fails            | Keep the user on Settings and surface a clear error message rather than silently failing.                                         |
+| Scenario                       | Behavior                                                                                                                          |
+| ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------- |
+| User has no habits             | Reminder toggle is still available but no notification will fire (0 pending habits).                                              |
+| User has no habits but exports | Export is still allowed so the user can back up reminder settings or an empty database state.                                     |
+| User disables reminders        | No notifications are scheduled. The time picker is hidden.                                                                        |
+| User changes time              | The next reminder is rescheduled to the new time. If the new time has already passed for today, the next reminder fires tomorrow. |
+| App is force-closed            | Reminders should still fire (use Android's alarm/notification scheduling APIs that persist beyond app lifecycle).                 |
+| Export fails                   | Keep the user on Settings and surface a clear error message rather than silently failing.                                         |

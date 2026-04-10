@@ -24,14 +24,14 @@ This document covers shared UI conventions that apply across all screens in the 
 
 ## Color Palette
 
-| Role       | Light Mode              | Dark Mode                   | Usage                                   |
-| ---------- | ----------------------- | --------------------------- | --------------------------------------- |
+| Role       | Light Mode              | Dark Mode                   | Usage                                    |
+| ---------- | ----------------------- | --------------------------- | ---------------------------------------- |
 | Primary    | Deep Purple (`#6200EE`) | Deep Purple 200 (`#BB86FC`) | App bar, primary actions, active toggles |
-| Secondary  | Teal (`#03DAC6`)        | Teal 200 (`#03DAC6`)        | Accent highlights, history active cells |
-| Surface    | White (`#FFFFFF`)       | Dark Grey (`#121212`)       | Cards, page backgrounds                 |
-| On Surface | Black (`#000000`)       | White (`#FFFFFF`)           | Text, icons                             |
-| Success    | Green (`#4CAF50`)       | Green 300 (`#81C784`)       | Checked-in / done state                 |
-| Muted      | Grey (`#9E9E9E`)        | Grey 600 (`#757575`)        | Not-done state, disabled elements       |
+| Secondary  | Teal (`#03DAC6`)        | Teal 200 (`#03DAC6`)        | Accent highlights, history active cells  |
+| Surface    | White (`#FFFFFF`)       | Dark Grey (`#121212`)       | Cards, page backgrounds                  |
+| On Surface | Black (`#000000`)       | White (`#FFFFFF`)           | Text, icons                              |
+| Success    | Green (`#4CAF50`)       | Green 300 (`#81C784`)       | Checked-in / done state                  |
+| Muted      | Grey (`#9E9E9E`)        | Grey 600 (`#757575`)        | Not-done state, disabled elements        |
 
 > These are starting-point values. Exact hex codes may be refined during implementation.
 > Prefer MudBlazor theme colors and semantic `Color` usage over hard-coded hex values in page markup.
@@ -64,11 +64,11 @@ This document covers shared UI conventions that apply across all screens in the 
 
 The app uses a **top app bar** that is compact/dense to maximize the content area.
 
-| Position               | Element              | Behavior                                                                                               |
-| ---------------------- | -------------------- | ------------------------------------------------------------------------------------------------------ |
-| Left                   | "Streak" logo text   | Tapping navigates to the Homepage. Tooltip on hover: *"Let your habits compound"*.                     |
-| Right (2nd from right) | Settings icon (gear) | Navigates to the [Settings page](./settings-page.md).                                                  |
-| Right (1st from right) | GitHub icon          | Opens the public GitHub repository in an external browser/tab.                                         |
+| Position               | Element              | Behavior                                                                           |
+| ---------------------- | -------------------- | ---------------------------------------------------------------------------------- |
+| Left                   | "Streak" logo text   | Tapping navigates to the Homepage. Tooltip on hover: *"Let your habits compound"*. |
+| Right (2nd from right) | Settings icon (gear) | Navigates to the [Settings page](./settings-page.md).                              |
+| Right (1st from right) | GitHub icon          | Opens the public GitHub repository in an external browser/tab.                     |
 
 - The app bar is **fixed** at the top and does not scroll with content.
 - The full `Streak` + `Settings` + `GitHub` action set is present on the **Homepage**.
@@ -93,12 +93,12 @@ The app uses a **top app bar** that is compact/dense to maximize the content are
 
 ## Route Inventory
 
-| Surface        | Route / Trigger     |
-| -------------- | ------------------- |
-| Homepage       | `/`                 |
-| Habit Details  | `/habits/{habitId}` |
-| Quick Add Habit| `+ New Habit` from Homepage (dialog) |
-| Settings       | `/settings`         |
+| Surface         | Route / Trigger                      |
+| --------------- | ------------------------------------ |
+| Homepage        | `/`                                  |
+| Habit Details   | `/habits/{habitId}`                  |
+| Quick Add Habit | `+ New Habit` from Homepage (dialog) |
+| Settings        | `/settings`                          |
 
 ## Breadcrumbs
 

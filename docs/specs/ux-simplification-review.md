@@ -33,13 +33,13 @@ These should remain intact.
 
 ## Where the UX Still Feels Heavier Than It Needs To
 
-| Surface | Why it still feels heavy | Simplification opportunity |
-| --- | --- | --- |
-| Homepage header | Explanatory copy, status summaries, and decorative chips add scan cost to the most frequently used screen. | Start directly with the habit list and remove extra header chrome. |
-| App-bar chrome on secondary screens | Global actions on every screen compete with the main task and add visual noise. | Show the full action set only on the root screen. |
-| Create Habit flow | A dedicated routed page is clear, but it costs a full navigation step for a tiny form. | Consider a compact dialog for quick add. |
-| Habit Details layout | Identity, streak, actions, and heatmap each claim their own visual block, so the page feels longer and busier. | Simplify within the existing page rather than replacing the page with a sheet. |
-| Settings | Only one real preference exists, but it still occupies a full screen. | Keep the route for clarity or collapse it into a lighter presentation later. |
+| Surface                             | Why it still feels heavy                                                                                       | Simplification opportunity                                                     |
+| ----------------------------------- | -------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| Homepage header                     | Explanatory copy, status summaries, and decorative chips add scan cost to the most frequently used screen.     | Start directly with the habit list and remove extra header chrome.             |
+| App-bar chrome on secondary screens | Global actions on every screen compete with the main task and add visual noise.                                | Show the full action set only on the root screen.                              |
+| Create Habit flow                   | A dedicated routed page is clear, but it costs a full navigation step for a tiny form.                         | Consider a compact dialog for quick add.                                       |
+| Habit Details layout                | Identity, streak, actions, and heatmap each claim their own visual block, so the page feels longer and busier. | Simplify within the existing page rather than replacing the page with a sheet. |
+| Settings                            | Only one real preference exists, but it still occupies a full screen.                                          | Keep the route for clarity or collapse it into a lighter presentation later.   |
 
 ## Simplification Ideas
 
