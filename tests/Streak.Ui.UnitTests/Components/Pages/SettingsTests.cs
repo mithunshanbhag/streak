@@ -7,6 +7,8 @@ public sealed class SettingsTests : TestContext
         Services.AddMudServices();
     }
 
+    #region Positive tests
+
     [Fact]
     public void Settings_ShouldRenderOnlyDatabaseBackupContent()
     {
@@ -15,10 +17,12 @@ public sealed class SettingsTests : TestContext
 
         var cut = RenderComponent<Settings>();
 
-        cut.Markup.Should().Contain("Database backup");
-        cut.Markup.Should().Contain("Export database");
-        cut.Markup.Should().Contain("Create a manual backup of your local Streak data");
+        cut.Markup.Should().Contain("Backup");
+        cut.Markup.Should().Contain("Download DB");
+        cut.Markup.Should().Contain("Save a copy of your local data.");
+        cut.Markup.Should().Contain("Android saves to 'Downloads' folder. Windows lets you choose where to save.");
         cut.Markup.Should().NotContain("Daily reminder");
+        cut.Markup.Should().NotContain("Create a manual backup of your local Streak data");
     }
 
     [Fact]
@@ -59,6 +63,10 @@ public sealed class SettingsTests : TestContext
             button.HasAttribute("disabled").Should().BeFalse();
         });
     }
+
+    #endregion
+
+    #region Negative tests
 
     [Fact]
     public async Task Settings_ShouldNotShowError_WhenExportIsCancelled()
@@ -106,4 +114,6 @@ public sealed class SettingsTests : TestContext
 
         cut.WaitForAssertion(() => { cut.Markup.Should().NotContain("Unable to export your database right now. Please try again."); });
     }
+
+    #endregion
 }

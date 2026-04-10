@@ -17,7 +17,7 @@ Streak is currently in **active development**.
 
 - Product specs are finalized under [`docs/specs`](docs/specs).
 - Interactive HTML mockups are available under [`docs/ui-mockups`](docs/ui-mockups).
-- Core UI screens are implemented: Homepage, Habit Details, Quick Add Habit dialog, Edit Habit dialog, Delete Habit dialog, and a placeholder Settings page.
+- Core UI screens are implemented: Homepage, Habit Details, Quick Add Habit dialog, Edit Habit dialog, Delete Habit dialog, and a compact Settings page with database backup export.
 - Local SQLite persistence is wired up with habits and checkins.
 - Unit test coverage exists for core services and view models under [`tests/`](tests/).
 
@@ -62,7 +62,7 @@ Mockup source: [`docs/ui-mockups/HabitDetailsPage/index.html`](docs/ui-mockups/H
 
 ### Settings
 
-Settings now group reminder preferences with lightweight data-management utilities such as database export, while keeping the overall configuration intentionally small.
+Settings currently keep the database backup flow compact, with a single low-frequency export action and platform-specific save behavior.
 
 ![Settings screen](docs/readme-assets/settings.png)
 

@@ -33,16 +33,17 @@ The page contains two vertically stacked sections presented as clean cards:
 
 ### Data Section
 
-| Element         | Type        | Details                                                                                            |
-| --------------- | ----------- | -------------------------------------------------------------------------------------------------- |
-| Section header  | Text        | **"Data"**                                                                                         |
-| Export action   | `MudButton` | Primary action labeled **"Export Database"**. Starts the database export flow.                     |
-| Helper text     | Caption     | Explains that the export creates a backup of the user's local Streak data for saving or sharing.   |
-| Optional status | Caption     | May show lightweight metadata such as the last export time when that becomes available in the app. |
+| Element             | Type        | Details                                                                         |
+| ------------------- | ----------- | ------------------------------------------------------------------------------- |
+| Section eyebrow     | Text        | **"Data"**                                                                      |
+| Section header      | Text        | **"Backup"**                                                                    |
+| Section description | Caption     | *"Save a copy of your local data."*                                             |
+| Export action       | `MudButton` | Primary action labeled **"Download DB"**. Starts the database export flow.      |
+| Support note        | Caption     | *"Android saves to 'Downloads' folder. Windows lets you choose where to save."* |
 
 ## Export Behavior
 
-- Tapping **Export Database** creates a backup of the app's local database and then saves it using a platform-specific file flow.
+- Tapping **Download DB** creates a backup of the app's local database and then saves it using a platform-specific file flow.
 - Export is a **manual** action; it does not run automatically.
 - The export action does **not** modify habits, checkins, or reminder settings.
 - The exported backup should include the user's habit data plus reminder preferences stored in the local database.
@@ -51,10 +52,10 @@ The page contains two vertically stacked sections presented as clean cards:
 
 ### Platform-specific Export UX
 
-| Platform | Expected behavior |
-| -------- | ----------------- |
+| Platform | Expected behavior                                                                                                                                              |
+| -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Windows  | Open a standard **Save As** file dialog prefilled with the timestamped backup filename. The user chooses where to save the `.db` file and confirms the dialog. |
-| Android  | Save the timestamped backup file directly into the device's **Downloads** folder. No share sheet should be shown for the normal export flow. |
+| Android  | Save the timestamped backup file directly into the device's **Downloads** folder. No share sheet should be shown for the normal export flow.                   |
 
 - Do **not** use the operating system share sheet as the primary export UX on either platform.
 - On Windows, cancelling the file-save dialog is treated as a user cancellation, not as an export error.
@@ -88,13 +89,13 @@ The page contains two vertically stacked sections presented as clean cards:
 
 ## Edge Cases
 
-| Scenario                       | Behavior                                                                                                                          |
-| ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------- |
-| User has no habits             | Reminder toggle is still available but no notification will fire (0 pending habits).                                              |
-| User has no habits but exports | Export is still allowed so the user can back up reminder settings or an empty database state.                                     |
-| User disables reminders        | No notifications are scheduled. The time picker is hidden.                                                                        |
-| User changes time              | The next reminder is rescheduled to the new time. If the new time has already passed for today, the next reminder fires tomorrow. |
-| App is force-closed            | Reminders should still fire (use Android's alarm/notification scheduling APIs that persist beyond app lifecycle).                 |
-| User cancels Windows save dialog | Keep the user on Settings and treat the action as cancelled rather than failed.                                                  |
-| Android export succeeds        | The backup file appears in **Downloads** with the generated timestamped filename.                                                 |
-| Export fails                   | Keep the user on Settings and surface a clear error message rather than silently failing.                                         |
+| Scenario                         | Behavior                                                                                                                          |
+| -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| User has no habits               | Reminder toggle is still available but no notification will fire (0 pending habits).                                              |
+| User has no habits but exports   | Export is still allowed so the user can back up reminder settings or an empty database state.                                     |
+| User disables reminders          | No notifications are scheduled. The time picker is hidden.                                                                        |
+| User changes time                | The next reminder is rescheduled to the new time. If the new time has already passed for today, the next reminder fires tomorrow. |
+| App is force-closed              | Reminders should still fire (use Android's alarm/notification scheduling APIs that persist beyond app lifecycle).                 |
+| User cancels Windows save dialog | Keep the user on Settings and treat the action as cancelled rather than failed.                                                   |
+| Android export succeeds          | The backup file appears in **Downloads** with the generated timestamped filename.                                                 |
+| Export fails                     | Keep the user on Settings and surface a clear error message rather than silently failing.                                         |

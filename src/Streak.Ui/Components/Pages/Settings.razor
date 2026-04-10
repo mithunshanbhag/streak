@@ -35,38 +35,21 @@
 
                 <MudPaper Elevation="0"
                           Class="pa-3 rounded-lg">
-                    <MudStack Row="true"
-                              AlignItems="AlignItems.Center"
-                              Justify="Justify.SpaceBetween"
-                              Wrap="Wrap.Wrap"
-                              Spacing="2">
-                        <MudStack Spacing="0"
-                                  Class="flex-1">
-                            <MudText Typo="Typo.subtitle1">
-                                @ExportActionLabelText
-                            </MudText>
-
-                            <MudText Typo="Typo.caption"
-                                     Class="text-secondary">
-                                @ExportActionHelpText
-                            </MudText>
-                        </MudStack>
-
-                        <MudButton Color="Color.Primary"
-                                   Variant="Variant.Filled"
-                                   Disabled="@_exportInProgress"
-                                   StartIcon="@Icons.Material.Filled.Download"
-                                   OnClick="ExportDatabaseAsync">
-                            @ExportButtonText
-                            @if (_exportInProgress)
-                            {
-                                <MudProgressCircular Indeterminate="true"
-                                                     Color="Color.Inherit"
-                                                     Size="Size.Small"
-                                                     Class="ml-2"/>
-                            }
-                        </MudButton>
-                    </MudStack>
+                    <MudButton Color="Color.Primary"
+                               Variant="Variant.Filled"
+                               Disabled="@_exportInProgress"
+                               StartIcon="@Icons.Material.Filled.Download"
+                               aria-label="@ExportButtonAriaLabel"
+                               OnClick="ExportDatabaseAsync">
+                        @ExportButtonText
+                        @if (_exportInProgress)
+                        {
+                            <MudProgressCircular Indeterminate="true"
+                                                 Color="Color.Inherit"
+                                                 Size="Size.Small"
+                                                 Class="ml-2"/>
+                        }
+                    </MudButton>
                 </MudPaper>
 
                 <MudAlert Severity="Severity.Info"
@@ -109,17 +92,15 @@
 
     private const string SectionEyebrowText = "Data";
 
-    private const string SectionHeaderText = "Database backup";
+    private const string SectionHeaderText = "Backup";
 
-    private const string SectionDescriptionText = "Create a manual backup of your local Streak data so you can save it outside the app.";
+    private const string SectionDescriptionText = "Save a copy of your local data.";
 
-    private const string ExportActionLabelText = "Export database";
+    private const string ExportButtonText = "Download DB";
 
-    private const string ExportActionHelpText = "Includes habits, check-ins, and any settings stored in the local database.";
+    private const string ExportButtonAriaLabel = "Export database";
 
-    private const string ExportButtonText = "Export Database";
-
-    private const string SupportNoteText = "Best used before switching devices or whenever you want a peace-of-mind backup.";
+    private const string SupportNoteText = "Android saves to 'Downloads' folder. Windows lets you choose where to save.";
 
     private const string ExportFailedText = "Unable to export your database right now. Please try again.";
 }
