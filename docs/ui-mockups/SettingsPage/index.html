@@ -27,15 +27,15 @@
                 <div>
                     <p class="section-eyebrow">Reminders</p>
                     <h1 class="section-header">Daily reminder</h1>
-                    <p class="section-description">You will only be reminded if at least one habit is still pending.</p>
+                    <p class="section-description">Only sends a reminder when something is still pending.</p>
                 </div>
                 <span class="section-chip">9:00 PM</span>
             </div>
 
             <div class="setting-row">
                 <div>
-                    <div class="setting-label">Enable reminders</div>
-                    <div class="setting-caption">Uses a standard switch with immediate persistence.</div>
+                    <div class="setting-label">Enabled</div>
+                    <div class="setting-caption">Turns daily reminders on or off.</div>
                 </div>
                 <label class="toggle-switch">
                     <input type="checkbox" id="reminderToggle" checked>
@@ -47,8 +47,8 @@
             <div class="time-picker-row" id="timePickerRow">
                 <div class="setting-row setting-row--divider">
                     <div>
-                        <div class="setting-label">Reminder time</div>
-                        <div class="setting-caption">Pick once and save automatically.</div>
+                        <div class="setting-label">Time</div>
+                        <div class="setting-caption">Saved as soon as you change it.</div>
                     </div>
                     <label class="time-display">
                         <input type="time" class="time-input-native" id="timeInput" value="21:00">
@@ -63,27 +63,23 @@
             <div class="section-header-row">
                 <div>
                     <p class="section-eyebrow">Data</p>
-                    <h2 class="section-header">Database backup</h2>
-                    <p class="section-description">Create a manual backup of your local Streak data to save or share outside the app.</p>
+                    <h2 class="section-header">Backup</h2>
+                    <p class="section-description">Save a copy of your local data.</p>
                 </div>
-                <span class="section-chip section-chip--neutral">Manual</span>
             </div>
 
             <div class="setting-row">
                 <div>
                     <div class="setting-label">Export database</div>
-                    <div class="setting-caption">Includes habits, check-ins, and reminder preferences in one backup file.</div>
+                    <div class="setting-caption">Includes habits, check-ins, and reminder settings.</div>
                 </div>
                 <button class="primary-action-btn" type="button">
-                    <span class="material-icons">ios_share</span>
-                    <span>Export</span>
+                    <span class="material-icons">download</span>
+                    <span>Export database</span>
                 </button>
             </div>
 
-            <div class="support-note">
-                <span class="material-icons">info</span>
-                <span>Best used before switching devices or whenever you want a peace-of-mind backup.</span>
-            </div>
+            <p class="support-note">Android saves to Downloads. Windows lets you choose where to save.</p>
         </section>
     </main>
 </div>
