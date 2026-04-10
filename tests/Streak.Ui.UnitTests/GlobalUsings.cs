@@ -1,0 +1,14 @@
+global using Bunit;
+global using FluentAssertions;
+global using Microsoft.AspNetCore.Components.Web;
+global using Microsoft.Data.Sqlite;
+global using Microsoft.Extensions.DependencyInjection;
+global using Microsoft.Extensions.Logging;
+global using Moq;
+global using MudBlazor.Services;
+global using Streak.Ui.Components.Pages;
+global using Streak.Ui.Services.Implementations;
+global using Streak.Ui.Services.Interfaces;
+global using Streak.Ui.Services.Models;
+global using System.Globalization;
+global using Xunit;

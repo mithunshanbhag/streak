@@ -42,11 +42,23 @@ The page contains two vertically stacked sections presented as clean cards:
 
 ## Export Behavior
 
-- Tapping **Export Database** creates a backup of the app's local database and then hands it off to the platform's standard save / share flow.
+- Tapping **Export Database** creates a backup of the app's local database and then saves it using a platform-specific file flow.
 - Export is a **manual** action; it does not run automatically.
 - The export action does **not** modify habits, checkins, or reminder settings.
 - The exported backup should include the user's habit data plus reminder preferences stored in the local database.
 - Export is considered a low-frequency maintenance / safety action, so it lives in **Settings** rather than in the Homepage app bar.
+- The exported filename should use a timestamped pattern such as `streak-backup-YYYYMMdd-HHmmss.db`.
+
+### Platform-specific Export UX
+
+| Platform | Expected behavior |
+| -------- | ----------------- |
+| Windows  | Open a standard **Save As** file dialog prefilled with the timestamped backup filename. The user chooses where to save the `.db` file and confirms the dialog. |
+| Android  | Save the timestamped backup file directly into the device's **Downloads** folder. No share sheet should be shown for the normal export flow. |
+
+- Do **not** use the operating system share sheet as the primary export UX on either platform.
+- On Windows, cancelling the file-save dialog is treated as a user cancellation, not as an export error.
+- On Android, a successful export should leave the file available in **Downloads** so the user can manage it with the system file manager or share it later if they choose.
 
 ## Reminder Behavior
 
@@ -70,6 +82,9 @@ The page contains two vertically stacked sections presented as clean cards:
 - Settings are saved to **local SQLite** immediately when changed (no explicit "Save" button).
 - Settings persist across app restarts.
 - Export creates a backup on demand; it is not auto-saved in the background.
+- Exported backup files are stored outside the live app database location:
+  - On **Windows**, wherever the user selects in the file-save dialog.
+  - On **Android**, in the device's **Downloads** folder.
 
 ## Edge Cases
 
@@ -80,4 +95,6 @@ The page contains two vertically stacked sections presented as clean cards:
 | User disables reminders        | No notifications are scheduled. The time picker is hidden.                                                                        |
 | User changes time              | The next reminder is rescheduled to the new time. If the new time has already passed for today, the next reminder fires tomorrow. |
 | App is force-closed            | Reminders should still fire (use Android's alarm/notification scheduling APIs that persist beyond app lifecycle).                 |
+| User cancels Windows save dialog | Keep the user on Settings and treat the action as cancelled rather than failed.                                                  |
+| Android export succeeds        | The backup file appears in **Downloads** with the generated timestamped filename.                                                 |
 | Export fails                   | Keep the user on Settings and surface a clear error message rather than silently failing.                                         |

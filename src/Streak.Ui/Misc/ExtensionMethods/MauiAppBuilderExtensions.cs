@@ -35,6 +35,13 @@ public static class MauiAppBuilderExtensions
             // services
             builder.Services.AddTransient<IHabitService, HabitService>();
             builder.Services.AddTransient<ICheckinService, CheckinService>();
+            builder.Services.AddTransient<IAppStoragePathService, AppStoragePathService>();
+            builder.Services.AddTransient<IDatabaseExportService, DatabaseExportService>();
+#if WINDOWS
+            builder.Services.AddTransient<IDatabaseExportFileSaver, WindowsDatabaseExportFileSaver>();
+#elif ANDROID
+            builder.Services.AddTransient<IDatabaseExportFileSaver, AndroidDatabaseExportFileSaver>();
+#endif
 
             builder.Services.AddMauiBlazorWebView();
 

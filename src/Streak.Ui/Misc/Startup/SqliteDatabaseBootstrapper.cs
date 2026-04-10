@@ -4,7 +4,7 @@ public sealed class SqliteDatabaseBootstrapper(ILogger<SqliteDatabaseBootstrappe
 {
     public static string ConnectionString => new SqliteConnectionStringBuilder { DataSource = DatabasePath }.ToString();
 
-    private static string DatabasePath => Path.Combine(FileSystem.Current.AppDataDirectory, AppConstants.DatabaseFileName);
+    public static string DatabasePath => Path.Combine(FileSystem.Current.AppDataDirectory, AppConstants.DatabaseFileName);
 
     public void EnsureDbExists()
     {

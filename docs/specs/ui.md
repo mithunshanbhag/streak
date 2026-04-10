@@ -90,6 +90,9 @@ The app uses a **top app bar** that is compact/dense to maximize the content are
   - From the **Quick Add Habit** dialog, Android back dismisses the dialog and returns focus to **Homepage**.
 - Android hardware/gesture back follows the same route hierarchy.
 - Navigation transitions should be fast with no perceptible delay.
+- Platform-native file flows should be preferred for low-frequency file actions:
+  - On **Windows**, exports should use a standard **Save As** dialog.
+  - On **Android**, exports should write to the **Downloads** folder rather than opening a share sheet.
 
 ## Route Inventory
 
