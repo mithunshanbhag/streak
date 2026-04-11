@@ -74,7 +74,7 @@ Based on the current specs, Streak is shaping up around the following ideas:
 
 - Daily binary check-ins: done or not done
 - A shallow navigation model with **Homepage** as the primary surface
-- A hard cap of **8 habits**
+- A hard cap of **10 habits**
 - Local-only persistence with no account system
 - Simple reminder settings and lightweight data utilities instead of complex automation
 
