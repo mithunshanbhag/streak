@@ -31,8 +31,14 @@ public sealed class WindowsDatabaseImportFilePicker : IDatabaseImportFilePicker
 
     private static nint GetWindowHandle()
     {
-        var nativeWindow = Microsoft.Maui.Controls.Application.Current?.Windows.FirstOrDefault()?.Handler?.PlatformView as Microsoft.UI.Xaml.Window
+        var currentApplication = Microsoft.Maui.Controls.Application.Current
+                                 ?? throw new InvalidOperationException("Unable to initialize the file picker because the MAUI application instance is not available.");
+
+        var activeWindow = currentApplication.Windows.FirstOrDefault()
                            ?? throw new InvalidOperationException("Unable to initialize the file picker because no active application window was found. Ensure restore is launched from an active UI window.");
+
+        var nativeWindow = activeWindow.Handler?.PlatformView as Microsoft.UI.Xaml.Window
+                           ?? throw new InvalidOperationException("Unable to initialize the file picker because the native Windows window has not been created yet.");
 
         return WindowNative.GetWindowHandle(nativeWindow);
     }

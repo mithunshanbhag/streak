@@ -14,17 +14,11 @@ public sealed class AndroidDatabaseImportFilePicker : IDatabaseImportFilePicker
         })
     };
 
-    public Task<FileResult?> PickBackupAsync(CancellationToken cancellationToken = default)
+    public async Task<FileResult?> PickBackupAsync(CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        return PickBackupInternalAsync(cancellationToken);
-    }
-
-    private static async Task<FileResult?> PickBackupInternalAsync(CancellationToken cancellationToken)
-    {
         var fileResult = await FilePicker.Default.PickAsync(PickOptions);
-
         cancellationToken.ThrowIfCancellationRequested();
 
         return fileResult;
