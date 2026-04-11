@@ -1,16 +1,20 @@
 @page "/settings"
 @inject IDatabaseExportService DatabaseExportService
+@inject IDatabaseImportFilePicker DatabaseImportFilePicker
+@inject IDatabaseImportService DatabaseImportService
+@inject IDialogService DialogService
+@inject NavigationManager NavigationManager
 
 <PageTitle>Settings</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.Small"
               Class="pa-4">
     <MudStack Spacing="3">
-        @if (!string.IsNullOrWhiteSpace(_exportErrorMessage))
+        @if (!string.IsNullOrWhiteSpace(_operationErrorMessage))
         {
             <MudAlert Severity="Severity.Error"
                       Dense="true">
-                @_exportErrorMessage
+                @_operationErrorMessage
             </MudAlert>
         }
 
@@ -37,7 +41,7 @@
                           Class="pa-3 rounded-lg">
                     <MudButton Color="Color.Primary"
                                Variant="Variant.Filled"
-                               Disabled="@_exportInProgress"
+                               Disabled="@(_exportInProgress || _importInProgress)"
                                StartIcon="@Icons.Material.Filled.Download"
                                aria-label="@ExportButtonAriaLabel"
                                OnClick="ExportDatabaseAsync">
@@ -57,6 +61,44 @@
                           Dense="true">
                     @SupportNoteText
                 </MudAlert>
+
+                <MudDivider/>
+
+                <MudStack Spacing="1">
+                    <MudText Typo="Typo.h6">
+                        @RestoreHeaderText
+                    </MudText>
+
+                    <MudText Typo="Typo.body2"
+                             Class="text-secondary">
+                        @RestoreDescriptionText
+                    </MudText>
+                </MudStack>
+
+                <MudPaper Elevation="0"
+                          Class="pa-3 rounded-lg">
+                    <MudButton Color="Color.Default"
+                               Variant="Variant.Outlined"
+                               Disabled="@(_exportInProgress || _importInProgress)"
+                               StartIcon="@Icons.Material.Filled.UploadFile"
+                               aria-label="@ImportButtonAriaLabel"
+                               OnClick="ImportDatabaseAsync">
+                        @ImportButtonText
+                        @if (_importInProgress)
+                        {
+                            <MudProgressCircular Indeterminate="true"
+                                                 Color="Color.Inherit"
+                                                 Size="Size.Small"
+                                                 Class="ml-2"/>
+                        }
+                    </MudButton>
+                </MudPaper>
+
+                <MudAlert Severity="Severity.Warning"
+                          Variant="Variant.Outlined"
+                          Dense="true">
+                    @RestoreWarningText
+                </MudAlert>
             </MudStack>
         </MudPaper>
     </MudStack>
@@ -64,16 +106,25 @@
 
 @code
 {
+
+    #region Private Fields, Properties
+
     private bool _exportInProgress;
 
-    private string? _exportErrorMessage;
+    private bool _importInProgress;
+
+    private string? _operationErrorMessage;
+
+    #endregion
+
+    #region Event Handlers
 
     private async Task ExportDatabaseAsync()
     {
         try
         {
             _exportInProgress = true;
-            _exportErrorMessage = null;
+            _operationErrorMessage = null;
 
             var exportResult = await DatabaseExportService.ExportDatabaseAsync();
 
@@ -82,13 +133,53 @@
         }
         catch (Exception)
         {
-            _exportErrorMessage = ExportFailedText;
+            _operationErrorMessage = ExportFailedText;
         }
         finally
         {
             _exportInProgress = false;
         }
     }
+
+    private async Task ImportDatabaseAsync()
+    {
+        try
+        {
+            _operationErrorMessage = null;
+
+            var selectedBackup = await DatabaseImportFilePicker.PickBackupAsync();
+            if (selectedBackup is null)
+                return;
+
+            var dialog = await DialogService.ShowAsync<RestoreDatabaseDialog>(RestoreDialogTitleText);
+            var result = await dialog.Result;
+
+            if (result is null || result.Canceled)
+                return;
+
+            _importInProgress = true;
+
+            await DatabaseImportService.ImportDatabaseAsync(selectedBackup);
+
+            NavigationManager.NavigateTo(RouteConstants.Home, forceLoad: true);
+        }
+        catch (InvalidDataException)
+        {
+            _operationErrorMessage = ImportValidationFailedText;
+        }
+        catch (Exception)
+        {
+            _operationErrorMessage = ImportFailedText;
+        }
+        finally
+        {
+            _importInProgress = false;
+        }
+    }
+
+    #endregion
+
+    #region Text, Label Properties
 
     private const string SectionEyebrowText = "Data";
 
@@ -102,5 +193,23 @@
 
     private const string SupportNoteText = "Android saves to 'Downloads' folder. Windows lets you choose where to save.";
 
+    private const string RestoreHeaderText = "Restore";
+
+    private const string RestoreDescriptionText = "Restore your data from a previous backup.";
+
+    private const string ImportButtonText = "Upload DB";
+
+    private const string ImportButtonAriaLabel = "Import database";
+
+    private const string RestoreWarningText = "This will replace ALL existing data. This action cannot be undone.";
+
+    private const string RestoreDialogTitleText = "Restore backup";
+
     private const string ExportFailedText = "Unable to export your database right now. Please try again.";
+
+    private const string ImportValidationFailedText = "That file is not a valid Streak backup. Your current data was not changed.";
+
+    private const string ImportFailedText = "Unable to restore your database right now. Please try again.";
+
+    #endregion
 }
