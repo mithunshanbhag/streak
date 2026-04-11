@@ -22,8 +22,8 @@ public static class MauiAppBuilderExtensions
 
             // validators
             foreach (var validatorAssembly in new[] { Assembly.GetExecutingAssembly(), typeof(StreakDbContext).Assembly }.Distinct())
-            foreach (var validatorRegistration in AssemblyScanner.FindValidatorsInAssembly(validatorAssembly))
-                builder.Services.AddSingleton(validatorRegistration.InterfaceType, validatorRegistration.ValidatorType);
+                foreach (var validatorRegistration in AssemblyScanner.FindValidatorsInAssembly(validatorAssembly))
+                    builder.Services.AddSingleton(validatorRegistration.InterfaceType, validatorRegistration.ValidatorType);
 
             builder.Services.AddSingleton<SqliteDatabaseBootstrapper>();
             builder.Services.AddDbContext<StreakDbContext>(options => { options.UseSqlite(SqliteDatabaseBootstrapper.ConnectionString); });
@@ -36,6 +36,8 @@ public static class MauiAppBuilderExtensions
             builder.Services.AddTransient<IHabitService, HabitService>();
             builder.Services.AddTransient<ICheckinService, CheckinService>();
             builder.Services.AddTransient<IAppStoragePathService, AppStoragePathService>();
+            builder.Services.AddTransient<IDatabaseImportFilePicker, DatabaseImportFilePicker>();
+            builder.Services.AddTransient<IDatabaseImportService, DatabaseImportService>();
             builder.Services.AddTransient<IDatabaseExportService, DatabaseExportService>();
 #if WINDOWS
             builder.Services.AddTransient<IDatabaseExportFileSaver, WindowsDatabaseExportFileSaver>();

@@ -1,0 +1,96 @@
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            @DialogTitleText
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudStack Spacing="2">
+            <MudText Typo="Typo.body2">
+                @DialogMessageText
+            </MudText>
+
+            <MudAlert Severity="Severity.Warning"
+                      Variant="Variant.Outlined"
+                      Dense="true">
+                @DialogWarningText
+            </MudAlert>
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Text"
+                   OnClick="Cancel">
+            @CancelButtonText
+        </MudButton>
+        <MudButton Color="Color.Error"
+                   Variant="Variant.Filled"
+                   OnClick="ConfirmRestore">
+            @RestoreButtonText
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code
+{
+
+    #region Parameters
+
+    [CascadingParameter] private IMudDialogInstance? MudDialogInstance { get; set; }
+
+    #endregion
+
+    #region Lifecycle Methods
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (MudDialogInstance is not null)
+            await MudDialogInstance.SetOptionsAsync(CreateDialogOptions());
+    }
+
+    #endregion
+
+    #region Event Handlers
+
+    private void ConfirmRestore()
+    {
+        MudDialogInstance?.Close(DialogResult.Ok(true));
+    }
+
+    private void Cancel()
+    {
+        MudDialogInstance?.Cancel();
+    }
+
+    #endregion
+
+    #region Private Helper Methods
+
+    private static DialogOptions CreateDialogOptions()
+    {
+        return new DialogOptions
+        {
+            BackdropClick = false,
+            CloseButton = true,
+            CloseOnEscapeKey = true,
+            FullWidth = true,
+            MaxWidth = MaxWidth.ExtraSmall
+        };
+    }
+
+    #endregion
+
+    #region Text, Label Properties
+
+    private const string DialogTitleText = "Replace all data?";
+
+    private const string DialogMessageText = "Restoring a backup will overwrite your current habits and checkins.";
+
+    private const string DialogWarningText = "This action cannot be undone.";
+
+    private const string CancelButtonText = "Cancel";
+
+    private const string RestoreButtonText = "Replace data";
+
+    #endregion
+
+}
