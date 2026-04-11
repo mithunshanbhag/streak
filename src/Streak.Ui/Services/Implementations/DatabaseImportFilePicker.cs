@@ -2,6 +2,8 @@ namespace Streak.Ui.Services.Implementations;
 
 public sealed class DatabaseImportFilePicker : IDatabaseImportFilePicker
 {
+    private const string PickerTitleText = "Choose a database backup";
+
     private static readonly PickOptions PickOptions = new()
     {
         PickerTitle = PickerTitleText,
@@ -16,6 +18,4 @@ public sealed class DatabaseImportFilePicker : IDatabaseImportFilePicker
     {
         return FilePicker.Default.PickAsync(PickOptions);
     }
-
-    private const string PickerTitleText = "Choose a database backup";
 }
