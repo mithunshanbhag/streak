@@ -8,6 +8,8 @@ public sealed class WindowsDatabaseImportFilePicker : IDatabaseImportFilePicker
 {
     public async Task<FileResult?> PickBackupAsync(CancellationToken cancellationToken = default)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         var picker = new FileOpenPicker
         {
             SuggestedStartLocation = PickerLocationId.DocumentsLibrary,
@@ -22,13 +24,15 @@ public sealed class WindowsDatabaseImportFilePicker : IDatabaseImportFilePicker
         if (backupFile is null)
             return null;
 
+        cancellationToken.ThrowIfCancellationRequested();
+
         return new FileResult(backupFile.Path);
     }
 
     private static nint GetWindowHandle()
     {
         var nativeWindow = Microsoft.Maui.Controls.Application.Current?.Windows.FirstOrDefault()?.Handler?.PlatformView as Microsoft.UI.Xaml.Window
-                           ?? throw new InvalidOperationException("A native Windows window is required to select database backups.");
+                           ?? throw new InvalidOperationException("Unable to initialize the file picker because no active application window was found. Ensure restore is launched from an active UI window.");
 
         return WindowNative.GetWindowHandle(nativeWindow);
     }
