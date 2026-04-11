@@ -2,14 +2,14 @@
 
 > **Route**: `/settings`
 
-The settings page lets users configure **daily reminders** and access low-frequency **data management** actions such as exporting the local database. Users access it from the **⚙** icon in the app bar.
+The settings page lets users configure **daily reminders** and access low-frequency **data management** actions such as exporting and importing the local database. Users access it from the **⚙** icon in the app bar.
 
 ## Navigation
 
 - Accessible from the **⚙** icon in the Homepage app bar.
 - A **back arrow** in the app bar returns the user to the [Homepage](./homepage.md).
 - Secondary-screen chrome stays focused: show **Back** + `Settings` only.
-- Export remains inside the page content rather than becoming a dedicated app-bar icon.
+- Export and Import remain inside the page content rather than becoming dedicated app-bar icons.
 
 ## Layout
 
@@ -33,13 +33,18 @@ The page contains two vertically stacked sections presented as clean cards:
 
 ### Data Section
 
-| Element             | Type        | Details                                                                         |
-| ------------------- | ----------- | ------------------------------------------------------------------------------- |
-| Section eyebrow     | Text        | **"Data"**                                                                      |
-| Section header      | Text        | **"Backup"**                                                                    |
-| Section description | Caption     | *"Save a copy of your local data."*                                             |
-| Export action       | `MudButton` | Primary action labeled **"Download DB"**. Starts the database export flow.      |
-| Support note        | Caption     | *"Android saves to 'Downloads' folder. Windows lets you choose where to save."* |
+| Element             | Type        | Details                                                                                         |
+| ------------------- | ----------- | ----------------------------------------------------------------------------------------------- |
+| Section eyebrow     | Text        | **"Data"**                                                                                      |
+| Section header      | Text        | **"Backup"**                                                                                    |
+| Section description | Caption     | *"Save a copy of your local data."*                                                             |
+| Export action       | `MudButton` | Primary action labeled **"Download DB"**. Starts the database export flow.                      |
+| Support note        | Caption     | *"Android saves to 'Downloads' folder. Windows lets you choose where to save."*                 |
+| Divider             | Visual      | A horizontal rule separating the Backup and Restore sub-sections.                               |
+| Section header      | Text        | **"Restore"**                                                                                   |
+| Section description | Caption     | *"Restore your data from a previous backup."*                                                   |
+| Import action       | `MudButton` | Secondary action labeled **"Upload DB"**. Opens a file picker to select a `.db` backup file.   |
+| Warning note        | Caption     | *"⚠ This will replace ALL existing data. This action cannot be undone."*                        |
 
 ## Export Behavior
 
@@ -61,7 +66,27 @@ The page contains two vertically stacked sections presented as clean cards:
 - On Windows, cancelling the file-save dialog is treated as a user cancellation, not as an export error.
 - On Android, a successful export should leave the file available in **Downloads** so the user can manage it with the system file manager or share it later if they choose.
 
-## Reminder Behavior
+## Import Behavior
+
+- Tapping **Upload DB** opens a platform-native file picker scoped to `.db` files.
+- Once a valid backup file is selected, the user is shown a **confirmation dialog** warning that all existing data will be replaced.
+- If the user confirms, the app closes the current database connection, replaces the live database file with the selected backup, then reopens the connection.
+- Import is a **manual** action; it does not run automatically.
+- After a successful import the app **navigates to the Homepage** so the user sees freshly loaded data.
+- On failure the app rolls back to the previous database state and surfaces a clear error message; the user remains on Settings.
+- Import is considered a destructive, low-frequency action so it lives in **Settings** with a prominent warning.
+
+### Platform-specific Import UX
+
+| Platform | Expected behavior                                                                                                                     |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| Windows  | Open a standard **Open File** dialog filtered to `.db` files. The user selects a backup file and confirms the dialog.                 |
+| Android  | Open the system file picker filtered to `.db` files (via `StorageAccessFramework` / intent). The user selects a backup file.          |
+
+- On both platforms, cancelling the file-picker dialog is treated as a user cancellation, not as an import error.
+- The app must validate that the selected file is a recognizable Streak backup before overwriting the live database.
+
+
 
 - When enabled, the app schedules a **local notification** at the configured time each day.
 - The notification fires **only if** at least one habit has not been checked in as done for that day.
@@ -83,6 +108,7 @@ The page contains two vertically stacked sections presented as clean cards:
 - Settings are saved to **local SQLite** immediately when changed (no explicit "Save" button).
 - Settings persist across app restarts.
 - Export creates a backup on demand; it is not auto-saved in the background.
+- Import replaces the live database on demand; the previous data is permanently overwritten after user confirmation.
 - Exported backup files are stored outside the live app database location:
   - On **Windows**, wherever the user selects in the file-save dialog.
   - On **Android**, in the device's **Downloads** folder.
@@ -99,3 +125,7 @@ The page contains two vertically stacked sections presented as clean cards:
 | User cancels Windows save dialog | Keep the user on Settings and treat the action as cancelled rather than failed.                                                   |
 | Android export succeeds          | The backup file appears in **Downloads** with the generated timestamped filename.                                                 |
 | Export fails                     | Keep the user on Settings and surface a clear error message rather than silently failing.                                         |
+| User cancels import file picker  | Keep the user on Settings and treat the action as cancelled rather than failed.                                                   |
+| User selects invalid/corrupt file | Keep the user on Settings and surface a clear error message; do not overwrite the live database.                                 |
+| Import succeeds                  | Replace the live database with the backup, then navigate the user to the Homepage with freshly loaded data.                       |
+| Import fails mid-way             | Roll back to the previous database state, keep the user on Settings, and surface a clear error message.                          |
