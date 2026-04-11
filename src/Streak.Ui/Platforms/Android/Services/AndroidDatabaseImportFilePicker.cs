@@ -1,6 +1,7 @@
+#if ANDROID
 namespace Streak.Ui.Services.Implementations;
 
-public sealed class DatabaseImportFilePicker : IDatabaseImportFilePicker
+public sealed class AndroidDatabaseImportFilePicker : IDatabaseImportFilePicker
 {
     private const string PickerTitleText = "Choose a database backup";
 
@@ -9,7 +10,6 @@ public sealed class DatabaseImportFilePicker : IDatabaseImportFilePicker
         PickerTitle = PickerTitleText,
         FileTypes = new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
         {
-            [DevicePlatform.WinUI] = [".db"],
             [DevicePlatform.Android] = ["application/octet-stream", "application/x-sqlite3", "application/vnd.sqlite3"]
         })
     };
@@ -19,3 +19,4 @@ public sealed class DatabaseImportFilePicker : IDatabaseImportFilePicker
         return FilePicker.Default.PickAsync(PickOptions);
     }
 }
+#endif

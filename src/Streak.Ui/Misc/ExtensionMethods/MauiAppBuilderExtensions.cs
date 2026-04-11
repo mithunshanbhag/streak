@@ -36,12 +36,13 @@ public static class MauiAppBuilderExtensions
             builder.Services.AddTransient<IHabitService, HabitService>();
             builder.Services.AddTransient<ICheckinService, CheckinService>();
             builder.Services.AddTransient<IAppStoragePathService, AppStoragePathService>();
-            builder.Services.AddTransient<IDatabaseImportFilePicker, DatabaseImportFilePicker>();
             builder.Services.AddTransient<IDatabaseImportService, DatabaseImportService>();
             builder.Services.AddTransient<IDatabaseExportService, DatabaseExportService>();
 #if WINDOWS
+            builder.Services.AddTransient<IDatabaseImportFilePicker, WindowsDatabaseImportFilePicker>();
             builder.Services.AddTransient<IDatabaseExportFileSaver, WindowsDatabaseExportFileSaver>();
 #elif ANDROID
+            builder.Services.AddTransient<IDatabaseImportFilePicker, AndroidDatabaseImportFilePicker>();
             builder.Services.AddTransient<IDatabaseExportFileSaver, AndroidDatabaseExportFileSaver>();
 #endif
 
