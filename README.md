@@ -46,7 +46,7 @@ Mockup source: [`docs/ui-mockups/Homepage/index.html`](docs/ui-mockups/Homepage/
 
 ### Quick Add Habit
 
-The quick-add flow keeps habit creation lightweight so new habits can be added from the homepage without interrupting the main workflow.
+The quick-add flow keeps habit creation lightweight so new habits can be added from the homepage without interrupting the main workflow, while still supporting an optional multiline description.
 
 ![Quick add habit screen](docs/readme-assets/quick-add-habit.png)
 
@@ -54,7 +54,7 @@ Mockup source: [`docs/ui-mockups/CreateHabitPage/index.html`](docs/ui-mockups/Cr
 
 ### Habit Details
 
-The habit details experience is focused on streak visibility, inline editing, and a compact history view.
+The habit details experience is focused on streak visibility, inline editing, optional habit descriptions, and a compact history view.
 
 ![Habit details screen](docs/readme-assets/habit-details.png)
 

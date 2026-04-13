@@ -8,8 +8,10 @@ CREATE TABLE IF NOT EXISTS Habits (
     Id INTEGER NOT NULL,
     Name TEXT NOT NULL,
     Emoji TEXT NULL,
+    Description TEXT NULL,
     CONSTRAINT PK_Habits PRIMARY KEY (Id),
     CONSTRAINT CK_Habits_Name_Length CHECK (length (trim(Name)) BETWEEN 1 AND 30),
+    CONSTRAINT CK_Habits_Description_Length CHECK (Description IS NULL OR length(Description) <= 500),
     CONSTRAINT UQ_Habits_Name_CaseInsensitive UNIQUE (Name COLLATE NOCASE)
 ) STRICT;
 

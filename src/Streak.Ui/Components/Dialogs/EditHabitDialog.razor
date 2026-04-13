@@ -44,6 +44,19 @@
                               For="@(() => _editHabitInputModel.Emoji!)"
                               Label="@HabitEmojiLabel"
                               Validation="@((string _) => ValidateHabitEmoji())"/>
+                <MudTextField T="string"
+                              Margin="Margin.Dense"
+                              ShrinkLabel="true"
+                              Clearable="true"
+                              Immediate="true"
+                              DebounceInterval="200"
+                              Lines="4"
+                              @bind-Value="@_editHabitInputModel.Description"
+                              For="@(() => _editHabitInputModel.Description!)"
+                              Label="@HabitDescriptionLabel"
+                              Validation="@((string _) => ValidateHabitDescription())"
+                              MaxLength="@CoreConstants.HabitDescriptionMaxLength"
+                              Counter="@CoreConstants.HabitDescriptionMaxLength"/>
             </MudStack>
         </MudForm>
     </DialogContent>
@@ -80,6 +93,8 @@
 
     [Parameter] public string? HabitEmoji { get; set; }
 
+    [Parameter] public string? HabitDescription { get; set; }
+
     [CascadingParameter] private IMudDialogInstance? MudDialogInstance { get; set; }
 
     #endregion
@@ -113,6 +128,7 @@
 
         _editHabitInputModel.Name = HabitName;
         _editHabitInputModel.Emoji = HabitEmoji;
+        _editHabitInputModel.Description = HabitDescription;
     }
 
     #endregion
@@ -179,6 +195,15 @@
         return null;
     }
 
+    private string? ValidateHabitDescription()
+    {
+        if (string.IsNullOrWhiteSpace(_editHabitInputModel.Description)) return null;
+
+        return _editHabitInputModel.Description.Trim().Length > CoreConstants.HabitDescriptionMaxLength
+            ? HabitDescriptionTooLongText
+            : null;
+    }
+
     private static DialogOptions CreateDialogOptions()
     {
         return new DialogOptions
@@ -197,7 +222,8 @@
         {
             Id = HabitId,
             Name = _editHabitInputModel.Name,
-            Emoji = _editHabitInputModel.Emoji
+            Emoji = _editHabitInputModel.Emoji,
+            Description = _editHabitInputModel.Description
         };
     }
 
@@ -213,6 +239,8 @@
 
     private const string HabitEmojiPlaceholder = "🙂";
 
+    private const string HabitDescriptionLabel = "Description (optional)";
+
     private const string SaveButtonText = "SAVE";
 
     private const string CancelButtonText = "Cancel";
@@ -224,6 +252,8 @@
     private const string DuplicateHabitNameText = "A habit with this name already exists.";
 
     private const string InvalidEmojiText = "Emoji must be a single emoji.";
+
+    private static string HabitDescriptionTooLongText => $"Description must be {CoreConstants.HabitDescriptionMaxLength} characters or fewer.";
 
     private const string HabitNotFoundText = "This habit no longer exists.";
 

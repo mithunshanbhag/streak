@@ -36,11 +36,12 @@ public class HabitServiceTests
 
         IHabitService sut = new HabitService(habitRepositoryMock.Object);
 
-        var result = await sut.CreateAsync(new Habit { Id = 0, Name = "Stretch", Emoji = "🧘" });
+        var result = await sut.CreateAsync(new Habit { Id = 0, Name = "Stretch", Emoji = "🧘", Description = "Move for a few minutes." });
 
         result.Id.Should().Be(CoreConstants.MaxHabitCount);
         result.Name.Should().Be("Stretch");
         result.Emoji.Should().Be("🧘");
+        result.Description.Should().Be("Move for a few minutes.");
         persistedHabit.Should().BeEquivalentTo(result);
         habitRepositoryMock.Verify(x => x.GetAllAsync(It.IsAny<CancellationToken>()), Times.Once);
         habitRepositoryMock.Verify(x => x.AddAsync(It.IsAny<Habit>(), It.IsAny<CancellationToken>()), Times.Once);
@@ -155,7 +156,13 @@ public class HabitServiceTests
             .ReturnsAsync(true);
 
         IHabitService sut = new HabitService(habitRepositoryMock.Object);
-        var habitToCreate = new Habit { Id = 99, Name = "  Meditate  ", Emoji = "  🧘  " };
+        var habitToCreate = new Habit
+        {
+            Id = 99,
+            Name = "  Meditate  ",
+            Emoji = "  🧘  ",
+            Description = "  Focus on breathing.\nRelax shoulders.  "
+        };
 
         var result = await sut.CreateAsync(habitToCreate);
 
@@ -164,7 +171,8 @@ public class HabitServiceTests
             {
                 Id = 5,
                 Name = "Meditate",
-                Emoji = "🧘"
+                Emoji = "🧘",
+                Description = "Focus on breathing.\nRelax shoulders."
             });
 
         persistedHabit.Should().NotBeNull();
@@ -196,13 +204,20 @@ public class HabitServiceTests
             .ReturnsAsync(true);
 
         IHabitService sut = new HabitService(habitRepositoryMock.Object);
-        var updatedInput = new Habit { Id = 2, Name = "  Read Daily  ", Emoji = "  📚  " };
+        var updatedInput = new Habit
+        {
+            Id = 2,
+            Name = "  Read Daily  ",
+            Emoji = "  📚  ",
+            Description = "  Read before bed.\nTrack pages.  "
+        };
 
         var result = await sut.UpdateAsync(updatedInput);
 
         result.Should().BeSameAs(existingHabit);
         result.Name.Should().Be("Read Daily");
         result.Emoji.Should().Be("📚");
+        result.Description.Should().Be("Read before bed.\nTrack pages.");
         habitRepositoryMock.Verify(x => x.GetAsync(2, It.IsAny<CancellationToken>()), Times.Once);
         habitRepositoryMock.Verify(x => x.GetAllAsync(It.IsAny<CancellationToken>()), Times.Once);
         habitRepositoryMock.Verify(x => x.UpdateAsync(existingHabit, It.IsAny<CancellationToken>()), Times.Once);
@@ -399,6 +414,26 @@ public class HabitServiceTests
     }
 
     [Fact]
+    public async Task CreateAsync_ShouldThrowArgumentException_WhenDescriptionExceedsConfiguredMaximum()
+    {
+        var habitRepositoryMock = new Mock<IHabitRepository>(MockBehavior.Strict);
+        IHabitService sut = new HabitService(habitRepositoryMock.Object);
+        var invalidHabit = new Habit
+        {
+            Id = 1,
+            Name = "Read",
+            Description = new string('D', CoreConstants.HabitDescriptionMaxLength + 1)
+        };
+
+        var act = () => sut.CreateAsync(invalidHabit);
+
+        var exception = await act.Should().ThrowAsync<ArgumentException>();
+        exception.Which.ParamName.Should().Be("Description");
+        exception.Which.Message.Should().Contain($"{CoreConstants.HabitDescriptionMaxLength}");
+        habitRepositoryMock.VerifyNoOtherCalls();
+    }
+
+    [Fact]
     public async Task UpdateAsync_ShouldThrowArgumentNullException_WhenHabitIsNull()
     {
         var habitRepositoryMock = new Mock<IHabitRepository>(MockBehavior.Strict);
@@ -444,6 +479,26 @@ public class HabitServiceTests
         var exception = await act.Should().ThrowAsync<ArgumentException>();
         exception.Which.ParamName.Should().Be("Emoji");
         exception.Which.Message.Should().Contain("single emoji");
+        habitRepositoryMock.VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task UpdateAsync_ShouldThrowArgumentException_WhenDescriptionExceedsConfiguredMaximum()
+    {
+        var habitRepositoryMock = new Mock<IHabitRepository>(MockBehavior.Strict);
+        IHabitService sut = new HabitService(habitRepositoryMock.Object);
+        var invalidHabit = new Habit
+        {
+            Id = 1,
+            Name = "Read",
+            Description = new string('D', CoreConstants.HabitDescriptionMaxLength + 1)
+        };
+
+        var act = () => sut.UpdateAsync(invalidHabit);
+
+        var exception = await act.Should().ThrowAsync<ArgumentException>();
+        exception.Which.ParamName.Should().Be("Description");
+        exception.Which.Message.Should().Contain($"{CoreConstants.HabitDescriptionMaxLength}");
         habitRepositoryMock.VerifyNoOtherCalls();
     }
 

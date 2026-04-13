@@ -8,5 +8,7 @@ public class Habit
 
     public string? Emoji { get; set; }
 
+    public string? Description { get; set; }
+
     public virtual ICollection<Checkin> Checkins { get; set; } = (List<Checkin>)[];
 }

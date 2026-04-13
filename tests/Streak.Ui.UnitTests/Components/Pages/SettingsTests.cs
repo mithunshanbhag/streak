@@ -4,7 +4,8 @@ public sealed class SettingsTests : TestContext
 {
     public SettingsTests()
     {
-        Services.AddMudServices();
+        Services.AddMudServices(options => { options.PopoverOptions.CheckForPopoverProvider = false; });
+        JSInterop.Mode = JSRuntimeMode.Loose;
     }
 
     #region Positive tests
@@ -13,14 +14,14 @@ public sealed class SettingsTests : TestContext
     public void Settings_ShouldRenderOnlyDatabaseBackupContent()
     {
         var exportServiceMock = new Mock<IDatabaseExportService>();
-        Services.AddSingleton(exportServiceMock.Object);
+        RegisterSettingsServices(exportServiceMock);
 
-        var cut = RenderComponent<Settings>();
+        var cut = RenderSettings();
 
         cut.Markup.Should().Contain("Backup");
         cut.Markup.Should().Contain("Download DB");
         cut.Markup.Should().Contain("Save a copy of your local data.");
-        cut.Markup.Should().Contain("Android saves to 'Downloads' folder. Windows lets you choose where to save.");
+        cut.Find("button[aria-label='Backup save location information']");
         cut.Markup.Should().NotContain("Daily reminder");
         cut.Markup.Should().NotContain("Create a manual backup of your local Streak data");
     }
@@ -41,16 +42,16 @@ public sealed class SettingsTests : TestContext
                 return DatabaseExportResult.Saved;
             });
 
-        Services.AddSingleton(exportServiceMock.Object);
+        RegisterSettingsServices(exportServiceMock);
 
-        var cut = RenderComponent<Settings>();
+        var cut = RenderSettings();
 
-        cut.Find("button").Click();
+        cut.Find("button[aria-label='Export database']").Click();
         await exportStarted.Task;
 
         cut.WaitForAssertion(() =>
         {
-            var button = cut.Find("button");
+            var button = cut.Find("button[aria-label='Export database']");
             button.HasAttribute("disabled").Should().BeTrue();
             cut.Markup.Should().Contain("mud-progress-circular");
         });
@@ -59,7 +60,7 @@ public sealed class SettingsTests : TestContext
 
         cut.WaitForAssertion(() =>
         {
-            var button = cut.Find("button");
+            var button = cut.Find("button[aria-label='Export database']");
             button.HasAttribute("disabled").Should().BeFalse();
         });
     }
@@ -76,11 +77,11 @@ public sealed class SettingsTests : TestContext
             .Setup(x => x.ExportDatabaseAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(DatabaseExportResult.Cancelled);
 
-        Services.AddSingleton(exportServiceMock.Object);
+        RegisterSettingsServices(exportServiceMock);
 
-        var cut = RenderComponent<Settings>();
+        var cut = RenderSettings();
 
-        await cut.Find("button").ClickAsync(new MouseEventArgs());
+        await cut.Find("button[aria-label='Export database']").ClickAsync(new MouseEventArgs());
 
         cut.WaitForAssertion(() => { cut.Markup.Should().NotContain("Unable to export your database right now. Please try again."); });
     }
@@ -102,17 +103,36 @@ public sealed class SettingsTests : TestContext
                 return Task.FromResult(DatabaseExportResult.Saved);
             });
 
-        Services.AddSingleton(exportServiceMock.Object);
+        RegisterSettingsServices(exportServiceMock);
 
-        var cut = RenderComponent<Settings>();
+        var cut = RenderSettings();
 
-        await cut.Find("button").ClickAsync(new MouseEventArgs());
+        await cut.Find("button[aria-label='Export database']").ClickAsync(new MouseEventArgs());
 
         cut.WaitForAssertion(() => { cut.Markup.Should().Contain("Unable to export your database right now. Please try again."); });
 
-        await cut.Find("button").ClickAsync(new MouseEventArgs());
+        await cut.Find("button[aria-label='Export database']").ClickAsync(new MouseEventArgs());
 
         cut.WaitForAssertion(() => { cut.Markup.Should().NotContain("Unable to export your database right now. Please try again."); });
+    }
+
+    #endregion
+
+    #region Private Helper Methods
+
+    private void RegisterSettingsServices(Mock<IDatabaseExportService> exportServiceMock)
+    {
+        var importFilePickerMock = new Mock<IDatabaseImportFilePicker>();
+        var importServiceMock = new Mock<IDatabaseImportService>();
+
+        Services.AddSingleton(exportServiceMock.Object);
+        Services.AddSingleton(importFilePickerMock.Object);
+        Services.AddSingleton(importServiceMock.Object);
+    }
+
+    private IRenderedComponent<Settings> RenderSettings()
+    {
+        return RenderComponent<Settings>();
     }
 
     #endregion

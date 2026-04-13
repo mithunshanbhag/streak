@@ -15,6 +15,10 @@ public sealed class CreateHabitRequestDtoValidator : AbstractValidator<CreateHab
         RuleFor(x => x.Emoji)
             .Must(EmojiValidationHelper.IsEmptyOrSingleEmoji)
             .WithMessage("Emoji must be a single emoji.");
+
+        RuleFor(x => x.Description)
+            .Must(BeWithinConfiguredDescriptionLength)
+            .WithMessage($"Habit description must be {CoreConstants.HabitDescriptionMaxLength} characters or fewer.");
     }
 
     private static bool BeWithinConfiguredLength(string? name)
@@ -23,5 +27,13 @@ public sealed class CreateHabitRequestDtoValidator : AbstractValidator<CreateHab
 
         return normalizedName?.Length is >= CoreConstants.HabitNameMinLength
             and <= CoreConstants.HabitNameMaxLength;
+    }
+
+    private static bool BeWithinConfiguredDescriptionLength(string? description)
+    {
+        var normalizedDescription = description?.Trim();
+
+        return string.IsNullOrWhiteSpace(normalizedDescription)
+               || normalizedDescription.Length <= CoreConstants.HabitDescriptionMaxLength;
     }
 }

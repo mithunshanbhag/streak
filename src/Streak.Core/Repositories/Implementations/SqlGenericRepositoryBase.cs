@@ -65,15 +65,26 @@ public abstract class SqlGenericRepositoryBase<TEntity, TKey>(DbContext dbContex
         if (entities.Count == 0) return false;
 
         await EntitySet.AddRangeAsync(entities, cancellationToken);
-        return await SaveChangesAsync(cancellationToken) > 0;
+        var saveChangesCount = await SaveChangesAsync(cancellationToken);
+
+        if (saveChangesCount > 0)
+            DetachTrackedEntities(entities);
+
+        return saveChangesCount > 0;
     }
 
     public async Task<bool> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(entity);
 
+        DetachTrackedEntityWithSameKey(entity);
         EntitySet.Update(entity);
-        return await SaveChangesAsync(cancellationToken) > 0;
+        var saveChangesCount = await SaveChangesAsync(cancellationToken);
+
+        if (saveChangesCount > 0)
+            DetachEntity(entity);
+
+        return saveChangesCount > 0;
     }
 
     public Task<bool> DeleteAsync(TKey key, CancellationToken cancellationToken = default)
@@ -151,7 +162,7 @@ public abstract class SqlGenericRepositoryBase<TEntity, TKey>(DbContext dbContex
             .ToArray();
 
         foreach (var trackedEntity in trackedEntities)
-            StreakDbContext.Entry(trackedEntity).State = EntityState.Detached;
+            DetachEntity(trackedEntity);
     }
 
     private async Task<bool> AddEntityAsync(
@@ -162,7 +173,54 @@ public abstract class SqlGenericRepositoryBase<TEntity, TKey>(DbContext dbContex
         if (entity is null) throw new ArgumentNullException(paramName);
 
         await EntitySet.AddAsync(entity, cancellationToken);
-        return await SaveChangesAsync(cancellationToken) > 0;
+        var saveChangesCount = await SaveChangesAsync(cancellationToken);
+
+        if (saveChangesCount > 0)
+            DetachEntity(entity);
+
+        return saveChangesCount > 0;
+    }
+
+    private void DetachTrackedEntities(IEnumerable<TEntity> entities)
+    {
+        foreach (var entity in entities)
+            DetachEntity(entity);
+    }
+
+    private void DetachTrackedEntityWithSameKey(TEntity entity)
+    {
+        var entityEntry = StreakDbContext.Entry(entity);
+        var primaryKey = entityEntry.Metadata.FindPrimaryKey()
+                         ?? throw new InvalidOperationException(
+                             $"Entity type '{typeof(TEntity).Name}' does not define a primary key.");
+
+        var currentKeyValues = primaryKey.Properties
+            .Select(property => entityEntry.Property(property.Name).CurrentValue)
+            .ToArray();
+
+        var matchingTrackedEntities = EntitySet.Local
+            .Where(trackedEntity =>
+            {
+                if (ReferenceEquals(trackedEntity, entity))
+                    return false;
+
+                var trackedEntry = StreakDbContext.Entry(trackedEntity);
+
+                return primaryKey.Properties
+                    .Select((property, index) => Equals(
+                        trackedEntry.Property(property.Name).CurrentValue,
+                        currentKeyValues[index]))
+                    .All(x => x);
+            })
+            .ToArray();
+
+        foreach (var trackedEntity in matchingTrackedEntities)
+            DetachEntity(trackedEntity);
+    }
+
+    private void DetachEntity(TEntity entity)
+    {
+        StreakDbContext.Entry(entity).State = EntityState.Detached;
     }
 
     #endregion

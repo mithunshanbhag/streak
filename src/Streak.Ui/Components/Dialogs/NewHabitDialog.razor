@@ -36,6 +36,19 @@
                               For="@(() => _newHabitInputModel.Emoji!)"
                               Label="@HabitEmojiLabel"
                               Validation="@((string _) => ValidateNewHabitEmoji())"/>
+                <MudTextField T="string"
+                              Margin="Margin.Dense"
+                              ShrinkLabel="true"
+                              Clearable="true"
+                              Immediate="true"
+                              DebounceInterval="200"
+                              Lines="4"
+                              @bind-Value="@_newHabitInputModel.Description"
+                              For="@(() => _newHabitInputModel.Description!)"
+                              Label="@HabitDescriptionLabel"
+                              Validation="@((string _) => ValidateNewHabitDescription())"
+                              MaxLength="@CoreConstants.HabitDescriptionMaxLength"
+                              Counter="@CoreConstants.HabitDescriptionMaxLength"/>
 
             </MudStack>
         </MudForm>
@@ -128,13 +141,14 @@
     {
         if (string.IsNullOrWhiteSpace(_newHabitInputModel.Name)) return ValidNameRequiredText;
 
-        if (_newHabitInputModel.Name.Length < CoreConstants.HabitNameMinLength) return HabitNameTooShortText;
+        var normalizedName = _newHabitInputModel.Name.Trim();
+        if (normalizedName.Length < CoreConstants.HabitNameMinLength) return HabitNameTooShortText;
 
         var existingHabitNames = (await HabitService.GetAllAsync())
             .Select(x => x.Name)
             .ToArray();
 
-        return existingHabitNames.Any(existingName => string.Equals(existingName, _newHabitInputModel.Name, StringComparison.OrdinalIgnoreCase))
+        return existingHabitNames.Any(existingName => string.Equals(existingName, normalizedName, StringComparison.OrdinalIgnoreCase))
             ? DuplicateHabitNameText
             : null;
     }
@@ -147,6 +161,15 @@
             return InvalidEmojiText;
 
         return null;
+    }
+
+    private string? ValidateNewHabitDescription()
+    {
+        if (string.IsNullOrWhiteSpace(_newHabitInputModel.Description)) return null;
+
+        return _newHabitInputModel.Description.Trim().Length > CoreConstants.HabitDescriptionMaxLength
+            ? HabitDescriptionTooLongText
+            : null;
     }
 
     private static DialogOptions CreateDialogOptions()
@@ -167,7 +190,8 @@
         {
             Id = 0,
             Name = _newHabitInputModel.Name,
-            Emoji = _newHabitInputModel.Emoji
+            Emoji = _newHabitInputModel.Emoji,
+            Description = _newHabitInputModel.Description
         };
     }
 
@@ -183,6 +207,8 @@
 
     private const string HabitEmojiPlaceholder = "🙂";
 
+    private const string HabitDescriptionLabel = "Description (optional)";
+
     private const string CancelButtonText = "Cancel";
 
     private const string SaveButtonText = "SAVE";
@@ -194,6 +220,8 @@
     private const string DuplicateHabitNameText = "A habit with this name already exists.";
 
     private const string InvalidEmojiText = "Emoji must be a single emoji.";
+
+    private static string HabitDescriptionTooLongText => $"Description must be {CoreConstants.HabitDescriptionMaxLength} characters or fewer.";
 
     #endregion
 

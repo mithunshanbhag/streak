@@ -48,6 +48,20 @@ public class NewHabitDialogInputModelValidatorTests
         result.IsValid.Should().BeTrue();
     }
 
+    [Fact]
+    public void Validate_ShouldPass_WhenDescriptionIsNull()
+    {
+        var model = new NewHabitInputModel
+        {
+            Name = "Read",
+            Description = null
+        };
+
+        var result = _sut.Validate(model);
+
+        result.IsValid.Should().BeTrue();
+    }
+
     #endregion
 
     #region Negative tests
@@ -90,6 +104,23 @@ public class NewHabitDialogInputModelValidatorTests
             x.ErrorMessage == "Emoji must be a single emoji.");
     }
 
+    [Fact]
+    public void Validate_ShouldFail_WhenDescriptionExceedsMaximum()
+    {
+        var model = new NewHabitInputModel
+        {
+            Name = "Read",
+            Description = new string('D', CoreConstants.HabitDescriptionMaxLength + 1)
+        };
+
+        var result = _sut.Validate(model);
+
+        result.IsValid.Should().BeFalse();
+        result.Errors.Should().ContainSingle(x =>
+            x.PropertyName == nameof(NewHabitInputModel.Description) &&
+            x.ErrorMessage == $"Habit description must be {CoreConstants.HabitDescriptionMaxLength} characters or fewer.");
+    }
+
     #endregion
 
     #region Boundary tests
@@ -122,6 +153,20 @@ public class NewHabitDialogInputModelValidatorTests
         result.Errors.Should().ContainSingle(x =>
             x.PropertyName == nameof(NewHabitInputModel.Name) &&
             x.ErrorMessage == $"Habit name must be between {CoreConstants.HabitNameMinLength} and {CoreConstants.HabitNameMaxLength} characters.");
+    }
+
+    [Fact]
+    public void Validate_ShouldPass_WhenDescriptionLengthMatchesMaximum()
+    {
+        var model = new NewHabitInputModel
+        {
+            Name = "Read",
+            Description = new string('D', CoreConstants.HabitDescriptionMaxLength)
+        };
+
+        var result = _sut.Validate(model);
+
+        result.IsValid.Should().BeTrue();
     }
 
     #endregion

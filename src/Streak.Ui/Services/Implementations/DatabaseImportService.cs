@@ -2,6 +2,7 @@ namespace Streak.Ui.Services.Implementations;
 
 public sealed class DatabaseImportService(
     IAppStoragePathService appStoragePathService,
+    SqliteDatabaseSchemaUpgrader sqliteDatabaseSchemaUpgrader,
     ILogger<DatabaseImportService> logger)
     : IDatabaseImportService
 {
@@ -9,6 +10,7 @@ public sealed class DatabaseImportService(
 
     private readonly IAppStoragePathService _appStoragePathService = appStoragePathService;
     private readonly ILogger<DatabaseImportService> _logger = logger;
+    private readonly SqliteDatabaseSchemaUpgrader _sqliteDatabaseSchemaUpgrader = sqliteDatabaseSchemaUpgrader;
 
     public async Task ImportDatabaseAsync(FileResult backupFile, CancellationToken cancellationToken = default)
     {
@@ -29,6 +31,7 @@ public sealed class DatabaseImportService(
             try
             {
                 ReplaceLiveDatabase(databasePath, candidateBackupPath);
+                _sqliteDatabaseSchemaUpgrader.UpgradeIfNeeded(databasePath);
                 await ValidateBackupAsync(databasePath, cancellationToken);
             }
             catch
@@ -132,10 +135,7 @@ public sealed class DatabaseImportService(
         var actualColumns = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         await using var reader = await command.ExecuteReaderAsync(cancellationToken);
-        while (await reader.ReadAsync(cancellationToken))
-        {
-            actualColumns.Add(reader.GetString(1));
-        }
+        while (await reader.ReadAsync(cancellationToken)) actualColumns.Add(reader.GetString(1));
 
         if (actualColumns.Count == 0 || expectedColumns.Any(expectedColumn => !actualColumns.Contains(expectedColumn)))
             throw new InvalidDataException("The selected file is not a recognizable Streak backup.");
@@ -152,7 +152,7 @@ public sealed class DatabaseImportService(
                 continue;
 
             var rollbackArtifactPath = GetRollbackArtifactPath(rollbackDirectoryPath, artifactPath);
-            File.Copy(artifactPath, rollbackArtifactPath, overwrite: true);
+            File.Copy(artifactPath, rollbackArtifactPath, true);
         }
     }
 
@@ -165,7 +165,7 @@ public sealed class DatabaseImportService(
             Directory.CreateDirectory(databaseDirectoryPath);
 
         DeleteDatabaseArtifacts(databasePath);
-        File.Copy(candidateBackupPath, databasePath, overwrite: true);
+        File.Copy(candidateBackupPath, databasePath, true);
     }
 
     private static void RestoreLiveDatabaseArtifacts(string databasePath, string rollbackDirectoryPath)
@@ -177,7 +177,7 @@ public sealed class DatabaseImportService(
         {
             var rollbackArtifactPath = GetRollbackArtifactPath(rollbackDirectoryPath, artifactPath);
             if (File.Exists(rollbackArtifactPath))
-                File.Copy(rollbackArtifactPath, artifactPath, overwrite: true);
+                File.Copy(rollbackArtifactPath, artifactPath, true);
         }
     }
 
@@ -208,7 +208,7 @@ public sealed class DatabaseImportService(
     private static void DeleteDirectoryIfExists(string directoryPath)
     {
         if (Directory.Exists(directoryPath))
-            Directory.Delete(directoryPath, recursive: true);
+            Directory.Delete(directoryPath, true);
     }
 
     #endregion

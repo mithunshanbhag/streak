@@ -26,9 +26,16 @@ public partial class StreakDbContext(DbContextOptions<StreakDbContext> options) 
 
         modelBuilder.Entity<Habit>(entity =>
         {
-            entity.ToTable(tableBuilder => { tableBuilder.HasCheckConstraint("CK_Habits_Name_Length", "length (trim(Name)) BETWEEN 1 AND 30"); });
+            entity.ToTable(tableBuilder =>
+            {
+                tableBuilder.HasCheckConstraint("CK_Habits_Name_Length", "length (trim(Name)) BETWEEN 1 AND 30");
+                tableBuilder.HasCheckConstraint(
+                    "CK_Habits_Description_Length",
+                    $"Description IS NULL OR length(Description) <= {CoreConstants.HabitDescriptionMaxLength}");
+            });
 
             entity.Property(e => e.Name).UseCollation("NOCASE");
+            entity.Property(e => e.Description).HasMaxLength(CoreConstants.HabitDescriptionMaxLength);
             entity.HasIndex(e => e.Name, "IX_Habits_Name").IsUnique();
         });
 

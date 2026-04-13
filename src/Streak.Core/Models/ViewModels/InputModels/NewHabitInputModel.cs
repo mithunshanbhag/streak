@@ -8,5 +8,7 @@ public sealed class NewHabitInputModel
 
     public string? Emoji { get; set; }
 
+    public string? Description { get; set; }
+
     #endregion
 }

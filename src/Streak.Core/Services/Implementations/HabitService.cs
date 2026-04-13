@@ -50,7 +50,8 @@ public sealed class HabitService(IHabitRepository habitRepository) : StreakServi
         {
             Id = nextId,
             Name = normalizedHabit.Name,
-            Emoji = normalizedHabit.Emoji
+            Emoji = normalizedHabit.Emoji,
+            Description = normalizedHabit.Description
         };
 
         var isCreated = await _habitRepository.AddAsync(createdHabit, cancellationToken);
@@ -73,6 +74,7 @@ public sealed class HabitService(IHabitRepository habitRepository) : StreakServi
 
         existingHabit.Name = normalizedHabit.Name;
         existingHabit.Emoji = normalizedHabit.Emoji;
+        existingHabit.Description = normalizedHabit.Description;
 
         var isUpdated = await _habitRepository.UpdateAsync(existingHabit, cancellationToken);
         if (!isUpdated) throw new InvalidOperationException($"Failed to update habit with id '{existingHabit.Id}'.");
@@ -95,15 +97,22 @@ public sealed class HabitService(IHabitRepository habitRepository) : StreakServi
     {
         var nonNullHabit = RequireNotNull(habit, paramName);
         var normalizedEmoji = NormalizeOptionalText(nonNullHabit.Emoji);
+        var normalizedDescription = NormalizeOptionalText(nonNullHabit.Description);
 
         if (!EmojiValidationHelper.IsEmptyOrSingleEmoji(normalizedEmoji))
             throw new ArgumentException("Emoji must be a single emoji.", nameof(Habit.Emoji));
+
+        if (normalizedDescription?.Length > CoreConstants.HabitDescriptionMaxLength)
+            throw new ArgumentException(
+                $"Habit description must be {CoreConstants.HabitDescriptionMaxLength} characters or fewer.",
+                nameof(Habit.Description));
 
         return new Habit
         {
             Id = nonNullHabit.Id,
             Name = NormalizeAndValidateHabitName(nonNullHabit.Name, nameof(Habit.Name)),
-            Emoji = normalizedEmoji
+            Emoji = normalizedEmoji,
+            Description = normalizedDescription
         };
     }
 

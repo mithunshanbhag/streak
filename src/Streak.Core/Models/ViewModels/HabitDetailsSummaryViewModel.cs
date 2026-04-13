@@ -8,6 +8,8 @@ public sealed class HabitDetailsSummaryViewModel
 
     public string? HabitEmoji { get; set; }
 
+    public string? HabitDescription { get; set; }
+
     #endregion
 
     #region Computed Properties
@@ -43,6 +45,8 @@ public sealed class HabitDetailsSummaryViewModel
     public required int Streak { get; set; }
 
     public bool HasHabitEmoji => !string.IsNullOrWhiteSpace(HabitEmoji);
+
+    public bool HasHabitDescription => !string.IsNullOrWhiteSpace(HabitDescription);
 
     private int NormalizedStreak => StreakDisplayHelper.NormalizeStreak(Streak);
 

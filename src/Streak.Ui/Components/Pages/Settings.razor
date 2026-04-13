@@ -39,7 +39,7 @@
                             <MudIconButton Icon="@Icons.Material.Filled.Info"
                                            Color="Color.Default"
                                            Size="Size.Small"
-                                           aria-label="@SupportTooltipAriaLabel" />
+                                           aria-label="@SupportTooltipAriaLabel"/>
                         </MudTooltip>
                     </MudStack>
 
@@ -83,7 +83,7 @@
                             <MudIconButton Icon="@Icons.Material.Filled.Warning"
                                            Color="Color.Warning"
                                            Size="Size.Small"
-                                           aria-label="@RestoreTooltipAriaLabel" />
+                                           aria-label="@RestoreTooltipAriaLabel"/>
                         </MudTooltip>
                     </MudStack>
 
@@ -174,7 +174,7 @@
 
             await DatabaseImportService.ImportDatabaseAsync(selectedBackup);
 
-            NavigationManager.NavigateTo(RouteConstants.Home, forceLoad: true);
+            NavigationManager.NavigateTo(RouteConstants.Home, true);
         }
         catch (InvalidDataException)
         {
@@ -229,4 +229,5 @@
     private const string ImportFailedText = "Unable to restore your database right now. Please try again.";
 
     #endregion
+
 }

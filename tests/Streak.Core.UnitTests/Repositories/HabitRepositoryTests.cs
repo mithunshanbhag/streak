@@ -33,7 +33,7 @@ public class HabitRepositoryTests
         {
             context.ChangeTracker.Clear();
             ISqlGenericRepository<Habit, int> sut = new HabitRepository(context);
-            var habit = new Habit { Id = 1, Name = "Read", Emoji = "📖" };
+            var habit = new Habit { Id = 1, Name = "Read", Emoji = "📖", Description = "Read for 10 minutes." };
 
             var result = await sut.AddAsync(habit);
 
@@ -41,6 +41,7 @@ public class HabitRepositoryTests
             var savedHabit = await context.Habits.SingleAsync();
             savedHabit.Name.Should().Be("Read");
             savedHabit.Emoji.Should().Be("📖");
+            savedHabit.Description.Should().Be("Read for 10 minutes.");
         }
     }
 
@@ -55,12 +56,39 @@ public class HabitRepositoryTests
             context.ChangeTracker.Clear();
 
             ISqlGenericRepository<Habit, int> sut = new HabitRepository(context);
-            var updatedHabit = new Habit { Id = 1, Name = "Read Daily", Emoji = "📚" };
+            var updatedHabit = new Habit { Id = 1, Name = "Read Daily", Emoji = "📚", Description = "Morning reading session." };
 
             var result = await sut.UpdateAsync(updatedHabit);
 
             result.Should().BeTrue();
             (await context.Habits.CountAsync()).Should().Be(1);
+            var savedHabit = await context.Habits.SingleAsync();
+            savedHabit.Description.Should().Be("Morning reading session.");
+        }
+    }
+
+    [Fact]
+    public async Task UpdateAsync_ShouldAllowUpdatingSameHabitTwice_InSameContext()
+    {
+        await using var context = TestDbContextFactory.CreateContext(out var connection);
+        await using (connection)
+        {
+            context.Habits.Add(new Habit { Id = 1, Name = "Read", Emoji = "📖", Description = "Original description." });
+            await context.SaveChangesAsync();
+            context.ChangeTracker.Clear();
+
+            ISqlGenericRepository<Habit, int> sut = new HabitRepository(context);
+
+            var firstUpdateResult = await sut.UpdateAsync(
+                new Habit { Id = 1, Name = "Read", Emoji = "📖", Description = "First updated description." });
+            var secondUpdateResult = await sut.UpdateAsync(
+                new Habit { Id = 1, Name = "Read", Emoji = "📖", Description = "Second updated description." });
+
+            firstUpdateResult.Should().BeTrue();
+            secondUpdateResult.Should().BeTrue();
+
+            var savedHabit = await context.Habits.SingleAsync();
+            savedHabit.Description.Should().Be("Second updated description.");
         }
     }
 

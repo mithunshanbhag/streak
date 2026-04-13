@@ -53,63 +53,83 @@ else if (_viewModel is not null)
         <MudStack Spacing="3">
             <MudPaper Elevation="1"
                       Class="pa-4 rounded-lg">
-                <MudStack Row="true"
-                          AlignItems="AlignItems.Start"
-                          Justify="Justify.SpaceBetween"
-                          Wrap="Wrap.NoWrap"
-                          Spacing="2"
-                          Style="@SummaryHeaderStyle">
+                <MudStack Spacing="3">
                     <MudStack Row="true"
-                              AlignItems="AlignItems.Center"
+                              AlignItems="AlignItems.Start"
+                              Justify="Justify.SpaceBetween"
                               Wrap="Wrap.NoWrap"
-                              Spacing="3"
-                              Style="@SummaryIdentityStyle">
+                              Spacing="2"
+                              Style="@SummaryHeaderStyle">
+                        <MudStack Row="true"
+                                  AlignItems="AlignItems.Center"
+                                  Wrap="Wrap.NoWrap"
+                                  Spacing="3"
+                                  Style="@SummaryIdentityStyle">
+                            <MudPaper Elevation="0"
+                                      Class="rounded - lg"
+                                      Style="@EmojiContainerStyle">
+                                <MudStack AlignItems="AlignItems.Center"
+                                          Justify="Justify.Center"
+                                          Style="@EmojiContentStyle">
+                                    @if (_viewModel.HasHabitEmoji)
+                                    {
+                                        <MudText Typo="Typo.h6">
+                                            @_viewModel.HabitEmoji
+                                        </MudText>
+                                    }
+                                    else
+                                    {
+                                        <MudIcon Icon="@Icons.Material.Filled.Circle"
+                                                 Size="Size.Small"
+                                                 Color="Color.Primary"/>
+                                    }
+                                </MudStack>
+                            </MudPaper>
+
+                            <MudText Typo="Typo.h5"
+                                     Style="@HabitNameStyle">
+                                @_viewModel.HabitName
+                            </MudText>
+                        </MudStack>
+
+                        <MudStack Row="true"
+                                  AlignItems="AlignItems.Center"
+                                  Spacing="1">
+                            <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                           Disabled="@_deletingHabit"
+                                           Color="Color.Inherit"
+                                           aria-label="@EditHabitAriaLabel"
+                                           OnClick="OpenEditDialogAsync"/>
+
+                            <MudMenu Dense="true"
+                                     Disabled="@_deletingHabit"
+                                     Icon="@Icons.Material.Filled.MoreVert"
+                                     aria-label="@MoreActionsAriaLabel">
+                                <MudMenuItem Icon="@Icons.Material.Filled.Delete"
+                                             OnClick="OpenDeleteDialogAsync">
+                                    @DeleteHabitMenuText
+                                </MudMenuItem>
+                            </MudMenu>
+                        </MudStack>
+                    </MudStack>
+
+                    @if (_viewModel.HasHabitDescription)
+                    {
                         <MudPaper Elevation="0"
-                                  Class="rounded-lg"
-                                  Style="@EmojiContainerStyle">
-                            <MudStack AlignItems="AlignItems.Center"
-                                      Justify="Justify.Center"
-                                      Style="@EmojiContentStyle">
-                                @if (_viewModel.HasHabitEmoji)
-                                {
-                                    <MudText Typo="Typo.h6">
-                                        @_viewModel.HabitEmoji
-                                    </MudText>
-                                }
-                                else
-                                {
-                                    <MudIcon Icon="@Icons.Material.Filled.Circle"
-                                             Size="Size.Small"
-                                             Color="Color.Primary"/>
-                                }
+                                  Class="pa - 3 rounded - lg">
+                            <MudStack Spacing="1">
+                                <MudText Typo="Typo.caption"
+                                         Class="text - secondary">
+                                    @DescriptionLabelText
+                                </MudText>
+
+                                <MudText Typo="Typo.body2"
+                                         Style="@HabitDescriptionStyle">
+                                    @_viewModel.HabitDescription
+                                </MudText>
                             </MudStack>
                         </MudPaper>
-
-                        <MudText Typo="Typo.h5"
-                                 Style="@HabitNameStyle">
-                            @_viewModel.HabitName
-                        </MudText>
-                    </MudStack>
-
-                    <MudStack Row="true"
-                              AlignItems="AlignItems.Center"
-                              Spacing="1">
-                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                       Disabled="@_deletingHabit"
-                                       Color="Color.Inherit"
-                                       aria-label="@EditHabitAriaLabel"
-                                       OnClick="OpenEditDialogAsync"/>
-
-                        <MudMenu Dense="true"
-                                 Disabled="@_deletingHabit"
-                                 Icon="@Icons.Material.Filled.MoreVert"
-                                 aria-label="@MoreActionsAriaLabel">
-                            <MudMenuItem Icon="@Icons.Material.Filled.Delete"
-                                         OnClick="OpenDeleteDialogAsync">
-                                @DeleteHabitMenuText
-                            </MudMenuItem>
-                        </MudMenu>
-                    </MudStack>
+                    }
                 </MudStack>
             </MudPaper>
 
@@ -233,6 +253,7 @@ else if (_viewModel is not null)
                 HabitId = habit.Id,
                 HabitName = habit.Name,
                 HabitEmoji = habit.Emoji,
+                HabitDescription = habit.Description,
                 Streak = streak
             };
 
@@ -291,7 +312,8 @@ else if (_viewModel is not null)
         {
             { x => x.HabitId, viewModel.HabitId },
             { x => x.HabitName, viewModel.HabitName },
-            { x => x.HabitEmoji, viewModel.HabitEmoji }
+            { x => x.HabitEmoji, viewModel.HabitEmoji },
+            { x => x.HabitDescription, viewModel.HabitDescription }
         };
     }
 
@@ -320,6 +342,8 @@ else if (_viewModel is not null)
 
     private const string HabitNameStyle = "overflow: hidden; text-overflow: ellipsis; white-space: nowrap;";
 
+    private const string HabitDescriptionStyle = "white-space: pre-wrap;";
+
     private const string LoadingStateStyle = "min-height: 80vh";
 
     #endregion
@@ -339,6 +363,8 @@ else if (_viewModel is not null)
     private const string EditDialogTitleText = "Edit habit";
 
     private const string DeleteHabitMenuText = "Delete habit";
+
+    private const string DescriptionLabelText = "Description";
 
     private const string EditHabitAriaLabel = "Edit habit";
 
