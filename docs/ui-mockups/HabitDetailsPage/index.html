@@ -24,14 +24,14 @@
     <main class="page-content">
         <section class="card summary-card">
             <div class="summary-view" id="summaryView">
-                <div class="summary-header-row">
-                    <div class="habit-identity">
-                        <span class="habit-identity__emoji" id="habitEmojiDisplay">🧘</span>
-                        <div>
-                            <h1 class="habit-identity__name" id="habitNameDisplay">Meditate</h1>
-                            <p class="habit-identity__meta">Focused secondary chrome, dialog-based edits, and a lighter details hierarchy.</p>
+                    <div class="summary-header-row">
+                        <div class="habit-identity">
+                            <span class="habit-identity__emoji" id="habitEmojiDisplay">🧘</span>
+                            <div>
+                                <h1 class="habit-identity__name" id="habitNameDisplay">Meditate</h1>
+                                <p class="habit-identity__meta">Details-only supporting copy keeps the homepage cards fast to scan.</p>
+                            </div>
                         </div>
-                    </div>
                     <div class="summary-actions">
                         <button class="icon-action" id="editButton" aria-label="Edit habit">
                             <span class="material-icons">edit</span>
@@ -44,8 +44,14 @@
                                 <button class="menu-item menu-item--danger" id="deleteButton">Delete habit</button>
                             </div>
                         </div>
+                        </div>
                     </div>
-                </div>
+
+                    <div class="habit-description-block" id="habitDescriptionBlock">
+                        <p class="habit-description-label">Description</p>
+                        <p class="habit-description" id="habitDescriptionDisplay">Take 10 quiet minutes before bed.
+Focus on breathing and reset for tomorrow.</p>
+                    </div>
 
                 <div class="streak-block">
                     <div class="streak-number-row">
@@ -100,6 +106,15 @@
                 <input id="habitNameInput" type="text" value="Meditate" maxlength="30">
             </label>
         </div>
+        <label class="multiline-field">
+            <span>Description (optional)</span>
+            <textarea id="habitDescriptionInput" rows="4" maxlength="500">Take 10 quiet minutes before bed.
+Focus on breathing and reset for tomorrow.</textarea>
+            <span class="field-support">
+                <span>Plain text only. Line breaks are preserved.</span>
+                <strong>69 / 500</strong>
+            </span>
+        </label>
         <div class="dialog__actions">
             <button class="btn-text" id="cancelEditButton">Cancel</button>
             <button class="btn-contained" id="saveEditButton">Save changes</button>
@@ -132,8 +147,11 @@
     const deleteDialog = document.getElementById('deleteDialog');
     const habitEmojiInput = document.getElementById('habitEmojiInput');
     const habitNameInput = document.getElementById('habitNameInput');
+    const habitDescriptionInput = document.getElementById('habitDescriptionInput');
     const habitEmojiDisplay = document.getElementById('habitEmojiDisplay');
     const habitNameDisplay = document.getElementById('habitNameDisplay');
+    const habitDescriptionDisplay = document.getElementById('habitDescriptionDisplay');
+    const habitDescriptionBlock = document.getElementById('habitDescriptionBlock');
     const deleteHabitName = document.getElementById('deleteHabitName');
     const appBarTitle = document.getElementById('appBarTitle');
     const historyToggle = document.getElementById('historyToggle');
@@ -144,6 +162,7 @@
       overflowMenu.classList.add('hidden');
       habitEmojiInput.value = habitEmojiDisplay.textContent === '●' ? '' : habitEmojiDisplay.textContent;
       habitNameInput.value = habitNameDisplay.textContent;
+      habitDescriptionInput.value = habitDescriptionDisplay.textContent.trim();
       editDialog.classList.remove('hidden');
       habitNameInput.focus();
     });
@@ -152,14 +171,18 @@
       editDialog.classList.add('hidden');
       habitEmojiInput.value = habitEmojiDisplay.textContent === '●' ? '' : habitEmojiDisplay.textContent;
       habitNameInput.value = habitNameDisplay.textContent;
+      habitDescriptionInput.value = habitDescriptionDisplay.textContent.trim();
     });
 
     saveEditButton.addEventListener('click', () => {
       const nextName = habitNameInput.value.trim() || 'Untitled Habit';
       const nextEmoji = habitEmojiInput.value.trim() || '●';
+      const nextDescription = habitDescriptionInput.value.trim();
 
       habitNameDisplay.textContent = nextName;
       habitEmojiDisplay.textContent = nextEmoji;
+      habitDescriptionDisplay.textContent = nextDescription;
+      habitDescriptionBlock.classList.toggle('hidden', nextDescription.length === 0);
       deleteHabitName.textContent = nextName;
       appBarTitle.textContent = nextEmoji + ' ' + nextName;
 

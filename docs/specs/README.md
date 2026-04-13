@@ -16,13 +16,15 @@ Streak is a simple habit-tracking mobile app for Android. It helps users build a
 
 A recurring daily activity the user wants to track.
 
-| Property     | Required | Details                                                                                                  |
-| ------------ | -------- | -------------------------------------------------------------------------------------------------------- |
-| Name         | Yes      | Short descriptive label (e.g., "Meditate", "Read"). Max 30 characters.                                   |
-| Emoji / Icon | No       | A single emoji to visually represent the habit (e.g., 🧘, 📖). A default icon is used if none is selected. |
+| Property     | Required | Details                                                                                                                                 |
+| ------------ | -------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| Name         | Yes      | Short descriptive label (e.g., "Meditate", "Read"). Max 30 characters.                                                                  |
+| Emoji / Icon | No       | A single emoji to visually represent the habit (e.g., 🧘, 📖). A default icon is used if none is selected.                                |
+| Description  | No       | Plain-text supporting notes for the habit. Multiline input is allowed, line breaks are preserved, and the max length is 500 characters. |
 
 - A user can have between 0 and **10** habits at any time.
 - On the [Homepage](./homepage.md), habits are listed in **alphabetical order by name**.
+- Habit descriptions are edited in the quick-add / edit flows and shown on [Habit Details](./habit-details-page.md), but they are **not displayed on the Homepage**.
 - Tapping a habit on the Homepage opens that habit's [Habit Details page](./habit-details-page.md).
 
 ### Checkin

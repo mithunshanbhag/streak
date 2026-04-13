@@ -19,13 +19,16 @@ The dialog presents a compact form for creating a habit.
   - a close action
 - The required **Name** field appears first.
 - The **Emoji** field is optional and visually secondary.
+- The **Description** field is optional, multiline, and uses plain text only.
+- Preserve line breaks that the user enters in the description.
 - Prefer `MudDialog`, `MudTextField`, `MudButton`, and `MudPaper` before introducing any custom structure.
 - Prefer spacing and border-radius utility classes before adding custom dialog CSS. A small inline width or max-height adjustment is acceptable if needed.
 
-| Field | Type                       | Required | Validation                                                                  |
-| ----- | -------------------------- | -------- | --------------------------------------------------------------------------- |
-| Name  | Text input                 | Yes      | 1–30 characters. Must be unique among the user's habits (case-insensitive). |
-| Emoji | Emoji picker or text input | No       | Single emoji character. If left empty, a default icon is used.              |
+| Field       | Type                       | Required | Validation                                                                                                              |
+| ----------- | -------------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------- |
+| Name        | Text input                 | Yes      | 1–30 characters. Must be unique among the user's habits (case-insensitive).                                             |
+| Emoji       | Emoji picker or text input | No       | Single emoji character. If left empty, a default icon is used.                                                          |
+| Description | Multiline text input       | No       | Plain text only. Up to 500 characters. Line breaks are preserved. The saved description is not shown on homepage cards. |
 
 ## Actions
 
@@ -39,3 +42,4 @@ The dialog presents a compact form for creating a habit.
 | Max habits   | 10. This dialog should not be reachable from the normal UI when the limit is already reached.                           |
 | Unique names | Habit names must be unique (case-insensitive). The Save button shows a validation error if a duplicate name is entered. |
 | Name length  | 1–30 characters.                                                                                                        |
+| Description  | Optional plain-text field. Max 500 characters. Markdown and rich text are out of scope for this flow.                   |

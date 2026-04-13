@@ -2,7 +2,7 @@
 
 > **Route**: `/habits/{habitId}`
 
-The habit details page shows a **detailed view of a single habit**, including editable habit details, a compact streak summary, and a GitHub-style history heatmap that is treated as secondary information.
+The habit details page shows a **detailed view of a single habit**, including editable habit details, an optional saved description, a compact streak summary, and a GitHub-style history heatmap that is treated as secondary information.
 
 ## Navigation
 
@@ -21,30 +21,33 @@ Displayed at the top of the page. This section combines identity, current streak
 
 #### View Mode
 
-| Element        | Details                                                    |
-| -------------- | ---------------------------------------------------------- |
-| Emoji / icon   | The habit's emoji or default icon                          |
-| Habit name     | Primary label for the habit                                |
-| Current streak | Large streak number plus supporting label in the same card |
-| Edit action    | Pencil icon. Opens the edit dialog for the current habit   |
-| More actions   | Overflow menu (`MoreVert`). Contains the delete action     |
+| Element        | Details                                                                  |
+| -------------- | ------------------------------------------------------------------------ |
+| Emoji / icon   | The habit's emoji or default icon                                        |
+| Habit name     | Primary label for the habit                                              |
+| Description    | Optional plain-text body copy shown only when a saved description exists |
+| Current streak | Large streak number plus supporting label in the same card               |
+| Edit action    | Pencil icon. Opens the edit dialog for the current habit                 |
+| More actions   | Overflow menu (`MoreVert`). Contains the delete action                   |
 
 - Prefer `MudCard` or `MudPaper`, `MudText`, `MudIconButton`, and `MudMenu`.
 - Use built-in spacing utilities rather than custom section wrappers.
+- If the habit has no description, omit the description block entirely rather than showing an empty placeholder.
 
 #### Edit Habit Dialog
 
 When the user taps the edit icon, show a standard dialog over the current page with the habit's current values prefilled.
 
-| Field | Type                       | Required | Validation                                                                                               |
-| ----- | -------------------------- | -------- | -------------------------------------------------------------------------------------------------------- |
-| Name  | Text input                 | Yes      | 1–30 characters. Must be unique among the user's habits (case-insensitive), excluding the current habit. |
-| Emoji | Emoji picker or text input | No       | Single emoji character. If left empty, a default icon is used.                                           |
+| Field       | Type                       | Required | Validation                                                                                                               |
+| ----------- | -------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------ |
+| Name        | Text input                 | Yes      | 1–30 characters. Must be unique among the user's habits (case-insensitive), excluding the current habit.                 |
+| Emoji       | Emoji picker or text input | No       | Single emoji character. If left empty, a default icon is used.                                                           |
+| Description | Multiline text input       | No       | Plain text only. Up to 500 characters. Line breaks are preserved. Clearing the value removes the description after save. |
 
-- **Save** applies the updated name and/or emoji, closes the dialog, and keeps the user on the Habit Details page.
+- **Save** applies the updated name, emoji, and/or description, closes the dialog, and keeps the user on the Habit Details page.
 - **Cancel** closes the dialog and leaves the current habit unchanged.
-- Editing a habit's name or emoji does **not** affect its checkin history or streak.
-- After save, the app-bar title, summary card, and any dependent habit-name displays should refresh immediately.
+- Editing a habit's name, emoji, or description does **not** affect its checkin history or streak.
+- After save, the app-bar title, summary card, description block, and any dependent habit-name displays should refresh immediately.
 - Prefer a standard `MudDialog`, `MudForm`, `MudTextField`, and standard `MudButton` actions before creating any custom form styling.
 
 #### Delete Confirmation Dialog
@@ -93,13 +96,15 @@ The history surface is secondary to the daily flow and should be **collapsed by 
 
 ## Edge Cases
 
-| Scenario                   | Behavior                                                                                   |
-| -------------------------- | ------------------------------------------------------------------------------------------ |
-| Habit created today        | Streak counter shows 0. Heatmap shows only today's cell (empty or filled).                 |
-| Habit with no checkins     | Streak shows 0 / "No active streak". Heatmap shows all cells as muted.                     |
-| Very old habit (> 90 days) | Heatmap initially shows last 90 days; user can scroll to see older data.                   |
-| User renames a habit       | The app-bar title, habit header, and any alphabetical lists update immediately after save. |
-| User clears the emoji      | The default icon is shown after save.                                                      |
+| Scenario                    | Behavior                                                                                   |
+| --------------------------- | ------------------------------------------------------------------------------------------ |
+| Habit created today         | Streak counter shows 0. Heatmap shows only today's cell (empty or filled).                 |
+| Habit with no checkins      | Streak shows 0 / "No active streak". Heatmap shows all cells as muted.                     |
+| Very old habit (> 90 days)  | Heatmap initially shows last 90 days; user can scroll to see older data.                   |
+| Habit with no description   | Hide the description block and keep the summary layout compact.                            |
+| User renames a habit        | The app-bar title, habit header, and any alphabetical lists update immediately after save. |
+| User clears the description | The saved description disappears from the summary card after save.                         |
+| User clears the emoji       | The default icon is shown after save.                                                      |
 
 ## Visual Style
 

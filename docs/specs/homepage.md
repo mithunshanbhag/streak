@@ -39,6 +39,7 @@ Each card shows:
 
 - Cards use the full width of the screen with standard horizontal padding (16dp).
 - Vertical spacing between cards: 12dp.
+- Habit descriptions are intentionally **not** shown on homepage cards; this surface stays limited to emoji, name, streak, and toggle state.
 - Tapping anywhere on a habit card **except** the checkin toggle navigates to that habit's [Habit Details page](./habit-details-page.md).
 - Prefer `MudCard` or `MudPaper` plus `MudStack`, `MudText`, and utility classes before introducing any custom card-specific CSS.
 
