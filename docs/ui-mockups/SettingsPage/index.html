@@ -63,40 +63,51 @@
             <div class="section-header-row">
                 <div>
                     <p class="section-eyebrow">Data</p>
-                    <h2 class="section-header">Backup</h2>
+                    <div class="subsection-title-row">
+                        <h2 class="section-header section-header--subsection">Backup</h2>
+                        <button
+                            class="hint-icon-btn hint-icon-btn--info"
+                            type="button"
+                            aria-label="Backup save location info"
+                            data-tooltip="Android saves to 'Downloads' folder. Windows lets you choose where to save.">
+                            <span class="material-icons">info</span>
+                        </button>
+                    </div>
                     <p class="section-description">Save a copy of your local data.</p>
                 </div>
             </div>
 
             <div class="setting-row setting-row--action-only">
-                <button class="primary-action-btn" type="button" aria-label="Export database">
-                    <span class="material-icons">save_alt</span>
+                <button class="data-action-btn" type="button" aria-label="Export database">
+                    <span class="material-icons">download</span>
                     <span>Download DB</span>
                 </button>
             </div>
-
-            <p class="support-note">Android saves to 'Downloads' folder. Windows lets you choose where to save.</p>
 
             <div class="subsection-divider"></div>
 
             <div class="section-header-row section-header-row--sub">
                 <div>
-                    <h2 class="section-header">Restore</h2>
+                    <div class="subsection-title-row">
+                        <h2 class="section-header section-header--subsection">Restore</h2>
+                        <button
+                            class="hint-icon-btn hint-icon-btn--warning"
+                            type="button"
+                            aria-label="Restore warning"
+                            data-tooltip="This will replace ALL existing data. This action cannot be undone.">
+                            <span class="material-icons">warning</span>
+                        </button>
+                    </div>
                     <p class="section-description">Restore your data from a previous backup.</p>
                 </div>
             </div>
 
             <div class="setting-row setting-row--action-only">
-                <button class="secondary-action-btn" type="button" aria-label="Import database">
-                    <span class="material-icons">upload_file</span>
+                <button class="data-action-btn" type="button" aria-label="Import database">
+                    <span class="material-icons">upload</span>
                     <span>Upload DB</span>
                 </button>
             </div>
-
-            <p class="warning-note">
-                <span class="material-icons warning-icon">warning</span>
-                This will replace ALL existing data. This action cannot be undone.
-            </p>
         </section>
     </main>
 </div>

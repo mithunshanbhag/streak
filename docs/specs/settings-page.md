@@ -33,18 +33,23 @@ The page contains two vertically stacked sections presented as clean cards:
 
 ### Data Section
 
-| Element             | Type        | Details                                                                                         |
-| ------------------- | ----------- | ----------------------------------------------------------------------------------------------- |
-| Section eyebrow     | Text        | **"Data"**                                                                                      |
-| Section header      | Text        | **"Backup"**                                                                                    |
-| Section description | Caption     | *"Save a copy of your local data."*                                                             |
-| Export action       | `MudButton` | Primary action labeled **"Download DB"**. Starts the database export flow.                      |
-| Support note        | Caption     | *"Android saves to 'Downloads' folder. Windows lets you choose where to save."*                 |
-| Divider             | Visual      | A horizontal rule separating the Backup and Restore sub-sections.                               |
-| Section header      | Text        | **"Restore"**                                                                                   |
-| Section description | Caption     | *"Restore your data from a previous backup."*                                                   |
-| Import action       | `MudButton` | Secondary action labeled **"Upload DB"**. Opens a file picker to select a `.db` backup file.   |
-| Warning note        | Caption     | *"⚠ This will replace ALL existing data. This action cannot be undone."*                        |
+| Element             | Type                | Details                                                                                                                    |
+| ------------------- | ------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| Section eyebrow     | Text                | **"Data"**                                                                                                                 |
+| Backup header       | Text                | **"Backup"**                                                                                                               |
+| Backup info icon    | Glyph + tooltip     | Small info icon beside **Backup**. Hover/focus/press shows: *"Android saves to 'Downloads' folder. Windows lets you choose where to save."* |
+| Section description | Caption             | *"Save a copy of your local data."*                                                                                        |
+| Export action       | `MudButton`         | Filled action button labeled **"Download DB"** with a download icon. Starts the database export flow.                      |
+| Divider             | Visual              | A horizontal rule separating the Backup and Restore sub-sections.                                                          |
+| Restore header      | Text                | **"Restore"**                                                                                                              |
+| Restore warning icon| Glyph + tooltip     | Small warning icon beside **Restore**. Hover/focus/press shows: *"This will replace ALL existing data. This action cannot be undone."* |
+| Section description | Caption             | *"Restore your data from a previous backup."*                                                                              |
+| Import action       | `MudButton`         | Filled action button labeled **"Upload DB"** with an upload icon. Opens a file picker to select a `.db` backup file.      |
+
+- Backup and Restore should use the same subsection layout and spacing so they read as sibling actions within the same card.
+- The tooltip trigger icons should be visually subtle but clearly interactive, with the warning icon using a caution color treatment.
+- Do not show the backup/help text or restore warning as always-visible inline callouts inside the card body.
+- The Backup and Restore action buttons should use the same font size, weight, foreground color, and filled background treatment so they feel like a matched pair.
 
 ## Export Behavior
 
@@ -54,6 +59,7 @@ The page contains two vertically stacked sections presented as clean cards:
 - The exported backup should include the user's habit data plus reminder preferences stored in the local database.
 - Export is considered a low-frequency maintenance / safety action, so it lives in **Settings** rather than in the Homepage app bar.
 - The exported filename should use a timestamped pattern such as `streak-backup-YYYYMMdd-HHmmss.db`.
+- The platform-specific save note is exposed from the **Backup** info tooltip rather than as persistent inline helper text.
 
 ### Platform-specific Export UX
 
@@ -75,6 +81,7 @@ The page contains two vertically stacked sections presented as clean cards:
 - After a successful import the app **navigates to the Homepage** so the user sees freshly loaded data.
 - On failure the app rolls back to the previous database state and surfaces a clear error message; the user remains on Settings.
 - Import is considered a destructive, low-frequency action so it lives in **Settings** with a prominent warning.
+- The destructive warning should be available from the **Restore** warning tooltip in the resting page layout, then repeated in the confirmation dialog before import proceeds.
 
 ### Platform-specific Import UX
 
