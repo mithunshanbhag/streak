@@ -27,9 +27,21 @@
                         @SectionEyebrowText
                     </MudText>
 
-                    <MudText Typo="Typo.h5">
-                        @SectionHeaderText
-                    </MudText>
+                    <MudStack Row="true"
+                              Spacing="1"
+                              AlignItems="AlignItems.Center">
+                        <MudText Typo="Typo.h5">
+                            @SectionHeaderText
+                        </MudText>
+
+                        <MudTooltip Text="@SupportNoteText"
+                                    Placement="Placement.Top">
+                            <MudIconButton Icon="@Icons.Material.Filled.Info"
+                                           Color="Color.Default"
+                                           Size="Size.Small"
+                                           aria-label="@SupportTooltipAriaLabel" />
+                        </MudTooltip>
+                    </MudStack>
 
                     <MudText Typo="Typo.body2"
                              Class="text-secondary">
@@ -56,18 +68,24 @@
                     </MudButton>
                 </MudPaper>
 
-                <MudAlert Severity="Severity.Info"
-                          Variant="Variant.Outlined"
-                          Dense="true">
-                    @SupportNoteText
-                </MudAlert>
-
                 <MudDivider/>
 
                 <MudStack Spacing="1">
-                    <MudText Typo="Typo.h6">
-                        @RestoreHeaderText
-                    </MudText>
+                    <MudStack Row="true"
+                              Spacing="1"
+                              AlignItems="AlignItems.Center">
+                        <MudText Typo="Typo.h6">
+                            @RestoreHeaderText
+                        </MudText>
+
+                        <MudTooltip Text="@RestoreWarningText"
+                                    Placement="Placement.Top">
+                            <MudIconButton Icon="@Icons.Material.Filled.Warning"
+                                           Color="Color.Warning"
+                                           Size="Size.Small"
+                                           aria-label="@RestoreTooltipAriaLabel" />
+                        </MudTooltip>
+                    </MudStack>
 
                     <MudText Typo="Typo.body2"
                              Class="text-secondary">
@@ -77,10 +95,10 @@
 
                 <MudPaper Elevation="0"
                           Class="pa-3 rounded-lg">
-                    <MudButton Color="Color.Default"
-                               Variant="Variant.Outlined"
+                    <MudButton Color="Color.Primary"
+                               Variant="Variant.Filled"
                                Disabled="@(_exportInProgress || _importInProgress)"
-                               StartIcon="@Icons.Material.Filled.UploadFile"
+                               StartIcon="@Icons.Material.Filled.Upload"
                                aria-label="@ImportButtonAriaLabel"
                                OnClick="ImportDatabaseAsync">
                         @ImportButtonText
@@ -94,11 +112,6 @@
                     </MudButton>
                 </MudPaper>
 
-                <MudAlert Severity="Severity.Warning"
-                          Variant="Variant.Outlined"
-                          Dense="true">
-                    @RestoreWarningText
-                </MudAlert>
             </MudStack>
         </MudPaper>
     </MudStack>
@@ -193,6 +206,8 @@
 
     private const string SupportNoteText = "Android saves to 'Downloads' folder. Windows lets you choose where to save.";
 
+    private const string SupportTooltipAriaLabel = "Backup save location information";
+
     private const string RestoreHeaderText = "Restore";
 
     private const string RestoreDescriptionText = "Restore your data from a previous backup.";
@@ -202,6 +217,8 @@
     private const string ImportButtonAriaLabel = "Import database";
 
     private const string RestoreWarningText = "This will replace ALL existing data. This action cannot be undone.";
+
+    private const string RestoreTooltipAriaLabel = "Restore warning information";
 
     private const string RestoreDialogTitleText = "Restore backup";
 
