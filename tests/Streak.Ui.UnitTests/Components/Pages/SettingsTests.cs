@@ -11,7 +11,7 @@ public sealed class SettingsTests : TestContext
     #region Positive tests
 
     [Fact]
-    public void Settings_ShouldRenderOnlyDatabaseBackupContent()
+    public void Settings_ShouldRenderDataCardWithAutomatedBackupsBackupAndRestore()
     {
         var exportServiceMock = new Mock<IDatabaseExportService>();
         var shareServiceMock = CreateShareServiceMock(canShare: false);
@@ -19,11 +19,19 @@ public sealed class SettingsTests : TestContext
 
         var cut = RenderSettings();
 
+        cut.Markup.Should().Contain("Daily automated backups");
+        cut.Markup.Should().Contain("Create a nightly backup in local storage.");
+        cut.Find("button[aria-label='Automated backup details']");
+        cut.Find("input[type='checkbox']").HasAttribute("disabled").Should().BeTrue();
         cut.Markup.Should().Contain("Backup");
         cut.Markup.Should().Contain("Save or share a copy of your local data.");
         cut.Find("button[aria-label='Backup save location information']");
         cut.Find("button[aria-label='Download database']");
         cut.Find("button[aria-label='Share database']").HasAttribute("disabled").Should().BeTrue();
+        cut.Markup.Should().Contain("Restore");
+        cut.Markup.Should().Contain("Restore your data from a previous backup.");
+        cut.Markup.Should().NotContain("Automated backups enabled");
+        cut.Markup.Should().NotContain("Turns the nightly backup on or off.");
         cut.Markup.Should().NotContain("Daily reminder");
         cut.Markup.Should().NotContain("Create a manual backup of your local Streak data");
     }

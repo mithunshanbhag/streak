@@ -27,12 +27,53 @@
                              Class="text-secondary">
                         @SectionEyebrowText
                     </MudText>
+                </MudStack>
 
+                <MudStack Spacing="1">
                     <MudStack Row="true"
                               Spacing="1"
                               AlignItems="AlignItems.Center">
-                        <MudText Typo="Typo.h5">
-                            @SectionHeaderText
+                        <MudText Typo="Typo.h6">
+                            @AutomatedBackupsHeaderText
+                        </MudText>
+
+                        <MudTooltip Text="@AutomatedBackupsTooltipText"
+                                    Placement="Placement.Top">
+                            <MudIconButton Icon="@Icons.Material.Filled.Info"
+                                            Color="Color.Default"
+                                            Size="Size.Small"
+                                            aria-label="@AutomatedBackupsTooltipAriaLabel"/>
+                        </MudTooltip>
+                    </MudStack>
+
+                    <MudText Typo="Typo.body2"
+                             Class="text-secondary">
+                        @AutomatedBackupsDescriptionText
+                    </MudText>
+                </MudStack>
+
+                <MudPaper Elevation="0"
+                          Class="pa-3 rounded-lg">
+                    <MudStack Row="true"
+                              Justify="Justify.FlexEnd"
+                              AlignItems="AlignItems.Center"
+                              Spacing="0">
+                        <MudSwitch T="bool"
+                                   Value="false"
+                                   Disabled="true"
+                                   Color="Color.Primary"
+                                   aria-label="@AutomatedBackupsSwitchAriaLabel"/>
+                    </MudStack>
+                </MudPaper>
+
+                <MudDivider/>
+
+                <MudStack Spacing="1">
+                    <MudStack Row="true"
+                              Spacing="1"
+                              AlignItems="AlignItems.Center">
+                        <MudText Typo="Typo.h6">
+                            @BackupHeaderText
                         </MudText>
 
                         <MudTooltip Text="@SupportNoteText"
@@ -46,7 +87,7 @@
 
                     <MudText Typo="Typo.body2"
                              Class="text-secondary">
-                        @SectionDescriptionText
+                        @BackupDescriptionText
                     </MudText>
                 </MudStack>
 
@@ -263,12 +304,22 @@
     #endregion
 
     #region Text, Label Properties
-
+ 
     private const string SectionEyebrowText = "Data";
+ 
+    private const string AutomatedBackupsHeaderText = "Daily automated backups";
 
-    private const string SectionHeaderText = "Backup";
+    private const string AutomatedBackupsDescriptionText = "Create a nightly backup in local storage.";
 
-    private const string SectionDescriptionText = "Save or share a copy of your local data.";
+    private const string AutomatedBackupsTooltipText = "Runs nightly at 11:30 PM.";
+
+    private const string AutomatedBackupsTooltipAriaLabel = "Automated backup details";
+
+    private const string AutomatedBackupsSwitchAriaLabel = "Daily automated backups toggle";
+
+    private const string BackupHeaderText = "Backup";
+
+    private const string BackupDescriptionText = "Save or share a copy of your local data.";
 
     private const string ExportButtonTooltipText = "Download DB";
 
