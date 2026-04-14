@@ -100,3 +100,7 @@ Common UI specifications (theme, typography, iconography, navigation):
 ## UX Exploration
 
 - [ux-simplification-review.md](./ux-simplification-review.md) - accepted and rejected simplification ideas, plus links to the updated primary mockups.
+
+## Future Thinking
+
+- [future.md](./future.md) - placeholder notes for future feature ideas that are still being explored and do not yet have full specs.
