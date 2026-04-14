@@ -4,11 +4,15 @@ public class CheckinServiceTests
 {
     private static CheckinService CreateSut(
         out Mock<ICheckinRepository> checkinRepositoryMock,
-        out Mock<IHabitRepository> habitRepositoryMock)
+        out Mock<IHabitRepository> habitRepositoryMock,
+        TimeProvider? timeProvider = null)
     {
         checkinRepositoryMock = new Mock<ICheckinRepository>();
         habitRepositoryMock = new Mock<IHabitRepository>();
-        return new CheckinService(checkinRepositoryMock.Object, habitRepositoryMock.Object);
+        return new CheckinService(
+            checkinRepositoryMock.Object,
+            habitRepositoryMock.Object,
+            timeProvider ?? TimeProvider.System);
     }
 
     private static Checkin CreateCheckin(int habitId, DateOnly date)
@@ -140,12 +144,14 @@ public class CheckinServiceTests
     }
 
     [Fact]
-    public async Task ToggleForTodayAsync_ShouldUseUtcDateAndAddCheckin_WhenDone()
+    public async Task ToggleForTodayAsync_ShouldUseLocalDateAndAddCheckin_WhenDone()
     {
-        var beforeUtcDate = ToDateString(DateOnly.FromDateTime(DateTime.UtcNow));
+        var indiaTimeZone = CreateFixedOffsetTimeZone(hours: 5, minutes: 30);
+        var localNow = new DateTimeOffset(2026, 4, 14, 1, 0, 0, indiaTimeZone.BaseUtcOffset);
+        var timeProvider = new FixedTimeProvider(localNow, indiaTimeZone);
         Checkin? addedCheckin = null;
 
-        var sut = CreateSut(out var checkinRepositoryMock, out var habitRepositoryMock);
+        var sut = CreateSut(out var checkinRepositoryMock, out var habitRepositoryMock, timeProvider);
         habitRepositoryMock
             .Setup(x => x.GetByNameAsync("Run", It.IsAny<CancellationToken>()))
             .ReturnsAsync(new Habit { Id = 7, Name = "Run" });
@@ -162,23 +168,22 @@ public class CheckinServiceTests
 
         var result = await sut.ToggleForTodayAsync(" Run ", true);
 
-        var afterUtcDate = ToDateString(DateOnly.FromDateTime(DateTime.UtcNow));
-
         addedCheckin.Should().NotBeNull();
         addedCheckin!.HabitId.Should().Be(7);
-        addedCheckin.CheckinDate.Should().MatchRegex("^\\d{4}-\\d{2}-\\d{2}$");
-        new[] { beforeUtcDate, afterUtcDate }.Should().Contain(addedCheckin.CheckinDate);
+        addedCheckin.CheckinDate.Should().Be("2026-04-14");
         result.Should().NotBeNull();
         result.CheckinDate.Should().Be(addedCheckin.CheckinDate);
     }
 
     [Fact]
-    public async Task ToggleForTodayAsync_ShouldUseUtcDateAndDeleteCheckin_WhenNotDone()
+    public async Task ToggleForTodayAsync_ShouldUseLocalDateAndDeleteCheckin_WhenNotDone()
     {
-        var beforeUtcDate = ToDateString(DateOnly.FromDateTime(DateTime.UtcNow));
+        var indiaTimeZone = CreateFixedOffsetTimeZone(hours: 5, minutes: 30);
+        var localNow = new DateTimeOffset(2026, 4, 14, 1, 0, 0, indiaTimeZone.BaseUtcOffset);
+        var timeProvider = new FixedTimeProvider(localNow, indiaTimeZone);
         CheckinKey? deletedKey = null;
 
-        var sut = CreateSut(out var checkinRepositoryMock, out var habitRepositoryMock);
+        var sut = CreateSut(out var checkinRepositoryMock, out var habitRepositoryMock, timeProvider);
         habitRepositoryMock
             .Setup(x => x.GetByNameAsync("Run", It.IsAny<CancellationToken>()))
             .ReturnsAsync(new Habit { Id = 7, Name = "Run" });
@@ -189,13 +194,10 @@ public class CheckinServiceTests
 
         var result = await sut.ToggleForTodayAsync(" Run ", false);
 
-        var afterUtcDate = ToDateString(DateOnly.FromDateTime(DateTime.UtcNow));
-
         result.Should().BeNull();
         deletedKey.Should().NotBeNull();
         deletedKey!.Value.HabitId.Should().Be(7);
-        deletedKey.Value.CheckinDate.Should().MatchRegex("^\\d{4}-\\d{2}-\\d{2}$");
-        new[] { beforeUtcDate, afterUtcDate }.Should().Contain(deletedKey.Value.CheckinDate);
+        deletedKey.Value.CheckinDate.Should().Be("2026-04-14");
         checkinRepositoryMock.Verify(x => x.AddAsync(It.IsAny<Checkin>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
@@ -241,12 +243,12 @@ public class CheckinServiceTests
     [Fact]
     public async Task GetCurrentStreakAsync_ShouldReturnConsecutiveDoneDays()
     {
-        var todayUtc = DateOnly.FromDateTime(DateTime.UtcNow);
+        var todayLocal = DateOnly.FromDateTime(DateTime.Now);
         IReadOnlyList<Checkin> checkinHistory =
         [
-            CreateCheckin(1, todayUtc),
-            CreateCheckin(1, todayUtc.AddDays(-1)),
-            CreateCheckin(1, todayUtc.AddDays(-2))
+            CreateCheckin(1, todayLocal),
+            CreateCheckin(1, todayLocal.AddDays(-1)),
+            CreateCheckin(1, todayLocal.AddDays(-2))
         ];
 
         var sut = CreateSut(out var checkinRepositoryMock, out _);
@@ -339,11 +341,11 @@ public class CheckinServiceTests
     [Fact]
     public async Task GetCurrentStreakAsync_ShouldStopAtFirstMissedDay()
     {
-        var todayUtc = DateOnly.FromDateTime(DateTime.UtcNow);
+        var todayLocal = DateOnly.FromDateTime(DateTime.Now);
         IReadOnlyList<Checkin> checkinHistory =
         [
-            CreateCheckin(1, todayUtc.AddDays(-1)),
-            CreateCheckin(1, todayUtc.AddDays(-2))
+            CreateCheckin(1, todayLocal.AddDays(-1)),
+            CreateCheckin(1, todayLocal.AddDays(-2))
         ];
 
         var sut = CreateSut(out var checkinRepositoryMock, out _);
@@ -359,12 +361,12 @@ public class CheckinServiceTests
     [Fact]
     public async Task GetCurrentStreakAsync_ShouldStopWhenDateGapIsEncountered()
     {
-        var todayUtc = DateOnly.FromDateTime(DateTime.UtcNow);
+        var todayLocal = DateOnly.FromDateTime(DateTime.Now);
         IReadOnlyList<Checkin> checkinHistory =
         [
-            CreateCheckin(1, todayUtc),
-            CreateCheckin(1, todayUtc.AddDays(-1)),
-            CreateCheckin(1, todayUtc.AddDays(-3))
+            CreateCheckin(1, todayLocal),
+            CreateCheckin(1, todayLocal.AddDays(-1)),
+            CreateCheckin(1, todayLocal.AddDays(-3))
         ];
 
         var sut = CreateSut(out var checkinRepositoryMock, out _);
@@ -377,5 +379,46 @@ public class CheckinServiceTests
         result.Should().Be(2);
     }
 
+    [Fact]
+    public async Task GetCurrentStreakAsync_ShouldUseLocalDate_WhenLocalDateHasRolledOverAheadOfUtc()
+    {
+        var indiaTimeZone = CreateFixedOffsetTimeZone(hours: 5, minutes: 30);
+        var localNow = new DateTimeOffset(2026, 4, 14, 1, 0, 0, indiaTimeZone.BaseUtcOffset);
+        var timeProvider = new FixedTimeProvider(localNow, indiaTimeZone);
+        IReadOnlyList<Checkin> checkinHistory =
+        [
+            CreateCheckin(1, new DateOnly(2026, 4, 14))
+        ];
+
+        var sut = CreateSut(out var checkinRepositoryMock, out _, timeProvider);
+        checkinRepositoryMock
+            .Setup(x => x.GetByHabitNameAsync("Run", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(checkinHistory);
+
+        var result = await sut.GetCurrentStreakAsync("Run");
+
+        result.Should().Be(1);
+    }
+
     #endregion
+
+    private static TimeZoneInfo CreateFixedOffsetTimeZone(int hours, int minutes)
+    {
+        var offset = new TimeSpan(hours, minutes, 0);
+        return TimeZoneInfo.CreateCustomTimeZone(
+            id: $"UTC{offset:hh\\:mm}",
+            baseUtcOffset: offset,
+            displayName: $"UTC{offset:hh\\:mm}",
+            standardDisplayName: $"UTC{offset:hh\\:mm}");
+    }
+
+    private sealed class FixedTimeProvider(DateTimeOffset utcNow, TimeZoneInfo localTimeZone) : TimeProvider
+    {
+        public override DateTimeOffset GetUtcNow()
+        {
+            return utcNow.ToUniversalTime();
+        }
+
+        public override TimeZoneInfo LocalTimeZone => localTimeZone;
+    }
 }

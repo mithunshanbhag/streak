@@ -8,6 +8,7 @@ This document defines the shared visual language for the Streak app. It is the r
 - **Consistent, not clever:** repeated patterns should reuse the same typography, radii, shadows, and control treatments across pages.
 - **MudBlazor-first:** prefer MudBlazor components, semantic parameters, and utility classes before introducing custom markup or CSS.
 - **Supportive hierarchy:** secondary content such as helper text, descriptions, and maintenance actions should feel calm and visually lighter than the daily check-in flow.
+- **Local-time-first:** when the app refers to **today**, **day**, or **daily**, it uses the device's current local date/time rather than UTC.
 
 ## Theme behavior
 
@@ -224,6 +225,16 @@ Use semantic roles rather than one-off hex values.
 - The **Homepage** displays the current calendar day above the habit list.
 - Prefer a `MudChip` or an equivalent pill-style non-interactive treatment.
 - Center it horizontally and let it scroll with the page content.
+- The displayed date and any same-screen check-in state must agree on the device's current **local** day.
+
+## Time and timezone notes
+
+- Check-in state, streaks, heatmap highlighting, reminder timing, and any other **today**-based UX should all use the device's current **local** date/time.
+- UTC should not be used to decide whether a habit is done **today** in the UI.
+- Some edge cases are accepted:
+  - traveling to another timezone changes what the app considers **today**
+  - manually changing the device clock or timezone changes the app's day-based behavior
+  - around travel/timezone changes, the app may behave differently from a hypothetical UTC-based timeline, but that is intentional because the product is centered on the user's current local day
 
 ## Empty states
 

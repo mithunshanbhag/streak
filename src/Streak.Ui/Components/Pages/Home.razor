@@ -148,7 +148,7 @@ else
     private static string GetTodayDateString()
     {
         return DateOnly
-            .FromDateTime(DateTime.UtcNow)
+            .FromDateTime(DateTime.Now)
             .ToString(CoreConstants.CheckinDateFormat, CultureInfo.InvariantCulture);
     }
 

@@ -32,7 +32,7 @@ A recurring daily activity the user wants to track.
 A daily record that exists only when a habit is marked **done** for a given calendar day.
 
 - Checkins are **binary**: a record exists when done, and no record exists when not done. There is no partial completion or quantity tracking.
-- Checkins apply to **today only**. Backdating (marking a past day) is not supported.
+- Checkins apply to **today only**, where **today** means the device's current **local calendar day**. Backdating (marking a past day) is not supported.
 - A habit that has no checkin recorded for a day is treated as **not done**.
 - If the user unchecks a same-day habit, that day's checkin record is deleted.
 - There are two ways a checkin happens:
@@ -47,6 +47,7 @@ A streak is the count of **consecutive calendar days** on which a habit was chec
 - The streak increments by 1 for each subsequent consecutive day the habit is marked done.
 - The streak **resets to 0** if the user does not check in for a day (i.e., the day passes without a "done" checkin).
 - A newly created habit starts with a streak of **0**.
+- Streak calculations use the device's current **local calendar day**, not UTC.
 
 ## Data Storage
 
@@ -61,6 +62,16 @@ A streak is the count of **consecutive calendar days** on which a habit was chec
 - The reminder should include a summary (e.g., "You have 2 habits pending today").
 - The default reminder time is **9:00 PM** (local device time).
 - Reminders can be disabled entirely by the user.
+
+## Time and Timezone Behavior
+
+- The product is intentionally **local-time-first**. Anywhere the UI or behavior refers to **today**, **day**, or **daily**, it uses the device's current **local date/time**, not UTC.
+- This includes the Homepage date banner, check-in toggle state, streak calculations, history heatmap highlighting, and reminder scheduling.
+- Some corner cases are accepted with this choice:
+  - if the user travels to a different timezone, **today** follows the device's new local timezone
+  - if the user manually changes the device clock or timezone, the app's notion of **today** changes with it
+  - near timezone changes or travel, a check-in may appear under a different local day than the user expected before the device timezone changed
+- These tradeoffs are acceptable for this app because it is a local-only habit tracker centered on the user's current day-to-day experience rather than globally synchronized UTC timelines.
 
 ## Non-Functional Requirements
 

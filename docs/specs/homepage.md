@@ -17,6 +17,7 @@ The page displays a **vertical list of habit cards**, one per habit.
 - Display the current date prominently at the top of the content area, **above** the habit card list.
 - Format: full weekday name, abbreviated month, and day number — for example `Friday, Mar 27`.
 - This banner helps users confirm exactly which calendar day they are checking in for, and is especially useful when the app is opened around midnight.
+- The banner always reflects the device's current **local** date, never UTC.
 - The date is **read-only** and non-interactive; it must not open any dialog or navigate anywhere.
 - See [Common UI Specifications — Date Banner](./ui.md#date-banner) for component and styling guidance.
 
@@ -52,12 +53,13 @@ Each card shows:
 
 ## Checkin Toggle Behavior
 
-- **Default state**: Empty circle (not done) at the start of each new calendar day.
+- **Default state**: Empty circle (not done) at the start of each new **local** calendar day.
 - **Toggling to done**: Creates today's checkin record. The icon changes to a green check circle. The streak count increments immediately (visually).
 - **Toggling to not done**: Deletes today's checkin record. The icon changes back to an empty circle. The streak count updates accordingly.
 - After each toggle, the habit remains in the same alphabetical position; checking in does **not** change the list order.
 - Toggling is **instant** — no confirmation dialog, no loading state.
 - The checkin is persisted to local storage immediately on toggle.
+- If the device timezone changes because of travel or manual clock/timezone edits, the app's meaning of **today** changes with the device's current local timezone.
 
 ## Visual States
 

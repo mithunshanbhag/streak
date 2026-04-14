@@ -259,7 +259,7 @@ else if (_viewModel is not null)
 
             _historyViewModel = HabitHistoryHeatmapBuilder.Build(
                 await historyTask,
-                DateOnly.FromDateTime(DateTime.UtcNow));
+                DateOnly.FromDateTime(DateTime.Now));
         }
         finally
         {

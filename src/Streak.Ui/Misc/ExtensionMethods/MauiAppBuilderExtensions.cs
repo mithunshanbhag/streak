@@ -34,6 +34,7 @@ public static class MauiAppBuilderExtensions
             builder.Services.AddTransient<ICheckinRepository, CheckinRepository>();
 
             // services
+            builder.Services.AddSingleton(TimeProvider.System);
             builder.Services.AddTransient<IHabitService, HabitService>();
             builder.Services.AddTransient<ICheckinService, CheckinService>();
             builder.Services.AddTransient<IAppStoragePathService, AppStoragePathService>();

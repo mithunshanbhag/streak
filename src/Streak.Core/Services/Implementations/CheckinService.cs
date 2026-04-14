@@ -2,7 +2,8 @@ namespace Streak.Core.Services.Implementations;
 
 public class CheckinService(
     ICheckinRepository checkinRepository,
-    IHabitRepository habitRepository)
+    IHabitRepository habitRepository,
+    TimeProvider timeProvider)
     : StreakServiceBase, ICheckinService
 {
     private const string DateFormat = "yyyy-MM-dd";
@@ -12,6 +13,9 @@ public class CheckinService(
 
     private readonly IHabitRepository _habitRepository =
         RequireNotNull(habitRepository, nameof(habitRepository));
+
+    private readonly TimeProvider _timeProvider =
+        RequireNotNull(timeProvider, nameof(timeProvider));
 
     public async Task<Checkin?> GetByHabitNameAndDateAsync(
         string habitName,
@@ -117,10 +121,10 @@ public class CheckinService(
 
         if (checkinDates.Count == 0) return 0;
 
-        var todayUtc = DateOnly.FromDateTime(DateTime.UtcNow);
-        var streakStartDate = checkinDates.Contains(todayUtc)
-            ? todayUtc
-            : todayUtc.AddDays(-1);
+        var todayLocal = GetTodayLocalDate();
+        var streakStartDate = checkinDates.Contains(todayLocal)
+            ? todayLocal
+            : todayLocal.AddDays(-1);
 
         var streak = 0;
         var currentDate = streakStartDate;
@@ -140,7 +144,7 @@ public class CheckinService(
         CancellationToken cancellationToken)
     {
         var habit = await GetRequiredHabitByNameAsync(habitName, cancellationToken);
-        var todayDate = GetUtcTodayDateString();
+        var todayDate = GetTodayLocalDateString();
 
         if (!isDone)
         {
@@ -207,10 +211,14 @@ public class CheckinService(
         return parsedDate.ToString(DateFormat, CultureInfo.InvariantCulture);
     }
 
-    private static string GetUtcTodayDateString()
+    private DateOnly GetTodayLocalDate()
     {
-        return DateOnly
-            .FromDateTime(DateTime.UtcNow)
+        return DateOnly.FromDateTime(_timeProvider.GetLocalNow().DateTime);
+    }
+
+    private string GetTodayLocalDateString()
+    {
+        return GetTodayLocalDate()
             .ToString(DateFormat, CultureInfo.InvariantCulture);
     }
 

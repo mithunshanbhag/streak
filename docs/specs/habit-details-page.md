@@ -79,7 +79,7 @@ The history surface is secondary to the daily flow and should be **collapsed by 
 
 | Property     | Details                                                                                                                                                              |
 | ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Time range   | Last **90 days** (approximately 13 weeks), scrollable or paginated to view older data.                                                                               |
+| Time range   | Last **90 days** (approximately 13 weeks), based on the device's current **local** date, scrollable or paginated to view older data.                                |
 | Grid layout  | 7 rows (one per weekday, Mon–Sun) × N columns (one per week). Most recent week on the right.                                                                         |
 | Cell colors  | **Done**: filled with the secondary color (Teal). **Not done**: muted/empty cell. **Future dates**: not shown. **Today**: outlined or highlighted to distinguish it. |
 | Day labels   | Abbreviated weekday labels on the left (M, W, F — skip alternates for space).                                                                                        |
@@ -105,6 +105,7 @@ The history surface is secondary to the daily flow and should be **collapsed by 
 | User renames a habit        | The app-bar title, habit header, and any alphabetical lists update immediately after save. |
 | User clears the description | The saved description disappears from the summary card after save.                         |
 | User clears the emoji       | The default icon is shown after save.                                                      |
+| User changes timezone       | The highlighted **today** cell and current-streak anchor follow the device's new local timezone. |
 
 ## Visual Style
 
