@@ -51,21 +51,44 @@
 
                 <MudPaper Elevation="0"
                           Class="pa-3 rounded-lg">
-                    <MudButton Color="Color.Primary"
-                               Variant="Variant.Filled"
-                               Disabled="@(_exportInProgress || _importInProgress)"
-                               StartIcon="@Icons.Material.Filled.Download"
-                               aria-label="@ExportButtonAriaLabel"
-                               OnClick="ExportDatabaseAsync">
-                        @ExportButtonText
-                        @if (_exportInProgress)
-                        {
-                            <MudProgressCircular Indeterminate="true"
-                                                 Color="Color.Inherit"
-                                                 Size="Size.Small"
-                                                 Class="ml-2"/>
-                        }
-                    </MudButton>
+                    <MudStack Row="true"
+                              Justify="Justify.FlexEnd"
+                              AlignItems="AlignItems.Center"
+                              Spacing="3">
+                        <MudTooltip Text="@ExportButtonTooltipText"
+                                    Placement="Placement.Top">
+                            <MudButton Color="Color.Primary"
+                                       Variant="Variant.Filled"
+                                       Disabled="@(_exportInProgress || _importInProgress)"
+                                       aria-label="@ExportButtonAriaLabel"
+                                       Style="@DataActionButtonStyle"
+                                       OnClick="ExportDatabaseAsync">
+                                @if (_exportInProgress)
+                                {
+                                    <MudProgressCircular Indeterminate="true"
+                                                         Color="Color.Inherit"
+                                                         Size="Size.Small"/>
+                                }
+                                else
+                                {
+                                    <MudIcon Icon="@Icons.Material.Filled.Download"/>
+                                }
+                            </MudButton>
+                        </MudTooltip>
+
+                        <MudTooltip Text="@ShareButtonTooltipText"
+                                    Placement="Placement.Top">
+                            <span class="d-inline-flex">
+                                <MudButton Color="Color.Primary"
+                                           Variant="Variant.Filled"
+                                           Disabled="true"
+                                           aria-label="@ShareButtonAriaLabel"
+                                           Style="@DataActionButtonStyle">
+                                    <MudIcon Icon="@Icons.Material.Filled.Share"/>
+                                </MudButton>
+                            </span>
+                        </MudTooltip>
+                    </MudStack>
                 </MudPaper>
 
                 <MudDivider/>
@@ -95,21 +118,30 @@
 
                 <MudPaper Elevation="0"
                           Class="pa-3 rounded-lg">
-                    <MudButton Color="Color.Primary"
-                               Variant="Variant.Filled"
-                               Disabled="@(_exportInProgress || _importInProgress)"
-                               StartIcon="@Icons.Material.Filled.Upload"
-                               aria-label="@ImportButtonAriaLabel"
-                               OnClick="ImportDatabaseAsync">
-                        @ImportButtonText
-                        @if (_importInProgress)
-                        {
-                            <MudProgressCircular Indeterminate="true"
-                                                 Color="Color.Inherit"
-                                                 Size="Size.Small"
-                                                 Class="ml-2"/>
-                        }
-                    </MudButton>
+                    <MudStack Row="true"
+                              Justify="Justify.FlexEnd"
+                              AlignItems="AlignItems.Center">
+                        <MudTooltip Text="@ImportButtonTooltipText"
+                                    Placement="Placement.Top">
+                            <MudButton Color="Color.Primary"
+                                       Variant="Variant.Filled"
+                                       Disabled="@(_exportInProgress || _importInProgress)"
+                                       aria-label="@ImportButtonAriaLabel"
+                                       Style="@DataActionButtonStyle"
+                                       OnClick="ImportDatabaseAsync">
+                                @if (_importInProgress)
+                                {
+                                    <MudProgressCircular Indeterminate="true"
+                                                         Color="Color.Inherit"
+                                                         Size="Size.Small"/>
+                                }
+                                else
+                                {
+                                    <MudIcon Icon="@Icons.Material.Filled.Upload"/>
+                                }
+                            </MudButton>
+                        </MudTooltip>
+                    </MudStack>
                 </MudPaper>
 
             </MudStack>
@@ -127,6 +159,12 @@
     private bool _importInProgress;
 
     private string? _operationErrorMessage;
+
+    #endregion
+
+    #region CSS Style Properties
+
+    private const string DataActionButtonStyle = "width: 42px; min-width: 42px; height: 42px; border-radius: 999px; padding: 0;";
 
     #endregion
 
@@ -198,11 +236,15 @@
 
     private const string SectionHeaderText = "Backup";
 
-    private const string SectionDescriptionText = "Save a copy of your local data.";
+    private const string SectionDescriptionText = "Save or share a copy of your local data.";
 
-    private const string ExportButtonText = "Download DB";
+    private const string ExportButtonTooltipText = "Download DB";
 
-    private const string ExportButtonAriaLabel = "Export database";
+    private const string ExportButtonAriaLabel = "Download database";
+
+    private const string ShareButtonTooltipText = "Share DB";
+
+    private const string ShareButtonAriaLabel = "Share database";
 
     private const string SupportNoteText = "Android saves to 'Downloads' folder. Windows lets you choose where to save.";
 
@@ -212,7 +254,7 @@
 
     private const string RestoreDescriptionText = "Restore your data from a previous backup.";
 
-    private const string ImportButtonText = "Upload DB";
+    private const string ImportButtonTooltipText = "Upload DB";
 
     private const string ImportButtonAriaLabel = "Import database";
 
