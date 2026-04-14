@@ -25,7 +25,7 @@ This document defines the shared visual language for the Streak app. It is the r
   - display: `d-flex`, `d-inline-flex`, `d-none`
   - flex sizing: `flex-1`, `flex-auto`, `flex-none`
   - border radius: `rounded`, `rounded-lg`, `rounded-pill`
-- Layouts should typically be composed from `MudContainer`, `MudStack`, `MudPaper`, `MudCard`, `MudText`, `MudIconButton`, and `MudButton`.
+- Layouts should typically be composed from `MudContainer`, `MudStack`, `MudPaper`, `MudCard`, `MudText`, `MudIconButton`, `MudButton`, and `MudTooltip`.
 - For simple long-form copy such as habit descriptions, prefer standard multiline text fields and read-only body text instead of Markdown or rich-text editors.
 - Keep bespoke CSS to a minimum. The likely exceptions remain:
   - heatmap cell sizing and positioning
@@ -38,26 +38,26 @@ This document defines the shared visual language for the Streak app. It is the r
 
 Use semantic roles rather than one-off hex values.
 
-| Token | Light value | Usage |
-| --- | --- | --- |
-| `Primary` | `#6200EE` | App bar, primary filled actions, active time chip, primary emphasis |
-| `PrimarySoft` | `#EDE7F6` | Tinted chips, date banner backgrounds, soft branded backgrounds |
-| `PrimaryStrong` | `#4527A0` | Text/icons placed on `PrimarySoft` backgrounds |
-| `Secondary` | `#03DAC6` | History heatmap done cells and secondary accent moments |
-| `Success` | `#4CAF50` | Completed check-in states and success accents |
-| `Warning` | `#E65100` | High-energy streak emphasis or warning-style supporting states |
-| `Danger` | `#D32F2F` | Destructive actions and delete confirmation emphasis |
-| `Surface` | `#FFFFFF` | Cards, dialogs, main surfaces |
-| `SurfaceSubtle` | `#FAFAFA` | Page background behind cards |
-| `SurfaceMuted` | `#F9FAFB` | Secondary inset panels such as description blocks |
-| `SurfaceAccent` | `#F6F1FF` | Emoji containers and subtle branded highlight surfaces |
-| `BorderSubtle` | `#E0E0E0` | Dividers and faint separators |
-| `BorderStrong` | `#D1D5DB` | Input borders and stronger control outlines |
-| `TextPrimary` | `#1F1F1F` | Primary headings, titles, labels |
-| `TextSecondary` | `#5F6368` | Supporting copy, subtitles, streak helper text |
-| `TextMuted` | `#757575` | Eyebrows, captions, low-emphasis metadata |
-| `TextOnPrimary` | `#FFFFFF` | Content on primary-filled surfaces |
-| `Canvas` | `#ECECEC` | Browser/mockup presentation background outside the device frame |
+| Token           | Light value | Usage                                                               |
+| --------------- | ----------- | ------------------------------------------------------------------- |
+| `Primary`       | `#6200EE`   | App bar, primary filled actions, active time chip, primary emphasis |
+| `PrimarySoft`   | `#EDE7F6`   | Tinted chips, date banner backgrounds, soft branded backgrounds     |
+| `PrimaryStrong` | `#4527A0`   | Text/icons placed on `PrimarySoft` backgrounds                      |
+| `Secondary`     | `#03DAC6`   | History heatmap done cells and secondary accent moments             |
+| `Success`       | `#4CAF50`   | Completed check-in states and success accents                       |
+| `Warning`       | `#E65100`   | High-energy streak emphasis or warning-style supporting states      |
+| `Danger`        | `#D32F2F`   | Destructive actions and delete confirmation emphasis                |
+| `Surface`       | `#FFFFFF`   | Cards, dialogs, main surfaces                                       |
+| `SurfaceSubtle` | `#FAFAFA`   | Page background behind cards                                        |
+| `SurfaceMuted`  | `#F9FAFB`   | Secondary inset panels such as description blocks                   |
+| `SurfaceAccent` | `#F6F1FF`   | Emoji containers and subtle branded highlight surfaces              |
+| `BorderSubtle`  | `#E0E0E0`   | Dividers and faint separators                                       |
+| `BorderStrong`  | `#D1D5DB`   | Input borders and stronger control outlines                         |
+| `TextPrimary`   | `#1F1F1F`   | Primary headings, titles, labels                                    |
+| `TextSecondary` | `#5F6368`   | Supporting copy, subtitles, streak helper text                      |
+| `TextMuted`     | `#757575`   | Eyebrows, captions, low-emphasis metadata                           |
+| `TextOnPrimary` | `#FFFFFF`   | Content on primary-filled surfaces                                  |
+| `Canvas`        | `#ECECEC`   | Browser/mockup presentation background outside the device frame     |
 
 ### Color usage rules
 
@@ -77,18 +77,18 @@ Use semantic roles rather than one-off hex values.
 
 ### Type scale
 
-| Role | Size | Weight | Usage |
-| --- | --- | --- | --- |
-| Brand wordmark | 20sp | 700 | Homepage `Streak` logo text |
-| Page title | 20sp | 500 | Routed-page titles and dialog titles |
-| Section title | 20sp | 500 | Primary card or section headers |
-| Body strong | 15sp | 500 | Habit names, major setting labels, CTA text when used in body context |
-| Body | 14sp | 400 | Habit descriptions, dialog body copy, general content |
-| Body action | 14sp | 500 | Button labels, filled/text action labels |
-| Support | 13sp | 400 | Streak support text, helper rows, supporting descriptions |
-| Caption | 12sp | 400 | Helper text, field metadata, time/date support |
-| Eyebrow | 11sp | 500 | Uppercase section eyebrows and category labels |
-| Hero number | 32sp | 700 | Streak count |
+| Role           | Size | Weight | Usage                                                                 |
+| -------------- | ---- | ------ | --------------------------------------------------------------------- |
+| Brand wordmark | 20sp | 700    | Homepage `Streak` logo text                                           |
+| Page title     | 20sp | 500    | Routed-page titles and dialog titles                                  |
+| Section title  | 20sp | 500    | Primary card or section headers                                       |
+| Body strong    | 15sp | 500    | Habit names, major setting labels, CTA text when used in body context |
+| Body           | 14sp | 400    | Habit descriptions, dialog body copy, general content                 |
+| Body action    | 14sp | 500    | Button labels, filled/text action labels                              |
+| Support        | 13sp | 400    | Streak support text, helper rows, supporting descriptions             |
+| Caption        | 12sp | 400    | Helper text, field metadata, time/date support                        |
+| Eyebrow        | 11sp | 500    | Uppercase section eyebrows and category labels                        |
+| Hero number    | 32sp | 700    | Streak count                                                          |
 
 ### Typography usage rules
 
@@ -102,13 +102,13 @@ Use semantic roles rather than one-off hex values.
 
 ### Spacing scale
 
-| Token | Value | Typical usage |
-| --- | --- | --- |
-| `Space2` | 8px | Tight inline spacing |
-| `Space3` | 12px | Internal card spacing, row gaps |
-| `Space4` | 16px | Standard page padding, card padding |
-| `Space5` | 20px | Dialog padding, larger section separation |
-| `Space6` | 24px | Outer mockup framing and roomy overlay padding |
+| Token    | Value | Typical usage                                  |
+| -------- | ----- | ---------------------------------------------- |
+| `Space2` | 8px   | Tight inline spacing                           |
+| `Space3` | 12px  | Internal card spacing, row gaps                |
+| `Space4` | 16px  | Standard page padding, card padding            |
+| `Space5` | 20px  | Dialog padding, larger section separation      |
+| `Space6` | 24px  | Outer mockup framing and roomy overlay padding |
 
 - Standard page padding should stay at **16px**.
 - Vertical spacing between habit cards should stay at **12px**.
@@ -116,21 +116,21 @@ Use semantic roles rather than one-off hex values.
 
 ### Radius scale
 
-| Token | Value | Usage |
-| --- | --- | --- |
-| `RadiusFrame` | 24px | Mock phone frame |
-| `RadiusCard` | 16px | Cards and dialogs |
-| `RadiusControl` | 12px | Inputs, emoji wells, compact chips |
-| `RadiusSoft` | 14px | Larger inset panels such as the habit description block |
-| `RadiusPill` | `999px` | Chips, pill buttons, rounded badges |
+| Token           | Value   | Usage                                                   |
+| --------------- | ------- | ------------------------------------------------------- |
+| `RadiusFrame`   | 24px    | Mock phone frame                                        |
+| `RadiusCard`    | 16px    | Cards and dialogs                                       |
+| `RadiusControl` | 12px    | Inputs, emoji wells, compact chips                      |
+| `RadiusSoft`    | 14px    | Larger inset panels such as the habit description block |
+| `RadiusPill`    | `999px` | Chips, pill buttons, rounded badges                     |
 
 ### Elevation
 
-| Token | Value | Usage |
-| --- | --- | --- |
-| `ShadowFrame` | `0 12px 32px rgba(0, 0, 0, 0.16)` | Device frame |
-| `ShadowCard` | `0 2px 6px rgba(0, 0, 0, 0.08)` | Cards and standard surfaces |
-| `ShadowDialog` | `0 16px 32px rgba(0, 0, 0, 0.20)` | Dialog overlays |
+| Token          | Value                             | Usage                       |
+| -------------- | --------------------------------- | --------------------------- |
+| `ShadowFrame`  | `0 12px 32px rgba(0, 0, 0, 0.16)` | Device frame                |
+| `ShadowCard`   | `0 2px 6px rgba(0, 0, 0, 0.08)`   | Cards and standard surfaces |
+| `ShadowDialog` | `0 16px 32px rgba(0, 0, 0, 0.20)` | Dialog overlays             |
 
 - Avoid inventing new shadow styles per page.
 - Use border and subtle tint before adding extra elevation.
@@ -139,14 +139,14 @@ Use semantic roles rather than one-off hex values.
 
 ### App bar
 
-| Property | Value |
-| --- | --- |
-| Height | 48px |
-| Background | `Primary` |
-| Foreground | `TextOnPrimary` |
-| Icon size | 24px |
-| Homepage title | Brand wordmark |
-| Routed-page title | Page title |
+| Property          | Value           |
+| ----------------- | --------------- |
+| Height            | 48px            |
+| Background        | `Primary`       |
+| Foreground        | `TextOnPrimary` |
+| Icon size         | 24px            |
+| Homepage title    | Brand wordmark  |
+| Routed-page title | Page title      |
 
 - The app bar is compact by default to maximize content space.
 - Homepage uses the `Streak` wordmark; secondary screens use **Back + title only**.
@@ -159,12 +159,16 @@ Use semantic roles rather than one-off hex values.
 
 ### Buttons
 
-| Variant | Treatment |
-| --- | --- |
-| Primary filled | `Primary` background, `TextOnPrimary` text, 14sp / 500 |
-| Text button | Transparent background, `Primary` text, 14sp / 500 |
-| Destructive filled | `Danger` background, `TextOnPrimary` text |
-| Pill action | Use `RadiusPill` only when the interaction is intentionally chip-like or compact |
+| Variant            | Treatment                                                                                                                                        |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Primary filled     | `Primary` background, `TextOnPrimary` text, 14sp / 500                                                                                           |
+| Text button        | Transparent background, `Primary` text, 14sp / 500                                                                                               |
+| Destructive filled | `Danger` background, `TextOnPrimary` text                                                                                                        |
+| Filled icon action | `Primary` background, `TextOnPrimary` icon, compact square/circular hit area, tooltip or accessible label required when no visible text is shown |
+| Pill action        | Use `RadiusPill` only when the interaction is intentionally chip-like or compact                                                                 |
+
+- Icon-only actions must still expose a clear accessible label and a visible tooltip on hover, focus, or press.
+- When a row contains multiple related icon-only actions, keep their size, shape, fill, and icon weight visually matched.
 
 ### Form fields
 
@@ -192,6 +196,7 @@ Use semantic roles rather than one-off hex values.
   - Settings: `Settings`
   - GitHub repo: `Icons.Custom.Brands.GitHub`
 - **Homepage create CTA:** `Add` icon paired with `New Habit`.
+- **Settings data actions:** `Download`, `Share`, and `Upload` for backup download, backup share, and restore respectively.
 - **Habit detail actions:** `Edit` and `Delete`.
 - **Checkin toggle:** use MudBlazor's `MudCheckBox` pattern with done/not-done icon states.
 
@@ -206,12 +211,12 @@ Use semantic roles rather than one-off hex values.
 
 ## Route inventory
 
-| Surface | Route / Trigger |
-| --- | --- |
-| Homepage | `/` |
-| Habit Details | `/habits/{habitId}` |
+| Surface         | Route / Trigger                      |
+| --------------- | ------------------------------------ |
+| Homepage        | `/`                                  |
+| Habit Details   | `/habits/{habitId}`                  |
 | Quick Add Habit | `+ New Habit` from Homepage (dialog) |
-| Settings | `/settings` |
+| Settings        | `/settings`                          |
 
 ## Layout
 
