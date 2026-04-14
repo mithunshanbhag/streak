@@ -87,10 +87,11 @@ The page contains two vertically stacked sections presented as clean cards:
 
 | Platform | Expected behavior                                                                                                                                 |
 | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Windows  | Create the backup copy, then open a native Windows sharing flow / target-app picker so the user can pass the `.db` file to apps such as OneDrive. |
+| Windows  | Sharing is disabled. During local Windows development/debugging, use **Download DB** instead to save the backup file where you want it. |
 | Android  | Create the backup copy, then open the system share sheet with the generated `.db` file so the user can send it to apps such as Drive or WhatsApp. |
 
-- On both platforms, dismissing or cancelling the share UI is treated as a user cancellation, not as a share error.
+- On Android, dismissing or cancelling the share UI is treated as a user cancellation, not as a share error.
+- On Windows, the **Share DB** control remains disabled.
 - Share should remain additive to the normal export flow rather than replacing it.
 
 ## Import Behavior

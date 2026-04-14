@@ -1,6 +1,7 @@
 global using Bunit;
 global using FluentAssertions;
 global using Microsoft.AspNetCore.Components.Web;
+global using Microsoft.Maui.ApplicationModel.DataTransfer;
 global using Microsoft.Maui.Storage;
 global using Microsoft.Data.Sqlite;
 global using Microsoft.Extensions.DependencyInjection;

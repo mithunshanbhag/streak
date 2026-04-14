@@ -22,8 +22,8 @@ public static class MauiAppBuilderExtensions
 
             // validators
             foreach (var validatorAssembly in new[] { Assembly.GetExecutingAssembly(), typeof(StreakDbContext).Assembly }.Distinct())
-            foreach (var validatorRegistration in AssemblyScanner.FindValidatorsInAssembly(validatorAssembly))
-                builder.Services.AddSingleton(validatorRegistration.InterfaceType, validatorRegistration.ValidatorType);
+                foreach (var validatorRegistration in AssemblyScanner.FindValidatorsInAssembly(validatorAssembly))
+                    builder.Services.AddSingleton(validatorRegistration.InterfaceType, validatorRegistration.ValidatorType);
 
             builder.Services.AddSingleton<SqliteDatabaseBootstrapper>();
             builder.Services.AddSingleton<SqliteDatabaseSchemaUpgrader>();
@@ -43,9 +43,14 @@ public static class MauiAppBuilderExtensions
 #if WINDOWS
             builder.Services.AddTransient<IDatabaseImportFilePicker, WindowsDatabaseImportFilePicker>();
             builder.Services.AddTransient<IDatabaseExportFileSaver, WindowsDatabaseExportFileSaver>();
+            builder.Services.AddTransient<IDatabaseShareService, UnsupportedDatabaseShareService>();
 #elif ANDROID
             builder.Services.AddTransient<IDatabaseImportFilePicker, AndroidDatabaseImportFilePicker>();
             builder.Services.AddTransient<IDatabaseExportFileSaver, AndroidDatabaseExportFileSaver>();
+            builder.Services.AddSingleton<IShare>(_ => Share.Default);
+            builder.Services.AddTransient<IDatabaseShareService, DatabaseShareService>();
+#else
+            builder.Services.AddTransient<IDatabaseShareService, UnsupportedDatabaseShareService>();
 #endif
 
             builder.Services.AddMauiBlazorWebView();

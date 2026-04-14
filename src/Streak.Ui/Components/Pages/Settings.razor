@@ -1,5 +1,6 @@
 @page "/settings"
 @inject IDatabaseExportService DatabaseExportService
+@inject IDatabaseShareService DatabaseShareService
 @inject IDatabaseImportFilePicker DatabaseImportFilePicker
 @inject IDatabaseImportService DatabaseImportService
 @inject IDialogService DialogService
@@ -59,7 +60,7 @@
                                     Placement="Placement.Top">
                             <MudButton Color="Color.Primary"
                                        Variant="Variant.Filled"
-                                       Disabled="@(_exportInProgress || _importInProgress)"
+                                       Disabled="@(_exportInProgress || _shareInProgress || _importInProgress)"
                                        aria-label="@ExportButtonAriaLabel"
                                        Style="@DataActionButtonStyle"
                                        OnClick="ExportDatabaseAsync">
@@ -81,10 +82,20 @@
                             <span class="d-inline-flex">
                                 <MudButton Color="Color.Primary"
                                            Variant="Variant.Filled"
-                                           Disabled="true"
+                                           Disabled="@(!DatabaseShareService.CanShare || _exportInProgress || _shareInProgress || _importInProgress)"
                                            aria-label="@ShareButtonAriaLabel"
-                                           Style="@DataActionButtonStyle">
-                                    <MudIcon Icon="@Icons.Material.Filled.Share"/>
+                                           Style="@DataActionButtonStyle"
+                                           OnClick="ShareDatabaseAsync">
+                                    @if (_shareInProgress)
+                                    {
+                                        <MudProgressCircular Indeterminate="true"
+                                                             Color="Color.Inherit"
+                                                             Size="Size.Small"/>
+                                    }
+                                    else
+                                    {
+                                        <MudIcon Icon="@Icons.Material.Filled.Share"/>
+                                    }
                                 </MudButton>
                             </span>
                         </MudTooltip>
@@ -125,7 +136,7 @@
                                     Placement="Placement.Top">
                             <MudButton Color="Color.Primary"
                                        Variant="Variant.Filled"
-                                       Disabled="@(_exportInProgress || _importInProgress)"
+                                       Disabled="@(_exportInProgress || _shareInProgress || _importInProgress)"
                                        aria-label="@ImportButtonAriaLabel"
                                        Style="@DataActionButtonStyle"
                                        OnClick="ImportDatabaseAsync">
@@ -155,6 +166,8 @@
     #region Private Fields, Properties
 
     private bool _exportInProgress;
+
+    private bool _shareInProgress;
 
     private bool _importInProgress;
 
@@ -189,6 +202,25 @@
         finally
         {
             _exportInProgress = false;
+        }
+    }
+
+    private async Task ShareDatabaseAsync()
+    {
+        try
+        {
+            _shareInProgress = true;
+            _operationErrorMessage = null;
+
+            await DatabaseShareService.ShareDatabaseAsync();
+        }
+        catch (Exception)
+        {
+            _operationErrorMessage = ShareFailedText;
+        }
+        finally
+        {
+            _shareInProgress = false;
         }
     }
 
@@ -265,6 +297,8 @@
     private const string RestoreDialogTitleText = "Restore backup";
 
     private const string ExportFailedText = "Unable to export your database right now. Please try again.";
+
+    private const string ShareFailedText = "Unable to share your database right now. Please try again.";
 
     private const string ImportValidationFailedText = "That file is not a valid Streak backup. Your current data was not changed.";
 

@@ -1,6 +1,7 @@
 // Global using directives
 
 global using Microsoft.Extensions.Logging;
+global using Microsoft.Maui.ApplicationModel.DataTransfer;
 global using Microsoft.Maui.Storage;
 global using System.Globalization;
 global using System.Reflection;
