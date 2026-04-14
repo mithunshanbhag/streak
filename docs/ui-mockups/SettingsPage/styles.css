@@ -97,8 +97,7 @@ body {
   box-shadow: var(--shadow-card);
 }
 
-.section-header-row,
-.setting-row {
+.section-header-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -125,12 +124,7 @@ body {
   color: var(--color-text-primary);
 }
 
-.section-header--subsection {
-  margin-top: 0;
-}
-
-.section-description,
-.setting-caption {
+.section-description {
   margin-top: 6px;
   font-size: 13px;
   line-height: 1.45;
@@ -233,15 +227,6 @@ body {
 .hint-icon-btn--info:hover,
 .hint-icon-btn--info:focus-visible {
   background: #F3F4F6;
-}
-
-.hint-icon-btn--warning {
-  color: var(--color-warning);
-}
-
-.hint-icon-btn--warning:hover,
-.hint-icon-btn--warning:focus-visible {
-  background: #FFF7ED;
 }
 
 .hint-icon-btn::after {
