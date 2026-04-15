@@ -49,6 +49,8 @@ public static class MauiAppBuilderExtensions
 #elif ANDROID
             builder.Services.AddTransient<IDatabaseImportFilePicker, AndroidDatabaseImportFilePicker>();
             builder.Services.AddTransient<IDatabaseExportFileSaver, AndroidDatabaseExportFileSaver>();
+            builder.Services.AddTransient<IAutomatedBackupFileSaver, AndroidAutomatedBackupFileSaver>();
+            builder.Services.AddTransient<IAutomatedBackupExecutionService, AutomatedBackupExecutionService>();
             builder.Services.AddSingleton<IShare>(_ => Share.Default);
             builder.Services.AddSingleton<IAutomatedBackupScheduler, AndroidAutomatedBackupScheduler>();
             builder.Services.AddTransient<IDatabaseShareService, DatabaseShareService>();

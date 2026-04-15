@@ -10,6 +10,8 @@ public sealed class AndroidAutomatedBackupScheduler(
     private readonly TimeProvider _timeProvider = timeProvider;
     private readonly ILogger<AndroidAutomatedBackupScheduler> _logger = logger;
 
+    public bool IsSupported => true;
+
     public void Synchronize(bool isEnabled)
     {
         var nextRunUtc = AndroidAutomatedBackupAlarmRegistrar.Synchronize(

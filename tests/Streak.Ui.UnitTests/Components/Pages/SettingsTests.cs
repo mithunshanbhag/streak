@@ -246,6 +246,24 @@ public sealed class SettingsTests : TestContext
     }
 
     [Fact]
+    public void Settings_ShouldDisableAutomatedBackupToggle_WhenFeatureIsUnsupported()
+    {
+        var exportServiceMock = new Mock<IDatabaseExportService>();
+        var shareServiceMock = CreateShareServiceMock(canShare: false);
+        var backupConfigurationServiceMock = CreateBackupConfigurationServiceMock(
+            isEnabled: true,
+            isSupported: false);
+
+        RegisterSettingsServices(exportServiceMock, shareServiceMock, backupConfigurationServiceMock);
+
+        var cut = RenderSettings();
+        var toggle = cut.Find("input[type='checkbox']");
+
+        toggle.HasAttribute("disabled").Should().BeTrue();
+        toggle.HasAttribute("checked").Should().BeFalse();
+    }
+
+    [Fact]
     public void Settings_ShouldPersistAutomatedBackupToggle_WhenUserChangesIt()
     {
         var exportServiceMock = new Mock<IDatabaseExportService>();
@@ -272,9 +290,12 @@ public sealed class SettingsTests : TestContext
         return shareServiceMock;
     }
 
-    private static Mock<IAutomatedBackupConfigurationService> CreateBackupConfigurationServiceMock(bool isEnabled)
+    private static Mock<IAutomatedBackupConfigurationService> CreateBackupConfigurationServiceMock(
+        bool isEnabled,
+        bool isSupported = true)
     {
         var backupConfigurationServiceMock = new Mock<IAutomatedBackupConfigurationService>();
+        backupConfigurationServiceMock.SetupGet(x => x.IsSupported).Returns(isSupported);
         backupConfigurationServiceMock.Setup(x => x.GetIsEnabled()).Returns(isEnabled);
         return backupConfigurationServiceMock;
     }

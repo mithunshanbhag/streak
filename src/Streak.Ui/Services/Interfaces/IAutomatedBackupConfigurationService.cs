@@ -3,6 +3,11 @@ namespace Streak.Ui.Services.Interfaces;
 public interface IAutomatedBackupConfigurationService
 {
     /// <summary>
+    ///     Gets whether nightly automated backups are supported on the current platform.
+    /// </summary>
+    bool IsSupported { get; }
+
+    /// <summary>
     ///     Gets whether nightly automated backups are currently enabled in persisted local settings.
     /// </summary>
     /// <returns><see langword="true" /> when nightly automated backups are enabled; otherwise, <see langword="false" />.</returns>

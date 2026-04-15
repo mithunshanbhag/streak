@@ -13,4 +13,6 @@ public static class AutomatedBackupConstants
     public const string AlarmAction = "com.companyname.streak.ui.action.AUTOMATED_BACKUP_TRIGGER";
 
     public const string SettingsTableName = "AutomatedBackupSettings";
+
+    public const string SharedAndroidDirectoryName = "Streak";
 }

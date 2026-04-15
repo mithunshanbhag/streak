@@ -38,6 +38,20 @@ public sealed class AutomatedBackupConfigurationServiceTests
     }
 
     [Fact]
+    public void IsSupported_ShouldMirrorSchedulerSupport()
+    {
+        using var databaseDirectory = new TemporaryDirectory();
+        var databasePath = Path.Combine(databaseDirectory.Path, "settings.db");
+        CreateDatabase(databasePath, isEnabled: false);
+
+        var schedulerMock = new Mock<IAutomatedBackupScheduler>();
+        schedulerMock.SetupGet(x => x.IsSupported).Returns(true);
+        var sut = CreateSut(databasePath, schedulerMock.Object);
+
+        sut.IsSupported.Should().BeTrue();
+    }
+
+    [Fact]
     public void SetIsEnabled_ShouldPersistEnabledValueAndSynchronizeScheduler()
     {
         using var databaseDirectory = new TemporaryDirectory();

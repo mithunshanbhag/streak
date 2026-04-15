@@ -37,9 +37,9 @@ The page contains two vertically stacked sections presented as clean cards:
 | ----------------------------- | --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Section eyebrow               | Text                  | **"Data"**                                                                                                                                                        |
 | Automated backups header      | Text                  | **"Daily automated backups"**                                                                                                                                     |
-| Automated backups info icon   | Glyph + tooltip       | Small info icon beside **Daily automated backups**. Hover/focus/press shows: *"Runs nightly at 11:30 PM."*                                                        |
+| Automated backups info icon   | Glyph + tooltip       | Small info icon beside **Daily automated backups**. Hover/focus/press shows: *"Android only. Runs nightly at 11:30 PM when enabled."*                             |
 | Automated backups description | Caption               | *"Create a nightly backup in local storage."*                                                                                                                     |
-| Enable/disable toggle         | `MudSwitch`           | ON = daily automated backups enabled, OFF = disabled. Default: **OFF**. The switch sits on its own trailing action row with no extra inline label or helper copy. |
+| Enable/disable toggle         | `MudSwitch`           | ON = daily automated backups enabled, OFF = disabled. Default: **OFF**. The switch sits on its own trailing action row with no extra inline label or helper copy. The control is disabled on Windows because this feature is Android-only in this iteration. |
 | Dividers                      | Visual                | Simple horizontal rules separate **Daily automated backups**, **Backup**, and **Restore** so the three subsections read as one stacked group.                     |
 | Backup header                 | Text                  | **"Backup"**                                                                                                                                                      |
 | Backup info icon              | Glyph + tooltip       | Small info icon beside **Backup**. Hover/focus/press shows: *"Android saves to 'Downloads' folder. Windows lets you choose where to save."*                       |
@@ -68,12 +68,19 @@ The page contains two vertically stacked sections presented as clean cards:
   - the user cannot change the frequency
   - the user cannot change the backup time
 - Automated backups must be written to a fixed **shared/common device location** outside uninstall-sensitive app storage so previously created backups remain available after the app is uninstalled.
-- The exact folder path is an implementation detail for now; the product requirement is that it is user-accessible, shared/common, and resilient to uninstall.
+- On Android, automated backups are saved into **Downloads/Streak**.
 - Automated backups should run without prompting the user for a destination. No file picker, save dialog, or share sheet is part of the automated flow.
 - Automated backups should create a standalone backup copy rather than writing directly against the live in-use database file.
 - Automated backups should include the same local SQLite contents as manual backups, including habits, checkins, and saved settings.
 - Automated backups should use a timestamped filename pattern such as `streak-auto-backup-YYYYMMdd-HHmmss.db`.
 - There is no user-facing control yet for backup history, retention, cleanup, schedule customization, or destination customization.
+
+### Platform-specific Automated Backup UX
+
+| Platform | Expected behavior                                                                                                                                   |
+| -------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Windows  | Automated backups are unavailable. The toggle remains disabled, and the app does not schedule or run nightly automated backups.                    |
+| Android  | The toggle is enabled. Turning it ON schedules the nightly 11:30 PM local alarm, and each run saves a timestamped `.db` backup into `Downloads/Streak` without prompting the user. |
 
 ## Export Behavior
 
@@ -162,7 +169,9 @@ The page contains two vertically stacked sections presented as clean cards:
 - Settings are saved to **local SQLite** immediately when changed (no explicit "Save" button).
 - Settings persist across app restarts.
 - The automated backup preference is saved immediately when changed, and the fixed 11:30 PM schedule should be re-established from persisted settings after app restart / relaunch.
-- Automated backups are stored outside the live app database location in a fixed shared/common directory that survives uninstall.
+- Automated backups are stored outside the live app database location in a fixed shared/common directory that survives uninstall:
+  - On **Android**, in **Downloads/Streak**.
+  - On **Windows**, automated backups are not available.
 - Export creates a backup on demand; it is not auto-saved in the background.
 - Share creates a backup on demand and immediately hands it to the operating system's share flow; it is not auto-saved or repeated in the background.
 - Import replaces the live database on demand; the previous data is permanently overwritten after user confirmation.
@@ -179,7 +188,7 @@ The page contains two vertically stacked sections presented as clean cards:
 | User enables automated backups after 11:30 PM  | The first automated backup should run at **11:30 PM local time tomorrow**.                                                                      |
 | User disables automated backups                | Future scheduled automated backups stop; previously created backup files remain untouched.                                                      |
 | User changes device timezone or clock          | The next automated backup follows the device's current local-time interpretation of **11:30 PM**.                                               |
-| App is uninstalled                             | Previously created automated backup files remain in the shared/common backup location because they are outside uninstall-sensitive app storage. |
+| App is uninstalled                             | Previously created automated backup files remain in `Downloads/Streak` because they are outside uninstall-sensitive app storage.                |
 | User has no habits but exports                 | Export is still allowed so the user can back up reminder settings, automated backup settings, or an empty database state.                       |
 | User has no habits but shares                  | Share is still allowed so the user can manually hand off reminder settings, automated backup settings, or an empty database state.              |
 | User disables reminders                        | No notifications are scheduled. The time picker is hidden.                                                                                      |

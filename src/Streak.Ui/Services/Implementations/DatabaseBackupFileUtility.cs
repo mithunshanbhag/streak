@@ -2,16 +2,29 @@ namespace Streak.Ui.Services.Implementations;
 
 internal static class DatabaseBackupFileUtility
 {
-    private const string BackupFilePattern = "streak-backup-*.db";
+    private const string ManualBackupFilePattern = "streak-backup-*.db";
+
+    private const string AutomatedBackupFilePattern = "streak-auto-backup-*.db";
 
     internal static string CreateBackupFilePath(string exportDirectoryPath)
     {
+        return CreateBackupFilePath(exportDirectoryPath, "streak-backup");
+    }
+
+    internal static string CreateAutomatedBackupFilePath(string exportDirectoryPath)
+    {
+        return CreateBackupFilePath(exportDirectoryPath, "streak-auto-backup");
+    }
+
+    internal static string CreateBackupFilePath(string exportDirectoryPath, string filePrefix)
+    {
         ArgumentException.ThrowIfNullOrWhiteSpace(exportDirectoryPath);
+        ArgumentException.ThrowIfNullOrWhiteSpace(filePrefix);
 
         Directory.CreateDirectory(exportDirectoryPath);
 
         var timestamp = DateTime.Now.ToString("yyyyMMdd-HHmmss", CultureInfo.InvariantCulture);
-        var fileName = $"streak-backup-{timestamp}.db";
+        var fileName = $"{filePrefix}-{timestamp}.db";
 
         return Path.Combine(exportDirectoryPath, fileName);
     }
@@ -54,10 +67,20 @@ internal static class DatabaseBackupFileUtility
 
     internal static void DeleteCachedBackups(string exportDirectoryPath)
     {
+        DeleteCachedBackups(exportDirectoryPath, ManualBackupFilePattern);
+    }
+
+    internal static void DeleteAutomatedBackups(string exportDirectoryPath)
+    {
+        DeleteCachedBackups(exportDirectoryPath, AutomatedBackupFilePattern);
+    }
+
+    private static void DeleteCachedBackups(string exportDirectoryPath, string backupFilePattern)
+    {
         if (!Directory.Exists(exportDirectoryPath))
             return;
 
-        foreach (var backupFilePath in Directory.GetFiles(exportDirectoryPath, BackupFilePattern))
+        foreach (var backupFilePath in Directory.GetFiles(exportDirectoryPath, backupFilePattern))
             File.Delete(backupFilePath);
     }
 }

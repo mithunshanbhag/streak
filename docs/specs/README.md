@@ -53,6 +53,7 @@ A streak is the count of **consecutive calendar days** on which a habit was chec
 
 - All data is stored **locally on the device**. There is no cloud sync, no user accounts, and no authentication.
 - Users may manually export or share `.db` backup copies to other apps and services, but the app does not automate uploads or synchronization.
+- On **Android**, users may also enable nightly automated local backups that save timestamped `.db` copies into shared device storage.
 - Data will be persisted across app restarts.
 
 ## Notifications and Reminders
@@ -90,7 +91,7 @@ Each major surface has its own detailed spec:
 | Homepage        | `/`                       | [homepage.md](./homepage.md)                     | Landing page, daily checkin surface, and habit list                 |
 | Habit Details   | `/habits/{habitId}`       | [habit-details-page.md](./habit-details-page.md) | Habit details, trends, edit dialog, and deletion                    |
 | Quick Add Habit | `+ New Habit` on Homepage | [create-habit-page.md](./create-habit-page.md)   | Create a new habit in a compact dialog without leaving the homepage |
-| Settings        | `/settings`               | [settings-page.md](./settings-page.md)           | Configure reminders, manage backup download/share/restore           |
+| Settings        | `/settings`               | [settings-page.md](./settings-page.md)           | Configure reminders and manage automated/manual local backups       |
 
 ## Information Architecture Notes
 
@@ -99,7 +100,7 @@ Each major surface has its own detailed spec:
 - The **Homepage** doubles as the habit-list maintenance surface: habits are shown alphabetically and each habit opens its details on the Habit Details page.
 - The Homepage app bar keeps **Settings** plus a right-most **GitHub** repo link instead of a global create icon.
 - The **Habit Details** page contains the heatmap, edit dialog flow, and delete confirmation dialog for a single habit.
-- **Settings** groups reminder preferences plus low-frequency data actions such as **Download DB**, **Share DB**, and **Upload DB**.
+- **Settings** groups reminder preferences plus low-frequency data actions such as **Daily automated backups**, **Download DB**, **Share DB**, and **Upload DB**.
 - **Homepage** opens directly into the habit list without instructional header copy, progress summary text, or a habit-count chip.
 - There is no dedicated habit-list routed page separate from **Homepage**.
 - There is no dedicated routed **Create Habit** page in the simplified direction.

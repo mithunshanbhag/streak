@@ -3,6 +3,11 @@ namespace Streak.Ui.Services.Interfaces;
 public interface IAutomatedBackupScheduler
 {
     /// <summary>
+    ///     Gets whether nightly automated backups are supported on the current platform.
+    /// </summary>
+    bool IsSupported { get; }
+
+    /// <summary>
     ///     Synchronizes operating system registration for nightly automated backups with the supplied enabled state.
     /// </summary>
     /// <param name="isEnabled">

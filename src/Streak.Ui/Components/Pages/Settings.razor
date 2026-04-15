@@ -61,9 +61,9 @@
                               Spacing="0">
                         <MudSwitch T="bool"
                                    Value="@_automatedBackupsEnabled"
-                                   ValueChanged="AutomatedBackupsEnabledChangedAsync"
-                                   Disabled="@(_automatedBackupSettingsUpdateInProgress || _exportInProgress || _shareInProgress || _importInProgress)"
-                                   Color="Color.Primary"
+                                    ValueChanged="AutomatedBackupsEnabledChangedAsync"
+                                    Disabled="@(!_automatedBackupsSupported || _automatedBackupSettingsUpdateInProgress || _exportInProgress || _shareInProgress || _importInProgress)"
+                                    Color="Color.Primary"
                                     aria-label="@AutomatedBackupsSwitchAriaLabel"/>
                     </MudStack>
                 </MudPaper>
@@ -216,6 +216,8 @@
 
     private bool _automatedBackupsEnabled;
 
+    private bool _automatedBackupsSupported;
+
     private bool _automatedBackupSettingsUpdateInProgress;
 
     private string? _operationErrorMessage;
@@ -226,7 +228,8 @@
 
     protected override void OnInitialized()
     {
-        _automatedBackupsEnabled = AutomatedBackupConfigurationService.GetIsEnabled();
+        _automatedBackupsSupported = AutomatedBackupConfigurationService.IsSupported;
+        _automatedBackupsEnabled = _automatedBackupsSupported && AutomatedBackupConfigurationService.GetIsEnabled();
     }
 
     #endregion
@@ -251,7 +254,7 @@
         catch (Exception)
         {
             _operationErrorMessage = AutomatedBackupsUpdateFailedText;
-            _automatedBackupsEnabled = AutomatedBackupConfigurationService.GetIsEnabled();
+            _automatedBackupsEnabled = _automatedBackupsSupported && AutomatedBackupConfigurationService.GetIsEnabled();
         }
         finally
         {
@@ -346,7 +349,7 @@
 
     private const string AutomatedBackupsDescriptionText = "Create a nightly backup in local storage.";
 
-    private const string AutomatedBackupsTooltipText = "Runs nightly at 11:30 PM.";
+    private const string AutomatedBackupsTooltipText = "Android only. Runs nightly at 11:30 PM when enabled.";
 
     private const string AutomatedBackupsTooltipAriaLabel = "Automated backup details";
 

@@ -8,6 +8,8 @@ public sealed class AutomatedBackupConfigurationService(
     private readonly IAppStoragePathService _appStoragePathService = appStoragePathService;
     private readonly IAutomatedBackupScheduler _automatedBackupScheduler = automatedBackupScheduler;
 
+    public bool IsSupported => _automatedBackupScheduler.IsSupported;
+
     public bool GetIsEnabled()
     {
         return AutomatedBackupSettingsStore.GetIsEnabled(_appStoragePathService.DatabasePath);
