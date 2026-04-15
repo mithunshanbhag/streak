@@ -1,4 +1,5 @@
 @page "/settings"
+@inject IAutomatedBackupConfigurationService AutomatedBackupConfigurationService
 @inject IDatabaseExportService DatabaseExportService
 @inject IDatabaseShareService DatabaseShareService
 @inject IDatabaseImportFilePicker DatabaseImportFilePicker
@@ -59,10 +60,11 @@
                               AlignItems="AlignItems.Center"
                               Spacing="0">
                         <MudSwitch T="bool"
-                                   Value="false"
-                                   Disabled="true"
+                                   Value="@_automatedBackupsEnabled"
+                                   ValueChanged="AutomatedBackupsEnabledChangedAsync"
+                                   Disabled="@(_automatedBackupSettingsUpdateInProgress || _exportInProgress || _shareInProgress || _importInProgress)"
                                    Color="Color.Primary"
-                                   aria-label="@AutomatedBackupsSwitchAriaLabel"/>
+                                    aria-label="@AutomatedBackupsSwitchAriaLabel"/>
                     </MudStack>
                 </MudPaper>
 
@@ -212,7 +214,20 @@
 
     private bool _importInProgress;
 
+    private bool _automatedBackupsEnabled;
+
+    private bool _automatedBackupSettingsUpdateInProgress;
+
     private string? _operationErrorMessage;
+
+    #endregion
+
+    #region Lifecycle Methods
+
+    protected override void OnInitialized()
+    {
+        _automatedBackupsEnabled = AutomatedBackupConfigurationService.GetIsEnabled();
+    }
 
     #endregion
 
@@ -223,6 +238,26 @@
     #endregion
 
     #region Event Handlers
+
+    private void AutomatedBackupsEnabledChangedAsync(bool isEnabled)
+    {
+        try
+        {
+            _automatedBackupSettingsUpdateInProgress = true;
+            _operationErrorMessage = null;
+            AutomatedBackupConfigurationService.SetIsEnabled(isEnabled);
+            _automatedBackupsEnabled = isEnabled;
+        }
+        catch (Exception)
+        {
+            _operationErrorMessage = AutomatedBackupsUpdateFailedText;
+            _automatedBackupsEnabled = AutomatedBackupConfigurationService.GetIsEnabled();
+        }
+        finally
+        {
+            _automatedBackupSettingsUpdateInProgress = false;
+        }
+    }
 
     private async Task ExportDatabaseAsync()
     {
@@ -316,6 +351,8 @@
     private const string AutomatedBackupsTooltipAriaLabel = "Automated backup details";
 
     private const string AutomatedBackupsSwitchAriaLabel = "Daily automated backups toggle";
+
+    private const string AutomatedBackupsUpdateFailedText = "Unable to update automated backups right now. Please try again.";
 
     private const string BackupHeaderText = "Backup";
 

@@ -29,3 +29,14 @@ CREATE TABLE IF NOT EXISTS Checkins (
         AND strftime ('%Y-%m-%d', CheckinDate) = CheckinDate
     )
 ) STRICT;
+
+CREATE TABLE IF NOT EXISTS AutomatedBackupSettings (
+    Id INTEGER NOT NULL,
+    IsEnabled INTEGER NOT NULL DEFAULT 0,
+    CONSTRAINT PK_AutomatedBackupSettings PRIMARY KEY (Id),
+    CONSTRAINT CK_AutomatedBackupSettings_IsEnabled CHECK (IsEnabled IN (0, 1))
+) STRICT;
+
+INSERT INTO AutomatedBackupSettings (Id, IsEnabled)
+VALUES (1, 0)
+ON CONFLICT(Id) DO NOTHING;

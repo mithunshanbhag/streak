@@ -48,6 +48,8 @@ public sealed class SqliteDatabaseSchemaUpgraderTests
         reader.GetString(0).Should().Be("Read");
         reader.GetString(1).Should().Be("📖");
         reader.IsDBNull(2).Should().BeTrue();
+
+        GetAutomatedBackupSetting(databasePath).Should().BeFalse();
     }
 
     [Fact]
@@ -68,6 +70,10 @@ public sealed class SqliteDatabaseSchemaUpgraderTests
             .ToArray();
 
         descriptionColumns.Should().ContainSingle();
+        GetTableColumns(databasePath, AutomatedBackupConstants.SettingsTableName)
+            .Should()
+            .Contain(["Id", "IsEnabled"]);
+        GetAutomatedBackupSetting(databasePath).Should().BeFalse();
     }
 
     #endregion
@@ -118,6 +124,21 @@ public sealed class SqliteDatabaseSchemaUpgraderTests
         while (reader.Read()) columnNames.Add(reader.GetString(1));
 
         return columnNames;
+    }
+
+    private static bool GetAutomatedBackupSetting(string databasePath)
+    {
+        using var connection = OpenConnection(databasePath);
+        using var command = connection.CreateCommand();
+        command.CommandText =
+            $"""
+             SELECT IsEnabled
+             FROM {AutomatedBackupConstants.SettingsTableName}
+             WHERE Id = {AutomatedBackupConstants.SettingsRowId};
+             """;
+
+        var result = command.ExecuteScalar();
+        return Convert.ToInt32(result, CultureInfo.InvariantCulture) == 1;
     }
 
     #endregion

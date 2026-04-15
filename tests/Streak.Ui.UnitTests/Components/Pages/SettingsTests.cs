@@ -15,14 +15,15 @@ public sealed class SettingsTests : TestContext
     {
         var exportServiceMock = new Mock<IDatabaseExportService>();
         var shareServiceMock = CreateShareServiceMock(canShare: false);
-        RegisterSettingsServices(exportServiceMock, shareServiceMock);
+        var backupConfigurationServiceMock = CreateBackupConfigurationServiceMock(isEnabled: false);
+        RegisterSettingsServices(exportServiceMock, shareServiceMock, backupConfigurationServiceMock);
 
         var cut = RenderSettings();
 
         cut.Markup.Should().Contain("Daily automated backups");
         cut.Markup.Should().Contain("Create a nightly backup in local storage.");
         cut.Find("button[aria-label='Automated backup details']");
-        cut.Find("input[type='checkbox']").HasAttribute("disabled").Should().BeTrue();
+        cut.Find("input[type='checkbox']").HasAttribute("disabled").Should().BeFalse();
         cut.Markup.Should().Contain("Backup");
         cut.Markup.Should().Contain("Save or share a copy of your local data.");
         cut.Find("button[aria-label='Backup save location information']");
@@ -53,7 +54,8 @@ public sealed class SettingsTests : TestContext
             });
 
         var shareServiceMock = CreateShareServiceMock(canShare: false);
-        RegisterSettingsServices(exportServiceMock, shareServiceMock);
+        var backupConfigurationServiceMock = CreateBackupConfigurationServiceMock(isEnabled: false);
+        RegisterSettingsServices(exportServiceMock, shareServiceMock, backupConfigurationServiceMock);
 
         var cut = RenderSettings();
 
@@ -81,8 +83,9 @@ public sealed class SettingsTests : TestContext
     {
         var exportServiceMock = new Mock<IDatabaseExportService>();
         var shareServiceMock = CreateShareServiceMock(canShare: true);
+        var backupConfigurationServiceMock = CreateBackupConfigurationServiceMock(isEnabled: false);
 
-        RegisterSettingsServices(exportServiceMock, shareServiceMock);
+        RegisterSettingsServices(exportServiceMock, shareServiceMock, backupConfigurationServiceMock);
 
         var cut = RenderSettings();
 
@@ -111,7 +114,8 @@ public sealed class SettingsTests : TestContext
                 await allowShareToFinish.Task;
             });
 
-        RegisterSettingsServices(exportServiceMock, shareServiceMock);
+        var backupConfigurationServiceMock = CreateBackupConfigurationServiceMock(isEnabled: false);
+        RegisterSettingsServices(exportServiceMock, shareServiceMock, backupConfigurationServiceMock);
 
         var cut = RenderSettings();
 
@@ -149,7 +153,8 @@ public sealed class SettingsTests : TestContext
             .ReturnsAsync(DatabaseExportResult.Cancelled);
 
         var shareServiceMock = CreateShareServiceMock(canShare: false);
-        RegisterSettingsServices(exportServiceMock, shareServiceMock);
+        var backupConfigurationServiceMock = CreateBackupConfigurationServiceMock(isEnabled: false);
+        RegisterSettingsServices(exportServiceMock, shareServiceMock, backupConfigurationServiceMock);
 
         var cut = RenderSettings();
 
@@ -176,7 +181,8 @@ public sealed class SettingsTests : TestContext
             });
 
         var shareServiceMock = CreateShareServiceMock(canShare: false);
-        RegisterSettingsServices(exportServiceMock, shareServiceMock);
+        var backupConfigurationServiceMock = CreateBackupConfigurationServiceMock(isEnabled: false);
+        RegisterSettingsServices(exportServiceMock, shareServiceMock, backupConfigurationServiceMock);
 
         var cut = RenderSettings();
 
@@ -207,7 +213,8 @@ public sealed class SettingsTests : TestContext
                 return Task.CompletedTask;
             });
 
-        RegisterSettingsServices(exportServiceMock, shareServiceMock);
+        var backupConfigurationServiceMock = CreateBackupConfigurationServiceMock(isEnabled: false);
+        RegisterSettingsServices(exportServiceMock, shareServiceMock, backupConfigurationServiceMock);
 
         var cut = RenderSettings();
 
@@ -222,6 +229,40 @@ public sealed class SettingsTests : TestContext
 
     #endregion
 
+    #region Boundary tests
+
+    [Fact]
+    public void Settings_ShouldRenderAutomatedBackupToggleAsChecked_WhenPersistedStateIsEnabled()
+    {
+        var exportServiceMock = new Mock<IDatabaseExportService>();
+        var shareServiceMock = CreateShareServiceMock(canShare: false);
+        var backupConfigurationServiceMock = CreateBackupConfigurationServiceMock(isEnabled: true);
+
+        RegisterSettingsServices(exportServiceMock, shareServiceMock, backupConfigurationServiceMock);
+
+        var cut = RenderSettings();
+
+        cut.Find("input[type='checkbox']").HasAttribute("checked").Should().BeTrue();
+    }
+
+    [Fact]
+    public void Settings_ShouldPersistAutomatedBackupToggle_WhenUserChangesIt()
+    {
+        var exportServiceMock = new Mock<IDatabaseExportService>();
+        var shareServiceMock = CreateShareServiceMock(canShare: false);
+        var backupConfigurationServiceMock = CreateBackupConfigurationServiceMock(isEnabled: false);
+
+        RegisterSettingsServices(exportServiceMock, shareServiceMock, backupConfigurationServiceMock);
+
+        var cut = RenderSettings();
+
+        cut.Find("input[type='checkbox']").Change(true);
+
+        backupConfigurationServiceMock.Verify(x => x.SetIsEnabled(true), Times.Once);
+    }
+
+    #endregion
+
     #region Private Helper Methods
 
     private static Mock<IDatabaseShareService> CreateShareServiceMock(bool canShare)
@@ -231,13 +272,22 @@ public sealed class SettingsTests : TestContext
         return shareServiceMock;
     }
 
+    private static Mock<IAutomatedBackupConfigurationService> CreateBackupConfigurationServiceMock(bool isEnabled)
+    {
+        var backupConfigurationServiceMock = new Mock<IAutomatedBackupConfigurationService>();
+        backupConfigurationServiceMock.Setup(x => x.GetIsEnabled()).Returns(isEnabled);
+        return backupConfigurationServiceMock;
+    }
+
     private void RegisterSettingsServices(
         Mock<IDatabaseExportService> exportServiceMock,
-        Mock<IDatabaseShareService> shareServiceMock)
+        Mock<IDatabaseShareService> shareServiceMock,
+        Mock<IAutomatedBackupConfigurationService> backupConfigurationServiceMock)
     {
         var importFilePickerMock = new Mock<IDatabaseImportFilePicker>();
         var importServiceMock = new Mock<IDatabaseImportService>();
 
+        Services.AddSingleton(backupConfigurationServiceMock.Object);
         Services.AddSingleton(exportServiceMock.Object);
         Services.AddSingleton(shareServiceMock.Object);
         Services.AddSingleton(importFilePickerMock.Object);
