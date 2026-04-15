@@ -22,10 +22,10 @@
 		<MauiXamlInflator>SourceGen</MauiXamlInflator>
 
 		<!-- Display name -->
-		<ApplicationTitle>Streak.Ui</ApplicationTitle>
+		<ApplicationTitle>Streak</ApplicationTitle>
 
 		<!-- App Identifier -->
-		<ApplicationId>com.companyname.streak.ui</ApplicationId>
+		<ApplicationId>com.companyname.streak</ApplicationId>
 
 		<!-- Versions -->
 		<ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
