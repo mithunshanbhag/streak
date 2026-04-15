@@ -1,9 +1,8 @@
 # Streak
 
-[![Status](https://img.shields.io/badge/status-early%20preview-orange)](#current-status)
-[![Build](https://img.shields.io/badge/build-placeholder-lightgrey)](#build-and-run-locally)
-[![Tests](https://img.shields.io/badge/tests-placeholder-lightgrey)](#run-tests)
-[![Platform](https://img.shields.io/badge/platform-.NET%2010%20%7C%20MAUI%20%7C%20Blazor-512BD4)](#tech-stack)
+[![streak-deploy](https://github.com/mithunshanbhag/streak/actions/workflows/deploy.yml/badge.svg)](https://github.com/mithunshanbhag/streak/actions/workflows/deploy.yml)
+
+![streak logo](./src/Streak.Ui/Resources/AppIcon/appiconfg.svg)
 
 > A lightweight habit-tracking app designed around one idea: make daily check-ins fast enough that you actually keep coming back.
 
