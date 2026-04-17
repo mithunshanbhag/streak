@@ -75,12 +75,22 @@ A streak is the count of **consecutive calendar days** on which a habit was chec
   - near timezone changes or travel, a check-in may appear under a different local day than the user expected before the device timezone changed
 - These tradeoffs are acceptable for this app because it is a local-only habit tracker centered on the user's current day-to-day experience rather than globally synchronized UTC timelines.
 
+## Diagnostics and Telemetry
+
+- The app should use the standard `.NET` `ILogger` abstraction for application logging and diagnostics.
+- Diagnostics are intentionally **local-first**: the app should not require Azure Application Insights or any other cloud telemetry service to function.
+- The primary production telemetry sink should be **local structured log files** stored in the app's persistent private storage.
+- Diagnostic log files must be stored in **persistent app data**, not in a cache-only location, so they survive routine app restarts and can be exported later.
+- The app may also emit platform-native debug logs in development builds, but local file-based diagnostics are the primary end-user support mechanism.
+- End users should not be expected to manually browse the app sandbox to retrieve logs. The product should provide an explicit **Export diagnostics** and/or **Share diagnostics** action.
+- Exported diagnostics should package recent log files into a user-portable artifact, such as a `.zip`, created in temporary storage and then saved or shared through the native platform flow.
+- Diagnostics exports may include lightweight environment metadata helpful for support, such as app version, platform, OS version, and timestamp, but must not include the full database unless the user explicitly chooses a separate backup/share action.
+- Diagnostic logging should avoid collecting unnecessary personal content. In particular, logs should not intentionally dump raw database contents or excessively verbose user-authored habit notes/descriptions.
+- Any future cloud telemetry integration must be strictly optional and explicitly user-enabled; the baseline product remains fully usable without network connectivity.
+
 ## Non-Functional Requirements
 
-- The app should launch and be ready for interaction within **2 seconds**.
-- Checkin toggling should feel **instant** (no loading spinners or delays).
-- The app should work fully **offline** (local data only).
-- Minimal battery and storage footprint.
+See [non-functional-requirements.md](./non-functional-requirements.md).
 
 ## Surface and Route Inventory
 
@@ -91,7 +101,7 @@ Each major surface has its own detailed spec:
 | Homepage        | `/`                       | [homepage.md](./homepage.md)                     | Landing page, daily checkin surface, and habit list                 |
 | Habit Details   | `/habits/{habitId}`       | [habit-details-page.md](./habit-details-page.md) | Habit details, trends, edit dialog, and deletion                    |
 | Quick Add Habit | `+ New Habit` on Homepage | [create-habit-page.md](./create-habit-page.md)   | Create a new habit in a compact dialog without leaving the homepage |
-| Settings        | `/settings`               | [settings-page.md](./settings-page.md)           | Configure reminders and manage automated/manual local backups       |
+| Settings        | `/settings`               | [settings-page.md](./settings-page.md)           | Configure reminders and manage automated/manual local backups plus diagnostics export/share |
 
 ## Information Architecture Notes
 
@@ -100,7 +110,7 @@ Each major surface has its own detailed spec:
 - The **Homepage** doubles as the habit-list maintenance surface: habits are shown alphabetically and each habit opens its details on the Habit Details page.
 - The Homepage app bar keeps **Settings** plus a right-most **GitHub** repo link instead of a global create icon.
 - The **Habit Details** page contains the heatmap, edit dialog flow, and delete confirmation dialog for a single habit.
-- **Settings** groups reminder preferences plus low-frequency data actions such as **Daily automated backups**, **Download DB**, **Share DB**, and **Upload DB**.
+- **Settings** groups reminder preferences plus low-frequency data actions such as **Daily automated backups**, **Download DB**, **Share DB**, **Upload DB**, and diagnostics export/share.
 - **Homepage** opens directly into the habit list without instructional header copy, progress summary text, or a habit-count chip.
 - There is no dedicated habit-list routed page separate from **Homepage**.
 - There is no dedicated routed **Create Habit** page in the simplified direction.
