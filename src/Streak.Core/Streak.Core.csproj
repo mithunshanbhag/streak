@@ -16,7 +16,6 @@
 	<ItemGroup>
 		<PackageReference Include="FluentValidation" Version="12.1.1" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.5" />
-		<PackageReference Include="MithunShanbhag.Nucleus" Version="2.0.0-alpha.5" />
 	</ItemGroup>
 
 </Project>
