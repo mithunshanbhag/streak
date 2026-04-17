@@ -1,5 +1,4 @@
 @page "/"
-@inject IHabitService HabitService
 @inject ICheckinService CheckinService
 @inject IDialogService DialogService
 
@@ -108,48 +107,9 @@ else
     {
         _loadingData = true;
 
-        var habits = await HabitService.GetAllAsync();
-        var todayDate = GetTodayDateString();
-
-        var habitCheckinTasks = habits.Select(habit => CreateHabitCheckinCardViewModelAsync(habit, todayDate));
-
-        _habitCheckins = await Task.WhenAll(habitCheckinTasks);
+        _habitCheckins = await CheckinService.GetHomePageHabitCheckinsAsync();
 
         _loadingData = false;
-    }
-
-    private async Task<HabitCheckinViewModel> CreateHabitCheckinCardViewModelAsync(Habit habit, string todayDate)
-    {
-        var viewModel = new HabitCheckinViewModel
-        {
-            HabitId = habit.Id,
-            HabitName = habit.Name,
-            HabitEmoji = habit.Emoji,
-            Streak = 0,
-            IsDoneForToday = false
-        };
-
-        await LoadHabitCheckinStateAsync(viewModel, todayDate);
-
-        return viewModel;
-    }
-
-    private async Task LoadHabitCheckinStateAsync(HabitCheckinViewModel viewModel, string todayDate)
-    {
-        var currentStreakTask = CheckinService.GetCurrentStreakAsync(viewModel.HabitName);
-        var todayCheckinTask = CheckinService.GetByHabitNameAndDateAsync(viewModel.HabitName, todayDate);
-
-        await Task.WhenAll(currentStreakTask, todayCheckinTask);
-
-        viewModel.Streak = await currentStreakTask;
-        viewModel.IsDoneForToday = await todayCheckinTask is not null;
-    }
-
-    private static string GetTodayDateString()
-    {
-        return DateOnly
-            .FromDateTime(DateTime.Now)
-            .ToString(CoreConstants.CheckinDateFormat, CultureInfo.InvariantCulture);
     }
 
     #endregion

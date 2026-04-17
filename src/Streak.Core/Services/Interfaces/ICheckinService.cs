@@ -49,6 +49,20 @@ public interface ICheckinService
         CancellationToken cancellationToken = default);
 
     /// <summary>
+    ///     Retrieves the homepage card state for all habits using the device's current local day.
+    /// </summary>
+    /// <param name="cancellationToken">A token that can be used to cancel the asynchronous operation.</param>
+    /// <returns>
+    ///     A read-only list of homepage habit-card view models ordered alphabetically by habit name.
+    /// </returns>
+    /// <exception cref="OperationCanceledException">
+    ///     Thrown when the operation is canceled via
+    ///     <paramref name="cancellationToken" />.
+    /// </exception>
+    Task<IReadOnlyList<HabitCheckinViewModel>> GetHomePageHabitCheckinsAsync(
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
     ///     Adds a new check-in or returns the existing check-in for the same habit and date.
     /// </summary>
     /// <param name="checkin">The check-in to add or update.</param>

@@ -27,9 +27,33 @@ public class CheckinRepository(StreakDbContext dbContext) : SqlGenericRepository
             .Distinct(StringComparer.Ordinal)
             .ToArray();
 
-        var query = Query().Where(x => normalizedHabitNames.Contains(x.HabitNavigation.Name));
-        var checkins = await query
+        var checkins = await Query().Where(x => normalizedHabitNames.Contains(x.HabitNavigation.Name))
             .OrderBy(x => x.HabitNavigation.Name)
+            .ThenByDescending(x => x.CheckinDate)
+            .ToListAsync(cancellationToken);
+
+        return ApplyDateRange(checkins, fromDate, toDate);
+    }
+
+    public async Task<IReadOnlyList<Checkin>> GetByHabitIdsAsync(
+        IReadOnlyCollection<int> habitIds,
+        string? fromDate = null,
+        string? toDate = null,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(habitIds);
+
+        if (habitIds.Count == 0) return [];
+
+        var normalizedHabitIds = habitIds
+            .Distinct()
+            .ToArray();
+
+        if (normalizedHabitIds.Any(x => x <= 0))
+            throw new ArgumentOutOfRangeException(nameof(habitIds), "Habit IDs must be greater than zero.");
+
+        var checkins = await Query().Where(x => normalizedHabitIds.Contains(x.HabitId))
+            .OrderBy(x => x.HabitId)
             .ThenByDescending(x => x.CheckinDate)
             .ToListAsync(cancellationToken);
 

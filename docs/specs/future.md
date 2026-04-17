@@ -21,20 +21,7 @@ The app currently performs SQLite database bootstrap work during window creation
 - Reduced splash-screen freeze on first launch
 - Improved responsiveness before the first interactive frame
 
-### 2. Remove the home page query fan-out
-
-**Priority:** Critical  
-**Consensus:** Strong (all three investigations)
-
-The home page currently loads habits and then issues additional per-habit queries for streak state and today's check-in state. This creates an N+1 query pattern and scales poorly as habit count grows.
-
-**Expected outcome**
-
-- Faster home page loads
-- Less SQLite overhead on Android hardware
-- Lower battery and CPU cost during routine app use
-
-### 3. Stop concurrent use of a shared `DbContext`
+### 2. Stop concurrent use of a shared `DbContext`
 
 **Priority:** Critical  
 **Consensus:** Strong (all three investigations)
@@ -47,7 +34,7 @@ The current dependency injection setup allows multiple concurrent operations to 
 - Elimination of concurrency-related data access issues
 - Safer foundation for future performance work
 
-### 4. Optimize current streak calculation
+### 3. Optimize current streak calculation
 
 **Priority:** Critical  
 **Consensus:** Strong (all three investigations)
@@ -62,7 +49,7 @@ Current streak calculation loads full check-in history into memory for a habit a
 
 ## High Priority Findings
 
-### 5. Avoid loading the same history twice on Habit Details
+### 4. Avoid loading the same history twice on Habit Details
 
 **Priority:** High  
 **Consensus:** Medium-high
@@ -75,7 +62,7 @@ The Habit Details experience currently performs overlapping history work for str
 - Less redundant database I/O
 - Less duplicate CPU work
 
-### 6. Push date filtering into SQL queries
+### 5. Push date filtering into SQL queries
 
 **Priority:** High  
 **Consensus:** Medium-high
@@ -88,7 +75,7 @@ Some history filtering currently happens after rows are materialized in memory r
 - Lower memory pressure
 - Faster history-related operations
 
-### 7. Prevent unnecessary full reloads on Habit Details
+### 6. Prevent unnecessary full reloads on Habit Details
 
 **Priority:** High  
 **Consensus:** Medium-high
@@ -101,7 +88,7 @@ The Habit Details page currently reloads its full data set during parameter upda
 - Faster navigation and re-render behavior
 - Less unnecessary work on slower Android devices
 
-### 8. Stop querying the database on each validation keystroke
+### 7. Stop querying the database on each validation keystroke
 
 **Priority:** High  
 **Consensus:** Medium-high
@@ -114,7 +101,7 @@ The create/edit habit dialogs perform database-backed validation while the user 
 - Reduced database activity during form entry
 - Better perceived performance in dialogs
 
-### 9. Remove startup dependency on externally hosted fonts
+### 8. Remove startup dependency on externally hosted fonts
 
 **Priority:** High  
 **Consensus:** Medium-high
@@ -129,7 +116,7 @@ The app currently references Google Fonts from the network. This adds startup va
 
 ## Medium Priority Findings
 
-### 10. Use direct indexed lookups instead of full habit scans
+### 9. Use direct indexed lookups instead of full habit scans
 
 **Priority:** Medium  
 **Consensus:** Partial
@@ -141,7 +128,7 @@ Some habit lookup flows load all habits and then filter in memory rather than us
 - More efficient hot-path lookups
 - Less unnecessary query work
 
-### 11. Tune SQLite for mobile performance
+### 10. Tune SQLite for mobile performance
 
 **Priority:** Medium  
 **Consensus:** Partial
@@ -153,7 +140,7 @@ The current SQLite configuration does not appear to take advantage of mobile-fri
 - Faster write operations
 - Better responsiveness on Android flash storage
 
-### 12. Reduce heatmap rendering cost on mobile
+### 11. Reduce heatmap rendering cost on mobile
 
 **Priority:** Medium  
 **Consensus:** Partial
@@ -166,7 +153,7 @@ The heatmap view renders a large number of interactive UI elements, including to
 - Smaller component tree on Android
 - Reduced rendering overhead in the WebView
 
-### 13. Avoid unnecessary layout re-renders on navigation
+### 12. Avoid unnecessary layout re-renders on navigation
 
 **Priority:** Medium  
 **Consensus:** Partial
@@ -178,7 +165,7 @@ The main layout currently forces a render on navigation even when visible layout
 - Fewer unnecessary renders
 - Smoother navigation transitions
 
-### 14. Reduce repeated style/string recomputation during rendering
+### 13. Reduce repeated style/string recomputation during rendering
 
 **Priority:** Medium  
 **Consensus:** Partial
@@ -190,7 +177,7 @@ Some UI components rebuild style strings and derived display values repeatedly d
 - Lower allocation pressure
 - Slightly cheaper render passes
 
-### 15. Revisit habit ID generation strategy
+### 14. Revisit habit ID generation strategy
 
 **Priority:** Medium  
 **Consensus:** Partial
@@ -207,13 +194,12 @@ Habit creation currently derives the next identifier through application-side li
 
 1. Move DB bootstrap work off the UI thread
 2. Fix `DbContext` lifetime/concurrency behavior
-3. Collapse home page data loading into fewer queries
-4. Optimize streak calculation
-5. Eliminate duplicate Habit Details history loads
-6. Push date filtering into SQL
-7. Remove unnecessary reloads and validation queries
-8. Remove network font dependency
-9. Tackle lower-level rendering and SQLite tuning improvements
+3. Optimize streak calculation
+4. Eliminate duplicate Habit Details history loads
+5. Push date filtering into SQL
+6. Remove unnecessary reloads and validation queries
+7. Remove network font dependency
+8. Tackle lower-level rendering and SQLite tuning improvements
 
 ## Success Criteria for Future Work
 
