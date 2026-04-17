@@ -18,6 +18,20 @@ public class CheckinRepositoryTests
         }
     }
 
+    [Fact]
+    public async Task GetByHabitIdsAsync_ShouldReturnEmpty_WhenHabitIdsCollectionIsEmpty()
+    {
+        await using var context = TestDbContextFactory.CreateContext(out var connection);
+        await using (connection)
+        {
+            var sut = new CheckinRepository(context);
+
+            var result = await sut.GetByHabitIdsAsync([]);
+
+            result.Should().BeEmpty();
+        }
+    }
+
     #endregion
 
     #region Positive tests
@@ -88,6 +102,34 @@ public class CheckinRepositoryTests
             var sut = new CheckinRepository(context);
 
             var result = await sut.GetByHabitNamesAsync(["Read", "Run"], "2025-01-02", "2025-01-03");
+
+            result.Select(x => $"{x.HabitId}:{x.CheckinDate}")
+                .Should()
+                .Equal("1:2025-01-03", "2:2025-01-02");
+        }
+    }
+
+    [Fact]
+    public async Task GetByHabitIdsAsync_ShouldFilterByIds_AndApplyInclusiveDateRange()
+    {
+        await using var context = TestDbContextFactory.CreateContext(out var connection);
+        await using (connection)
+        {
+            context.Habits.AddRange(
+                new Habit { Id = 1, Name = "Read" },
+                new Habit { Id = 2, Name = "Run" },
+                new Habit { Id = 3, Name = "Walk" });
+            context.Checkins.AddRange(
+                new Checkin { HabitId = 1, CheckinDate = "2025-01-01" },
+                new Checkin { HabitId = 1, CheckinDate = "2025-01-03" },
+                new Checkin { HabitId = 2, CheckinDate = "2025-01-02" },
+                new Checkin { HabitId = 2, CheckinDate = "2025-01-04" },
+                new Checkin { HabitId = 3, CheckinDate = "2025-01-03" });
+            await context.SaveChangesAsync();
+
+            var sut = new CheckinRepository(context);
+
+            var result = await sut.GetByHabitIdsAsync([2, 1, 2], "2025-01-02", "2025-01-03");
 
             result.Select(x => $"{x.HabitId}:{x.CheckinDate}")
                 .Should()
@@ -281,6 +323,18 @@ public class CheckinRepositoryTests
 
         var exception = await act.Should().ThrowAsync<ArgumentNullException>();
         exception.Which.ParamName.Should().Be("entity");
+    }
+
+    [Fact]
+    public async Task GetByHabitIdsAsync_ShouldThrowArgumentOutOfRangeException_WhenAnyHabitIdIsNotPositive()
+    {
+        var dbContextMock = new Mock<StreakDbContext>(new DbContextOptionsBuilder<StreakDbContext>().Options);
+        var sut = new CheckinRepository(dbContextMock.Object);
+
+        var act = () => sut.GetByHabitIdsAsync([0, 1]);
+
+        var exception = await act.Should().ThrowAsync<ArgumentOutOfRangeException>();
+        exception.Which.ParamName.Should().Be("habitIds");
     }
 
     #endregion

@@ -53,6 +53,23 @@ public class CheckinService(
             cancellationToken);
     }
 
+    public async Task<IReadOnlyList<HabitCheckinViewModel>> GetHomePageHabitCheckinsAsync(
+        CancellationToken cancellationToken = default)
+    {
+        var habits = await _habitRepository.GetAllAsync(cancellationToken);
+        if (habits.Count == 0) return [];
+
+        var orderedHabits =
+            habits.OrderBy(x => x.Name, StringComparer.OrdinalIgnoreCase).ToArray();
+        var todayLocal = GetTodayLocalDate();
+        var checkins = await _checkinRepository.GetByHabitIdsAsync(
+            [.. orderedHabits.Select(x => x.Id)],
+            toDate: FormatDate(todayLocal),
+            cancellationToken: cancellationToken);
+
+        return BuildHomePageHabitCheckinViewModels(orderedHabits, checkins, todayLocal);
+    }
+
     public async Task<Checkin> UpsertAsync(Checkin checkin, CancellationToken cancellationToken = default)
     {
         var normalizedCheckin = NormalizeRequiredCheckin(checkin);
@@ -109,33 +126,9 @@ public class CheckinService(
     {
         var normalizedHabitName = NormalizeRequiredText(habitName, nameof(habitName));
         var checkinHistory = await _checkinRepository.GetByHabitNameAsync(normalizedHabitName, cancellationToken);
-
-        if (checkinHistory.Count == 0) return 0;
-
-        HashSet<DateOnly> checkinDates = [];
-        foreach (var checkin in checkinHistory)
-        {
-            if (!TryParseDate(checkin.CheckinDate, out var checkinDate)) continue;
-            checkinDates.Add(checkinDate);
-        }
-
-        if (checkinDates.Count == 0) return 0;
-
-        var todayLocal = GetTodayLocalDate();
-        var streakStartDate = checkinDates.Contains(todayLocal)
-            ? todayLocal
-            : todayLocal.AddDays(-1);
-
-        var streak = 0;
-        var currentDate = streakStartDate;
-
-        while (checkinDates.Contains(currentDate))
-        {
-            streak++;
-            currentDate = currentDate.AddDays(-1);
-        }
-
-        return streak;
+        return CalculateCurrentStreak(
+            BuildCheckinDateSet(checkinHistory),
+            GetTodayLocalDate());
     }
 
     private async Task<Checkin?> ToggleForTodayInternalAsync(
@@ -171,11 +164,83 @@ public class CheckinService(
 
     private async Task EnsureHabitExistsAsync(int habitId, CancellationToken cancellationToken)
     {
-        if (habitId <= 0)
-            throw new ArgumentOutOfRangeException(nameof(habitId), "Habit ID must be greater than zero.");
+        ValidateHabitId(habitId, nameof(habitId));
 
         var habitExists = await _habitRepository.ExistsAsync(habitId, cancellationToken);
         if (!habitExists) throw new InvalidOperationException($"Habit id '{habitId}' does not exist.");
+    }
+
+    private static IReadOnlyList<HabitCheckinViewModel> BuildHomePageHabitCheckinViewModels(
+        IReadOnlyList<Habit> habits,
+        IReadOnlyList<Checkin> checkins,
+        DateOnly todayLocal)
+    {
+        var checkinDatesByHabitId = checkins
+            .GroupBy(x => x.HabitId)
+            .ToDictionary(
+                x => x.Key,
+                x => BuildCheckinDateSet(x));
+
+        return
+        [
+            .. habits.Select(habit =>
+            {
+                checkinDatesByHabitId.TryGetValue(habit.Id, out var checkinDates);
+                return CreateHomePageHabitCheckinViewModel(habit, checkinDates, todayLocal);
+            })
+        ];
+    }
+
+    private static HabitCheckinViewModel CreateHomePageHabitCheckinViewModel(
+        Habit habit,
+        HashSet<DateOnly>? checkinDates,
+        DateOnly todayLocal)
+    {
+        var safeCheckinDates = checkinDates ?? [];
+
+        return new HabitCheckinViewModel
+        {
+            HabitId = habit.Id,
+            HabitName = habit.Name,
+            HabitEmoji = habit.Emoji,
+            Streak = CalculateCurrentStreak(safeCheckinDates, todayLocal),
+            IsDoneForToday = safeCheckinDates.Contains(todayLocal)
+        };
+    }
+
+    private static int CalculateCurrentStreak(
+        HashSet<DateOnly> checkinDates,
+        DateOnly todayLocal)
+    {
+        if (checkinDates.Count == 0) return 0;
+
+        var streakStartDate = checkinDates.Contains(todayLocal)
+            ? todayLocal
+            : todayLocal.AddDays(-1);
+
+        var streak = 0;
+        var currentDate = streakStartDate;
+
+        while (checkinDates.Contains(currentDate))
+        {
+            streak++;
+            currentDate = currentDate.AddDays(-1);
+        }
+
+        return streak;
+    }
+
+    private static HashSet<DateOnly> BuildCheckinDateSet(IEnumerable<Checkin> checkins)
+    {
+        HashSet<DateOnly> checkinDates = [];
+
+        foreach (var checkin in checkins)
+        {
+            if (!TryParseDate(checkin.CheckinDate, out var checkinDate)) continue;
+            checkinDates.Add(checkinDate);
+        }
+
+        return checkinDates;
     }
 
     private static Checkin NormalizeRequiredCheckin(Checkin checkin)
@@ -218,8 +283,18 @@ public class CheckinService(
 
     private string GetTodayLocalDateString()
     {
-        return GetTodayLocalDate()
-            .ToString(DateFormat, CultureInfo.InvariantCulture);
+        return FormatDate(GetTodayLocalDate());
+    }
+
+    private static string FormatDate(DateOnly date)
+    {
+        return date.ToString(DateFormat, CultureInfo.InvariantCulture);
+    }
+
+    private static void ValidateHabitId(int habitId, string paramName)
+    {
+        if (habitId <= 0)
+            throw new ArgumentOutOfRangeException(paramName, "Habit ID must be greater than zero.");
     }
 
     private static bool TryParseDate(string value, out DateOnly parsedDate)

@@ -134,7 +134,8 @@
     private async Task HandleCheckinChangedAsync(bool isDone)
     {
         await CheckinService.ToggleForTodayAsync(ViewModel.HabitName, isDone);
-        await LoadHabitCheckinStateAsync();
+        ViewModel.Streak = await CheckinService.GetCurrentStreakAsync(ViewModel.HabitName);
+        ViewModel.IsDoneForToday = isDone;
     }
 
     private Task HandleCardKeyDownAsync(KeyboardEventArgs args)
@@ -148,26 +149,6 @@
     #endregion
 
     #region Private Helper Methods
-
-    private async Task LoadHabitCheckinStateAsync()
-    {
-        var todayDate = GetTodayDateString();
-        var currentStreakTask = CheckinService.GetCurrentStreakAsync(ViewModel.HabitName);
-        var todayCheckinTask = CheckinService.GetByHabitNameAndDateAsync(ViewModel.HabitName, todayDate);
-
-        await Task.WhenAll(currentStreakTask, todayCheckinTask);
-
-        ViewModel.Streak = await currentStreakTask;
-        ViewModel.IsDoneForToday = await todayCheckinTask is not null;
-    }
-
-    private static string GetTodayDateString()
-    {
-        return DateOnly
-            .FromDateTime(DateTime.Now)
-            .ToString(CoreConstants.CheckinDateFormat, CultureInfo.InvariantCulture);
-    }
-
     #endregion
 
 }

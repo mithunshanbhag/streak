@@ -49,6 +49,28 @@ public interface ICheckinRepository : ISqlGenericRepository<Checkin, CheckinKey>
         CancellationToken cancellationToken = default);
 
     /// <summary>
+    ///     Retrieves check-ins for one or more habit identifiers, optionally filtered by an inclusive date range.
+    /// </summary>
+    /// <param name="habitIds">The habit identifiers to include.</param>
+    /// <param name="fromDate">The optional lower-bound date string.</param>
+    /// <param name="toDate">The optional upper-bound date string.</param>
+    /// <param name="cancellationToken">A token that can be used to cancel the asynchronous operation.</param>
+    /// <returns>A read-only list of matching check-ins ordered by habit identifier and descending date.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="habitIds" /> is <see langword="null" />.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">
+    ///     Thrown when any habit identifier in <paramref name="habitIds" /> is less than or equal to zero.
+    /// </exception>
+    /// <exception cref="OperationCanceledException">
+    ///     Thrown when the operation is canceled via
+    ///     <paramref name="cancellationToken" />.
+    /// </exception>
+    Task<IReadOnlyList<Checkin>> GetByHabitIdsAsync(
+        IReadOnlyCollection<int> habitIds,
+        string? fromDate = null,
+        string? toDate = null,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
     ///     Retrieves a check-in for a specific habit and date.
     /// </summary>
     /// <param name="habitName">The habit name.</param>
