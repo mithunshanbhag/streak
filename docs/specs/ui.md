@@ -224,6 +224,8 @@ Use semantic roles rather than one-off hex values.
 - Content is single-column with **16px** horizontal padding.
 - Use cards to group related content, but keep the overall page visually light.
 - Prefer MudBlazor spacing utilities and stack gaps over custom margin rules.
+- App bars, routed content, dialog chrome, and bottom CTAs must remain fully visible inside the platform safe drawing area. They must not render underneath Android status bars, navigation bars, or similar system UI overlays.
+- Prefer dynamic viewport sizing (`dvh`) and/or host-level safe-area handling for full-height layouts instead of fixed viewport assumptions that can clip content near mobile system bars.
 
 ## Date banner
 

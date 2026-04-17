@@ -4,7 +4,7 @@ html, body { min-height: 100%; }
 
 body { margin: 0; }
 
-#app { min-height: 100vh; }
+#app { min-height: 100dvh; }
 
 .app-loading-screen {
     align-items: center;
@@ -17,7 +17,7 @@ body { margin: 0; }
     gap: 1rem;
     inset: 0;
     justify-content: center;
-    min-height: 100vh;
+    min-height: 100dvh;
     padding: 2rem;
     text-align: center;
 }
