@@ -1,6 +1,7 @@
 @page "/settings"
 @inject IAutomatedBackupConfigurationService AutomatedBackupConfigurationService
 @inject IDatabaseExportService DatabaseExportService
+@inject IDiagnosticsExportService DiagnosticsExportService
 @inject IDatabaseShareService DatabaseShareService
 @inject IDatabaseImportFilePicker DatabaseImportFilePicker
 @inject IDatabaseImportService DatabaseImportService
@@ -61,10 +62,10 @@
                               Spacing="0">
                         <MudSwitch T="bool"
                                    Value="@_automatedBackupsEnabled"
-                                    ValueChanged="AutomatedBackupsEnabledChangedAsync"
-                                    Disabled="@(!_automatedBackupsSupported || _automatedBackupSettingsUpdateInProgress || _exportInProgress || _shareInProgress || _importInProgress)"
-                                    Color="Color.Primary"
-                                    aria-label="@AutomatedBackupsSwitchAriaLabel"/>
+                                     ValueChanged="AutomatedBackupsEnabledChangedAsync"
+                                     Disabled="@(!_automatedBackupsSupported || _automatedBackupSettingsUpdateInProgress || _exportInProgress || _diagnosticsExportInProgress || _shareInProgress || _importInProgress)"
+                                     Color="Color.Primary"
+                                     aria-label="@AutomatedBackupsSwitchAriaLabel"/>
                     </MudStack>
                 </MudPaper>
 
@@ -103,7 +104,7 @@
                                     Placement="Placement.Top">
                             <MudButton Color="Color.Primary"
                                        Variant="Variant.Filled"
-                                       Disabled="@(_exportInProgress || _shareInProgress || _importInProgress)"
+                                       Disabled="@(_exportInProgress || _diagnosticsExportInProgress || _shareInProgress || _importInProgress)"
                                        aria-label="@ExportButtonAriaLabel"
                                        Style="@DataActionButtonStyle"
                                        OnClick="ExportDatabaseAsync">
@@ -125,7 +126,7 @@
                             <span class="d-inline-flex">
                                 <MudButton Color="Color.Primary"
                                            Variant="Variant.Filled"
-                                           Disabled="@(!DatabaseShareService.CanShare || _exportInProgress || _shareInProgress || _importInProgress)"
+                                           Disabled="@(!DatabaseShareService.CanShare || _exportInProgress || _diagnosticsExportInProgress || _shareInProgress || _importInProgress)"
                                            aria-label="@ShareButtonAriaLabel"
                                            Style="@DataActionButtonStyle"
                                            OnClick="ShareDatabaseAsync">
@@ -141,6 +142,59 @@
                                     }
                                 </MudButton>
                             </span>
+                        </MudTooltip>
+                    </MudStack>
+                </MudPaper>
+
+                <MudDivider/>
+
+                <MudStack Spacing="1">
+                    <MudStack Row="true"
+                              Spacing="1"
+                              AlignItems="AlignItems.Center">
+                        <MudText Typo="Typo.h6">
+                            @DiagnosticsHeaderText
+                        </MudText>
+
+                        <MudTooltip Text="@DiagnosticsTooltipText"
+                                    Placement="Placement.Top">
+                            <MudIconButton Icon="@Icons.Material.Filled.Info"
+                                           Color="Color.Default"
+                                           Size="Size.Small"
+                                           aria-label="@DiagnosticsTooltipAriaLabel"/>
+                        </MudTooltip>
+                    </MudStack>
+
+                    <MudText Typo="Typo.body2"
+                             Class="text-secondary">
+                        @DiagnosticsDescriptionText
+                    </MudText>
+                </MudStack>
+
+                <MudPaper Elevation="0"
+                          Class="pa-3 rounded-lg">
+                    <MudStack Row="true"
+                              Justify="Justify.FlexEnd"
+                              AlignItems="AlignItems.Center">
+                        <MudTooltip Text="@DiagnosticsExportButtonTooltipText"
+                                    Placement="Placement.Top">
+                            <MudButton Color="Color.Primary"
+                                       Variant="Variant.Filled"
+                                       Disabled="@(_exportInProgress || _diagnosticsExportInProgress || _shareInProgress || _importInProgress)"
+                                       aria-label="@DiagnosticsExportButtonAriaLabel"
+                                       Style="@DataActionButtonStyle"
+                                       OnClick="ExportDiagnosticsAsync">
+                                @if (_diagnosticsExportInProgress)
+                                {
+                                    <MudProgressCircular Indeterminate="true"
+                                                         Color="Color.Inherit"
+                                                         Size="Size.Small"/>
+                                }
+                                else
+                                {
+                                    <MudIcon Icon="@Icons.Material.Filled.Download"/>
+                                }
+                            </MudButton>
                         </MudTooltip>
                     </MudStack>
                 </MudPaper>
@@ -179,7 +233,7 @@
                                     Placement="Placement.Top">
                             <MudButton Color="Color.Primary"
                                        Variant="Variant.Filled"
-                                       Disabled="@(_exportInProgress || _shareInProgress || _importInProgress)"
+                                       Disabled="@(_exportInProgress || _diagnosticsExportInProgress || _shareInProgress || _importInProgress)"
                                        aria-label="@ImportButtonAriaLabel"
                                        Style="@DataActionButtonStyle"
                                        OnClick="ImportDatabaseAsync">
@@ -213,6 +267,8 @@
     private bool _shareInProgress;
 
     private bool _importInProgress;
+
+    private bool _diagnosticsExportInProgress;
 
     private bool _automatedBackupsEnabled;
 
@@ -281,6 +337,28 @@
         finally
         {
             _exportInProgress = false;
+        }
+    }
+
+    private async Task ExportDiagnosticsAsync()
+    {
+        try
+        {
+            _diagnosticsExportInProgress = true;
+            _operationErrorMessage = null;
+
+            var exportResult = await DiagnosticsExportService.ExportDiagnosticsAsync();
+
+            if (exportResult == DiagnosticsExportResult.Cancelled)
+                return;
+        }
+        catch (Exception)
+        {
+            _operationErrorMessage = DiagnosticsExportFailedText;
+        }
+        finally
+        {
+            _diagnosticsExportInProgress = false;
         }
     }
 
@@ -373,6 +451,18 @@
 
     private const string SupportTooltipAriaLabel = "Backup save location information";
 
+    private const string DiagnosticsHeaderText = "Diagnostic logs";
+
+    private const string DiagnosticsDescriptionText = "Export a support bundle of recent app logs.";
+
+    private const string DiagnosticsTooltipText = "Exports recent app logs and basic support metadata. Does not include your full database.";
+
+    private const string DiagnosticsTooltipAriaLabel = "Diagnostic export details";
+
+    private const string DiagnosticsExportButtonTooltipText = "Export logs";
+
+    private const string DiagnosticsExportButtonAriaLabel = "Export diagnostic logs";
+
     private const string RestoreHeaderText = "Restore";
 
     private const string RestoreDescriptionText = "Restore your data from a previous backup.";
@@ -390,6 +480,8 @@
     private const string ExportFailedText = "Unable to export your database right now. Please try again.";
 
     private const string ShareFailedText = "Unable to share your database right now. Please try again.";
+
+    private const string DiagnosticsExportFailedText = "Unable to export your diagnostic logs right now. Please try again.";
 
     private const string ImportValidationFailedText = "That file is not a valid Streak backup. Your current data was not changed.";
 

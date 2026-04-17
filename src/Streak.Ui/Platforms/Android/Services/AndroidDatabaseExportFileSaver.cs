@@ -9,7 +9,7 @@ public sealed class AndroidDatabaseExportFileSaver : IDatabaseExportFileSaver
         string backupFilePath,
         CancellationToken cancellationToken = default)
     {
-        await AndroidMediaStoreBackupFileWriter.SaveFileAsync(
+        await AndroidMediaStoreBackupFileWriter.SaveBackupAsync(
             backupFilePath,
             Environment.DirectoryDownloads,
             cancellationToken);

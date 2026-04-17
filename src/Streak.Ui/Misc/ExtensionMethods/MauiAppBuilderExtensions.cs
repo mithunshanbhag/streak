@@ -44,14 +44,17 @@ public static class MauiAppBuilderExtensions
             builder.Services.AddSingleton<IAutomatedBackupConfigurationService, AutomatedBackupConfigurationService>();
             builder.Services.AddTransient<IDatabaseImportService, DatabaseImportService>();
             builder.Services.AddTransient<IDatabaseExportService, DatabaseExportService>();
+            builder.Services.AddTransient<IDiagnosticsExportService, DiagnosticsExportService>();
 #if WINDOWS
             builder.Services.AddSingleton<IAutomatedBackupScheduler, NoOpAutomatedBackupScheduler>();
             builder.Services.AddTransient<IDatabaseImportFilePicker, WindowsDatabaseImportFilePicker>();
             builder.Services.AddTransient<IDatabaseExportFileSaver, WindowsDatabaseExportFileSaver>();
+            builder.Services.AddTransient<IDiagnosticsExportFileSaver, WindowsDiagnosticsExportFileSaver>();
             builder.Services.AddTransient<IDatabaseShareService, UnsupportedDatabaseShareService>();
 #elif ANDROID
             builder.Services.AddTransient<IDatabaseImportFilePicker, AndroidDatabaseImportFilePicker>();
             builder.Services.AddTransient<IDatabaseExportFileSaver, AndroidDatabaseExportFileSaver>();
+            builder.Services.AddTransient<IDiagnosticsExportFileSaver, AndroidDiagnosticsExportFileSaver>();
             builder.Services.AddTransient<IAutomatedBackupFileSaver, AndroidAutomatedBackupFileSaver>();
             builder.Services.AddTransient<IAutomatedBackupExecutionService, AutomatedBackupExecutionService>();
             builder.Services.AddSingleton<IShare>(_ => Share.Default);
@@ -59,6 +62,7 @@ public static class MauiAppBuilderExtensions
             builder.Services.AddTransient<IDatabaseShareService, DatabaseShareService>();
 #else
             builder.Services.AddSingleton<IAutomatedBackupScheduler, NoOpAutomatedBackupScheduler>();
+            builder.Services.AddTransient<IDiagnosticsExportFileSaver, WindowsDiagnosticsExportFileSaver>();
             builder.Services.AddTransient<IDatabaseShareService, UnsupportedDatabaseShareService>();
 #endif
 

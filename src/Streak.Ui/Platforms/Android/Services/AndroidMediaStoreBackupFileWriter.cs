@@ -10,13 +10,27 @@ internal static class AndroidMediaStoreBackupFileWriter
 {
     private const string DatabaseMimeType = "application/octet-stream";
 
-    public static async Task<string> SaveFileAsync(
+    public static Task<string> SaveBackupAsync(
         string sourceFilePath,
         string relativePath,
         CancellationToken cancellationToken = default)
     {
+        return SaveFileAsync(
+            sourceFilePath,
+            relativePath,
+            DatabaseMimeType,
+            cancellationToken);
+    }
+
+    public static async Task<string> SaveFileAsync(
+        string sourceFilePath,
+        string relativePath,
+        string mimeType,
+        CancellationToken cancellationToken = default)
+    {
         ArgumentException.ThrowIfNullOrWhiteSpace(sourceFilePath);
         ArgumentException.ThrowIfNullOrWhiteSpace(relativePath);
+        ArgumentException.ThrowIfNullOrWhiteSpace(mimeType);
 
         if (!File.Exists(sourceFilePath))
             throw new FileNotFoundException("The generated backup file could not be found.", sourceFilePath);
@@ -25,7 +39,7 @@ internal static class AndroidMediaStoreBackupFileWriter
         var fileName = Path.GetFileName(sourceFilePath);
         var contentResolver = Application.Context.ContentResolver
                               ?? throw new InvalidOperationException("An Android content resolver is required to persist database backups.");
-        var targetUri = InsertDownloadRecord(contentResolver, fileName, normalizedRelativePath);
+        var targetUri = InsertDownloadRecord(contentResolver, fileName, normalizedRelativePath, mimeType);
 
         try
         {
@@ -51,11 +65,12 @@ internal static class AndroidMediaStoreBackupFileWriter
     private static Uri InsertDownloadRecord(
         ContentResolver contentResolver,
         string fileName,
-        string relativePath)
+        string relativePath,
+        string mimeType)
     {
         using var values = new ContentValues();
         values.Put(MediaStore.IMediaColumns.DisplayName, fileName);
-        values.Put(MediaStore.IMediaColumns.MimeType, DatabaseMimeType);
+        values.Put(MediaStore.IMediaColumns.MimeType, mimeType);
         values.Put(MediaStore.IMediaColumns.RelativePath, relativePath);
         values.Put(MediaStore.IMediaColumns.IsPending, 1);
 

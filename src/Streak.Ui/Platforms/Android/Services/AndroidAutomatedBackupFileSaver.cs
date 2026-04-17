@@ -11,7 +11,7 @@ public sealed class AndroidAutomatedBackupFileSaver : IAutomatedBackupFileSaver
         string backupFilePath,
         CancellationToken cancellationToken = default)
     {
-        return AndroidMediaStoreBackupFileWriter.SaveFileAsync(
+        return AndroidMediaStoreBackupFileWriter.SaveBackupAsync(
             backupFilePath,
             RelativeDirectoryPath,
             cancellationToken);
