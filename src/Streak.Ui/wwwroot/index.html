@@ -17,7 +17,27 @@
 
 <div class="status-bar-safe-area"></div>
 
-<div id="app">Loading...</div>
+<div id="app">
+    <div class="app-loading-screen" role="status" aria-live="polite" aria-label="Loading Streak">
+        <svg class="app-loading-logo" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <defs>
+                <linearGradient id="sGrad" x1="139" y1="152" x2="366" y2="360" gradientUnits="userSpaceOnUse">
+                    <stop stop-color="#D9FFFC" />
+                    <stop offset="0.45" stop-color="#7EF7E4" />
+                    <stop offset="1" stop-color="#F9FF9B" />
+                </linearGradient>
+                <linearGradient id="accent" x1="147" y1="379" x2="340" y2="201" gradientUnits="userSpaceOnUse">
+                    <stop stop-color="#FF9F45" />
+                    <stop offset="1" stop-color="#FFDB6B" />
+                </linearGradient>
+            </defs>
+            <path d="M337 144C302 126 258 124 218 138C180 151 156 177 156 209C156 243 181 260 245 273C306 286 328 297 328 323C328 349 297 368 254 368C214 368 180 355 145 327" fill="none" stroke="url(#sGrad)" stroke-width="58" stroke-linecap="round" stroke-linejoin="round" />
+            <path d="M151 381L212 320" fill="none" stroke="url(#accent)" stroke-width="28" stroke-linecap="round" />
+            <circle cx="363" cy="163" r="18" fill="#F9FF9B" />
+        </svg>
+        <p class="app-loading-label">Loading Streak...</p>
+    </div>
+</div>
 
 <div id="blazor-error-ui" data-nosnippet>
     An unhandled error has occurred.
