@@ -1,3 +1,6 @@
+using Microsoft.Extensions.DependencyInjection;
+using Serilog;
+
 namespace Streak.Ui.Misc.ExtensionMethods;
 
 public static class MauiAppBuilderExtensions
@@ -60,13 +63,41 @@ public static class MauiAppBuilderExtensions
 #endif
 
             builder.Services.AddMauiBlazorWebView();
+            builder.Logging.ClearProviders();
+            builder.Services.AddSerilog((services, loggerConfiguration) =>
+            {
+                var appStoragePathService = services.GetRequiredService<IAppStoragePathService>();
+
+                loggerConfiguration
+                    .MinimumLevel.Is(GetDefaultLogLevel())
+                    .MinimumLevel.Override("Microsoft", Serilog.Events.LogEventLevel.Warning)
+                    .MinimumLevel.Override("System", Serilog.Events.LogEventLevel.Warning)
+                    .Enrich.FromLogContext()
+                    .WriteTo.Sink(
+                        new CircularFileSink(
+                            appStoragePathService.DiagnosticsLogFilePath,
+                            new Serilog.Formatting.Compact.CompactJsonFormatter(),
+                            DiagnosticsConstants.MaxStructuredLogFileSizeBytes));
+
+#if DEBUG
+                loggerConfiguration.WriteTo.Debug();
+#endif
+            });
 
 #if DEBUG
             builder.Services.AddBlazorWebViewDeveloperTools();
-            builder.Logging.AddDebug();
 #endif
 
             return builder;
         }
+    }
+
+    private static Serilog.Events.LogEventLevel GetDefaultLogLevel()
+    {
+#if DEBUG
+        return Serilog.Events.LogEventLevel.Debug;
+#else
+        return Serilog.Events.LogEventLevel.Information;
+#endif
     }
 }

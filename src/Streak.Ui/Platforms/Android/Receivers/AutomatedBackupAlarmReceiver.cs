@@ -1,15 +1,12 @@
 using Android.App;
 using Android.Content;
-using Android.Util;
-using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Streak.Ui.Platforms.Android;
 
 [BroadcastReceiver(Enabled = true, Exported = false)]
 public sealed class AutomatedBackupAlarmReceiver : BroadcastReceiver
 {
-    private const string LogTag = "StreakAutoBackup";
-
     public override void OnReceive(Context? context, Intent? intent)
     {
         if (context is null)
@@ -25,7 +22,10 @@ public sealed class AutomatedBackupAlarmReceiver : BroadcastReceiver
             }
             catch (Exception exception)
             {
-                Log.Error(LogTag, $"Nightly automated backup execution failed: {exception}");
+                var logger = AndroidServiceProviderAccessor
+                    .GetRequiredServiceProvider()
+                    .GetRequiredService<ILogger<AutomatedBackupAlarmReceiver>>();
+                logger.LogError(exception, "Nightly automated backup execution failed.");
             }
             finally
             {
@@ -38,27 +38,29 @@ public sealed class AutomatedBackupAlarmReceiver : BroadcastReceiver
 
     private static async Task HandleReceiveAsync(Context context)
     {
-        var isEnabled = AutomatedBackupSettingsStore.GetIsEnabled(SqliteDatabaseBootstrapper.DatabasePath);
-        var nextRunUtc = AndroidAutomatedBackupAlarmRegistrar.Synchronize(context, TimeProvider.System, isEnabled);
+        var services = AndroidServiceProviderAccessor.GetRequiredServiceProvider();
+        var logger = services.GetRequiredService<ILogger<AutomatedBackupAlarmReceiver>>();
+        var appStoragePathService = services.GetRequiredService<IAppStoragePathService>();
+        var timeProvider = services.GetRequiredService<TimeProvider>();
+        var automatedBackupExecutionService = services.GetRequiredService<IAutomatedBackupExecutionService>();
+
+        var isEnabled = AutomatedBackupSettingsStore.GetIsEnabled(appStoragePathService.DatabasePath);
+        var nextRunUtc = AndroidAutomatedBackupAlarmRegistrar.Synchronize(context, timeProvider, isEnabled);
 
         if (nextRunUtc is null)
         {
-            Log.Info(
-                LogTag,
+            logger.LogInformation(
                 "Nightly automated backup trigger fired, but automated backups are disabled. Future triggers were cancelled.");
             return;
         }
 
-        var nextRunLocal = TimeZoneInfo.ConvertTime(nextRunUtc.Value, TimeZoneInfo.Local);
-        var automatedBackupExecutionService = new AutomatedBackupExecutionService(
-            new AppStoragePathService(),
-            new AndroidAutomatedBackupFileSaver(),
-            NullLogger<AutomatedBackupExecutionService>.Instance);
+        var nextRunLocal = TimeZoneInfo.ConvertTime(nextRunUtc.Value, timeProvider.LocalTimeZone);
         var savedLocation = await automatedBackupExecutionService.ExecuteAutomatedBackupAsync();
 
-        Log.Info(
-            LogTag,
-            $"Nightly automated backup completed at '{savedLocation}'. Next trigger scheduled for {nextRunLocal:O}.");
+        logger.LogInformation(
+            "Nightly automated backup completed at {SavedLocation}. Next trigger scheduled for {NextRunLocal}.",
+            savedLocation,
+            nextRunLocal);
     }
 
     #endregion

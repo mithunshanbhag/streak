@@ -2,7 +2,23 @@ namespace Streak.Ui.Services.Interfaces;
 
 public interface IAppStoragePathService
 {
+    /// <summary>
+    ///     Gets the full path to the live SQLite database file.
+    /// </summary>
     string DatabasePath { get; }
 
+    /// <summary>
+    ///     Gets the cache-backed working directory used for temporary export and share artifacts.
+    /// </summary>
     string ExportDirectoryPath { get; }
+
+    /// <summary>
+    ///     Gets the persistent app-private directory used for diagnostics artifacts.
+    /// </summary>
+    string DiagnosticsDirectoryPath { get; }
+
+    /// <summary>
+    ///     Gets the full path to the single structured diagnostics log file.
+    /// </summary>
+    string DiagnosticsLogFilePath { get; }
 }

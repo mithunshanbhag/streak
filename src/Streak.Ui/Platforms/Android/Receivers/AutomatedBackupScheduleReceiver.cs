@@ -1,6 +1,6 @@
 using Android.App;
 using Android.Content;
-using Android.Util;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Streak.Ui.Platforms.Android;
 
@@ -14,28 +14,32 @@ namespace Streak.Ui.Platforms.Android;
 ])]
 public sealed class AutomatedBackupScheduleReceiver : BroadcastReceiver
 {
-    private const string LogTag = "StreakAutoBackup";
-
     public override void OnReceive(Context? context, Intent? intent)
     {
         if (context is null)
             throw new ArgumentNullException(nameof(context));
 
-        var isEnabled = AutomatedBackupSettingsStore.GetIsEnabled(SqliteDatabaseBootstrapper.DatabasePath);
-        var nextRunUtc = AndroidAutomatedBackupAlarmRegistrar.Synchronize(context, TimeProvider.System, isEnabled);
+        var services = AndroidServiceProviderAccessor.GetRequiredServiceProvider();
+        var logger = services.GetRequiredService<ILogger<AutomatedBackupScheduleReceiver>>();
+        var appStoragePathService = services.GetRequiredService<IAppStoragePathService>();
+        var timeProvider = services.GetRequiredService<TimeProvider>();
+
+        var isEnabled = AutomatedBackupSettingsStore.GetIsEnabled(appStoragePathService.DatabasePath);
+        var nextRunUtc = AndroidAutomatedBackupAlarmRegistrar.Synchronize(context, timeProvider, isEnabled);
         var action = intent?.Action ?? "unknown";
 
         if (nextRunUtc is null)
         {
-            Log.Info(
-                LogTag,
-                $"Skipped nightly automated backup scheduling after '{action}' because automated backups are disabled.");
+            logger.LogInformation(
+                "Skipped nightly automated backup scheduling after {Action} because automated backups are disabled.",
+                action);
             return;
         }
 
-        var nextRunLocal = TimeZoneInfo.ConvertTime(nextRunUtc.Value, TimeZoneInfo.Local);
-        Log.Info(
-            LogTag,
-            $"Rescheduled nightly automated backup trigger after '{action}'. Next trigger scheduled for {nextRunLocal:O}.");
+        var nextRunLocal = TimeZoneInfo.ConvertTime(nextRunUtc.Value, timeProvider.LocalTimeZone);
+        logger.LogInformation(
+            "Rescheduled nightly automated backup trigger after {Action}. Next trigger scheduled for {NextRunLocal}.",
+            action,
+            nextRunLocal);
     }
 }
