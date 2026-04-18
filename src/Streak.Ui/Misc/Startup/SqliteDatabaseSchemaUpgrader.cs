@@ -25,8 +25,8 @@ public sealed class SqliteDatabaseSchemaUpgrader(ILogger<SqliteDatabaseSchemaUpg
         var hasHabitDescriptionColumn = ColumnExists(connection, "Habits", "Description");
         var hasCheckinNotesColumn = ColumnExists(connection, "Checkins", "Notes");
         var hasAutomatedBackupSettingsTable = TableExists(connection, AutomatedBackupConstants.SettingsTableName);
-        var hasAutomatedBackupSettingsRow = hasAutomatedBackupSettingsTable &&
-                                            RowExists(connection, AutomatedBackupConstants.SettingsTableName, AutomatedBackupConstants.SettingsRowId);
+        var hasAutomatedBackupSettingsRow = hasAutomatedBackupSettingsTable
+                                            && RowExists(connection, AutomatedBackupConstants.SettingsTableName, AutomatedBackupConstants.SettingsRowId);
 
         if (hasHabitDescriptionColumn && hasCheckinNotesColumn && hasAutomatedBackupSettingsTable && hasAutomatedBackupSettingsRow)
         {
