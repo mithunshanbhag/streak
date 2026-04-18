@@ -23,11 +23,12 @@ public sealed class SqliteDatabaseSchemaUpgrader(ILogger<SqliteDatabaseSchemaUpg
         connection.Open();
 
         var hasHabitDescriptionColumn = ColumnExists(connection, "Habits", "Description");
+        var hasCheckinNotesColumn = ColumnExists(connection, "Checkins", "Notes");
         var hasAutomatedBackupSettingsTable = TableExists(connection, AutomatedBackupConstants.SettingsTableName);
-        var hasAutomatedBackupSettingsRow = hasAutomatedBackupSettingsTable &&
-                                           RowExists(connection, AutomatedBackupConstants.SettingsTableName, AutomatedBackupConstants.SettingsRowId);
+        var hasAutomatedBackupSettingsRow = hasAutomatedBackupSettingsTable
+                                            && RowExists(connection, AutomatedBackupConstants.SettingsTableName, AutomatedBackupConstants.SettingsRowId);
 
-        if (hasHabitDescriptionColumn && hasAutomatedBackupSettingsTable && hasAutomatedBackupSettingsRow)
+        if (hasHabitDescriptionColumn && hasCheckinNotesColumn && hasAutomatedBackupSettingsTable && hasAutomatedBackupSettingsRow)
         {
             _logger.LogDebug("SQLite schema is already up to date for {DatabasePath}.", databasePath);
             return;
@@ -43,6 +44,40 @@ public sealed class SqliteDatabaseSchemaUpgrader(ILogger<SqliteDatabaseSchemaUpg
         {
             command.CommandText = "ALTER TABLE Habits ADD COLUMN Description TEXT NULL;";
             command.ExecuteNonQuery();
+            _logger.LogDebug("Added Habits.Description column to {DatabasePath}.", databasePath);
+        }
+
+        if (!hasCheckinNotesColumn)
+        {
+            command.CommandText =
+                $"""
+                 ALTER TABLE Checkins RENAME TO Checkins_Legacy;
+
+                 CREATE TABLE Checkins (
+                     CheckinDate TEXT NOT NULL,
+                     HabitId INTEGER NOT NULL,
+                     Notes TEXT NULL,
+                     CONSTRAINT PK_Checkins PRIMARY KEY (HabitId, CheckinDate),
+                     CONSTRAINT FK_Checkins_Habits FOREIGN KEY (HabitId) REFERENCES Habits (Id) ON DELETE CASCADE ON UPDATE CASCADE,
+                     CONSTRAINT CK_Checkins_CheckinDate CHECK (
+                         length (CheckinDate) = 10
+                         AND CheckinDate GLOB '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]'
+                         AND strftime ('%Y-%m-%d', CheckinDate) IS NOT NULL
+                         AND strftime ('%Y-%m-%d', CheckinDate) = CheckinDate
+                     ),
+                     CONSTRAINT CK_Checkins_Notes_Length CHECK (
+                         Notes IS NULL OR length(Notes) <= {CoreConstants.CheckinNotesMaxLength}
+                     )
+                 ) STRICT;
+
+                 INSERT INTO Checkins (CheckinDate, HabitId)
+                 SELECT CheckinDate, HabitId
+                 FROM Checkins_Legacy;
+
+                 DROP TABLE Checkins_Legacy;
+                 """;
+            command.ExecuteNonQuery();
+            _logger.LogDebug("Rebuilt Checkins table with nullable Notes column in {DatabasePath}.", databasePath);
         }
 
         if (!hasAutomatedBackupSettingsTable)

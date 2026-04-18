@@ -38,6 +38,8 @@ public sealed class SqliteDatabaseSchemaUpgraderTests
 
         var habitColumns = GetTableColumns(databasePath, "Habits");
         habitColumns.Should().Contain("Description");
+        var checkinColumns = GetTableColumns(databasePath, "Checkins");
+        checkinColumns.Should().Contain("Notes");
 
         using var connection = OpenConnection(databasePath);
         using var command = connection.CreateCommand();
@@ -48,6 +50,14 @@ public sealed class SqliteDatabaseSchemaUpgraderTests
         reader.GetString(0).Should().Be("Read");
         reader.GetString(1).Should().Be("📖");
         reader.IsDBNull(2).Should().BeTrue();
+
+        using var checkinCommand = connection.CreateCommand();
+        checkinCommand.CommandText = "SELECT HabitId, CheckinDate, Notes FROM Checkins;";
+        using var checkinReader = checkinCommand.ExecuteReader();
+        checkinReader.Read().Should().BeTrue();
+        checkinReader.GetInt64(0).Should().Be(1);
+        checkinReader.GetString(1).Should().Be("2025-01-01");
+        checkinReader.IsDBNull(2).Should().BeTrue();
 
         GetAutomatedBackupSetting(databasePath).Should().BeFalse();
     }
@@ -68,8 +78,12 @@ public sealed class SqliteDatabaseSchemaUpgraderTests
         var descriptionColumns = GetTableColumns(databasePath, "Habits")
             .Where(columnName => string.Equals(columnName, "Description", StringComparison.OrdinalIgnoreCase))
             .ToArray();
+        var notesColumns = GetTableColumns(databasePath, "Checkins")
+            .Where(columnName => string.Equals(columnName, "Notes", StringComparison.OrdinalIgnoreCase))
+            .ToArray();
 
         descriptionColumns.Should().ContainSingle();
+        notesColumns.Should().ContainSingle();
         GetTableColumns(databasePath, AutomatedBackupConstants.SettingsTableName)
             .Should()
             .Contain(["Id", "IsEnabled"]);
@@ -94,8 +108,17 @@ public sealed class SqliteDatabaseSchemaUpgraderTests
                 Emoji TEXT NULL
             );
 
+            CREATE TABLE Checkins (
+                CheckinDate TEXT NOT NULL,
+                HabitId INTEGER NOT NULL,
+                PRIMARY KEY (HabitId, CheckinDate)
+            );
+
             INSERT INTO Habits (Id, Name, Emoji)
             VALUES (1, 'Read', '📖');
+
+            INSERT INTO Checkins (CheckinDate, HabitId)
+            VALUES ('2025-01-01', 1);
             """;
         command.ExecuteNonQuery();
     }
