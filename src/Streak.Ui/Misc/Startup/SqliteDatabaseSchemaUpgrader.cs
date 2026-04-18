@@ -44,6 +44,7 @@ public sealed class SqliteDatabaseSchemaUpgrader(ILogger<SqliteDatabaseSchemaUpg
         {
             command.CommandText = "ALTER TABLE Habits ADD COLUMN Description TEXT NULL;";
             command.ExecuteNonQuery();
+            _logger.LogDebug("Added Habits.Description column to {DatabasePath}.", databasePath);
         }
 
         if (!hasCheckinNotesColumn)
@@ -76,6 +77,7 @@ public sealed class SqliteDatabaseSchemaUpgrader(ILogger<SqliteDatabaseSchemaUpg
                  DROP TABLE Checkins_Legacy;
                  """;
             command.ExecuteNonQuery();
+            _logger.LogDebug("Rebuilt Checkins table with nullable Notes column in {DatabasePath}.", databasePath);
         }
 
         if (!hasAutomatedBackupSettingsTable)

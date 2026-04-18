@@ -29,6 +29,7 @@ CREATE TABLE IF NOT EXISTS Checkins (
         AND strftime ('%Y-%m-%d', CheckinDate) IS NOT NULL
         AND strftime ('%Y-%m-%d', CheckinDate) = CheckinDate
     ),
+    -- Keep this limit in sync with CoreConstants.CheckinNotesMaxLength.
     CONSTRAINT CK_Checkins_Notes_Length CHECK (Notes IS NULL OR length(Notes) <= 50)
 ) STRICT;
 
