@@ -248,13 +248,19 @@ public class CheckinService(
         RequireNotNull(checkin, nameof(checkin));
 
         var normalizedCheckinDate = NormalizeRequiredDate(checkin.CheckinDate, nameof(checkin.CheckinDate));
+        var normalizedNotes = NormalizeOptionalText(checkin.Notes);
         if (checkin.HabitId <= 0)
             throw new ArgumentOutOfRangeException(nameof(checkin.HabitId), "Habit ID must be greater than zero.");
+        if (normalizedNotes?.Length > CoreConstants.CheckinNotesMaxLength)
+            throw new ArgumentException(
+                $"Checkin notes must be {CoreConstants.CheckinNotesMaxLength} characters or fewer.",
+                nameof(checkin.Notes));
 
         return new Checkin
         {
             HabitId = checkin.HabitId,
-            CheckinDate = normalizedCheckinDate
+            CheckinDate = normalizedCheckinDate,
+            Notes = normalizedNotes
         };
     }
 

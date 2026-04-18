@@ -17,8 +17,12 @@ public partial class StreakDbContext(DbContextOptions<StreakDbContext> options) 
                 tableBuilder.HasCheckConstraint(
                     "CK_Checkins_CheckinDate",
                     "length (CheckinDate) = 10 AND CheckinDate GLOB '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]' AND strftime ('%Y-%m-%d', CheckinDate) IS NOT NULL AND strftime ('%Y-%m-%d', CheckinDate) = CheckinDate");
+                tableBuilder.HasCheckConstraint(
+                    "CK_Checkins_Notes_Length",
+                    $"Notes IS NULL OR length(Notes) <= {CoreConstants.CheckinNotesMaxLength}");
             });
 
+            entity.Property(e => e.Notes).HasMaxLength(CoreConstants.CheckinNotesMaxLength);
             entity.HasOne(d => d.HabitNavigation).WithMany(p => p.Checkins)
                 .HasForeignKey(d => d.HabitId)
                 .OnDelete(DeleteBehavior.Cascade);

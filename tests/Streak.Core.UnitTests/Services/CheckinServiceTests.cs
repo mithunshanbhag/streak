@@ -151,6 +151,37 @@ public class CheckinServiceTests
     }
 
     [Fact]
+    public async Task UpsertAsync_ShouldNormalizeAndPreserveNotes_WhenProvided()
+    {
+        var cancellationToken = new CancellationTokenSource().Token;
+        Checkin? addedCheckin = null;
+
+        var sut = CreateSut(out var checkinRepositoryMock, out var habitRepositoryMock);
+        habitRepositoryMock
+            .Setup(x => x.ExistsAsync(1, cancellationToken))
+            .ReturnsAsync(true);
+        checkinRepositoryMock
+            .Setup(x => x.GetAsync(new CheckinKey(1, "2025-01-10"), cancellationToken))
+            .ReturnsAsync((Checkin?)null);
+        checkinRepositoryMock
+            .Setup(x => x.AddAsync(It.IsAny<Checkin>(), cancellationToken))
+            .Callback<Checkin, CancellationToken>((checkin, _) => addedCheckin = checkin)
+            .ReturnsAsync(true);
+
+        await sut.UpsertAsync(
+            new Checkin
+            {
+                HabitId = 1,
+                CheckinDate = "2025-01-10",
+                Notes = "  Completed before breakfast.  "
+            },
+            cancellationToken);
+
+        addedCheckin.Should().NotBeNull();
+        addedCheckin!.Notes.Should().Be("Completed before breakfast.");
+    }
+
+    [Fact]
     public async Task UpsertAsync_ShouldReturnExistingCheckin_WhenCheckinAlreadyExists()
     {
         var cancellationToken = new CancellationTokenSource().Token;

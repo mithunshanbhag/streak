@@ -6,5 +6,7 @@ public class Checkin
 
     public required int HabitId { get; set; }
 
+    public string? Notes { get; set; }
+
     public virtual Habit HabitNavigation { get; set; } = null!;
 }

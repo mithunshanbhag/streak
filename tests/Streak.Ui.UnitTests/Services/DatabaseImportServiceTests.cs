@@ -31,6 +31,8 @@ public sealed class DatabaseImportServiceTests
 
         var habitColumns = GetTableColumns(liveDatabasePath, "Habits");
         habitColumns.Should().Contain("Description");
+        var checkinColumns = GetTableColumns(liveDatabasePath, "Checkins");
+        checkinColumns.Should().Contain("Notes");
 
         using var connection = OpenConnection(liveDatabasePath);
         using var command = connection.CreateCommand();
@@ -41,6 +43,14 @@ public sealed class DatabaseImportServiceTests
         reader.GetString(0).Should().Be("Read");
         reader.GetString(1).Should().Be("📖");
         reader.IsDBNull(2).Should().BeTrue();
+
+        using var checkinCommand = connection.CreateCommand();
+        checkinCommand.CommandText = "SELECT HabitId, CheckinDate, Notes FROM Checkins;";
+        using var checkinReader = checkinCommand.ExecuteReader();
+        checkinReader.Read().Should().BeTrue();
+        checkinReader.GetInt64(0).Should().Be(1);
+        checkinReader.GetString(1).Should().Be("2025-01-01");
+        checkinReader.IsDBNull(2).Should().BeTrue();
     }
 
     #endregion
@@ -89,6 +99,9 @@ public sealed class DatabaseImportServiceTests
 
             INSERT INTO Habits (Id, Name, Emoji)
             VALUES (1, 'Read', '📖');
+
+            INSERT INTO Checkins (CheckinDate, HabitId)
+            VALUES ('2025-01-01', 1);
             """;
         command.ExecuteNonQuery();
     }
