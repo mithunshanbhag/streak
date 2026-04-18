@@ -7,65 +7,95 @@
 <MudDialogProvider/>
 <MudSnackbarProvider/>
 
-<MudLayout>
-    <MudAppBar Color="Color.Primary"
-               Dense="true"
-               Elevation="1">
-        @if (_isHomePage)
-        {
-            <MudTooltip Text="@HomeLogoTooltipText">
-                <MudText Typo="Typo.h5">
-                    @AppTitleText
-                </MudText>
-            </MudTooltip>
-            <MudSpacer/>
-            <MudTooltip Text="@SettingsTooltipText">
-                <MudIconButton Class="mr-4"
-                               Href="@RouteConstants.Settings"
-                               Icon="@Icons.Material.Filled.Settings"
-                               Color="Color.Inherit"
-                               aria-label="@SettingsAriaLabel"/>
-            </MudTooltip>
-            <MudTooltip Text="@GitHubTooltipText"
-                        Placement="Placement.Left">
-                <MudIconButton Class="mr-4"
-                               Href="@UrlConstants.GitHubRepo"
-                               Target="_blank"
-                               Icon="@Icons.Custom.Brands.GitHub"
-                               Color="Color.Inherit"
-                               aria-label="@GitHubAriaLabel"/>
-            </MudTooltip>
-        }
-        else
-        {
-            <MudTooltip Text="@BackTooltipText">
-                <MudIconButton Class="mr-2"
-                               Icon="@Icons.Material.Filled.ArrowBack"
-                               Color="Color.Inherit"
-                               Href="@RouteConstants.Home"
-                               aria-label="@BackAriaLabel"/>
-            </MudTooltip>
-            <MudSpacer/>
-        }
-    </MudAppBar>
+<CascadingValue Value="@_appBarTitleState"
+                IsFixed="true">
+    <MudLayout>
+        <MudAppBar Color="Color.Primary"
+                   Dense="true"
+                   Elevation="1">
+            @if (_isHomePage)
+            {
+                <MudTooltip Text="@HomeLogoTooltipText">
+                    <MudText Typo="Typo.h5">
+                        @AppTitleText
+                    </MudText>
+                </MudTooltip>
+                <MudSpacer/>
+                <MudTooltip Text="@SettingsTooltipText">
+                    <MudIconButton Class="mr-4"
+                                   Href="@RouteConstants.Settings"
+                                   Icon="@Icons.Material.Filled.Settings"
+                                   Color="Color.Inherit"
+                                   aria-label="@SettingsAriaLabel"/>
+                </MudTooltip>
+                <MudTooltip Text="@GitHubTooltipText"
+                            Placement="Placement.Left">
+                    <MudIconButton Class="mr-4"
+                                   Href="@UrlConstants.GitHubRepo"
+                                   Target="_blank"
+                                   Icon="@Icons.Custom.Brands.GitHub"
+                                   Color="Color.Inherit"
+                                   aria-label="@GitHubAriaLabel"/>
+                </MudTooltip>
+            }
+            else
+            {
+                <MudTooltip Text="@BackTooltipText">
+                    <MudIconButton Class="mr-2"
+                                   Icon="@Icons.Material.Filled.ArrowBack"
+                                   Color="Color.Inherit"
+                                   Href="@RouteConstants.Home"
+                                   aria-label="@BackAriaLabel"/>
+                </MudTooltip>
 
-    <MudMainContent>
-        <main role="main">
-            @Body
-        </main>
-    </MudMainContent>
+                @if (_appBarTitleState.HasTitle)
+                {
+                    <MudStack Row="true"
+                              AlignItems="AlignItems.Center"
+                              Spacing="1"
+                              Class="app-bar-secondary-title"
+                              Style="@SecondaryAppBarTitleContainerStyle">
+                        @if (_appBarTitleState.HasLeadingEmoji)
+                        {
+                            <MudText Typo="Typo.h6"
+                                     Class="app-bar-title-emoji"
+                                     Style="@SecondaryAppBarTitleEmojiStyle">
+                                @_appBarTitleState.LeadingEmoji
+                            </MudText>
+                        }
 
-    <MudScrollToTop>
-        <MudTooltip Text="@ScrollToTopTooltipText">
-            <MudFab Color="Color.Primary"
-                    IconSize="Size.Large"
-                    Size="Size.Large"
-                    StartIcon="@Icons.Material.Filled.ArrowUpward"
-                    aria-label="@ScrollToTopAriaLabel"/>
-        </MudTooltip>
-    </MudScrollToTop>
+                        <MudText Typo="Typo.h6"
+                                 Class="app-bar-title-text"
+                                 Style="@SecondaryAppBarTitleTextStyle">
+                            @_appBarTitleState.TitleText
+                        </MudText>
+                    </MudStack>
+                }
+                else
+                {
+                    <MudSpacer/>
+                }
+            }
+        </MudAppBar>
 
-</MudLayout>
+        <MudMainContent>
+            <main role="main">
+                @Body
+            </main>
+        </MudMainContent>
+
+        <MudScrollToTop>
+            <MudTooltip Text="@ScrollToTopTooltipText">
+                <MudFab Color="Color.Primary"
+                        IconSize="Size.Large"
+                        Size="Size.Large"
+                        StartIcon="@Icons.Material.Filled.ArrowUpward"
+                        aria-label="@ScrollToTopAriaLabel"/>
+            </MudTooltip>
+        </MudScrollToTop>
+
+    </MudLayout>
+</CascadingValue>
 
 @code
 {
@@ -73,6 +103,8 @@
     #region Private Fields, Properties
 
     private bool _isHomePage;
+
+    private readonly AppBarTitleState _appBarTitleState = new();
 
     private static readonly MudTheme AppTheme = new()
     {
@@ -103,6 +135,7 @@
     protected override void OnInitialized()
     {
         CheckIfHomePage(NavigationManager.Uri);
+        _appBarTitleState.Changed += HandleAppBarTitleChanged;
         NavigationManager.LocationChanged += HandleLocationChanged;
     }
 
@@ -112,7 +145,13 @@
 
     public void Dispose()
     {
+        _appBarTitleState.Changed -= HandleAppBarTitleChanged;
         NavigationManager.LocationChanged -= HandleLocationChanged;
+    }
+
+    private void HandleAppBarTitleChanged()
+    {
+        _ = InvokeAsync(StateHasChanged);
     }
 
     private void HandleLocationChanged(object? sender, LocationChangedEventArgs e)
@@ -141,6 +180,16 @@
 
         _isHomePage = string.IsNullOrEmpty(normalizedPathTrimmed);
     }
+
+    #endregion
+
+    #region CSS Style Properties
+
+    private const string SecondaryAppBarTitleContainerStyle = "min-width: 0; flex: 1 1 auto;";
+
+    private const string SecondaryAppBarTitleEmojiStyle = "flex-shrink: 0;";
+
+    private const string SecondaryAppBarTitleTextStyle = "min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;";
 
     #endregion
 

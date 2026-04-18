@@ -1,0 +1,41 @@
+@implements IDisposable
+
+@code
+{
+    #region Parameters
+
+    [Parameter] public required string TitleText { get; set; }
+
+    [Parameter] public string? LeadingEmoji { get; set; }
+
+    #endregion
+
+    #region Private Fields, Properties
+
+    [CascadingParameter] private AppBarTitleState? AppBarTitleState { get; set; }
+
+    private readonly object _owner = new();
+
+    #endregion
+
+    #region Lifecycle Methods
+
+    protected override void OnParametersSet()
+    {
+        if (AppBarTitleState is null || string.IsNullOrWhiteSpace(TitleText))
+            return;
+
+        AppBarTitleState.SetTitle(_owner, TitleText, LeadingEmoji);
+    }
+
+    #endregion
+
+    #region Event Handlers
+
+    public void Dispose()
+    {
+        AppBarTitleState?.Clear(_owner);
+    }
+
+    #endregion
+}

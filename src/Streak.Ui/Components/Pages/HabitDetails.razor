@@ -5,6 +5,8 @@
 @inject NavigationManager NavigationManager
 
 <PageTitle>@BrowserPageTitle</PageTitle>
+<AppBarTitleScope TitleText="@AppBarTitleText"
+                  LeadingEmoji="@AppBarTitleEmoji"/>
 
 @if (_loadingData)
 {
@@ -160,6 +162,10 @@ else if (_viewModel is not null)
     private bool _deletingHabit;
 
     private string? _deleteErrorMessage;
+
+    private string AppBarTitleText => _viewModel?.HabitName ?? DefaultPageTitle;
+
+    private string? AppBarTitleEmoji => _viewModel?.HabitEmoji;
 
     private string BrowserPageTitle => _viewModel?.AppBarTitle ?? DefaultPageTitle;
 

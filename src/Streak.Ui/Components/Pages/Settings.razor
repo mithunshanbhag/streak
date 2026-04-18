@@ -8,7 +8,8 @@
 @inject IDialogService DialogService
 @inject NavigationManager NavigationManager
 
-<PageTitle>Settings</PageTitle>
+<PageTitle>@SettingsPageTitleText</PageTitle>
+<AppBarTitleScope TitleText="@SettingsPageTitleText"/>
 
 <MudContainer MaxWidth="MaxWidth.Small"
               Class="pa-4">
@@ -420,9 +421,11 @@
     #endregion
 
     #region Text, Label Properties
- 
+
+    private const string SettingsPageTitleText = "Settings";
+
     private const string SectionEyebrowText = "Data";
- 
+
     private const string AutomatedBackupsHeaderText = "Daily automated backups";
 
     private const string AutomatedBackupsDescriptionText = "Create a nightly backup in local storage.";
