@@ -1,4 +1,3 @@
-@inject ICheckinService CheckinService
 @inject NavigationManager NavigationManager
 
 <MudPaper Elevation="1"
@@ -60,11 +59,12 @@
 
         @* Checkbox for marking habit as done for today. *@
         @* Note: StopClickPropagation is set to true to prevent triggering card click when toggling checkbox. *@
-        <MudCheckBox Value="@ViewModel.IsDoneForToday"
-                     ValueChanged="@(async (bool isDone) => await HandleCheckinChangedAsync(isDone))"
-                     Color="Color.Success"
-                     CheckedIcon="@Icons.Material.Filled.CheckCircle"
-                     UncheckedIcon="@Icons.Material.Filled.RadioButtonUnchecked"
+        <MudCheckBox @key="_checkboxRenderVersion"
+                      Value="@_isChecked"
+                      ValueChanged="@(async (bool isDone) => await HandleCheckinChangedAsync(isDone))"
+                      Color="Color.Success"
+                      CheckedIcon="@Icons.Material.Filled.CheckCircle"
+                      UncheckedIcon="@Icons.Material.Filled.RadioButtonUnchecked"
                      UncheckedColor="Color.Inherit"
                      AriaLabel="@CheckBoxAriaLabel"
                      Size="Size.Large"
@@ -78,11 +78,26 @@
 
     [Parameter] public required HabitCheckinViewModel ViewModel { get; set; }
 
+    [Parameter] public EventCallback<bool> OnCheckinChanged { get; set; }
+
     #endregion
 
     #region Private Fields, Properties
+ 
+    private bool _isChecked;
 
-    // No private fields.
+    private int _checkboxRenderVersion;
+
+    #endregion
+
+    #region Lifecycle Methods
+
+    protected override void OnParametersSet()
+    {
+        ArgumentNullException.ThrowIfNull(ViewModel);
+
+        _isChecked = ViewModel.IsDoneForToday;
+    }
 
     #endregion
 
@@ -133,9 +148,23 @@
 
     private async Task HandleCheckinChangedAsync(bool isDone)
     {
-        await CheckinService.ToggleForTodayAsync(ViewModel.HabitName, isDone);
-        ViewModel.Streak = await CheckinService.GetCurrentStreakAsync(ViewModel.HabitName);
-        ViewModel.IsDoneForToday = isDone;
+        _isChecked = ViewModel.IsDoneForToday;
+        _checkboxRenderVersion++;
+        await InvokeAsync(StateHasChanged);
+
+        try
+        {
+            if (OnCheckinChanged.HasDelegate)
+            {
+                await OnCheckinChanged.InvokeAsync(isDone);
+            }
+        }
+        finally
+        {
+            _isChecked = ViewModel.IsDoneForToday;
+            _checkboxRenderVersion++;
+            await InvokeAsync(StateHasChanged);
+        }
     }
 
     private Task HandleCardKeyDownAsync(KeyboardEventArgs args)

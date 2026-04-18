@@ -170,6 +170,17 @@ Use semantic roles rather than one-off hex values.
 - Icon-only actions must still expose a clear accessible label and a visible tooltip on hover, focus, or press.
 - When a row contains multiple related icon-only actions, keep their size, shape, fill, and icon weight visually matched.
 
+### Dialogs
+
+- Prefer standard `MudDialog` treatments for compact overlay flows instead of custom bottom sheets or full-screen modal patterns.
+- Dialog surfaces should use `Surface`, `RadiusCard`, and `ShadowDialog`.
+- Daily check-in dialogs should stay compact and action-oriented, with the homepage still visible behind a dimmed backdrop.
+- Use standard two- or three-action dialog footers with clear emphasis:
+  - secondary text actions for cancel/skip flows
+  - primary filled action for the main completion path
+  - destructive filled action when the user is confirming data removal
+- When a dialog is dismissed without confirming the primary action, the underlying homepage check-in state should remain unchanged.
+
 ### Form fields
 
 - Use `BorderStrong` for standard field outlines.
@@ -177,6 +188,21 @@ Use semantic roles rather than one-off hex values.
 - Multiline fields should preserve line breaks and avoid looking like a separate editor product.
 - Field labels should use **Caption / 12sp / 400** or equivalent MudBlazor label styling.
 - Helper/meta text under fields should use **Caption / 12sp / 400**.
+- Short note-entry flows should prefer a standard text field with an inline helper or counter rather than a large editor treatment.
+
+### Homepage check-in dialogs
+
+- **Optional note dialog**:
+  - opens when the user marks a homepage habit as done
+  - uses a compact title plus short supporting copy
+  - contains one optional plain-text note field capped at **50 characters**
+  - should offer **Cancel**, **Skip note**, and **Save check-in** actions
+  - cancelling or dismissing the dialog leaves the habit unchecked
+- **Uncheck confirmation dialog**:
+  - opens when the user tries to remove today's check-in from the homepage
+  - uses calm but explicit copy warning that the saved note may be lost
+  - should offer **Keep check-in** and **Remove check-in** actions
+  - the destructive action should use `Danger`
 
 ### Habit identity and descriptions
 
@@ -199,6 +225,7 @@ Use semantic roles rather than one-off hex values.
 - **Settings data actions:** `Download`, `Share`, and `Upload` for backup download, backup share, and restore respectively.
 - **Habit detail actions:** `Edit` and `Delete`.
 - **Checkin toggle:** use MudBlazor's `MudCheckBox` pattern with done/not-done icon states.
+- **Homepage check-in note flow:** the dialog is text-first; no extra iconography is required beyond standard dialog chrome and the existing checkbox state.
 
 ## Navigation
 

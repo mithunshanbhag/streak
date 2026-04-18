@@ -55,7 +55,8 @@ else
 
                 @foreach (var habitCheckin in _habitCheckins)
                 {
-                    <HabitCheckin ViewModel="@habitCheckin"/>
+                    <HabitCheckin ViewModel="@habitCheckin"
+                                  OnCheckinChanged="@(async isDone => await HandleCheckinChangedAsync(habitCheckin, isDone))"/>
                 }
 
                 @if (_habitCheckins.Count < CoreConstants.MaxHabitCount)
@@ -99,6 +100,35 @@ else
         await DialogService.ShowAsync<NewHabitDialog>();
     }
 
+    private async Task HandleCheckinChangedAsync(HabitCheckinViewModel viewModel, bool isDone)
+    {
+        ArgumentNullException.ThrowIfNull(viewModel);
+
+        if (viewModel.IsDoneForToday == isDone)
+            return;
+
+        if (isDone)
+        {
+            var noteDialogResult = await ShowCheckinNoteDialogAsync(viewModel);
+            if (!noteDialogResult.Submitted)
+                return;
+
+            await CheckinService.ToggleForTodayAsync(viewModel.HabitName, true, noteDialogResult.Note);
+        }
+        else
+        {
+            var isConfirmed = await ShowRemoveCheckinDialogAsync(viewModel);
+            if (!isConfirmed)
+                return;
+
+            await CheckinService.ToggleForTodayAsync(viewModel.HabitName, false);
+        }
+
+        viewModel.Streak = await CheckinService.GetCurrentStreakAsync(viewModel.HabitName);
+        viewModel.IsDoneForToday = isDone;
+        await InvokeAsync(StateHasChanged);
+    }
+
     #endregion
 
     #region Private Helper Methods
@@ -110,6 +140,48 @@ else
         _habitCheckins = await CheckinService.GetHomePageHabitCheckinsAsync();
 
         _loadingData = false;
+    }
+
+    private async Task<(bool Submitted, string? Note)> ShowCheckinNoteDialogAsync(HabitCheckinViewModel viewModel)
+    {
+        var dialog = await DialogService.ShowAsync<CheckinNoteDialog>(
+            CheckinNoteDialogTitleText,
+            CreateCheckinNoteDialogParameters(viewModel));
+
+        var result = await dialog.Result;
+        if (result is null || result.Canceled)
+            return (false, null);
+
+        if (result.Data is not null and not string)
+            throw new InvalidOperationException("Check-in note dialog returned an unexpected result.");
+
+        return (true, result.Data as string);
+    }
+
+    private async Task<bool> ShowRemoveCheckinDialogAsync(HabitCheckinViewModel viewModel)
+    {
+        var dialog = await DialogService.ShowAsync<RemoveCheckinDialog>(
+            RemoveCheckinDialogTitleText,
+            CreateRemoveCheckinDialogParameters(viewModel));
+
+        var result = await dialog.Result;
+        return result is not null && !result.Canceled;
+    }
+
+    private static DialogParameters<CheckinNoteDialog> CreateCheckinNoteDialogParameters(HabitCheckinViewModel viewModel)
+    {
+        return new DialogParameters<CheckinNoteDialog>
+        {
+            { x => x.HabitName, viewModel.HabitName }
+        };
+    }
+
+    private static DialogParameters<RemoveCheckinDialog> CreateRemoveCheckinDialogParameters(HabitCheckinViewModel viewModel)
+    {
+        return new DialogParameters<RemoveCheckinDialog>
+        {
+            { x => x.HabitName, viewModel.HabitName }
+        };
     }
 
     #endregion
@@ -129,6 +201,10 @@ else
     private const string LoadingDataText = "Loading Data...";
 
     private const string NewHabitButtonLabel = "New Habit";
+
+    private const string CheckinNoteDialogTitleText = "Check in";
+
+    private const string RemoveCheckinDialogTitleText = "Remove check-in";
 
     private static string DateBannerText => DateDisplayHelper.FormatDateBanner(DateTime.Now);
 

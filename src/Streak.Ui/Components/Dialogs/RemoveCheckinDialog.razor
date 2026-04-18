@@ -1,0 +1,95 @@
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            @DialogTitleText
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudText Typo="Typo.body2">
+            @DialogMessageText
+        </MudText>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Text"
+                   OnClick="Cancel">
+            @CancelButtonText
+        </MudButton>
+        <MudButton Color="Color.Error"
+                   Variant="Variant.Filled"
+                   OnClick="ConfirmRemove">
+            @ConfirmButtonText
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code
+{
+
+    #region Parameters
+
+    [Parameter] [EditorRequired] public string HabitName { get; set; } = string.Empty;
+
+    [CascadingParameter] private IMudDialogInstance? MudDialogInstance { get; set; }
+
+    #endregion
+
+    #region Lifecycle Methods
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (MudDialogInstance is not null)
+        {
+            await MudDialogInstance.SetOptionsAsync(CreateDialogOptions());
+        }
+    }
+
+    protected override void OnParametersSet()
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(HabitName);
+    }
+
+    #endregion
+
+    #region Event Handlers
+
+    private void ConfirmRemove()
+    {
+        MudDialogInstance?.Close(DialogResult.Ok(true));
+    }
+
+    private void Cancel()
+    {
+        MudDialogInstance?.Cancel();
+    }
+
+    #endregion
+
+    #region Private Helper Methods
+
+    private static DialogOptions CreateDialogOptions()
+    {
+        return new DialogOptions
+        {
+            BackdropClick = false,
+            CloseButton = true,
+            CloseOnEscapeKey = true,
+            FullWidth = true,
+            MaxWidth = MaxWidth.ExtraSmall
+        };
+    }
+
+    #endregion
+
+    #region Text, Label Properties
+
+    private string DialogTitleText => $"Remove '{HabitName}' check-in?";
+
+    private const string DialogMessageText = "This will remove today's check-in and may also discard any saved note.";
+
+    private const string CancelButtonText = "Keep check-in";
+
+    private const string ConfirmButtonText = "Remove check-in";
+
+    #endregion
+
+}

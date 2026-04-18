@@ -96,9 +96,10 @@ public class CheckinService(
     public Task<Checkin?> ToggleForTodayAsync(
         string habitName,
         bool isDone,
+        string? notes = null,
         CancellationToken cancellationToken = default)
     {
-        return ToggleForTodayInternalAsync(habitName, isDone, cancellationToken);
+        return ToggleForTodayInternalAsync(habitName, isDone, notes, cancellationToken);
     }
 
     public async Task DeleteForHabitAndDateAsync(
@@ -134,6 +135,7 @@ public class CheckinService(
     private async Task<Checkin?> ToggleForTodayInternalAsync(
         string habitName,
         bool isDone,
+        string? notes,
         CancellationToken cancellationToken)
     {
         var habit = await GetRequiredHabitByNameAsync(habitName, cancellationToken);
@@ -148,7 +150,8 @@ public class CheckinService(
         var checkin = new Checkin
         {
             HabitId = habit.Id,
-            CheckinDate = todayDate
+            CheckinDate = todayDate,
+            Notes = notes
         };
 
         return await UpsertAsync(checkin, cancellationToken);

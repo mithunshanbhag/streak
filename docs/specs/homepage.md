@@ -54,11 +54,23 @@ Each card shows:
 ## Checkin Toggle Behavior
 
 - **Default state**: Empty circle (not done) at the start of each new **local** calendar day.
-- **Toggling to done**: Creates today's checkin record. The icon changes to a green check circle. The streak count increments immediately (visually).
-- **Toggling to not done**: Deletes today's checkin record. The icon changes back to an empty circle. The streak count updates accordingly.
-- After each toggle, the habit remains in the same alphabetical position; checking in does **not** change the list order.
-- Toggling is **instant** — no confirmation dialog, no loading state.
-- The checkin is persisted to local storage immediately on toggle.
+- **Toggling to done**:
+  - Opens a compact dialog over the homepage before today's checkin is persisted.
+  - The dialog contains a single optional plain-text note field for short checkin details, limited to **50 characters**.
+  - The field may be left empty. Users can either:
+    - **Save check-in** to persist today's checkin with the typed note
+    - **Skip note** to persist today's checkin with no note
+    - **Cancel / dismiss** to close the dialog and leave the habit unchecked
+  - The homepage remains visible behind the dialog, dimmed.
+  - The green check state and updated streak appear only after the user completes **Save check-in** or **Skip note**.
+- **Toggling to not done**:
+  - Opens a confirmation dialog before deleting today's checkin.
+  - The dialog warns that removing the checkin may also discard any note saved with it.
+  - **Remove check-in** deletes today's checkin record, changes the icon back to an empty circle, and updates the streak.
+  - **Keep check-in** (or dismissing the dialog) closes the confirmation and leaves the current done state unchanged.
+- Saved notes are captured and persisted with the checkin, but they are **not shown on the homepage card** in this scope.
+- After each completed toggle action, the habit remains in the same alphabetical position; checking in does **not** change the list order.
+- Checkins are persisted to local storage immediately after the user completes the dialog flow.
 - If the device timezone changes because of travel or manual clock/timezone edits, the app's meaning of **today** changes with the device's current local timezone.
 
 ## Visual States
@@ -89,11 +101,14 @@ When the user has no habits configured:
 
 ## Interaction Summary
 
-| Action                           | Result                                                      |
-| -------------------------------- | ----------------------------------------------------------- |
-| Toggle a habit's check icon      | Immediately records checkin for today; updates streak count |
-| Tap a habit card (except toggle) | Navigates to the Habit Details page for that habit          |
-| Tap **+ New Habit** on homepage  | Opens the Quick Add Habit dialog over the homepage          |
-| Tap **⚙** in app bar             | Navigates to the Settings page                              |
-| Tap GitHub icon in app bar       | Opens the public GitHub repository                          |
-| Tap **Streak** logo              | No-op (already on the homepage)                             |
+| Action                                | Result                                                                 |
+| ------------------------------------- | ---------------------------------------------------------------------- |
+| Toggle an unchecked habit to done     | Opens the optional note dialog; save/skip persists today's checkin     |
+| Cancel or dismiss the note dialog     | Closes the dialog and leaves the habit unchecked                       |
+| Toggle a checked habit to not done    | Opens a confirmation dialog before deleting today's checkin            |
+| Confirm **Remove check-in**           | Deletes today's checkin and any saved note; updates streak count       |
+| Tap a habit card (except toggle)      | Navigates to the Habit Details page for that habit                     |
+| Tap **+ New Habit** on homepage       | Opens the Quick Add Habit dialog over the homepage                     |
+| Tap **⚙** in app bar                  | Navigates to the Settings page                                         |
+| Tap GitHub icon in app bar            | Opens the public GitHub repository                                     |
+| Tap **Streak** logo                   | No-op (already on the homepage)                                        |
