@@ -10,7 +10,7 @@ internal static class AndroidMediaStoreBackupFileWriter
 {
     private const string DatabaseMimeType = "application/octet-stream";
 
-    public static Task<string> SaveBackupAsync(
+    public static Task<SavedFileLocation> SaveBackupAsync(
         string sourceFilePath,
         string relativePath,
         CancellationToken cancellationToken = default)
@@ -22,7 +22,7 @@ internal static class AndroidMediaStoreBackupFileWriter
             cancellationToken);
     }
 
-    public static async Task<string> SaveFileAsync(
+    public static async Task<SavedFileLocation> SaveFileAsync(
         string sourceFilePath,
         string relativePath,
         string mimeType,
@@ -53,7 +53,11 @@ internal static class AndroidMediaStoreBackupFileWriter
             completionValues.Put(MediaStore.IMediaColumns.IsPending, 0);
             contentResolver.Update(targetUri, completionValues, null, null);
 
-            return $"{normalizedRelativePath}/{fileName}";
+            return new SavedFileLocation
+            {
+                SavedFileDisplayPath = $"{normalizedRelativePath}/{fileName}",
+                ParentFolderDisplayPath = normalizedRelativePath
+            };
         }
         catch
         {

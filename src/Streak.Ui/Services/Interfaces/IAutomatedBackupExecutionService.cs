@@ -6,6 +6,6 @@ public interface IAutomatedBackupExecutionService
     ///     Creates a standalone SQLite backup copy and persists it to the shared automated-backup location.
     /// </summary>
     /// <param name="cancellationToken">Cancels the backup before it completes.</param>
-    /// <returns>A human-readable saved location for logging.</returns>
-    Task<string> ExecuteAutomatedBackupAsync(CancellationToken cancellationToken = default);
+    /// <returns>The saved backup file and parent folder details.</returns>
+    Task<SavedFileLocation> ExecuteAutomatedBackupAsync(CancellationToken cancellationToken = default);
 }

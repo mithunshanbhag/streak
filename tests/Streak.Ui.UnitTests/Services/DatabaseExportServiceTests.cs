@@ -23,7 +23,11 @@ public sealed class DatabaseExportServiceTests
                 inspectedBackupPath = Path.Combine(exportDirectory.Path, "inspected-backup.db");
                 File.Copy(filePath, inspectedBackupPath, true);
 
-                return Task.FromResult(DatabaseExportResult.Saved);
+                return Task.FromResult(DatabaseExportResult.Saved(new SavedFileLocation
+                {
+                    SavedFileDisplayPath = $"Downloads/{Path.GetFileName(filePath)}",
+                    ParentFolderDisplayPath = "Downloads"
+                }));
             });
 
         var sut = CreateSut(
@@ -33,7 +37,9 @@ public sealed class DatabaseExportServiceTests
 
         var exportResult = await sut.ExportDatabaseAsync();
 
-        exportResult.Should().Be(DatabaseExportResult.Saved);
+        exportResult.Status.Should().Be(DatabaseExportStatus.Saved);
+        exportResult.SavedFileLocation.Should().NotBeNull();
+        exportResult.SavedFileLocation!.ParentFolderDisplayPath.Should().Be("Downloads");
         savedBackupPath.Should().NotBeNull();
         Path.GetFileName(savedBackupPath!).Should().MatchRegex("^streak-backup-[0-9]{8}-[0-9]{6}\\.db$");
         File.Exists(savedBackupPath!).Should().BeFalse();
@@ -103,7 +109,7 @@ public sealed class DatabaseExportServiceTests
 
         var exportResult = await sut.ExportDatabaseAsync();
 
-        exportResult.Should().Be(DatabaseExportResult.Cancelled);
+        exportResult.Status.Should().Be(DatabaseExportStatus.Cancelled);
         Directory.GetFiles(exportDirectory.Path).Should().BeEmpty();
     }
 

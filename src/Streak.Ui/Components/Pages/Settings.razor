@@ -5,7 +5,10 @@
 @inject IDatabaseShareService DatabaseShareService
 @inject IDatabaseImportFilePicker DatabaseImportFilePicker
 @inject IDatabaseImportService DatabaseImportService
+@inject IManualBackupCompletionNotifier ManualBackupCompletionNotifier
+@inject IBackupNotificationPermissionService BackupNotificationPermissionService
 @inject IDialogService DialogService
+@inject ISnackbar Snackbar
 @inject NavigationManager NavigationManager
 
 <PageTitle>@SettingsPageTitleText</PageTitle>
@@ -299,7 +302,7 @@
 
     #region Event Handlers
 
-    private void AutomatedBackupsEnabledChangedAsync(bool isEnabled)
+    private async Task AutomatedBackupsEnabledChangedAsync(bool isEnabled)
     {
         try
         {
@@ -307,6 +310,13 @@
             _operationErrorMessage = null;
             AutomatedBackupConfigurationService.SetIsEnabled(isEnabled);
             _automatedBackupsEnabled = isEnabled;
+
+            if (isEnabled)
+            {
+                var notificationsEnabled = await BackupNotificationPermissionService.RequestPermissionIfNeededAsync();
+                if (!notificationsEnabled)
+                    Snackbar.Add(AutomatedBackupNotificationsPermissionText, Severity.Info);
+            }
         }
         catch (Exception)
         {
@@ -328,8 +338,10 @@
 
             var exportResult = await DatabaseExportService.ExportDatabaseAsync();
 
-            if (exportResult == DatabaseExportResult.Cancelled)
+            if (exportResult.Status == DatabaseExportStatus.Cancelled)
                 return;
+
+            ManualBackupCompletionNotifier.NotifyCompleted(exportResult);
         }
         catch (Exception)
         {
@@ -437,6 +449,8 @@
     private const string AutomatedBackupsSwitchAriaLabel = "Daily automated backups toggle";
 
     private const string AutomatedBackupsUpdateFailedText = "Unable to update automated backups right now. Please try again.";
+
+    private const string AutomatedBackupNotificationsPermissionText = "Android backup notifications are off. Nightly backups will still run, but completion notifications stay hidden until you allow notifications.";
 
     private const string BackupHeaderText = "Backup";
 

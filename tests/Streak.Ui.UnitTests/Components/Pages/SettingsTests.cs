@@ -56,7 +56,7 @@ public sealed class SettingsTests : TestContext
             {
                 exportStarted.TrySetResult();
                 await allowExportToFinish.Task;
-                return DatabaseExportResult.Saved;
+                return CreateSavedExportResult();
             });
 
         var shareServiceMock = CreateShareServiceMock(canShare: false);
@@ -104,6 +104,38 @@ public sealed class SettingsTests : TestContext
 
         shareServiceMock.Verify(
             x => x.ShareDatabaseAsync(It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task Settings_ShouldNotifyManualBackupCompletion_WhenExportSucceeds()
+    {
+        var exportServiceMock = new Mock<IDatabaseExportService>();
+        var diagnosticsExportServiceMock = new Mock<IDiagnosticsExportService>();
+        var shareServiceMock = CreateShareServiceMock(canShare: false);
+        var backupConfigurationServiceMock = CreateBackupConfigurationServiceMock(isEnabled: false);
+        var manualBackupCompletionNotifierMock = new Mock<IManualBackupCompletionNotifier>();
+
+        exportServiceMock
+            .Setup(x => x.ExportDatabaseAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(CreateSavedExportResult());
+
+        RegisterSettingsServices(
+            exportServiceMock,
+            diagnosticsExportServiceMock,
+            shareServiceMock,
+            backupConfigurationServiceMock,
+            manualBackupCompletionNotifierMock: manualBackupCompletionNotifierMock);
+
+        var cut = RenderSettings();
+
+        await cut.Find("button[aria-label='Download database']").ClickAsync(new MouseEventArgs());
+
+        manualBackupCompletionNotifierMock.Verify(
+            x => x.NotifyCompleted(It.Is<DatabaseExportResult>(result =>
+                result.Status == DatabaseExportStatus.Saved
+                && result.SavedFileLocation != null
+                && result.SavedFileLocation.ParentFolderDisplayPath == "Downloads")),
             Times.Once);
     }
 
@@ -237,7 +269,7 @@ public sealed class SettingsTests : TestContext
                 if (attemptCount == 1)
                     throw new InvalidOperationException("Boom");
 
-                return Task.FromResult(DatabaseExportResult.Saved);
+                return Task.FromResult(CreateSavedExportResult());
             });
 
         var shareServiceMock = CreateShareServiceMock(canShare: false);
@@ -396,6 +428,45 @@ public sealed class SettingsTests : TestContext
         backupConfigurationServiceMock.Verify(x => x.SetIsEnabled(true), Times.Once);
     }
 
+    [Fact]
+    public void Settings_ShouldShowSnackbar_WhenAutomatedBackupNotificationPermissionIsDenied()
+    {
+        var exportServiceMock = new Mock<IDatabaseExportService>();
+        var diagnosticsExportServiceMock = new Mock<IDiagnosticsExportService>();
+        var shareServiceMock = CreateShareServiceMock(canShare: false);
+        var backupConfigurationServiceMock = CreateBackupConfigurationServiceMock(isEnabled: false);
+        var backupNotificationPermissionServiceMock = new Mock<IBackupNotificationPermissionService>();
+        var snackbarMock = new Mock<ISnackbar>();
+        backupNotificationPermissionServiceMock
+            .Setup(x => x.RequestPermissionIfNeededAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
+
+        RegisterSettingsServices(
+            exportServiceMock,
+            diagnosticsExportServiceMock,
+            shareServiceMock,
+            backupConfigurationServiceMock,
+            backupNotificationPermissionServiceMock: backupNotificationPermissionServiceMock,
+            snackbarMock: snackbarMock);
+        var cut = RenderSettings();
+
+        cut.Find("input[type='checkbox']").Change(true);
+
+        cut.WaitForAssertion(() =>
+        {
+            backupNotificationPermissionServiceMock.Verify(
+                x => x.RequestPermissionIfNeededAsync(It.IsAny<CancellationToken>()),
+                Times.Once);
+            snackbarMock.Verify(
+                x => x.Add(
+                    It.Is<string>(message => message.Contains("Android backup notifications are off.", StringComparison.Ordinal)),
+                    Severity.Info,
+                    It.IsAny<Action<SnackbarOptions>>(),
+                    It.IsAny<string>()),
+                Times.Once);
+        });
+    }
+
     #endregion
 
     #region Private Helper Methods
@@ -421,10 +492,29 @@ public sealed class SettingsTests : TestContext
         Mock<IDatabaseExportService> exportServiceMock,
         Mock<IDiagnosticsExportService> diagnosticsExportServiceMock,
         Mock<IDatabaseShareService> shareServiceMock,
-        Mock<IAutomatedBackupConfigurationService> backupConfigurationServiceMock)
+        Mock<IAutomatedBackupConfigurationService> backupConfigurationServiceMock,
+        Mock<IManualBackupCompletionNotifier>? manualBackupCompletionNotifierMock = null,
+        Mock<IBackupNotificationPermissionService>? backupNotificationPermissionServiceMock = null,
+        Mock<ISnackbar>? snackbarMock = null)
     {
         var importFilePickerMock = new Mock<IDatabaseImportFilePicker>();
         var importServiceMock = new Mock<IDatabaseImportService>();
+        manualBackupCompletionNotifierMock ??= new Mock<IManualBackupCompletionNotifier>();
+        if (backupNotificationPermissionServiceMock is null)
+        {
+            backupNotificationPermissionServiceMock = new Mock<IBackupNotificationPermissionService>();
+            backupNotificationPermissionServiceMock
+                .Setup(x => x.RequestPermissionIfNeededAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(true);
+        }
+        snackbarMock ??= new Mock<ISnackbar>();
+        snackbarMock
+            .Setup(x => x.Add(
+                It.IsAny<string>(),
+                It.IsAny<Severity>(),
+                It.IsAny<Action<SnackbarOptions>>(),
+                It.IsAny<string>()))
+            .Returns((Snackbar?)null);
 
         Services.AddSingleton(backupConfigurationServiceMock.Object);
         Services.AddSingleton(exportServiceMock.Object);
@@ -432,6 +522,18 @@ public sealed class SettingsTests : TestContext
         Services.AddSingleton(shareServiceMock.Object);
         Services.AddSingleton(importFilePickerMock.Object);
         Services.AddSingleton(importServiceMock.Object);
+        Services.AddSingleton(manualBackupCompletionNotifierMock.Object);
+        Services.AddSingleton(backupNotificationPermissionServiceMock.Object);
+        Services.AddSingleton(snackbarMock.Object);
+    }
+
+    private static DatabaseExportResult CreateSavedExportResult()
+    {
+        return DatabaseExportResult.Saved(new SavedFileLocation
+        {
+            SavedFileDisplayPath = @"Downloads\streak-backup-20260420-004200.db",
+            ParentFolderDisplayPath = "Downloads"
+        });
     }
 
     private IRenderedComponent<Settings> RenderSettings()

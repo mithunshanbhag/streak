@@ -7,14 +7,14 @@ public sealed class WindowsDatabaseExportFileSaver : IDatabaseExportFileSaver
         string backupFilePath,
         CancellationToken cancellationToken = default)
     {
-        var wasSaved = await WindowsFileSavePickerExportUtility.SaveFileAsync(
+        var savedFileLocation = await WindowsFileSavePickerExportUtility.SaveFileAsync(
             backupFilePath,
             "SQLite database backup",
             ".db",
             cancellationToken);
 
-        return wasSaved
-            ? DatabaseExportResult.Saved
+        return savedFileLocation is not null
+            ? DatabaseExportResult.Saved(savedFileLocation)
             : DatabaseExportResult.Cancelled;
     }
 }

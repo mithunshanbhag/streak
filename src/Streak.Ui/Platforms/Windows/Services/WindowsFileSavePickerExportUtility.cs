@@ -6,7 +6,7 @@ namespace Streak.Ui.Services.Implementations;
 
 internal static class WindowsFileSavePickerExportUtility
 {
-    public static async Task<bool> SaveFileAsync(
+    public static async Task<SavedFileLocation?> SaveFileAsync(
         string sourceFilePath,
         string fileTypeDescription,
         string defaultFileExtension,
@@ -32,7 +32,7 @@ internal static class WindowsFileSavePickerExportUtility
 
         var targetFile = await picker.PickSaveFileAsync();
         if (targetFile is null)
-            return false;
+            return null;
 
         await using var sourceStream = File.OpenRead(sourceFilePath);
         await using var destinationStream = await targetFile.OpenStreamForWriteAsync();
@@ -41,7 +41,12 @@ internal static class WindowsFileSavePickerExportUtility
         await sourceStream.CopyToAsync(destinationStream, cancellationToken);
         await destinationStream.FlushAsync(cancellationToken);
 
-        return true;
+        return new SavedFileLocation
+        {
+            SavedFileDisplayPath = targetFile.Path,
+            ParentFolderDisplayPath = Path.GetDirectoryName(targetFile.Path) ?? targetFile.Path,
+            SavedFilePath = targetFile.Path
+        };
     }
 
     private static nint GetWindowHandle()

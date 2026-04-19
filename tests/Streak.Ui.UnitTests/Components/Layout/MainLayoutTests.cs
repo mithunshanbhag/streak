@@ -99,6 +99,13 @@ public sealed class MainLayoutTests : TestContext
         Services.AddSingleton(backupConfigurationServiceMock.Object);
         Services.AddSingleton(Mock.Of<IDatabaseImportFilePicker>());
         Services.AddSingleton(Mock.Of<IDatabaseImportService>());
+        Services.AddSingleton(Mock.Of<IManualBackupCompletionNotifier>());
+
+        var backupNotificationPermissionServiceMock = new Mock<IBackupNotificationPermissionService>();
+        backupNotificationPermissionServiceMock
+            .Setup(x => x.RequestPermissionIfNeededAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+        Services.AddSingleton(backupNotificationPermissionServiceMock.Object);
     }
 
     private void RegisterHabitDetailsServices(Habit habit)

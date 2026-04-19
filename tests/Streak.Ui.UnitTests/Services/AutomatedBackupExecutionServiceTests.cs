@@ -25,7 +25,11 @@ public sealed class AutomatedBackupExecutionServiceTests
                 inspectedBackupPath = Path.Combine(exportDirectory.Path, "inspected-auto-backup.db");
                 File.Copy(filePath, inspectedBackupPath, true);
 
-                return Task.FromResult($"Downloads/Streak/{Path.GetFileName(filePath)}");
+                return Task.FromResult(new SavedFileLocation
+                {
+                    SavedFileDisplayPath = $"Downloads/Streak/{Path.GetFileName(filePath)}",
+                    ParentFolderDisplayPath = "Downloads/Streak"
+                });
             });
 
         var sut = CreateSut(
@@ -35,7 +39,8 @@ public sealed class AutomatedBackupExecutionServiceTests
 
         var savedLocation = await sut.ExecuteAutomatedBackupAsync();
 
-        savedLocation.Should().MatchRegex("^Downloads/Streak/streak-auto-backup-[0-9]{8}-[0-9]{6}\\.db$");
+        savedLocation.SavedFileDisplayPath.Should().MatchRegex("^Downloads/Streak/streak-auto-backup-[0-9]{8}-[0-9]{6}\\.db$");
+        savedLocation.ParentFolderDisplayPath.Should().Be("Downloads/Streak");
         savedBackupPath.Should().NotBeNull();
         inspectedBackupPath.Should().NotBeNull();
         Path.GetFileName(savedBackupPath!).Should().MatchRegex("^streak-auto-backup-[0-9]{8}-[0-9]{6}\\.db$");

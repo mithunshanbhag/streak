@@ -42,6 +42,7 @@ public sealed class AutomatedBackupAlarmReceiver : BroadcastReceiver
         var logger = services.GetRequiredService<ILogger<AutomatedBackupAlarmReceiver>>();
         var appStoragePathService = services.GetRequiredService<IAppStoragePathService>();
         var timeProvider = services.GetRequiredService<TimeProvider>();
+        var automatedBackupCompletionNotifier = services.GetRequiredService<IAutomatedBackupCompletionNotifier>();
         var automatedBackupExecutionService = services.GetRequiredService<IAutomatedBackupExecutionService>();
 
         var isEnabled = AutomatedBackupSettingsStore.GetIsEnabled(appStoragePathService.DatabasePath);
@@ -56,10 +57,11 @@ public sealed class AutomatedBackupAlarmReceiver : BroadcastReceiver
 
         var nextRunLocal = TimeZoneInfo.ConvertTime(nextRunUtc.Value, timeProvider.LocalTimeZone);
         var savedLocation = await automatedBackupExecutionService.ExecuteAutomatedBackupAsync();
+        automatedBackupCompletionNotifier.NotifyCompleted(savedLocation);
 
         logger.LogInformation(
             "Nightly automated backup completed at {SavedLocation}. Next trigger scheduled for {NextRunLocal}.",
-            savedLocation,
+            savedLocation.SavedFileDisplayPath,
             nextRunLocal);
     }
 

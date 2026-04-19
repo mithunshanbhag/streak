@@ -11,7 +11,7 @@ public sealed class AndroidDiagnosticsExportFileSaver : IDiagnosticsExportFileSa
         string bundleFilePath,
         CancellationToken cancellationToken = default)
     {
-        await AndroidMediaStoreBackupFileWriter.SaveFileAsync(
+        _ = await AndroidMediaStoreBackupFileWriter.SaveFileAsync(
             bundleFilePath,
             Environment.DirectoryDownloads,
             DiagnosticsBundleMimeType,

@@ -53,7 +53,9 @@ A streak is the count of **consecutive calendar days** on which a habit was chec
 
 - All data is stored **locally on the device**. There is no cloud sync, no user accounts, and no authentication.
 - Users may manually export or share `.db` backup copies to other apps and services, but the app does not automate uploads or synchronization.
+- After a manual database export succeeds, the app should show a lightweight in-app confirmation and let the user quickly open the parent folder that now contains the backup.
 - On **Android**, users may also enable nightly automated local backups that save timestamped `.db` copies into shared device storage.
+- On Android, a successful nightly automated backup should also be able to post a local completion notification, subject to the platform's notification permission.
 - Data will be persisted across app restarts.
 
 ## Notifications and Reminders
@@ -64,6 +66,9 @@ A streak is the count of **consecutive calendar days** on which a habit was chec
 - The reminder should include a summary (e.g., "You have 2 habits pending today").
 - The default reminder time is **9:00 PM** (local device time).
 - Reminders can be disabled entirely by the user.
+- Backup-completion feedback is separate from reminder notifications:
+  - manual **Download DB** success uses an in-app confirmation with a quick folder-open action
+  - Android nightly automated backups may post a native completion notification that attempts to open the backup folder when tapped
 
 ## Time and Timezone Behavior
 

@@ -20,6 +20,8 @@ public class MainActivity : MauiAppCompatActivity
     {
         base.OnCreate(savedInstanceState);
 
+        AndroidBackupNotificationChannelRegistrar.EnsureCreated();
+
         // Keep the MAUI content inside Android's safe drawing area so the
         // Blazor app bar and bottom CTA stay clear of system bars.
         WindowCompat.SetDecorFitsSystemWindows(Window!, true);

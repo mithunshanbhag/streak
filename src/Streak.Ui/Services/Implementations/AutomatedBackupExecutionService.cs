@@ -10,7 +10,7 @@ public sealed class AutomatedBackupExecutionService(
     private readonly IAutomatedBackupFileSaver _automatedBackupFileSaver = automatedBackupFileSaver;
     private readonly ILogger<AutomatedBackupExecutionService> _logger = logger;
 
-    public async Task<string> ExecuteAutomatedBackupAsync(CancellationToken cancellationToken = default)
+    public async Task<SavedFileLocation> ExecuteAutomatedBackupAsync(CancellationToken cancellationToken = default)
     {
         var sourceDatabasePath = _appStoragePathService.DatabasePath;
         if (!File.Exists(sourceDatabasePath))

@@ -77,14 +77,17 @@ The page contains two vertically stacked sections presented as clean cards:
 - Automated backups should create a standalone backup copy rather than writing directly against the live in-use database file.
 - Automated backups should include the same local SQLite contents as manual backups, including habits, checkins, and saved settings.
 - Automated backups should use a timestamped filename pattern such as `streak-auto-backup-YYYYMMdd-HHmmss.db`.
+- On Android, a successful nightly automated backup should post a native completion notification when the app has notification permission.
+- Tapping that Android completion notification should attempt to open the shared parent folder that contains the automated backups (`Downloads/Streak`). If the platform cannot deep-link to that exact folder, falling back to the broader Downloads surface is acceptable.
+- If Android notification permission is denied, nightly backups should still run normally; only the completion notification is skipped.
 - There is no user-facing control yet for backup history, retention, cleanup, schedule customization, or destination customization.
 
 ### Platform-specific Automated Backup UX
 
-| Platform | Expected behavior                                                                                                                                                                  |
-| -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Windows  | Automated backups are unavailable. The toggle remains disabled, and the app does not schedule or run nightly automated backups.                                                    |
-| Android  | The toggle is enabled. Turning it ON schedules the nightly 11:30 PM local alarm, and each run saves a timestamped `.db` backup into `Downloads/Streak` without prompting the user. |
+| Platform | Expected behavior                                                                                                                                                                                                                                                                          |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Windows  | Automated backups are unavailable. The toggle remains disabled, and the app does not schedule or run nightly automated backups.                                                                                                                                                            |
+| Android  | The toggle is enabled. Turning it ON schedules the nightly 11:30 PM local alarm, each run saves a timestamped `.db` backup into `Downloads/Streak` without prompting the user, and successful runs can post a completion notification that attempts to open the backup folder when tapped. |
 
 ## Export Behavior
 
@@ -97,13 +100,14 @@ The page contains two vertically stacked sections presented as clean cards:
 - Export is considered a low-frequency maintenance / safety action, so it lives in **Settings** rather than in the Homepage app bar.
 - The exported filename should use a timestamped pattern such as `streak-backup-YYYYMMdd-HHmmss.db`.
 - The platform-specific save note is exposed from the **Backup** info tooltip rather than as persistent inline helper text.
+- After a successful manual export, the page should show an in-app success confirmation with an **Open folder** affordance so the user can jump straight to the saved backup location.
 
 ### Platform-specific Export UX
 
-| Platform | Expected behavior                                                                                                                                              |
-| -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Windows  | Open a standard **Save As** file dialog prefilled with the timestamped backup filename. The user chooses where to save the `.db` file and confirms the dialog. |
-| Android  | Save the timestamped backup file directly into the device's **Downloads** folder. No share sheet should be shown for the normal export flow.                   |
+| Platform | Expected behavior                                                                                                                                                                                                                                                       |
+| -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Windows  | Open a standard **Save As** file dialog prefilled with the timestamped backup filename. The user chooses where to save the `.db` file and confirms the dialog, then sees an in-app confirmation with an **Open folder** action that opens Explorer to the saved backup. |
+| Android  | Save the timestamped backup file directly into the device's **Downloads** folder. No share sheet should be shown for the normal export flow. After save, show an in-app confirmation with an **Open folder** action for Downloads.                                      |
 
 - Do **not** use the operating system share sheet as the primary export UX on either platform.
 - On Windows, cancelling the file-save dialog is treated as a user cancellation, not as an export error.

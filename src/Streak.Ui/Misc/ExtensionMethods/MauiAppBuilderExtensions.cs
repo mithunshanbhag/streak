@@ -42,16 +42,23 @@ public static class MauiAppBuilderExtensions
             builder.Services.AddTransient<ICheckinService, CheckinService>();
             builder.Services.AddSingleton<IAppStoragePathService, AppStoragePathService>();
             builder.Services.AddSingleton<IAutomatedBackupConfigurationService, AutomatedBackupConfigurationService>();
+            builder.Services.AddTransient<IManualBackupCompletionNotifier, ManualBackupCompletionNotifier>();
             builder.Services.AddTransient<IDatabaseImportService, DatabaseImportService>();
             builder.Services.AddTransient<IDatabaseExportService, DatabaseExportService>();
             builder.Services.AddTransient<IDiagnosticsExportService, DiagnosticsExportService>();
 #if WINDOWS
             builder.Services.AddSingleton<IAutomatedBackupScheduler, NoOpAutomatedBackupScheduler>();
+            builder.Services.AddSingleton<IBackupFolderOpener, WindowsBackupFolderOpener>();
+            builder.Services.AddSingleton<IAutomatedBackupCompletionNotifier, NoOpAutomatedBackupCompletionNotifier>();
+            builder.Services.AddSingleton<IBackupNotificationPermissionService, NoOpBackupNotificationPermissionService>();
             builder.Services.AddTransient<IDatabaseImportFilePicker, WindowsDatabaseImportFilePicker>();
             builder.Services.AddTransient<IDatabaseExportFileSaver, WindowsDatabaseExportFileSaver>();
             builder.Services.AddTransient<IDiagnosticsExportFileSaver, WindowsDiagnosticsExportFileSaver>();
             builder.Services.AddTransient<IDatabaseShareService, UnsupportedDatabaseShareService>();
 #elif ANDROID
+            builder.Services.AddSingleton<IBackupFolderOpener, AndroidBackupFolderOpener>();
+            builder.Services.AddSingleton<IAutomatedBackupCompletionNotifier, AndroidAutomatedBackupCompletionNotifier>();
+            builder.Services.AddSingleton<IBackupNotificationPermissionService, AndroidBackupNotificationPermissionService>();
             builder.Services.AddTransient<IDatabaseImportFilePicker, AndroidDatabaseImportFilePicker>();
             builder.Services.AddTransient<IDatabaseExportFileSaver, AndroidDatabaseExportFileSaver>();
             builder.Services.AddTransient<IDiagnosticsExportFileSaver, AndroidDiagnosticsExportFileSaver>();
@@ -62,6 +69,9 @@ public static class MauiAppBuilderExtensions
             builder.Services.AddTransient<IDatabaseShareService, DatabaseShareService>();
 #else
             builder.Services.AddSingleton<IAutomatedBackupScheduler, NoOpAutomatedBackupScheduler>();
+            builder.Services.AddSingleton<IBackupFolderOpener, UnsupportedBackupFolderOpener>();
+            builder.Services.AddSingleton<IAutomatedBackupCompletionNotifier, NoOpAutomatedBackupCompletionNotifier>();
+            builder.Services.AddSingleton<IBackupNotificationPermissionService, NoOpBackupNotificationPermissionService>();
             builder.Services.AddTransient<IDiagnosticsExportFileSaver, WindowsDiagnosticsExportFileSaver>();
             builder.Services.AddTransient<IDatabaseShareService, UnsupportedDatabaseShareService>();
 #endif

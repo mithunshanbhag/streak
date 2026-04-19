@@ -7,13 +7,13 @@ public sealed class WindowsDiagnosticsExportFileSaver : IDiagnosticsExportFileSa
         string bundleFilePath,
         CancellationToken cancellationToken = default)
     {
-        var wasSaved = await WindowsFileSavePickerExportUtility.SaveFileAsync(
+        var savedFileLocation = await WindowsFileSavePickerExportUtility.SaveFileAsync(
             bundleFilePath,
             "Diagnostics support bundle",
             ".zip",
             cancellationToken);
 
-        return wasSaved
+        return savedFileLocation is not null
             ? DiagnosticsExportResult.Saved
             : DiagnosticsExportResult.Cancelled;
     }

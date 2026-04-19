@@ -7,8 +7,8 @@ public interface IAutomatedBackupFileSaver
     /// </summary>
     /// <param name="backupFilePath">The temporary generated backup file to persist.</param>
     /// <param name="cancellationToken">Cancels the write before it completes.</param>
-    /// <returns>A human-readable saved location for logging.</returns>
-    Task<string> SaveBackupAsync(
+    /// <returns>The saved backup file and parent folder details.</returns>
+    Task<SavedFileLocation> SaveBackupAsync(
         string backupFilePath,
         CancellationToken cancellationToken = default);
 }

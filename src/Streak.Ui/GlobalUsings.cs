@@ -8,6 +8,7 @@ global using System.Reflection;
 global using FluentValidation;
 global using Microsoft.Data.Sqlite;
 global using Microsoft.EntityFrameworkCore;
+global using MudBlazor;
 global using MudBlazor.Services;
 global using Streak.Core.Constants;
 global using Streak.Ui.Constants;

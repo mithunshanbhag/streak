@@ -7,7 +7,7 @@ public sealed class AndroidAutomatedBackupFileSaver : IAutomatedBackupFileSaver
 {
     private static readonly string RelativeDirectoryPath = $"{Environment.DirectoryDownloads}/{AutomatedBackupConstants.SharedAndroidDirectoryName}";
 
-    public Task<string> SaveBackupAsync(
+    public Task<SavedFileLocation> SaveBackupAsync(
         string backupFilePath,
         CancellationToken cancellationToken = default)
     {
