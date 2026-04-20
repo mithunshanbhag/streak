@@ -59,6 +59,73 @@ A streak is the count of **consecutive calendar days** on which a habit was chec
 - On Android, a successful nightly automated backup should also be able to post a local completion notification, subject to the platform's notification permission.
 - Data will be persisted across app restarts.
 
+### Storage Layout
+
+The app uses three categories of storage:
+
+| Category                | Android                                                       | Windows                                                       | Purpose                                                                              |
+| ----------------------- | ------------------------------------------------------------- | ------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| Live app data           | App-private `FileSystem.Current.AppDataDirectory`             | App-private `FileSystem.Current.AppDataDirectory`             | Live SQLite database and persistent diagnostics that users should not edit directly. |
+| Temporary working files | App-private `FileSystem.Current.CacheDirectory/ExportWorking` | App-private `FileSystem.Current.CacheDirectory/ExportWorking` | Disposable backup, share, restore, and diagnostics-export staging files.             |
+| User-visible exports    | `Downloads/Streak/...` through Android `MediaStore.Downloads` | User-selected save location through the Windows file picker   | Files the user explicitly exports, shares, or keeps as local backups.                |
+
+Android app-private storage:
+
+```text
+AppDataDirectory/
+  streak.db
+  streak.db-wal
+  streak.db-shm
+  Diagnostics/
+    streak-diagnostics.log
+
+CacheDirectory/
+  ExportWorking/
+    streak-backup-YYYYMMdd-HHmmss.db
+    streak-auto-backup-YYYYMMdd-HHmmss.db
+    streak-diagnostics-YYYYMMdd-HHmmss.zip
+```
+
+Android user-visible storage:
+
+```text
+Downloads/
+  Streak/
+    Backups/
+      Manual/
+        streak-backup-YYYYMMdd-HHmmss.db
+      Automated/
+        streak-auto-backup-YYYYMMdd-HHmmss.db
+    Diagnostics/
+      streak-diagnostics-YYYYMMdd-HHmmss.zip
+```
+
+Windows app-private storage:
+
+```text
+AppDataDirectory/
+  streak.db
+  streak.db-wal
+  streak.db-shm
+  Diagnostics/
+    streak-diagnostics.log
+
+CacheDirectory/
+  ExportWorking/
+    streak-backup-YYYYMMdd-HHmmss.db
+    streak-diagnostics-YYYYMMdd-HHmmss.zip
+```
+
+Windows user-visible storage:
+
+```text
+<user-selected-folder>/
+  streak-backup-YYYYMMdd-HHmmss.db
+  streak-diagnostics-YYYYMMdd-HHmmss.zip
+```
+
+Windows does not currently support automated backups or DB sharing. Android DB sharing uses a cache-backed `streak-backup-YYYYMMdd-HHmmss.db` copy and hands it to the native share sheet; it does not create a separate durable export unless the user chooses to save it through another app.
+
 ## Notifications and Reminders
 
 - The user can configure a **daily reminder time** (e.g., 9:00 PM) in settings.
@@ -102,11 +169,11 @@ See [non-functional-requirements.md](./non-functional-requirements.md).
 
 Each major surface has its own detailed spec:
 
-| Surface         | Route / Trigger           | Spec                                             | Purpose                                                             |
-| --------------- | ------------------------- | ------------------------------------------------ | ------------------------------------------------------------------- |
-| Homepage        | `/`                       | [homepage.md](./homepage.md)                     | Landing page, daily checkin surface, and habit list                 |
-| Habit Details   | `/habits/{habitId}`       | [habit-details-page.md](./habit-details-page.md) | Habit details, trends, edit dialog, and deletion                    |
-| Quick Add Habit | `+ New Habit` on Homepage | [create-habit-page.md](./create-habit-page.md)   | Create a new habit in a compact dialog without leaving the homepage |
+| Surface         | Route / Trigger           | Spec                                             | Purpose                                                                                     |
+| --------------- | ------------------------- | ------------------------------------------------ | ------------------------------------------------------------------------------------------- |
+| Homepage        | `/`                       | [homepage.md](./homepage.md)                     | Landing page, daily checkin surface, and habit list                                         |
+| Habit Details   | `/habits/{habitId}`       | [habit-details-page.md](./habit-details-page.md) | Habit details, trends, edit dialog, and deletion                                            |
+| Quick Add Habit | `+ New Habit` on Homepage | [create-habit-page.md](./create-habit-page.md)   | Create a new habit in a compact dialog without leaving the homepage                         |
 | Settings        | `/settings`               | [settings-page.md](./settings-page.md)           | Configure reminders and manage automated/manual local backups plus diagnostics export/share |
 
 ## Information Architecture Notes
