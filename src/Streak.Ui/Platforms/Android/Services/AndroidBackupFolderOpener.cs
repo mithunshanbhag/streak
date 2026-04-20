@@ -9,6 +9,14 @@ namespace Streak.Ui.Services.Implementations;
 
 public sealed class AndroidBackupFolderOpener : IBackupFolderOpener
 {
+    private const string DocumentsUiFilesActivityClassName = "com.android.documentsui.files.FilesActivity";
+
+    private static readonly string[] DocumentsUiPackageNames =
+    [
+        "com.google.android.documentsui",
+        "com.android.documentsui"
+    ];
+
     public bool CanOpenFolder(BackupFolderKind folderKind, SavedFileLocation? savedFileLocation = null)
     {
         return folderKind is BackupFolderKind.ManualExport or BackupFolderKind.AutomatedBackup;
@@ -19,20 +27,24 @@ public sealed class AndroidBackupFolderOpener : IBackupFolderOpener
         if (!CanOpenFolder(folderKind, savedFileLocation))
             throw new NotSupportedException($"Opening {folderKind} folders is not supported on Android.");
 
-        var intent = CreateBackupFolderIntent(folderKind);
+        foreach (var intent in CreateBackupFolderIntents(folderKind))
+        {
+            try
+            {
+                Application.Context.StartActivity(intent);
+                return;
+            }
+            catch (ActivityNotFoundException)
+            {
+                // Try the next folder-opening strategy before falling back to Downloads.
+            }
+            catch (Java.Lang.SecurityException)
+            {
+                // Some OEM file managers reject direct document URIs without a persisted tree grant.
+            }
+        }
 
-        try
-        {
-            Application.Context.StartActivity(intent);
-        }
-        catch (ActivityNotFoundException)
-        {
-            Application.Context.StartActivity(CreateDownloadsIntent());
-        }
-        catch (Java.Lang.SecurityException)
-        {
-            Application.Context.StartActivity(CreateDownloadsIntent());
-        }
+        Application.Context.StartActivity(CreateDownloadsIntent());
     }
 
     private static Intent CreateDownloadsIntent()
@@ -42,16 +54,33 @@ public sealed class AndroidBackupFolderOpener : IBackupFolderOpener
         return intent;
     }
 
-    private static Intent CreateBackupFolderIntent(BackupFolderKind folderKind)
+    private static IEnumerable<Intent> CreateBackupFolderIntents(BackupFolderKind folderKind)
     {
-        var folderUri = Uri.Parse($"content://com.android.externalstorage.documents/document/{CreateEncodedDocumentId(folderKind)}");
+        var folderUri = DocumentsContract.BuildDocumentUri(
+                            "com.android.externalstorage.documents",
+                            CreateDocumentId(folderKind))
+                        ?? throw new InvalidOperationException("Unable to create an Android folder URI for the backup location.");
+
+        foreach (var packageName in DocumentsUiPackageNames)
+            yield return CreateDocumentsUiFolderIntent(folderUri, packageName);
+    }
+
+    private static Intent CreateDocumentsUiFolderIntent(Uri folderUri, string packageName)
+    {
+        var intent = CreateGenericFolderIntent(folderUri);
+        intent.SetComponent(new ComponentName(packageName, DocumentsUiFilesActivityClassName));
+        return intent;
+    }
+
+    private static Intent CreateGenericFolderIntent(Uri folderUri)
+    {
         var intent = new Intent(Intent.ActionView);
-        intent.SetDataAndType(folderUri, DocumentsContract.Document.MimeTypeDir);
+        intent.SetData(folderUri);
         intent.AddFlags(ActivityFlags.NewTask | ActivityFlags.GrantReadUriPermission);
         return intent;
     }
 
-    private static string CreateEncodedDocumentId(BackupFolderKind folderKind)
+    private static string CreateDocumentId(BackupFolderKind folderKind)
     {
         var relativePath = folderKind switch
         {
@@ -70,7 +99,7 @@ public sealed class AndroidBackupFolderOpener : IBackupFolderOpener
             _ => throw new NotSupportedException($"Opening {folderKind} folders is not supported on Android.")
         };
 
-        return global::System.Uri.EscapeDataString($"primary:{relativePath}");
+        return $"primary:{relativePath}";
     }
 }
 #endif
