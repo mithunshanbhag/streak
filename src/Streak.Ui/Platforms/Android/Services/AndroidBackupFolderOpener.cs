@@ -19,19 +19,17 @@ public sealed class AndroidBackupFolderOpener : IBackupFolderOpener
         if (!CanOpenFolder(folderKind, savedFileLocation))
             throw new NotSupportedException($"Opening {folderKind} folders is not supported on Android.");
 
-        var intent = folderKind == BackupFolderKind.AutomatedBackup
-            ? CreateAutomatedBackupFolderIntent()
-            : CreateDownloadsIntent();
+        var intent = CreateBackupFolderIntent(folderKind);
 
         try
         {
             Application.Context.StartActivity(intent);
         }
-        catch (ActivityNotFoundException) when (folderKind == BackupFolderKind.AutomatedBackup)
+        catch (ActivityNotFoundException)
         {
             Application.Context.StartActivity(CreateDownloadsIntent());
         }
-        catch (Java.Lang.SecurityException) when (folderKind == BackupFolderKind.AutomatedBackup)
+        catch (Java.Lang.SecurityException)
         {
             Application.Context.StartActivity(CreateDownloadsIntent());
         }
@@ -44,13 +42,35 @@ public sealed class AndroidBackupFolderOpener : IBackupFolderOpener
         return intent;
     }
 
-    private static Intent CreateAutomatedBackupFolderIntent()
+    private static Intent CreateBackupFolderIntent(BackupFolderKind folderKind)
     {
-        var folderUri = Uri.Parse("content://com.android.externalstorage.documents/document/primary%3ADownload%2FStreak");
+        var folderUri = Uri.Parse($"content://com.android.externalstorage.documents/document/{CreateEncodedDocumentId(folderKind)}");
         var intent = new Intent(Intent.ActionView);
         intent.SetDataAndType(folderUri, DocumentsContract.Document.MimeTypeDir);
         intent.AddFlags(ActivityFlags.NewTask | ActivityFlags.GrantReadUriPermission);
         return intent;
+    }
+
+    private static string CreateEncodedDocumentId(BackupFolderKind folderKind)
+    {
+        var relativePath = folderKind switch
+        {
+            BackupFolderKind.ManualExport => string.Join(
+                '/',
+                Android.OS.Environment.DirectoryDownloads,
+                StreakExportStorageConstants.AndroidRootDirectoryName,
+                StreakExportStorageConstants.BackupsDirectoryName,
+                StreakExportStorageConstants.ManualBackupsDirectoryName),
+            BackupFolderKind.AutomatedBackup => string.Join(
+                '/',
+                Android.OS.Environment.DirectoryDownloads,
+                StreakExportStorageConstants.AndroidRootDirectoryName,
+                StreakExportStorageConstants.BackupsDirectoryName,
+                StreakExportStorageConstants.AutomatedBackupsDirectoryName),
+            _ => throw new NotSupportedException($"Opening {folderKind} folders is not supported on Android.")
+        };
+
+        return global::System.Uri.EscapeDataString($"primary:{relativePath}");
     }
 }
 #endif

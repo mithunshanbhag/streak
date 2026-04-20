@@ -135,7 +135,7 @@ public sealed class SettingsTests : TestContext
             x => x.NotifyCompleted(It.Is<DatabaseExportResult>(result =>
                 result.Status == DatabaseExportStatus.Saved
                 && result.SavedFileLocation != null
-                && result.SavedFileLocation.ParentFolderDisplayPath == "Downloads")),
+                && result.SavedFileLocation.ParentFolderDisplayPath == StreakExportStorageConstants.ManualBackupsDisplayDirectoryPath)),
             Times.Once);
     }
 
@@ -531,8 +531,8 @@ public sealed class SettingsTests : TestContext
     {
         return DatabaseExportResult.Saved(new SavedFileLocation
         {
-            SavedFileDisplayPath = @"Downloads\streak-backup-20260420-004200.db",
-            ParentFolderDisplayPath = "Downloads"
+            SavedFileDisplayPath = "Downloads/Streak/Backups/Manual/streak-backup-20260420-004200.db",
+            ParentFolderDisplayPath = StreakExportStorageConstants.ManualBackupsDisplayDirectoryPath
         });
     }
 

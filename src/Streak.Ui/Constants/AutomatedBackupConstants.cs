@@ -14,5 +14,5 @@ public static class AutomatedBackupConstants
 
     public const string SettingsTableName = "AutomatedBackupSettings";
 
-    public const string SharedAndroidDirectoryName = "Streak";
+    public const string SharedAndroidDirectoryName = StreakExportStorageConstants.AndroidRootDirectoryName;
 }

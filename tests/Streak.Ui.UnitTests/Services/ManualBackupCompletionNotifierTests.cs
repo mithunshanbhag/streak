@@ -30,7 +30,7 @@ public sealed class ManualBackupCompletionNotifierTests
 
         snackbarMock.Verify(
             x => x.Add(
-                "Backup saved to Downloads.",
+                "Backup saved to Downloads/Streak/Backups/Manual.",
                 Severity.Success,
                 It.IsAny<Action<SnackbarOptions>>(),
                 It.Is<string>(key => key.Contains("manual-backup:", StringComparison.Ordinal))),
@@ -72,8 +72,8 @@ public sealed class ManualBackupCompletionNotifierTests
     {
         return DatabaseExportResult.Saved(new SavedFileLocation
         {
-            SavedFileDisplayPath = @"Downloads\streak-backup-20260420-004200.db",
-            ParentFolderDisplayPath = "Downloads"
+            SavedFileDisplayPath = "Downloads/Streak/Backups/Manual/streak-backup-20260420-004200.db",
+            ParentFolderDisplayPath = StreakExportStorageConstants.ManualBackupsDisplayDirectoryPath
         });
     }
 

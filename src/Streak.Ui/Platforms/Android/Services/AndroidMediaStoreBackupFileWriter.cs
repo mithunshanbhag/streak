@@ -13,12 +13,14 @@ internal static class AndroidMediaStoreBackupFileWriter
     public static Task<SavedFileLocation> SaveBackupAsync(
         string sourceFilePath,
         string relativePath,
+        string? displayRelativePath = null,
         CancellationToken cancellationToken = default)
     {
         return SaveFileAsync(
             sourceFilePath,
             relativePath,
             DatabaseMimeType,
+            displayRelativePath,
             cancellationToken);
     }
 
@@ -26,6 +28,7 @@ internal static class AndroidMediaStoreBackupFileWriter
         string sourceFilePath,
         string relativePath,
         string mimeType,
+        string? displayRelativePath = null,
         CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(sourceFilePath);
@@ -36,6 +39,7 @@ internal static class AndroidMediaStoreBackupFileWriter
             throw new FileNotFoundException("The generated backup file could not be found.", sourceFilePath);
 
         var normalizedRelativePath = relativePath.TrimEnd('/', '\\');
+        var normalizedDisplayRelativePath = (displayRelativePath ?? normalizedRelativePath).TrimEnd('/', '\\');
         var fileName = Path.GetFileName(sourceFilePath);
         var contentResolver = Application.Context.ContentResolver
                               ?? throw new InvalidOperationException("An Android content resolver is required to persist database backups.");
@@ -55,8 +59,8 @@ internal static class AndroidMediaStoreBackupFileWriter
 
             return new SavedFileLocation
             {
-                SavedFileDisplayPath = $"{normalizedRelativePath}/{fileName}",
-                ParentFolderDisplayPath = normalizedRelativePath
+                SavedFileDisplayPath = $"{normalizedDisplayRelativePath}/{fileName}",
+                ParentFolderDisplayPath = normalizedDisplayRelativePath
             };
         }
         catch

@@ -25,8 +25,8 @@ public sealed class DatabaseExportServiceTests
 
                 return Task.FromResult(DatabaseExportResult.Saved(new SavedFileLocation
                 {
-                    SavedFileDisplayPath = $"Downloads/{Path.GetFileName(filePath)}",
-                    ParentFolderDisplayPath = "Downloads"
+                    SavedFileDisplayPath = $"{StreakExportStorageConstants.ManualBackupsDisplayDirectoryPath}/{Path.GetFileName(filePath)}",
+                    ParentFolderDisplayPath = StreakExportStorageConstants.ManualBackupsDisplayDirectoryPath
                 }));
             });
 
@@ -39,7 +39,7 @@ public sealed class DatabaseExportServiceTests
 
         exportResult.Status.Should().Be(DatabaseExportStatus.Saved);
         exportResult.SavedFileLocation.Should().NotBeNull();
-        exportResult.SavedFileLocation!.ParentFolderDisplayPath.Should().Be("Downloads");
+        exportResult.SavedFileLocation!.ParentFolderDisplayPath.Should().Be(StreakExportStorageConstants.ManualBackupsDisplayDirectoryPath);
         savedBackupPath.Should().NotBeNull();
         Path.GetFileName(savedBackupPath!).Should().MatchRegex("^streak-backup-[0-9]{8}-[0-9]{6}\\.db$");
         File.Exists(savedBackupPath!).Should().BeFalse();

@@ -27,7 +27,7 @@ This document captures cross-cutting requirements that apply across the Streak a
 - Application logging should flow through the standard `.NET` `ILogger` abstraction.
 - Production diagnostics should default to a **local structured file sink** rather than a mandatory cloud telemetry dependency.
 - Persistent diagnostic files should live in app-private long-lived storage so they can be exported later if the user chooses.
-- Exported diagnostics should be easy to retrieve through a user-facing save/share flow rather than requiring manual access to app-private storage.
+- Exported diagnostics should be easy to retrieve through a user-facing save/share flow rather than requiring manual access to app-private storage; on Android, exported support bundles should live under `Downloads/Streak/Diagnostics`.
 - Diagnostics exports should be scoped to operational troubleshooting data, not treated as a silent full-data backup mechanism.
 
 ## Privacy

@@ -7,14 +7,21 @@ public sealed class AndroidDiagnosticsExportFileSaver : IDiagnosticsExportFileSa
 {
     private const string DiagnosticsBundleMimeType = "application/zip";
 
+    private static readonly string RelativeDirectoryPath = string.Join(
+        '/',
+        Environment.DirectoryDownloads,
+        StreakExportStorageConstants.AndroidRootDirectoryName,
+        StreakExportStorageConstants.DiagnosticsDirectoryName);
+
     public async Task<DiagnosticsExportResult> SaveBundleAsync(
         string bundleFilePath,
         CancellationToken cancellationToken = default)
     {
         _ = await AndroidMediaStoreBackupFileWriter.SaveFileAsync(
             bundleFilePath,
-            Environment.DirectoryDownloads,
+            RelativeDirectoryPath,
             DiagnosticsBundleMimeType,
+            StreakExportStorageConstants.DiagnosticsDisplayDirectoryPath,
             cancellationToken);
 
         return DiagnosticsExportResult.Saved;

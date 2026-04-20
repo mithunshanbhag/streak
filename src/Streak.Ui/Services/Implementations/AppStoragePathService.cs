@@ -4,7 +4,9 @@ public sealed class AppStoragePathService : IAppStoragePathService
 {
     public string DatabasePath => SqliteDatabaseBootstrapper.DatabasePath;
 
-    public string ExportDirectoryPath => FileSystem.Current.CacheDirectory;
+    public string ExportDirectoryPath => Path.Combine(
+        FileSystem.Current.CacheDirectory,
+        StreakExportStorageConstants.ExportWorkingDirectoryName);
 
     public string DiagnosticsDirectoryPath => DiagnosticsStoragePathHelper.GetDiagnosticsDirectoryPath(FileSystem.Current.AppDataDirectory);
 
