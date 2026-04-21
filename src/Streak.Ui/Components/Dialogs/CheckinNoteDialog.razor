@@ -1,3 +1,5 @@
+@inject ICheckinProofService CheckinProofService
+
 <MudDialog>
     <TitleContent>
         <MudText Typo="Typo.h6"
@@ -7,6 +9,15 @@
     </TitleContent>
     <DialogContent>
         <MudStack Spacing="3">
+            @if (!string.IsNullOrWhiteSpace(_errorMessage))
+            {
+                <MudAlert Severity="Severity.Error"
+                          Variant="Variant.Outlined"
+                          Dense="true">
+                    @_errorMessage
+                </MudAlert>
+            }
+
             <MudText Typo="Typo.body2">
                 @DialogMessageText
             </MudText>
@@ -51,36 +62,89 @@
 
                 <MudStack Row="true"
                           Spacing="1">
-                    <MudButton Variant="Variant.Outlined"
-                               StartIcon="@UseCameraIcon"
-                               Style="@ProofActionButtonStyle"
-                               OnClick="HandleUseCameraClick">
-                        @UseCameraButtonText
-                    </MudButton>
+                    @if (CanUseCamera)
+                    {
+                        <MudButton Variant="Variant.Outlined"
+                                   StartIcon="@UseCameraIcon"
+                                   Style="@ProofActionButtonStyle"
+                                   OnClick="HandleUseCameraClickAsync">
+                            @UseCameraButtonText
+                        </MudButton>
+                    }
                     <MudButton Variant="Variant.Outlined"
                                StartIcon="@ChoosePhotoIcon"
                                Style="@ProofActionButtonStyle"
-                               OnClick="HandleChoosePhotoClick">
+                               OnClick="HandleChoosePhotoClickAsync">
                         @ChoosePhotoButtonText
                     </MudButton>
                 </MudStack>
 
-                <MudPaper Elevation="0"
-                          Class="pa-3 rounded-lg"
-                          Style="@EmptyPreviewPanelStyle">
-                    <MudStack AlignItems="AlignItems.Center"
-                              Justify="Justify.Center"
-                              Spacing="1"
-                              Style="@EmptyPreviewContentStyle">
-                        <MudIcon Icon="@EmptyPreviewIcon"
-                                 Size="Size.Large"
-                                 Style="@EmptyPreviewIconStyle"/>
-                        <MudText Typo="Typo.body2"
-                                 Align="Align.Center">
-                            @EmptyPreviewText
-                        </MudText>
-                    </MudStack>
-                </MudPaper>
+                @if (_selectedProof is null)
+                {
+                    <MudPaper Elevation="0"
+                              Class="pa-3 rounded-lg"
+                              Style="@EmptyPreviewPanelStyle">
+                        <MudStack AlignItems="AlignItems.Center"
+                                  Justify="Justify.Center"
+                                  Spacing="1"
+                                  Style="@EmptyPreviewContentStyle">
+                            <MudIcon Icon="@EmptyPreviewIcon"
+                                     Size="Size.Large"
+                                     Style="@EmptyPreviewIconStyle"/>
+                            <MudText Typo="Typo.body2"
+                                     Align="Align.Center">
+                                @EmptyPreviewText
+                            </MudText>
+                        </MudStack>
+                    </MudPaper>
+                }
+                else
+                {
+                    <MudPaper Elevation="0"
+                              Class="pa-3 rounded-lg"
+                              Style="@PopulatedPreviewPanelStyle">
+                        <MudStack Spacing="2">
+                            <div style="@PreviewImageContainerStyle">
+                                <img src="@_selectedProof.PreviewDataUrl"
+                                     alt="@SelectedPreviewAltText"
+                                     style="@PreviewImageStyle" />
+                            </div>
+
+                            <MudStack Row="true"
+                                      AlignItems="AlignItems.Start"
+                                      Justify="Justify.SpaceBetween"
+                                      Spacing="1">
+                                <MudStack Spacing="0"
+                                          Class="flex-1">
+                                    <MudText Typo="Typo.body2">
+                                        @_selectedProof.DisplayName
+                                    </MudText>
+                                    <MudText Typo="Typo.caption"
+                                             Style="@SupportingTextStyle">
+                                        @SelectedProofMetadataText
+                                    </MudText>
+                                </MudStack>
+                                <MudIconButton Icon="@RemoveSelectedProofIcon"
+                                               Size="Size.Small"
+                                               Color="Color.Default"
+                                               AriaLabel="@RemoveSelectedPictureAriaLabel"
+                                               OnClick="ClearSelectedProof" />
+                            </MudStack>
+
+                            <MudStack Row="true"
+                                      Spacing="1">
+                                <MudButton Variant="Variant.Text"
+                                           OnClick="HandleReplacePhotoClickAsync">
+                                    @ReplacePhotoButtonText
+                                </MudButton>
+                                <MudButton Variant="Variant.Text"
+                                           OnClick="ClearSelectedProof">
+                                    @RemovePhotoButtonText
+                                </MudButton>
+                            </MudStack>
+                        </MudStack>
+                    </MudPaper>
+                }
             </MudStack>
         </MudStack>
     </DialogContent>
@@ -91,7 +155,7 @@
         </MudButton>
         <MudButton Color="Color.Primary"
                    Variant="Variant.Filled"
-                   OnClick="ConfirmCheckin">
+                   OnClick="ConfirmCheckinAsync">
             @ConfirmButtonText
         </MudButton>
     </DialogActions>
@@ -99,10 +163,13 @@
 
 @code
 {
-
     #region Parameters
 
     [Parameter] [EditorRequired] public string HabitName { get; set; } = string.Empty;
+
+    [Parameter] [EditorRequired] public int HabitId { get; set; }
+
+    [Parameter] [EditorRequired] public string CheckinDate { get; set; } = string.Empty;
 
     [CascadingParameter] private IMudDialogInstance? MudDialogInstance { get; set; }
 
@@ -111,6 +178,8 @@
     #region Private Fields, Properties
 
     private string _note = string.Empty;
+    private string? _errorMessage;
+    private CheckinProofSelection? _selectedProof;
 
     #endregion
 
@@ -127,6 +196,8 @@
     protected override void OnParametersSet()
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(HabitName);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(HabitId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(CheckinDate);
     }
 
     #endregion
@@ -138,17 +209,43 @@
         MudDialogInstance?.Cancel();
     }
 
-    private void ConfirmCheckin()
+    private async Task ConfirmCheckinAsync()
     {
-        MudDialogInstance?.Close(DialogResult.Ok(_note));
+        _errorMessage = null;
+
+        try
+        {
+            var persistedProof = _selectedProof is null
+                ? null
+                : await CheckinProofService.PersistAsync(_selectedProof, HabitId, CheckinDate);
+
+            MudDialogInstance?.Close(DialogResult.Ok(CheckinDialogResult.Create(_note, persistedProof)));
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = ex.Message;
+        }
     }
 
-    private void HandleUseCameraClick()
+    private async Task HandleUseCameraClickAsync()
     {
+        await SelectProofAsync(() => CheckinProofService.CapturePhotoAsync());
     }
 
-    private void HandleChoosePhotoClick()
+    private async Task HandleChoosePhotoClickAsync()
     {
+        await SelectProofAsync(() => CheckinProofService.PickPhotoAsync());
+    }
+
+    private async Task HandleReplacePhotoClickAsync()
+    {
+        await SelectProofAsync(() => CheckinProofService.PickPhotoAsync());
+    }
+
+    private void ClearSelectedProof()
+    {
+        _selectedProof = null;
+        _errorMessage = null;
     }
 
     #endregion
@@ -167,6 +264,27 @@
         };
     }
 
+    private async Task SelectProofAsync(Func<Task<CheckinProofSelection?>> selectionFactory)
+    {
+        _errorMessage = null;
+
+        try
+        {
+            var selection = await selectionFactory();
+            if (selection is not null)
+                _selectedProof = selection;
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = ex.Message;
+        }
+    }
+
+    private static string FormatFileSize(long fileSizeBytes)
+    {
+        return $"{fileSizeBytes / (1024d * 1024d):0.#} MB";
+    }
+
     #endregion
 
     #region CSS Style Properties
@@ -182,6 +300,12 @@
     private const string EmptyPreviewContentStyle = "min-height: 120px;";
 
     private const string EmptyPreviewIconStyle = "color: var(--mud-palette-text-secondary);";
+
+    private const string PopulatedPreviewPanelStyle = "border: 1px solid var(--mud-palette-lines-default); background-color: var(--mud-palette-surface);";
+
+    private const string PreviewImageContainerStyle = "width: 100%; aspect-ratio: 4 / 3; overflow: hidden; border-radius: 12px; background-color: var(--mud-palette-background-grey);";
+
+    private const string PreviewImageStyle = "width: 100%; height: 100%; object-fit: cover; display: block;";
 
     #endregion
 
@@ -211,13 +335,29 @@
 
     private const string EmptyPreviewText = "No picture selected";
 
+    private const string ReplacePhotoButtonText = "Replace";
+
+    private const string RemovePhotoButtonText = "Remove picture";
+
     private const string UseCameraIcon = Icons.Material.Filled.PhotoCamera;
 
     private const string ChoosePhotoIcon = Icons.Material.Filled.PhotoLibrary;
 
     private const string EmptyPreviewIcon = Icons.Material.Filled.Image;
 
+    private const string RemoveSelectedProofIcon = Icons.Material.Filled.Close;
+
+    private const string SelectedPreviewAltText = "Selected picture preview";
+
+    private const string RemoveSelectedPictureAriaLabel = "Remove selected picture";
+
+    private bool CanUseCamera => CheckinProofService.SupportsCameraCapture;
+
     private string NoteCounterText => $"{_note.Length} / {CoreConstants.CheckinNotesMaxLength}";
+
+    private string SelectedProofMetadataText => _selectedProof is null
+        ? string.Empty
+        : $"{FormatFileSize(_selectedProof.FileSizeBytes)} · {_selectedProof.SourceDescription}";
 
     #endregion
 

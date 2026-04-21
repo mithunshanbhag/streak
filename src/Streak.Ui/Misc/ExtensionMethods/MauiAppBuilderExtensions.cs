@@ -41,6 +41,7 @@ public static class MauiAppBuilderExtensions
             builder.Services.AddTransient<IHabitService, HabitService>();
             builder.Services.AddTransient<ICheckinService, CheckinService>();
             builder.Services.AddSingleton<IAppStoragePathService, AppStoragePathService>();
+            builder.Services.AddSingleton<ICheckinProofService, CheckinProofService>();
             builder.Services.AddSingleton<IAutomatedBackupConfigurationService, AutomatedBackupConfigurationService>();
             builder.Services.AddTransient<IManualBackupCompletionNotifier, ManualBackupCompletionNotifier>();
             builder.Services.AddTransient<IDatabaseImportService, DatabaseImportService>();
@@ -52,6 +53,7 @@ public static class MauiAppBuilderExtensions
             builder.Services.AddSingleton<IAutomatedBackupCompletionNotifier, NoOpAutomatedBackupCompletionNotifier>();
             builder.Services.AddSingleton<IBackupNotificationPermissionService, NoOpBackupNotificationPermissionService>();
             builder.Services.AddTransient<IDatabaseImportFilePicker, WindowsDatabaseImportFilePicker>();
+            builder.Services.AddTransient<ICheckinProofMediaPickerService, WindowsCheckinProofMediaPickerService>();
             builder.Services.AddTransient<IDatabaseExportFileSaver, WindowsDatabaseExportFileSaver>();
             builder.Services.AddTransient<IDiagnosticsExportFileSaver, WindowsDiagnosticsExportFileSaver>();
             builder.Services.AddTransient<IDatabaseShareService, UnsupportedDatabaseShareService>();
@@ -60,6 +62,7 @@ public static class MauiAppBuilderExtensions
             builder.Services.AddSingleton<IAutomatedBackupCompletionNotifier, AndroidAutomatedBackupCompletionNotifier>();
             builder.Services.AddSingleton<IBackupNotificationPermissionService, AndroidBackupNotificationPermissionService>();
             builder.Services.AddTransient<IDatabaseImportFilePicker, AndroidDatabaseImportFilePicker>();
+            builder.Services.AddTransient<ICheckinProofMediaPickerService, AndroidCheckinProofMediaPickerService>();
             builder.Services.AddTransient<IDatabaseExportFileSaver, AndroidDatabaseExportFileSaver>();
             builder.Services.AddTransient<IDiagnosticsExportFileSaver, AndroidDiagnosticsExportFileSaver>();
             builder.Services.AddTransient<IAutomatedBackupFileSaver, AndroidAutomatedBackupFileSaver>();
@@ -73,6 +76,7 @@ public static class MauiAppBuilderExtensions
             builder.Services.AddSingleton<IAutomatedBackupCompletionNotifier, NoOpAutomatedBackupCompletionNotifier>();
             builder.Services.AddSingleton<IBackupNotificationPermissionService, NoOpBackupNotificationPermissionService>();
             builder.Services.AddTransient<IDiagnosticsExportFileSaver, WindowsDiagnosticsExportFileSaver>();
+            builder.Services.AddTransient<ICheckinProofMediaPickerService, UnsupportedCheckinProofMediaPickerService>();
             builder.Services.AddTransient<IDatabaseShareService, UnsupportedDatabaseShareService>();
 #endif
 

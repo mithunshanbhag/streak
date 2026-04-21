@@ -29,6 +29,17 @@ public class CheckinServiceTests
         return date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
     }
 
+    private static CheckinProofInputModel CreateProofInputModel()
+    {
+        return new CheckinProofInputModel
+        {
+            ProofImageUri = "Habit-7/2026/04/2026-04-14/proof.jpg",
+            ProofImageDisplayName = "proof.jpg",
+            ProofImageSizeBytes = 2048,
+            ProofImageModifiedOn = "2026-04-14T01:00:00.0000000+05:30"
+        };
+    }
+
     #region Positive tests
 
     [Fact]
@@ -278,6 +289,41 @@ public class CheckinServiceTests
     }
 
     [Fact]
+    public async Task ToggleForTodayAsync_ShouldPersistProofMetadata_WhenDone()
+    {
+        var indiaTimeZone = CreateFixedOffsetTimeZone(hours: 5, minutes: 30);
+        var localNow = new DateTimeOffset(2026, 4, 14, 1, 0, 0, indiaTimeZone.BaseUtcOffset);
+        var timeProvider = new FixedTimeProvider(localNow, indiaTimeZone);
+        var proof = CreateProofInputModel();
+        Checkin? addedCheckin = null;
+
+        var sut = CreateSut(out var checkinRepositoryMock, out var habitRepositoryMock, timeProvider);
+        habitRepositoryMock
+            .Setup(x => x.GetByNameAsync("Run", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Habit { Id = 7, Name = "Run" });
+        habitRepositoryMock
+            .Setup(x => x.ExistsAsync(7, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+        checkinRepositoryMock
+            .Setup(x => x.GetAsync(It.Is<CheckinKey>(key => key.HabitId == 7), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Checkin?)null);
+        checkinRepositoryMock
+            .Setup(x => x.AddAsync(It.IsAny<Checkin>(), It.IsAny<CancellationToken>()))
+            .Callback<Checkin, CancellationToken>((checkin, _) => addedCheckin = checkin)
+            .ReturnsAsync(true);
+
+        var result = await sut.ToggleForTodayAsync(" Run ", true, null, proof);
+
+        addedCheckin.Should().NotBeNull();
+        addedCheckin!.ProofImageUri.Should().Be(proof.ProofImageUri);
+        addedCheckin.ProofImageDisplayName.Should().Be(proof.ProofImageDisplayName);
+        addedCheckin.ProofImageSizeBytes.Should().Be(proof.ProofImageSizeBytes);
+        addedCheckin.ProofImageModifiedOn.Should().Be(proof.ProofImageModifiedOn);
+        result.Should().NotBeNull();
+        result!.ProofImageUri.Should().Be(proof.ProofImageUri);
+    }
+
+    [Fact]
     public async Task ToggleForTodayAsync_ShouldUseLocalDateAndDeleteCheckin_WhenNotDone()
     {
         var indiaTimeZone = CreateFixedOffsetTimeZone(hours: 5, minutes: 30);
@@ -424,6 +470,29 @@ public class CheckinServiceTests
 
         var exception = await act.Should().ThrowAsync<ArgumentException>();
         exception.Which.ParamName.Should().Be("Notes");
+    }
+
+    [Fact]
+    public async Task ToggleForTodayAsync_ShouldThrowArgumentOutOfRangeException_WhenProofSizeExceedsMaximum()
+    {
+        var proof = CreateProofInputModel();
+        proof.ProofImageSizeBytes = CoreConstants.CheckinProofMaxSizeBytes + 1;
+
+        var sut = CreateSut(out var checkinRepositoryMock, out var habitRepositoryMock);
+        habitRepositoryMock
+            .Setup(x => x.GetByNameAsync("Run", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Habit { Id = 7, Name = "Run" });
+        habitRepositoryMock
+            .Setup(x => x.ExistsAsync(7, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+        checkinRepositoryMock
+            .Setup(x => x.GetAsync(It.IsAny<CheckinKey>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Checkin?)null);
+
+        var act = () => sut.ToggleForTodayAsync("Run", true, null, proof);
+
+        var exception = await act.Should().ThrowAsync<ArgumentOutOfRangeException>();
+        exception.Which.ParamName.Should().Be("ProofImageSizeBytes");
     }
 
     #endregion

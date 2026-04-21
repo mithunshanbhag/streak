@@ -79,7 +79,12 @@ public sealed class MainLayoutTests : TestContext
             .Setup(x => x.GetHomePageHabitCheckinsAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(Array.Empty<HabitCheckinViewModel>());
 
+        var checkinProofServiceMock = new Mock<ICheckinProofService>();
+        checkinProofServiceMock.SetupGet(x => x.SupportsCameraCapture).Returns(false);
+
         Services.AddSingleton(checkinServiceMock.Object);
+        Services.AddSingleton(checkinProofServiceMock.Object);
+        Services.AddSingleton(TimeProvider.System);
     }
 
     private void RegisterSettingsServices()
@@ -126,8 +131,13 @@ public sealed class MainLayoutTests : TestContext
             .Setup(x => x.GetHistoryAsync(habit.Name, null, null, It.IsAny<CancellationToken>()))
             .ReturnsAsync(Array.Empty<Checkin>());
 
+        var checkinProofServiceMock = new Mock<ICheckinProofService>();
+        checkinProofServiceMock.SetupGet(x => x.SupportsCameraCapture).Returns(false);
+
         Services.AddSingleton(habitServiceMock.Object);
         Services.AddSingleton(checkinServiceMock.Object);
+        Services.AddSingleton(checkinProofServiceMock.Object);
+        Services.AddSingleton(TimeProvider.System);
     }
 
     private IRenderedComponent<Routes> RenderRoutes()

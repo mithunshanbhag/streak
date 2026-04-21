@@ -97,9 +97,10 @@ public class CheckinService(
         string habitName,
         bool isDone,
         string? notes = null,
+        CheckinProofInputModel? proof = null,
         CancellationToken cancellationToken = default)
     {
-        return ToggleForTodayInternalAsync(habitName, isDone, notes, cancellationToken);
+        return ToggleForTodayInternalAsync(habitName, isDone, notes, proof, cancellationToken);
     }
 
     public async Task DeleteForHabitAndDateAsync(
@@ -136,6 +137,7 @@ public class CheckinService(
         string habitName,
         bool isDone,
         string? notes,
+        CheckinProofInputModel? proof,
         CancellationToken cancellationToken)
     {
         var habit = await GetRequiredHabitByNameAsync(habitName, cancellationToken);
@@ -151,7 +153,11 @@ public class CheckinService(
         {
             HabitId = habit.Id,
             CheckinDate = todayDate,
-            Notes = notes
+            Notes = notes,
+            ProofImageUri = proof?.ProofImageUri,
+            ProofImageDisplayName = proof?.ProofImageDisplayName,
+            ProofImageSizeBytes = proof?.ProofImageSizeBytes,
+            ProofImageModifiedOn = proof?.ProofImageModifiedOn
         };
 
         return await UpsertAsync(checkin, cancellationToken);
@@ -252,6 +258,7 @@ public class CheckinService(
 
         var normalizedCheckinDate = NormalizeRequiredDate(checkin.CheckinDate, nameof(checkin.CheckinDate));
         var normalizedNotes = NormalizeOptionalText(checkin.Notes);
+        var normalizedProof = NormalizeOptionalCheckinProof(checkin);
         if (checkin.HabitId <= 0)
             throw new ArgumentOutOfRangeException(nameof(checkin.HabitId), "Habit ID must be greater than zero.");
         if (normalizedNotes?.Length > CoreConstants.CheckinNotesMaxLength)
@@ -263,7 +270,65 @@ public class CheckinService(
         {
             HabitId = checkin.HabitId,
             CheckinDate = normalizedCheckinDate,
-            Notes = normalizedNotes
+            Notes = normalizedNotes,
+            ProofImageUri = normalizedProof?.ProofImageUri,
+            ProofImageDisplayName = normalizedProof?.ProofImageDisplayName,
+            ProofImageSizeBytes = normalizedProof?.ProofImageSizeBytes,
+            ProofImageModifiedOn = normalizedProof?.ProofImageModifiedOn
+        };
+    }
+
+    private static CheckinProofInputModel? NormalizeOptionalCheckinProof(Checkin checkin)
+    {
+        var normalizedProofImageUri = NormalizeOptionalText(checkin.ProofImageUri);
+        var normalizedProofImageDisplayName = NormalizeOptionalText(checkin.ProofImageDisplayName);
+        var normalizedProofImageModifiedOn = NormalizeOptionalText(checkin.ProofImageModifiedOn);
+        var proofImageSizeBytes = checkin.ProofImageSizeBytes;
+
+        var hasAnyProofValue =
+            normalizedProofImageUri is not null ||
+            normalizedProofImageDisplayName is not null ||
+            normalizedProofImageModifiedOn is not null ||
+            proofImageSizeBytes is not null;
+
+        if (!hasAnyProofValue)
+            return null;
+
+        if (normalizedProofImageUri is null)
+            throw new ArgumentException("Proof image URI is required when proof metadata is provided.", nameof(checkin.ProofImageUri));
+
+        if (normalizedProofImageDisplayName is null)
+            throw new ArgumentException("Proof image display name is required when proof metadata is provided.", nameof(checkin.ProofImageDisplayName));
+
+        if (normalizedProofImageModifiedOn is null)
+            throw new ArgumentException("Proof image modified time is required when proof metadata is provided.", nameof(checkin.ProofImageModifiedOn));
+
+        if (!proofImageSizeBytes.HasValue)
+            throw new ArgumentException("Proof image size is required when proof metadata is provided.", nameof(checkin.ProofImageSizeBytes));
+
+        if (proofImageSizeBytes.Value is <= 0 or > CoreConstants.CheckinProofMaxSizeBytes)
+            throw new ArgumentOutOfRangeException(
+                nameof(checkin.ProofImageSizeBytes),
+                $"Proof image size must be between 1 and {CoreConstants.CheckinProofMaxSizeBytes} bytes.");
+
+        if (!DateTimeOffset.TryParseExact(
+                normalizedProofImageModifiedOn,
+                CoreConstants.CheckinProofModifiedOnFormat,
+                CultureInfo.InvariantCulture,
+                DateTimeStyles.RoundtripKind,
+                out var parsedModifiedOn))
+            throw new ArgumentException(
+                $"Proof image modified time must match format '{CoreConstants.CheckinProofModifiedOnFormat}'.",
+                nameof(checkin.ProofImageModifiedOn));
+
+        return new CheckinProofInputModel
+        {
+            ProofImageUri = normalizedProofImageUri,
+            ProofImageDisplayName = normalizedProofImageDisplayName,
+            ProofImageSizeBytes = proofImageSizeBytes.Value,
+            ProofImageModifiedOn = parsedModifiedOn.ToString(
+                CoreConstants.CheckinProofModifiedOnFormat,
+                CultureInfo.InvariantCulture)
         };
     }
 

@@ -10,5 +10,9 @@ public sealed class AppStoragePathService : IAppStoragePathService
 
     public string DiagnosticsDirectoryPath => DiagnosticsStoragePathHelper.GetDiagnosticsDirectoryPath(FileSystem.Current.AppDataDirectory);
 
+    public string CheckinProofsDirectoryPath => Path.Combine(
+        FileSystem.Current.AppDataDirectory,
+        CheckinProofStorageConstants.CheckinProofsDirectoryName);
+
     public string DiagnosticsLogFilePath => DiagnosticsStoragePathHelper.GetDiagnosticsLogFilePath(FileSystem.Current.AppDataDirectory);
 }

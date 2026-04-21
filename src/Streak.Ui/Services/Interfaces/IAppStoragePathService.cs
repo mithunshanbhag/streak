@@ -18,6 +18,11 @@ public interface IAppStoragePathService
     string DiagnosticsDirectoryPath { get; }
 
     /// <summary>
+    ///     Gets the persistent app-private directory used for saved check-in proof files.
+    /// </summary>
+    string CheckinProofsDirectoryPath { get; }
+
+    /// <summary>
     ///     Gets the full path to the single structured diagnostics log file.
     /// </summary>
     string DiagnosticsLogFilePath { get; }

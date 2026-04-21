@@ -87,6 +87,10 @@ public interface ICheckinService
     ///     The optional note to persist with today's check-in when <paramref name="isDone" /> is
     ///     <see langword="true" />. Ignored when <paramref name="isDone" /> is <see langword="false" />.
     /// </param>
+    /// <param name="proof">
+    ///     The optional picture-proof metadata to persist with today's check-in when <paramref name="isDone" /> is
+    ///     <see langword="true" />. Ignored when <paramref name="isDone" /> is <see langword="false" />.
+    /// </param>
     /// <param name="cancellationToken">A token that can be used to cancel the asynchronous operation.</param>
     /// <returns>
     ///     The persisted check-in for today when <paramref name="isDone" /> is <see langword="true" />; otherwise,
@@ -102,6 +106,7 @@ public interface ICheckinService
         string habitName,
         bool isDone,
         string? notes = null,
+        CheckinProofInputModel? proof = null,
         CancellationToken cancellationToken = default);
 
     /// <summary>

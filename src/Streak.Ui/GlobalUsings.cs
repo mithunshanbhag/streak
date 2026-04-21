@@ -11,6 +11,7 @@ global using Microsoft.EntityFrameworkCore;
 global using MudBlazor;
 global using MudBlazor.Services;
 global using Streak.Core.Constants;
+global using Streak.Core.Models.ViewModels.InputModels;
 global using Streak.Ui.Constants;
 global using Streak.Core.Repositories.DbContexts;
 global using Streak.Core.Repositories.Implementations;

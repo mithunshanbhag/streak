@@ -2,6 +2,7 @@ namespace Streak.Ui.UnitTests.Components.Pages;
 
 using Streak.Core.Models.Storage;
 using Streak.Core.Models.ViewModels;
+using Streak.Core.Models.ViewModels.InputModels;
 using Streak.Core.Services.Interfaces;
 
 public sealed class HomeTests : TestContext
@@ -26,8 +27,9 @@ public sealed class HomeTests : TestContext
                 Streak = 2,
                 IsDoneForToday = false
             });
+        var checkinProofServiceMock = CreateCheckinProofServiceMock();
 
-        RegisterServices(checkinServiceMock);
+        RegisterServices(checkinServiceMock, checkinProofServiceMock);
         var dialogProvider = RenderComponent<MudDialogProvider>();
         var cut = RenderComponent<Home>();
 
@@ -46,7 +48,7 @@ public sealed class HomeTests : TestContext
         });
 
         checkinServiceMock.Verify(
-            x => x.ToggleForTodayAsync(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()),
+            x => x.ToggleForTodayAsync(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<string?>(), It.IsAny<CheckinProofInputModel?>(), It.IsAny<CancellationToken>()),
             Times.Never);
     }
 
@@ -63,8 +65,9 @@ public sealed class HomeTests : TestContext
                 IsDoneForToday = false
             },
             updatedStreak: 3);
+        var checkinProofServiceMock = CreateCheckinProofServiceMock();
 
-        RegisterServices(checkinServiceMock);
+        RegisterServices(checkinServiceMock, checkinProofServiceMock);
         var dialogProvider = RenderComponent<MudDialogProvider>();
         var cut = RenderComponent<Home>();
 
@@ -79,10 +82,98 @@ public sealed class HomeTests : TestContext
         cut.WaitForAssertion(() =>
         {
             checkinServiceMock.Verify(
-                x => x.ToggleForTodayAsync("Exercise", true, "30 mins cardio", It.IsAny<CancellationToken>()),
+                x => x.ToggleForTodayAsync("Exercise", true, "30 mins cardio", null, It.IsAny<CancellationToken>()),
                 Times.Once);
 
             cut.Markup.Should().Contain("3 day streak");
+        });
+    }
+
+    [Fact]
+    public void Home_ShouldShowPicturePreview_WhenPhotoIsChosen()
+    {
+        var checkinServiceMock = CreateCheckinServiceMock(
+            new HabitCheckinViewModel
+            {
+                HabitId = 1,
+                HabitName = "Exercise",
+                HabitEmoji = "💪",
+                Streak = 2,
+                IsDoneForToday = false
+            });
+        var selectedProof = CreateCheckinProofSelection();
+        var checkinProofServiceMock = CreateCheckinProofServiceMock(selectedPhoto: selectedProof);
+
+        RegisterServices(checkinServiceMock, checkinProofServiceMock);
+        var dialogProvider = RenderComponent<MudDialogProvider>();
+        var cut = RenderComponent<Home>();
+
+        cut.Find("input[type='checkbox']").Change(true);
+
+        dialogProvider.WaitForAssertion(() => dialogProvider.Markup.Should().Contain("Choose photo"));
+        dialogProvider.FindAll("button")
+            .Single(x => x.TextContent.Contains("Choose photo", StringComparison.Ordinal))
+            .Click();
+
+        dialogProvider.WaitForAssertion(() =>
+        {
+            dialogProvider.Markup.Should().Contain(selectedProof.DisplayName);
+            dialogProvider.Markup.Should().Contain("Selected from gallery");
+            dialogProvider.Markup.Should().Contain("Replace");
+            dialogProvider.Markup.Should().Contain("Remove picture");
+        });
+    }
+
+    [Fact]
+    public void Home_ShouldPersistProofMetadata_WhenPhotoBackedCheckinIsConfirmed()
+    {
+        var checkinServiceMock = CreateCheckinServiceMock(
+            new HabitCheckinViewModel
+            {
+                HabitId = 1,
+                HabitName = "Exercise",
+                HabitEmoji = "💪",
+                Streak = 2,
+                IsDoneForToday = false
+            },
+            updatedStreak: 3);
+        var selectedProof = CreateCheckinProofSelection();
+        var persistedProof = CreateCheckinProofInputModel();
+        var checkinProofServiceMock = CreateCheckinProofServiceMock(
+            selectedPhoto: selectedProof,
+            persistedProof: persistedProof);
+
+        RegisterServices(checkinServiceMock, checkinProofServiceMock);
+        var dialogProvider = RenderComponent<MudDialogProvider>();
+        var cut = RenderComponent<Home>();
+
+        cut.Find("input[type='checkbox']").Change(true);
+
+        dialogProvider.WaitForAssertion(() => dialogProvider.Markup.Should().Contain("Choose photo"));
+        dialogProvider.FindAll("button")
+            .Single(x => x.TextContent.Contains("Choose photo", StringComparison.Ordinal))
+            .Click();
+
+        dialogProvider.WaitForAssertion(() => dialogProvider.Markup.Should().Contain(selectedProof.DisplayName));
+        dialogProvider.FindAll("button")
+            .Single(x => x.TextContent.Contains("Save check-in", StringComparison.Ordinal))
+            .Click();
+
+        cut.WaitForAssertion(() =>
+        {
+            checkinServiceMock.Verify(
+                x => x.ToggleForTodayAsync(
+                    "Exercise",
+                    true,
+                    string.Empty,
+                    It.Is<CheckinProofInputModel?>(proof =>
+                        proof != null &&
+                        proof.ProofImageUri == persistedProof.ProofImageUri &&
+                        proof.ProofImageDisplayName == persistedProof.ProofImageDisplayName &&
+                        proof.ProofImageSizeBytes == persistedProof.ProofImageSizeBytes &&
+                        proof.ProofImageModifiedOn == persistedProof.ProofImageModifiedOn),
+                    It.IsAny<CancellationToken>()),
+                Times.Once);
         });
     }
 
@@ -99,8 +190,9 @@ public sealed class HomeTests : TestContext
                 IsDoneForToday = true
             },
             updatedStreak: 2);
+        var checkinProofServiceMock = CreateCheckinProofServiceMock();
 
-        RegisterServices(checkinServiceMock);
+        RegisterServices(checkinServiceMock, checkinProofServiceMock);
         var dialogProvider = RenderComponent<MudDialogProvider>();
         var cut = RenderComponent<Home>();
 
@@ -116,7 +208,7 @@ public sealed class HomeTests : TestContext
         });
 
         checkinServiceMock.Verify(
-            x => x.ToggleForTodayAsync(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()),
+            x => x.ToggleForTodayAsync(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<string?>(), It.IsAny<CheckinProofInputModel?>(), It.IsAny<CancellationToken>()),
             Times.Never);
     }
 
@@ -133,8 +225,18 @@ public sealed class HomeTests : TestContext
                 IsDoneForToday = true
             },
             updatedStreak: 2);
+        var existingCheckin = new Checkin
+        {
+            HabitId = 1,
+            CheckinDate = DateOnly.FromDateTime(DateTime.Now).ToString(CoreConstants.CheckinDateFormat, CultureInfo.InvariantCulture),
+            ProofImageUri = "Habit-1/2026/04/2026-04-21/proof.jpg"
+        };
+        checkinServiceMock
+            .Setup(x => x.GetByHabitNameAndDateAsync("Exercise", existingCheckin.CheckinDate, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(existingCheckin);
+        var checkinProofServiceMock = CreateCheckinProofServiceMock();
 
-        RegisterServices(checkinServiceMock);
+        RegisterServices(checkinServiceMock, checkinProofServiceMock);
         var dialogProvider = RenderComponent<MudDialogProvider>();
         var cut = RenderComponent<Home>();
 
@@ -148,7 +250,10 @@ public sealed class HomeTests : TestContext
         cut.WaitForAssertion(() =>
         {
             checkinServiceMock.Verify(
-                x => x.ToggleForTodayAsync("Exercise", false, null, It.IsAny<CancellationToken>()),
+                x => x.ToggleForTodayAsync("Exercise", false, null, null, It.IsAny<CancellationToken>()),
+                Times.Once);
+            checkinProofServiceMock.Verify(
+                x => x.DeleteIfExistsAsync(existingCheckin.ProofImageUri, It.IsAny<CancellationToken>()),
                 Times.Once);
 
             cut.Markup.Should().Contain("2 day streak");
@@ -171,8 +276,9 @@ public sealed class HomeTests : TestContext
                 Streak = 2,
                 IsDoneForToday = false
             });
+        var checkinProofServiceMock = CreateCheckinProofServiceMock();
 
-        RegisterServices(checkinServiceMock);
+        RegisterServices(checkinServiceMock, checkinProofServiceMock);
         var dialogProvider = RenderComponent<MudDialogProvider>();
         var cut = RenderComponent<Home>();
 
@@ -186,7 +292,7 @@ public sealed class HomeTests : TestContext
         cut.WaitForAssertion(() =>
         {
             checkinServiceMock.Verify(
-                x => x.ToggleForTodayAsync(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()),
+                x => x.ToggleForTodayAsync(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<string?>(), It.IsAny<CheckinProofInputModel?>(), It.IsAny<CancellationToken>()),
                 Times.Never);
 
             cut.Find("input[type='checkbox']").HasAttribute("checked").Should().BeFalse();
@@ -207,8 +313,9 @@ public sealed class HomeTests : TestContext
                 IsDoneForToday = true
             },
             updatedStreak: 2);
+        var checkinProofServiceMock = CreateCheckinProofServiceMock();
 
-        RegisterServices(checkinServiceMock);
+        RegisterServices(checkinServiceMock, checkinProofServiceMock);
         var dialogProvider = RenderComponent<MudDialogProvider>();
         var cut = RenderComponent<Home>();
 
@@ -222,7 +329,7 @@ public sealed class HomeTests : TestContext
         cut.WaitForAssertion(() =>
         {
             checkinServiceMock.Verify(
-                x => x.ToggleForTodayAsync(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()),
+                x => x.ToggleForTodayAsync(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<string?>(), It.IsAny<CheckinProofInputModel?>(), It.IsAny<CancellationToken>()),
                 Times.Never);
 
             cut.Find("input[type='checkbox']").HasAttribute("checked").Should().BeTrue();
@@ -242,8 +349,9 @@ public sealed class HomeTests : TestContext
                 Streak = 2,
                 IsDoneForToday = false
             });
+        var checkinProofServiceMock = CreateCheckinProofServiceMock();
 
-        RegisterServices(checkinServiceMock);
+        RegisterServices(checkinServiceMock, checkinProofServiceMock);
         var dialogProvider = RenderComponent<MudDialogProvider>();
         var cut = RenderComponent<Home>();
 
@@ -273,8 +381,9 @@ public sealed class HomeTests : TestContext
                 Streak = 3,
                 IsDoneForToday = true
             });
+        var checkinProofServiceMock = CreateCheckinProofServiceMock();
 
-        RegisterServices(checkinServiceMock);
+        RegisterServices(checkinServiceMock, checkinProofServiceMock);
         var dialogProvider = RenderComponent<MudDialogProvider>();
         var cut = RenderComponent<Home>();
 
@@ -309,8 +418,9 @@ public sealed class HomeTests : TestContext
                 IsDoneForToday = false
             },
             updatedStreak: 3);
+        var checkinProofServiceMock = CreateCheckinProofServiceMock();
 
-        RegisterServices(checkinServiceMock);
+        RegisterServices(checkinServiceMock, checkinProofServiceMock);
         var dialogProvider = RenderComponent<MudDialogProvider>();
         var cut = RenderComponent<Home>();
 
@@ -324,7 +434,7 @@ public sealed class HomeTests : TestContext
         cut.WaitForAssertion(() =>
         {
             checkinServiceMock.Verify(
-                x => x.ToggleForTodayAsync("Exercise", true, string.Empty, It.IsAny<CancellationToken>()),
+                x => x.ToggleForTodayAsync("Exercise", true, string.Empty, null, It.IsAny<CancellationToken>()),
                 Times.Once);
 
             cut.Markup.Should().Contain("3 day streak");
@@ -347,15 +457,67 @@ public sealed class HomeTests : TestContext
             .Setup(x => x.GetCurrentStreakAsync(habitCheckinViewModel.HabitName, It.IsAny<CancellationToken>()))
             .ReturnsAsync(updatedStreak);
         checkinServiceMock
-            .Setup(x => x.ToggleForTodayAsync(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.ToggleForTodayAsync(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<string?>(), It.IsAny<CheckinProofInputModel?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((Checkin?)null);
 
         return checkinServiceMock;
     }
 
-    private void RegisterServices(Mock<ICheckinService> checkinServiceMock)
+    private static Mock<ICheckinProofService> CreateCheckinProofServiceMock(
+        bool supportsCameraCapture = true,
+        CheckinProofSelection? selectedPhoto = null,
+        CheckinProofInputModel? persistedProof = null)
+    {
+        var checkinProofServiceMock = new Mock<ICheckinProofService>();
+        checkinProofServiceMock.SetupGet(x => x.SupportsCameraCapture).Returns(supportsCameraCapture);
+        checkinProofServiceMock
+            .Setup(x => x.CapturePhotoAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(selectedPhoto);
+        checkinProofServiceMock
+            .Setup(x => x.PickPhotoAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(selectedPhoto);
+        checkinProofServiceMock
+            .Setup(x => x.PersistAsync(It.IsAny<CheckinProofSelection>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(persistedProof ?? CreateCheckinProofInputModel());
+        checkinProofServiceMock
+            .Setup(x => x.DeleteIfExistsAsync(It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        return checkinProofServiceMock;
+    }
+
+    private static CheckinProofSelection CreateCheckinProofSelection()
+    {
+        return new CheckinProofSelection
+        {
+            DisplayName = "read-proof.jpg",
+            FileBytes = [1, 2, 3, 4],
+            FileExtension = ".jpg",
+            ModifiedOn = "2026-04-21T08:30:12.0000000+05:30",
+            PreviewDataUrl = "data:image/jpeg;base64,AQIDBA==",
+            Source = CheckinProofSource.Gallery,
+            SourceDescription = "Selected from gallery"
+        };
+    }
+
+    private static CheckinProofInputModel CreateCheckinProofInputModel()
+    {
+        return new CheckinProofInputModel
+        {
+            ProofImageUri = "Habit-1/2026/04/2026-04-21/proof.jpg",
+            ProofImageDisplayName = "read-proof.jpg",
+            ProofImageModifiedOn = "2026-04-21T08:30:12.0000000+05:30",
+            ProofImageSizeBytes = 2048
+        };
+    }
+
+    private void RegisterServices(
+        Mock<ICheckinService> checkinServiceMock,
+        Mock<ICheckinProofService> checkinProofServiceMock)
     {
         Services.AddSingleton(checkinServiceMock.Object);
+        Services.AddSingleton(checkinProofServiceMock.Object);
+        Services.AddSingleton(TimeProvider.System);
     }
 
     #endregion

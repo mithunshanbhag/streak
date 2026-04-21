@@ -9,6 +9,7 @@ global using Microsoft.Extensions.Logging;
 global using Moq;
 global using MudBlazor;
 global using MudBlazor.Services;
+global using Streak.Core.Constants;
 global using Streak.Ui.Constants;
 global using Streak.Ui.Misc.Startup;
 global using Streak.Ui.Misc.Utilities;
