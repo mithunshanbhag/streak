@@ -128,6 +128,42 @@ public class CheckinServiceTests
     }
 
     [Fact]
+    public async Task GetPendingHabitCountForTodayAsync_ShouldCountUncheckedHabitsUsingLocalDate()
+    {
+        var indiaTimeZone = CreateFixedOffsetTimeZone(hours: 5, minutes: 30);
+        var localNow = new DateTimeOffset(2026, 4, 14, 1, 0, 0, indiaTimeZone.BaseUtcOffset);
+        var timeProvider = new FixedTimeProvider(localNow, indiaTimeZone);
+        var cancellationToken = new CancellationTokenSource().Token;
+        IReadOnlyList<Habit> habits =
+        [
+            new() { Id = 1, Name = "Read" },
+            new() { Id = 2, Name = "Run" },
+            new() { Id = 3, Name = "Walk" }
+        ];
+        IReadOnlyList<Checkin> todayCheckins =
+        [
+            CreateCheckin(1, new DateOnly(2026, 4, 14)),
+            CreateCheckin(3, new DateOnly(2026, 4, 14))
+        ];
+
+        var sut = CreateSut(out var checkinRepositoryMock, out var habitRepositoryMock, timeProvider);
+        habitRepositoryMock
+            .Setup(x => x.GetAllAsync(cancellationToken))
+            .ReturnsAsync(habits);
+        checkinRepositoryMock
+            .Setup(x => x.GetByHabitIdsAsync(
+                It.Is<IReadOnlyCollection<int>>(ids => ids.Count == 3 && ids.Contains(1) && ids.Contains(2) && ids.Contains(3)),
+                "2026-04-14",
+                "2026-04-14",
+                cancellationToken))
+            .ReturnsAsync(todayCheckins);
+
+        var result = await sut.GetPendingHabitCountForTodayAsync(cancellationToken);
+
+        result.Should().Be(1);
+    }
+
+    [Fact]
     public async Task UpsertAsync_ShouldAddNewCheckin_WhenNoExistingCheckin()
     {
         var cancellationToken = new CancellationTokenSource().Token;
@@ -527,6 +563,22 @@ public class CheckinServiceTests
         var result = await sut.GetHomePageHabitCheckinsAsync();
 
         result.Should().BeEmpty();
+        checkinRepositoryMock.Verify(
+            x => x.GetByHabitIdsAsync(It.IsAny<IReadOnlyCollection<int>>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+    }
+
+    [Fact]
+    public async Task GetPendingHabitCountForTodayAsync_ShouldReturnZero_WhenThereAreNoHabits()
+    {
+        var sut = CreateSut(out var checkinRepositoryMock, out var habitRepositoryMock);
+        habitRepositoryMock
+            .Setup(x => x.GetAllAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync([]);
+
+        var result = await sut.GetPendingHabitCountForTodayAsync();
+
+        result.Should().Be(0);
         checkinRepositoryMock.Verify(
             x => x.GetByHabitIdsAsync(It.IsAny<IReadOnlyCollection<int>>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()),
             Times.Never);

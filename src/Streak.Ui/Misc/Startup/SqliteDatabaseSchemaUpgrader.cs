@@ -31,6 +31,11 @@ public sealed class SqliteDatabaseSchemaUpgrader(ILogger<SqliteDatabaseSchemaUpg
         var hasAutomatedBackupSettingsTable = TableExists(connection, AutomatedBackupConstants.SettingsTableName);
         var hasAutomatedBackupSettingsRow = hasAutomatedBackupSettingsTable
                                              && RowExists(connection, AutomatedBackupConstants.SettingsTableName, AutomatedBackupConstants.SettingsRowId);
+        var hasReminderSettingsTable = TableExists(connection, ReminderConstants.SettingsTableName);
+        var hasReminderTimeLocalColumn = hasReminderSettingsTable
+                                         && ColumnExists(connection, ReminderConstants.SettingsTableName, ReminderConstants.TimeLocalColumnName);
+        var hasReminderSettingsRow = hasReminderSettingsTable
+                                     && RowExists(connection, ReminderConstants.SettingsTableName, ReminderConstants.SettingsRowId);
 
         if (hasHabitDescriptionColumn &&
             hasCheckinNotesColumn &&
@@ -39,7 +44,10 @@ public sealed class SqliteDatabaseSchemaUpgrader(ILogger<SqliteDatabaseSchemaUpg
             hasCheckinProofImageSizeBytesColumn &&
             hasCheckinProofImageModifiedOnColumn &&
             hasAutomatedBackupSettingsTable &&
-            hasAutomatedBackupSettingsRow)
+            hasAutomatedBackupSettingsRow &&
+            hasReminderSettingsTable &&
+            hasReminderTimeLocalColumn &&
+            hasReminderSettingsRow)
         {
             _logger.LogDebug("SQLite schema is already up to date for {DatabasePath}.", databasePath);
             return;
@@ -154,6 +162,60 @@ public sealed class SqliteDatabaseSchemaUpgrader(ILogger<SqliteDatabaseSchemaUpg
                  INSERT INTO {AutomatedBackupConstants.SettingsTableName} (Id, IsEnabled)
                  VALUES ({AutomatedBackupConstants.SettingsRowId}, 0)
                  ON CONFLICT(Id) DO NOTHING;
+                 """;
+            command.ExecuteNonQuery();
+        }
+
+        if (!hasReminderSettingsTable)
+        {
+            command.CommandText =
+                $"""
+                 CREATE TABLE IF NOT EXISTS {ReminderConstants.SettingsTableName} (
+                     Id INTEGER NOT NULL,
+                     IsEnabled INTEGER NOT NULL DEFAULT 1,
+                     {ReminderConstants.TimeLocalColumnName} TEXT NOT NULL DEFAULT '{CoreConstants.DefaultReminderTimeLocal}',
+                     CONSTRAINT PK_{ReminderConstants.SettingsTableName} PRIMARY KEY (Id),
+                     CONSTRAINT CK_{ReminderConstants.SettingsTableName}_IsEnabled CHECK (IsEnabled IN (0, 1)),
+                     CONSTRAINT CK_{ReminderConstants.SettingsTableName}_{ReminderConstants.TimeLocalColumnName} CHECK (
+                         length({ReminderConstants.TimeLocalColumnName}) = 8
+                         AND {ReminderConstants.TimeLocalColumnName} GLOB '[0-2][0-9]:[0-5][0-9]:[0-5][0-9]'
+                         AND time({ReminderConstants.TimeLocalColumnName}) IS NOT NULL
+                         AND time({ReminderConstants.TimeLocalColumnName}) = {ReminderConstants.TimeLocalColumnName}
+                     )
+                 ) STRICT;
+                 """;
+            command.ExecuteNonQuery();
+        }
+
+        if (hasReminderSettingsTable && !hasReminderTimeLocalColumn)
+        {
+            command.CommandText =
+                $"""
+                 ALTER TABLE {ReminderConstants.SettingsTableName}
+                 ADD COLUMN {ReminderConstants.TimeLocalColumnName} TEXT NOT NULL DEFAULT '{CoreConstants.DefaultReminderTimeLocal}';
+                 """;
+            command.ExecuteNonQuery();
+        }
+
+        if (!hasReminderSettingsRow)
+        {
+            command.CommandText =
+                $"""
+                 INSERT INTO {ReminderConstants.SettingsTableName} (Id, IsEnabled, {ReminderConstants.TimeLocalColumnName})
+                 VALUES ({ReminderConstants.SettingsRowId}, 1, '{CoreConstants.DefaultReminderTimeLocal}')
+                 ON CONFLICT(Id) DO NOTHING;
+                 """;
+            command.ExecuteNonQuery();
+        }
+
+        if (hasReminderSettingsTable || !hasReminderSettingsRow)
+        {
+            command.CommandText =
+                $"""
+                 UPDATE {ReminderConstants.SettingsTableName}
+                 SET {ReminderConstants.TimeLocalColumnName} = '{CoreConstants.DefaultReminderTimeLocal}'
+                 WHERE {ReminderConstants.TimeLocalColumnName} IS NULL
+                    OR trim({ReminderConstants.TimeLocalColumnName}) = '';
                  """;
             command.ExecuteNonQuery();
         }

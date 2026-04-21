@@ -70,6 +70,27 @@ public class CheckinService(
         return BuildHomePageHabitCheckinViewModels(orderedHabits, checkins, todayLocal);
     }
 
+    public async Task<int> GetPendingHabitCountForTodayAsync(CancellationToken cancellationToken = default)
+    {
+        var habits = await _habitRepository.GetAllAsync(cancellationToken);
+        if (habits.Count == 0) return 0;
+
+        var todayLocal = GetTodayLocalDate();
+        var todayLocalString = FormatDate(todayLocal);
+        var todayCheckins = await _checkinRepository.GetByHabitIdsAsync(
+            [.. habits.Select(x => x.Id)],
+            fromDate: todayLocalString,
+            toDate: todayLocalString,
+            cancellationToken: cancellationToken);
+
+        var completedHabitCount = todayCheckins
+            .Select(x => x.HabitId)
+            .Distinct()
+            .Count();
+
+        return Math.Max(0, habits.Count - completedHabitCount);
+    }
+
     public async Task<Checkin> UpsertAsync(Checkin checkin, CancellationToken cancellationToken = default)
     {
         var normalizedCheckin = NormalizeRequiredCheckin(checkin);

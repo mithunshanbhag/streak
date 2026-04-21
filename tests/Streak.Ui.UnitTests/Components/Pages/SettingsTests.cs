@@ -11,20 +11,30 @@ public sealed class SettingsTests : TestContext
     #region Positive tests
 
     [Fact]
-    public void Settings_ShouldRenderDataCardWithAutomatedBackupsBackupDiagnosticsAndRestore()
+    public void Settings_ShouldRenderReminderAndDataCards()
     {
         var exportServiceMock = new Mock<IDatabaseExportService>();
         var diagnosticsExportServiceMock = new Mock<IDiagnosticsExportService>();
         var shareServiceMock = CreateShareServiceMock(canShare: false);
         var backupConfigurationServiceMock = CreateBackupConfigurationServiceMock(isEnabled: false);
-        RegisterSettingsServices(exportServiceMock, diagnosticsExportServiceMock, shareServiceMock, backupConfigurationServiceMock);
+        var reminderConfigurationServiceMock = CreateReminderConfigurationServiceMock(isEnabled: true);
+        RegisterSettingsServices(
+            exportServiceMock,
+            diagnosticsExportServiceMock,
+            shareServiceMock,
+            backupConfigurationServiceMock,
+            reminderConfigurationServiceMock);
 
         var cut = RenderSettings();
 
+        cut.Markup.Should().Contain("Daily reminder");
+        cut.Markup.Should().Contain("You'll be reminded only if there are habits you haven't checked in yet.");
+        cut.Find("input[aria-label='Daily reminder toggle']").HasAttribute("checked").Should().BeTrue();
+        cut.Markup.Should().Contain("Reminder time");
         cut.Markup.Should().Contain("Daily automated backups");
         cut.Markup.Should().Contain("Create a nightly backup in local storage.");
         cut.Find("button[aria-label='Automated backup details']");
-        cut.Find("input[type='checkbox']").HasAttribute("disabled").Should().BeFalse();
+        cut.Find("input[aria-label='Daily automated backups toggle']").HasAttribute("disabled").Should().BeFalse();
         cut.Markup.Should().Contain("Backup");
         cut.Markup.Should().Contain("Save or share a copy of your local data.");
         cut.Find("button[aria-label='Backup save location information']");
@@ -38,7 +48,6 @@ public sealed class SettingsTests : TestContext
         cut.Markup.Should().Contain("Restore your data from a previous backup.");
         cut.Markup.Should().NotContain("Automated backups enabled");
         cut.Markup.Should().NotContain("Turns the nightly backup on or off.");
-        cut.Markup.Should().NotContain("Daily reminder");
         cut.Markup.Should().NotContain("Create a manual backup of your local Streak data");
     }
 
@@ -61,7 +70,13 @@ public sealed class SettingsTests : TestContext
 
         var shareServiceMock = CreateShareServiceMock(canShare: false);
         var backupConfigurationServiceMock = CreateBackupConfigurationServiceMock(isEnabled: false);
-        RegisterSettingsServices(exportServiceMock, diagnosticsExportServiceMock, shareServiceMock, backupConfigurationServiceMock);
+        var reminderConfigurationServiceMock = CreateReminderConfigurationServiceMock(isEnabled: true);
+        RegisterSettingsServices(
+            exportServiceMock,
+            diagnosticsExportServiceMock,
+            shareServiceMock,
+            backupConfigurationServiceMock,
+            reminderConfigurationServiceMock);
 
         var cut = RenderSettings();
 
@@ -93,8 +108,14 @@ public sealed class SettingsTests : TestContext
         var diagnosticsExportServiceMock = new Mock<IDiagnosticsExportService>();
         var shareServiceMock = CreateShareServiceMock(canShare: true);
         var backupConfigurationServiceMock = CreateBackupConfigurationServiceMock(isEnabled: false);
+        var reminderConfigurationServiceMock = CreateReminderConfigurationServiceMock(isEnabled: true);
 
-        RegisterSettingsServices(exportServiceMock, diagnosticsExportServiceMock, shareServiceMock, backupConfigurationServiceMock);
+        RegisterSettingsServices(
+            exportServiceMock,
+            diagnosticsExportServiceMock,
+            shareServiceMock,
+            backupConfigurationServiceMock,
+            reminderConfigurationServiceMock);
 
         var cut = RenderSettings();
 
@@ -125,6 +146,7 @@ public sealed class SettingsTests : TestContext
             diagnosticsExportServiceMock,
             shareServiceMock,
             backupConfigurationServiceMock,
+            CreateReminderConfigurationServiceMock(isEnabled: true),
             manualBackupCompletionNotifierMock: manualBackupCompletionNotifierMock);
 
         var cut = RenderSettings();
@@ -157,7 +179,13 @@ public sealed class SettingsTests : TestContext
             });
 
         var backupConfigurationServiceMock = CreateBackupConfigurationServiceMock(isEnabled: false);
-        RegisterSettingsServices(exportServiceMock, diagnosticsExportServiceMock, shareServiceMock, backupConfigurationServiceMock);
+        var reminderConfigurationServiceMock = CreateReminderConfigurationServiceMock(isEnabled: true);
+        RegisterSettingsServices(
+            exportServiceMock,
+            diagnosticsExportServiceMock,
+            shareServiceMock,
+            backupConfigurationServiceMock,
+            reminderConfigurationServiceMock);
 
         var cut = RenderSettings();
 
@@ -203,7 +231,13 @@ public sealed class SettingsTests : TestContext
 
         var shareServiceMock = CreateShareServiceMock(canShare: true);
         var backupConfigurationServiceMock = CreateBackupConfigurationServiceMock(isEnabled: false);
-        RegisterSettingsServices(exportServiceMock, diagnosticsExportServiceMock, shareServiceMock, backupConfigurationServiceMock);
+        var reminderConfigurationServiceMock = CreateReminderConfigurationServiceMock(isEnabled: true);
+        RegisterSettingsServices(
+            exportServiceMock,
+            diagnosticsExportServiceMock,
+            shareServiceMock,
+            backupConfigurationServiceMock,
+            reminderConfigurationServiceMock);
 
         var cut = RenderSettings();
 
@@ -245,7 +279,13 @@ public sealed class SettingsTests : TestContext
 
         var shareServiceMock = CreateShareServiceMock(canShare: false);
         var backupConfigurationServiceMock = CreateBackupConfigurationServiceMock(isEnabled: false);
-        RegisterSettingsServices(exportServiceMock, diagnosticsExportServiceMock, shareServiceMock, backupConfigurationServiceMock);
+        var reminderConfigurationServiceMock = CreateReminderConfigurationServiceMock(isEnabled: true);
+        RegisterSettingsServices(
+            exportServiceMock,
+            diagnosticsExportServiceMock,
+            shareServiceMock,
+            backupConfigurationServiceMock,
+            reminderConfigurationServiceMock);
 
         var cut = RenderSettings();
 
@@ -274,7 +314,13 @@ public sealed class SettingsTests : TestContext
 
         var shareServiceMock = CreateShareServiceMock(canShare: false);
         var backupConfigurationServiceMock = CreateBackupConfigurationServiceMock(isEnabled: false);
-        RegisterSettingsServices(exportServiceMock, diagnosticsExportServiceMock, shareServiceMock, backupConfigurationServiceMock);
+        var reminderConfigurationServiceMock = CreateReminderConfigurationServiceMock(isEnabled: true);
+        RegisterSettingsServices(
+            exportServiceMock,
+            diagnosticsExportServiceMock,
+            shareServiceMock,
+            backupConfigurationServiceMock,
+            reminderConfigurationServiceMock);
 
         var cut = RenderSettings();
 
@@ -307,7 +353,13 @@ public sealed class SettingsTests : TestContext
             });
 
         var backupConfigurationServiceMock = CreateBackupConfigurationServiceMock(isEnabled: false);
-        RegisterSettingsServices(exportServiceMock, diagnosticsExportServiceMock, shareServiceMock, backupConfigurationServiceMock);
+        var reminderConfigurationServiceMock = CreateReminderConfigurationServiceMock(isEnabled: true);
+        RegisterSettingsServices(
+            exportServiceMock,
+            diagnosticsExportServiceMock,
+            shareServiceMock,
+            backupConfigurationServiceMock,
+            reminderConfigurationServiceMock);
 
         var cut = RenderSettings();
 
@@ -331,7 +383,13 @@ public sealed class SettingsTests : TestContext
 
         var shareServiceMock = CreateShareServiceMock(canShare: false);
         var backupConfigurationServiceMock = CreateBackupConfigurationServiceMock(isEnabled: false);
-        RegisterSettingsServices(exportServiceMock, diagnosticsExportServiceMock, shareServiceMock, backupConfigurationServiceMock);
+        var reminderConfigurationServiceMock = CreateReminderConfigurationServiceMock(isEnabled: true);
+        RegisterSettingsServices(
+            exportServiceMock,
+            diagnosticsExportServiceMock,
+            shareServiceMock,
+            backupConfigurationServiceMock,
+            reminderConfigurationServiceMock);
 
         var cut = RenderSettings();
 
@@ -360,7 +418,13 @@ public sealed class SettingsTests : TestContext
 
         var shareServiceMock = CreateShareServiceMock(canShare: false);
         var backupConfigurationServiceMock = CreateBackupConfigurationServiceMock(isEnabled: false);
-        RegisterSettingsServices(exportServiceMock, diagnosticsExportServiceMock, shareServiceMock, backupConfigurationServiceMock);
+        var reminderConfigurationServiceMock = CreateReminderConfigurationServiceMock(isEnabled: true);
+        RegisterSettingsServices(
+            exportServiceMock,
+            diagnosticsExportServiceMock,
+            shareServiceMock,
+            backupConfigurationServiceMock,
+            reminderConfigurationServiceMock);
 
         var cut = RenderSettings();
 
@@ -384,12 +448,40 @@ public sealed class SettingsTests : TestContext
         var diagnosticsExportServiceMock = new Mock<IDiagnosticsExportService>();
         var shareServiceMock = CreateShareServiceMock(canShare: false);
         var backupConfigurationServiceMock = CreateBackupConfigurationServiceMock(isEnabled: true);
+        var reminderConfigurationServiceMock = CreateReminderConfigurationServiceMock(isEnabled: true);
 
-        RegisterSettingsServices(exportServiceMock, diagnosticsExportServiceMock, shareServiceMock, backupConfigurationServiceMock);
+        RegisterSettingsServices(
+            exportServiceMock,
+            diagnosticsExportServiceMock,
+            shareServiceMock,
+            backupConfigurationServiceMock,
+            reminderConfigurationServiceMock);
 
         var cut = RenderSettings();
 
-        cut.Find("input[type='checkbox']").HasAttribute("checked").Should().BeTrue();
+        cut.Find("input[aria-label='Daily automated backups toggle']").HasAttribute("checked").Should().BeTrue();
+    }
+
+    [Fact]
+    public void Settings_ShouldHideReminderTimePicker_WhenRemindersAreDisabled()
+    {
+        var exportServiceMock = new Mock<IDatabaseExportService>();
+        var diagnosticsExportServiceMock = new Mock<IDiagnosticsExportService>();
+        var shareServiceMock = CreateShareServiceMock(canShare: false);
+        var backupConfigurationServiceMock = CreateBackupConfigurationServiceMock(isEnabled: false);
+        var reminderConfigurationServiceMock = CreateReminderConfigurationServiceMock(isEnabled: false);
+
+        RegisterSettingsServices(
+            exportServiceMock,
+            diagnosticsExportServiceMock,
+            shareServiceMock,
+            backupConfigurationServiceMock,
+            reminderConfigurationServiceMock);
+
+        var cut = RenderSettings();
+
+        cut.Find("input[aria-label='Daily reminder toggle']").HasAttribute("checked").Should().BeFalse();
+        cut.Markup.Should().NotContain("Reminder time");
     }
 
     [Fact]
@@ -401,14 +493,43 @@ public sealed class SettingsTests : TestContext
         var backupConfigurationServiceMock = CreateBackupConfigurationServiceMock(
             isEnabled: true,
             isSupported: false);
+        var reminderConfigurationServiceMock = CreateReminderConfigurationServiceMock(isEnabled: true);
 
-        RegisterSettingsServices(exportServiceMock, diagnosticsExportServiceMock, shareServiceMock, backupConfigurationServiceMock);
+        RegisterSettingsServices(
+            exportServiceMock,
+            diagnosticsExportServiceMock,
+            shareServiceMock,
+            backupConfigurationServiceMock,
+            reminderConfigurationServiceMock);
 
         var cut = RenderSettings();
-        var toggle = cut.Find("input[type='checkbox']");
+        var toggle = cut.Find("input[aria-label='Daily automated backups toggle']");
 
         toggle.HasAttribute("disabled").Should().BeTrue();
         toggle.HasAttribute("checked").Should().BeFalse();
+    }
+
+    [Fact]
+    public void Settings_ShouldPersistReminderToggle_WhenUserChangesIt()
+    {
+        var exportServiceMock = new Mock<IDatabaseExportService>();
+        var diagnosticsExportServiceMock = new Mock<IDiagnosticsExportService>();
+        var shareServiceMock = CreateShareServiceMock(canShare: false);
+        var backupConfigurationServiceMock = CreateBackupConfigurationServiceMock(isEnabled: false);
+        var reminderConfigurationServiceMock = CreateReminderConfigurationServiceMock(isEnabled: true);
+
+        RegisterSettingsServices(
+            exportServiceMock,
+            diagnosticsExportServiceMock,
+            shareServiceMock,
+            backupConfigurationServiceMock,
+            reminderConfigurationServiceMock);
+
+        var cut = RenderSettings();
+
+        cut.Find("input[aria-label='Daily reminder toggle']").Change(false);
+
+        reminderConfigurationServiceMock.Verify(x => x.SetIsEnabled(false), Times.Once);
     }
 
     [Fact]
@@ -418,14 +539,61 @@ public sealed class SettingsTests : TestContext
         var diagnosticsExportServiceMock = new Mock<IDiagnosticsExportService>();
         var shareServiceMock = CreateShareServiceMock(canShare: false);
         var backupConfigurationServiceMock = CreateBackupConfigurationServiceMock(isEnabled: false);
+        var reminderConfigurationServiceMock = CreateReminderConfigurationServiceMock(isEnabled: true);
 
-        RegisterSettingsServices(exportServiceMock, diagnosticsExportServiceMock, shareServiceMock, backupConfigurationServiceMock);
+        RegisterSettingsServices(
+            exportServiceMock,
+            diagnosticsExportServiceMock,
+            shareServiceMock,
+            backupConfigurationServiceMock,
+            reminderConfigurationServiceMock);
 
         var cut = RenderSettings();
 
-        cut.Find("input[type='checkbox']").Change(true);
+        cut.Find("input[aria-label='Daily automated backups toggle']").Change(true);
 
         backupConfigurationServiceMock.Verify(x => x.SetIsEnabled(true), Times.Once);
+    }
+
+    [Fact]
+    public void Settings_ShouldShowSnackbar_WhenReminderNotificationPermissionIsDenied()
+    {
+        var exportServiceMock = new Mock<IDatabaseExportService>();
+        var diagnosticsExportServiceMock = new Mock<IDiagnosticsExportService>();
+        var shareServiceMock = CreateShareServiceMock(canShare: false);
+        var backupConfigurationServiceMock = CreateBackupConfigurationServiceMock(isEnabled: false);
+        var reminderConfigurationServiceMock = CreateReminderConfigurationServiceMock(isEnabled: false);
+        var reminderNotificationPermissionServiceMock = new Mock<IReminderNotificationPermissionService>();
+        var snackbarMock = new Mock<ISnackbar>();
+        reminderNotificationPermissionServiceMock
+            .Setup(x => x.RequestPermissionIfNeededAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
+
+        RegisterSettingsServices(
+            exportServiceMock,
+            diagnosticsExportServiceMock,
+            shareServiceMock,
+            backupConfigurationServiceMock,
+            reminderConfigurationServiceMock,
+            reminderNotificationPermissionServiceMock: reminderNotificationPermissionServiceMock,
+            snackbarMock: snackbarMock);
+        var cut = RenderSettings();
+
+        cut.Find("input[aria-label='Daily reminder toggle']").Change(true);
+
+        cut.WaitForAssertion(() =>
+        {
+            reminderNotificationPermissionServiceMock.Verify(
+                x => x.RequestPermissionIfNeededAsync(It.IsAny<CancellationToken>()),
+                Times.Once);
+            snackbarMock.Verify(
+                x => x.Add(
+                    It.Is<string>(message => message.Contains("Android reminder notifications are off.", StringComparison.Ordinal)),
+                    Severity.Info,
+                    It.IsAny<Action<SnackbarOptions>>(),
+                    It.IsAny<string>()),
+                Times.Once);
+        });
     }
 
     [Fact]
@@ -435,6 +603,7 @@ public sealed class SettingsTests : TestContext
         var diagnosticsExportServiceMock = new Mock<IDiagnosticsExportService>();
         var shareServiceMock = CreateShareServiceMock(canShare: false);
         var backupConfigurationServiceMock = CreateBackupConfigurationServiceMock(isEnabled: false);
+        var reminderConfigurationServiceMock = CreateReminderConfigurationServiceMock(isEnabled: true);
         var backupNotificationPermissionServiceMock = new Mock<IBackupNotificationPermissionService>();
         var snackbarMock = new Mock<ISnackbar>();
         backupNotificationPermissionServiceMock
@@ -446,11 +615,12 @@ public sealed class SettingsTests : TestContext
             diagnosticsExportServiceMock,
             shareServiceMock,
             backupConfigurationServiceMock,
+            reminderConfigurationServiceMock,
             backupNotificationPermissionServiceMock: backupNotificationPermissionServiceMock,
             snackbarMock: snackbarMock);
         var cut = RenderSettings();
 
-        cut.Find("input[type='checkbox']").Change(true);
+        cut.Find("input[aria-label='Daily automated backups toggle']").Change(true);
 
         cut.WaitForAssertion(() =>
         {
@@ -488,13 +658,27 @@ public sealed class SettingsTests : TestContext
         return backupConfigurationServiceMock;
     }
 
+    private static Mock<IReminderConfigurationService> CreateReminderConfigurationServiceMock(
+        bool isEnabled,
+        TimeOnly? timeLocal = null)
+    {
+        var reminderConfigurationServiceMock = new Mock<IReminderConfigurationService>();
+        reminderConfigurationServiceMock.Setup(x => x.GetIsEnabled()).Returns(isEnabled);
+        reminderConfigurationServiceMock
+            .Setup(x => x.GetTimeLocal())
+            .Returns(timeLocal ?? new TimeOnly(21, 0));
+        return reminderConfigurationServiceMock;
+    }
+
     private void RegisterSettingsServices(
         Mock<IDatabaseExportService> exportServiceMock,
         Mock<IDiagnosticsExportService> diagnosticsExportServiceMock,
         Mock<IDatabaseShareService> shareServiceMock,
         Mock<IAutomatedBackupConfigurationService> backupConfigurationServiceMock,
+        Mock<IReminderConfigurationService> reminderConfigurationServiceMock,
         Mock<IManualBackupCompletionNotifier>? manualBackupCompletionNotifierMock = null,
         Mock<IBackupNotificationPermissionService>? backupNotificationPermissionServiceMock = null,
+        Mock<IReminderNotificationPermissionService>? reminderNotificationPermissionServiceMock = null,
         Mock<ISnackbar>? snackbarMock = null)
     {
         var importFilePickerMock = new Mock<IDatabaseImportFilePicker>();
@@ -504,6 +688,13 @@ public sealed class SettingsTests : TestContext
         {
             backupNotificationPermissionServiceMock = new Mock<IBackupNotificationPermissionService>();
             backupNotificationPermissionServiceMock
+                .Setup(x => x.RequestPermissionIfNeededAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(true);
+        }
+        if (reminderNotificationPermissionServiceMock is null)
+        {
+            reminderNotificationPermissionServiceMock = new Mock<IReminderNotificationPermissionService>();
+            reminderNotificationPermissionServiceMock
                 .Setup(x => x.RequestPermissionIfNeededAsync(It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);
         }
@@ -524,6 +715,8 @@ public sealed class SettingsTests : TestContext
         Services.AddSingleton(importServiceMock.Object);
         Services.AddSingleton(manualBackupCompletionNotifierMock.Object);
         Services.AddSingleton(backupNotificationPermissionServiceMock.Object);
+        Services.AddSingleton(reminderConfigurationServiceMock.Object);
+        Services.AddSingleton(reminderNotificationPermissionServiceMock.Object);
         Services.AddSingleton(snackbarMock.Object);
     }
 

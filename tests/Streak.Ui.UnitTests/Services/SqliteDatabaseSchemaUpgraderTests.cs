@@ -68,6 +68,7 @@ public sealed class SqliteDatabaseSchemaUpgraderTests
         checkinReader.IsDBNull(6).Should().BeTrue();
 
         GetAutomatedBackupSetting(databasePath).Should().BeFalse();
+        GetReminderSettings(databasePath).Should().Be(new ReminderSettings(true, new TimeOnly(21, 0)));
     }
 
     [Fact]
@@ -111,7 +112,11 @@ public sealed class SqliteDatabaseSchemaUpgraderTests
         GetTableColumns(databasePath, AutomatedBackupConstants.SettingsTableName)
             .Should()
             .Contain(["Id", "IsEnabled"]);
+        GetTableColumns(databasePath, ReminderConstants.SettingsTableName)
+            .Should()
+            .Contain(["Id", "IsEnabled", "TimeLocal"]);
         GetAutomatedBackupSetting(databasePath).Should().BeFalse();
+        GetReminderSettings(databasePath).Should().Be(new ReminderSettings(true, new TimeOnly(21, 0)));
     }
 
     [Fact]
@@ -258,6 +263,25 @@ public sealed class SqliteDatabaseSchemaUpgraderTests
 
         var result = command.ExecuteScalar();
         return Convert.ToInt32(result, CultureInfo.InvariantCulture) == 1;
+    }
+
+    private static ReminderSettings GetReminderSettings(string databasePath)
+    {
+        using var connection = OpenConnection(databasePath);
+        using var command = connection.CreateCommand();
+        command.CommandText =
+            $"""
+             SELECT IsEnabled, {ReminderConstants.TimeLocalColumnName}
+             FROM {ReminderConstants.SettingsTableName}
+             WHERE Id = {ReminderConstants.SettingsRowId};
+             """;
+
+        using var reader = command.ExecuteReader();
+        reader.Read().Should().BeTrue();
+
+        return new ReminderSettings(
+            reader.GetInt64(0) == 1,
+            TimeOnly.ParseExact(reader.GetString(1), ReminderConstants.TimeStorageFormat, CultureInfo.InvariantCulture));
     }
 
     #endregion

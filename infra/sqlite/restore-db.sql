@@ -47,3 +47,21 @@ CREATE TABLE IF NOT EXISTS AutomatedBackupSettings (
 INSERT INTO AutomatedBackupSettings (Id, IsEnabled)
 VALUES (1, 0)
 ON CONFLICT(Id) DO NOTHING;
+
+CREATE TABLE IF NOT EXISTS ReminderSettings (
+    Id INTEGER NOT NULL,
+    IsEnabled INTEGER NOT NULL DEFAULT 1,
+    TimeLocal TEXT NOT NULL DEFAULT '21:00:00',
+    CONSTRAINT PK_ReminderSettings PRIMARY KEY (Id),
+    CONSTRAINT CK_ReminderSettings_IsEnabled CHECK (IsEnabled IN (0, 1)),
+    CONSTRAINT CK_ReminderSettings_TimeLocal CHECK (
+        length(TimeLocal) = 8
+        AND TimeLocal GLOB '[0-2][0-9]:[0-5][0-9]:[0-5][0-9]'
+        AND time(TimeLocal) IS NOT NULL
+        AND time(TimeLocal) = TimeLocal
+    )
+) STRICT;
+
+INSERT INTO ReminderSettings (Id, IsEnabled, TimeLocal)
+VALUES (1, 1, '21:00:00')
+ON CONFLICT(Id) DO NOTHING;

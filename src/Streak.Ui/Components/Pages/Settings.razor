@@ -1,5 +1,6 @@
 @page "/settings"
 @inject IAutomatedBackupConfigurationService AutomatedBackupConfigurationService
+@inject IReminderConfigurationService ReminderConfigurationService
 @inject IDatabaseExportService DatabaseExportService
 @inject IDiagnosticsExportService DiagnosticsExportService
 @inject IDatabaseShareService DatabaseShareService
@@ -7,6 +8,7 @@
 @inject IDatabaseImportService DatabaseImportService
 @inject IManualBackupCompletionNotifier ManualBackupCompletionNotifier
 @inject IBackupNotificationPermissionService BackupNotificationPermissionService
+@inject IReminderNotificationPermissionService ReminderNotificationPermissionService
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
 @inject NavigationManager NavigationManager
@@ -24,6 +26,65 @@
                 @_operationErrorMessage
             </MudAlert>
         }
+
+        <MudPaper Elevation="1"
+                  Class="pa-4 rounded-lg">
+            <MudStack Spacing="3">
+                <MudStack Spacing="1">
+                    <MudText Typo="Typo.caption"
+                             Class="text-secondary">
+                        @ReminderSectionEyebrowText
+                    </MudText>
+
+                    <MudText Typo="Typo.h6">
+                        @ReminderHeaderText
+                    </MudText>
+                </MudStack>
+
+                <MudPaper Elevation="0"
+                          Class="pa-3 rounded-lg">
+                    <MudStack Row="true"
+                              Justify="Justify.SpaceBetween"
+                              AlignItems="AlignItems.Center"
+                              Spacing="3">
+                        <MudText Typo="Typo.body1">
+                            @ReminderToggleLabelText
+                        </MudText>
+
+                        <MudSwitch T="bool"
+                                   Value="@_remindersEnabled"
+                                   ValueChanged="ReminderEnabledChangedAsync"
+                                   Disabled="@ReminderControlsDisabled"
+                                   Color="Color.Primary"
+                                   aria-label="@ReminderSwitchAriaLabel"/>
+                    </MudStack>
+                </MudPaper>
+
+                @if (_remindersEnabled)
+                {
+                    <MudPaper Elevation="0"
+                              Class="pa-3 rounded-lg">
+                        <MudStack Spacing="2">
+                            <MudText Typo="Typo.body2">
+                                @ReminderTimeLabelText
+                            </MudText>
+
+                            <MudTimePicker Time="@_reminderTimeLocal"
+                                           TimeChanged="ReminderTimeChangedAsync"
+                                           Label="@ReminderTimeLabelText"
+                                           AmPm="true"
+                                           Variant="Variant.Outlined"
+                                           Disabled="@ReminderControlsDisabled" />
+                        </MudStack>
+                    </MudPaper>
+                }
+
+                <MudText Typo="Typo.caption"
+                         Class="text-secondary">
+                    @ReminderHelperText
+                </MudText>
+            </MudStack>
+        </MudPaper>
 
         <MudPaper Elevation="1"
                   Class="pa-4 rounded-lg">
@@ -66,10 +127,10 @@
                               Spacing="0">
                         <MudSwitch T="bool"
                                    Value="@_automatedBackupsEnabled"
-                                     ValueChanged="AutomatedBackupsEnabledChangedAsync"
-                                     Disabled="@(!_automatedBackupsSupported || _automatedBackupSettingsUpdateInProgress || _exportInProgress || _diagnosticsExportInProgress || _shareInProgress || _importInProgress)"
-                                     Color="Color.Primary"
-                                     aria-label="@AutomatedBackupsSwitchAriaLabel"/>
+                                   ValueChanged="AutomatedBackupsEnabledChangedAsync"
+                                   Disabled="@AutomatedBackupsToggleDisabled"
+                                   Color="Color.Primary"
+                                   aria-label="@AutomatedBackupsSwitchAriaLabel"/>
                     </MudStack>
                 </MudPaper>
 
@@ -108,7 +169,7 @@
                                     Placement="Placement.Top">
                             <MudButton Color="Color.Primary"
                                        Variant="Variant.Filled"
-                                       Disabled="@(_exportInProgress || _diagnosticsExportInProgress || _shareInProgress || _importInProgress)"
+                                       Disabled="@DataActionsDisabled"
                                        aria-label="@ExportButtonAriaLabel"
                                        Style="@DataActionButtonStyle"
                                        OnClick="ExportDatabaseAsync">
@@ -130,7 +191,7 @@
                             <span class="d-inline-flex">
                                 <MudButton Color="Color.Primary"
                                            Variant="Variant.Filled"
-                                           Disabled="@(!DatabaseShareService.CanShare || _exportInProgress || _diagnosticsExportInProgress || _shareInProgress || _importInProgress)"
+                                           Disabled="@(!DatabaseShareService.CanShare || DataActionsDisabled)"
                                            aria-label="@ShareButtonAriaLabel"
                                            Style="@DataActionButtonStyle"
                                            OnClick="ShareDatabaseAsync">
@@ -184,7 +245,7 @@
                                     Placement="Placement.Top">
                             <MudButton Color="Color.Primary"
                                        Variant="Variant.Filled"
-                                       Disabled="@(_exportInProgress || _diagnosticsExportInProgress || _shareInProgress || _importInProgress)"
+                                       Disabled="@DataActionsDisabled"
                                        aria-label="@DiagnosticsExportButtonAriaLabel"
                                        Style="@DataActionButtonStyle"
                                        OnClick="ExportDiagnosticsAsync">
@@ -237,7 +298,7 @@
                                     Placement="Placement.Top">
                             <MudButton Color="Color.Primary"
                                        Variant="Variant.Filled"
-                                       Disabled="@(_exportInProgress || _diagnosticsExportInProgress || _shareInProgress || _importInProgress)"
+                                       Disabled="@DataActionsDisabled"
                                        aria-label="@ImportButtonAriaLabel"
                                        Style="@DataActionButtonStyle"
                                        OnClick="ImportDatabaseAsync">
@@ -274,6 +335,12 @@
 
     private bool _diagnosticsExportInProgress;
 
+    private bool _remindersEnabled;
+
+    private TimeSpan? _reminderTimeLocal;
+
+    private bool _reminderSettingsUpdateInProgress;
+
     private bool _automatedBackupsEnabled;
 
     private bool _automatedBackupsSupported;
@@ -282,12 +349,33 @@
 
     private string? _operationErrorMessage;
 
+    private bool ReminderControlsDisabled =>
+        _reminderSettingsUpdateInProgress
+        || _automatedBackupSettingsUpdateInProgress
+        || _exportInProgress
+        || _diagnosticsExportInProgress
+        || _shareInProgress
+        || _importInProgress;
+
+    private bool AutomatedBackupsToggleDisabled =>
+        !_automatedBackupsSupported || ReminderControlsDisabled;
+
+    private bool DataActionsDisabled =>
+        _exportInProgress
+        || _diagnosticsExportInProgress
+        || _shareInProgress
+        || _importInProgress
+        || _reminderSettingsUpdateInProgress
+        || _automatedBackupSettingsUpdateInProgress;
+
     #endregion
 
     #region Lifecycle Methods
 
     protected override void OnInitialized()
     {
+        _remindersEnabled = ReminderConfigurationService.GetIsEnabled();
+        _reminderTimeLocal = ReminderConfigurationService.GetTimeLocal().ToTimeSpan();
         _automatedBackupsSupported = AutomatedBackupConfigurationService.IsSupported;
         _automatedBackupsEnabled = _automatedBackupsSupported && AutomatedBackupConfigurationService.GetIsEnabled();
     }
@@ -301,6 +389,39 @@
     #endregion
 
     #region Event Handlers
+
+    private async Task ReminderEnabledChangedAsync(bool isEnabled)
+    {
+        try
+        {
+            _reminderSettingsUpdateInProgress = true;
+            _operationErrorMessage = null;
+            ReminderConfigurationService.SetIsEnabled(isEnabled);
+            _remindersEnabled = isEnabled;
+
+            if (isEnabled)
+            {
+                var notificationsEnabled = await ReminderNotificationPermissionService.RequestPermissionIfNeededAsync();
+                if (!notificationsEnabled)
+                    Snackbar.Add(ReminderNotificationsPermissionText, Severity.Info);
+            }
+        }
+        catch (Exception)
+        {
+            _operationErrorMessage = ReminderUpdateFailedText;
+            _remindersEnabled = ReminderConfigurationService.GetIsEnabled();
+            _reminderTimeLocal = ReminderConfigurationService.GetTimeLocal().ToTimeSpan();
+        }
+        finally
+        {
+            _reminderSettingsUpdateInProgress = false;
+        }
+    }
+
+    private Task ReminderTimeChangedAsync(TimeSpan? reminderTimeLocal)
+    {
+        return ReminderTimeChangedInternalAsync(reminderTimeLocal);
+    }
 
     private async Task AutomatedBackupsEnabledChangedAsync(bool isEnabled)
     {
@@ -432,9 +553,54 @@
 
     #endregion
 
+    #region Private Helper Methods
+
+    private async Task ReminderTimeChangedInternalAsync(TimeSpan? reminderTimeLocal)
+    {
+        if (!reminderTimeLocal.HasValue)
+            return;
+
+        try
+        {
+            _reminderSettingsUpdateInProgress = true;
+            _operationErrorMessage = null;
+            ReminderConfigurationService.SetTimeLocal(TimeOnly.FromTimeSpan(reminderTimeLocal.Value));
+            _reminderTimeLocal = reminderTimeLocal;
+        }
+        catch (Exception)
+        {
+            _operationErrorMessage = ReminderUpdateFailedText;
+            _remindersEnabled = ReminderConfigurationService.GetIsEnabled();
+            _reminderTimeLocal = ReminderConfigurationService.GetTimeLocal().ToTimeSpan();
+        }
+        finally
+        {
+            _reminderSettingsUpdateInProgress = false;
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    #endregion
+
     #region Text, Label Properties
 
     private const string SettingsPageTitleText = "Settings";
+
+    private const string ReminderSectionEyebrowText = "Reminders";
+
+    private const string ReminderHeaderText = "Daily reminder";
+
+    private const string ReminderToggleLabelText = "Reminders enabled";
+
+    private const string ReminderSwitchAriaLabel = "Daily reminder toggle";
+
+    private const string ReminderTimeLabelText = "Reminder time";
+
+    private const string ReminderHelperText = "You'll be reminded only if there are habits you haven't checked in yet.";
+
+    private const string ReminderUpdateFailedText = "Unable to update reminders right now. Please try again.";
+
+    private const string ReminderNotificationsPermissionText = "Android reminder notifications are off. Daily reminders will stay hidden until you allow notifications.";
 
     private const string SectionEyebrowText = "Data";
 

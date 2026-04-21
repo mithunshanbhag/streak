@@ -97,11 +97,15 @@ public sealed class MainLayoutTests : TestContext
         var backupConfigurationServiceMock = new Mock<IAutomatedBackupConfigurationService>();
         backupConfigurationServiceMock.SetupGet(x => x.IsSupported).Returns(true);
         backupConfigurationServiceMock.Setup(x => x.GetIsEnabled()).Returns(false);
+        var reminderConfigurationServiceMock = new Mock<IReminderConfigurationService>();
+        reminderConfigurationServiceMock.Setup(x => x.GetIsEnabled()).Returns(true);
+        reminderConfigurationServiceMock.Setup(x => x.GetTimeLocal()).Returns(new TimeOnly(21, 0));
 
         Services.AddSingleton(exportServiceMock.Object);
         Services.AddSingleton(diagnosticsExportServiceMock.Object);
         Services.AddSingleton(shareServiceMock.Object);
         Services.AddSingleton(backupConfigurationServiceMock.Object);
+        Services.AddSingleton(reminderConfigurationServiceMock.Object);
         Services.AddSingleton(Mock.Of<IDatabaseImportFilePicker>());
         Services.AddSingleton(Mock.Of<IDatabaseImportService>());
         Services.AddSingleton(Mock.Of<IManualBackupCompletionNotifier>());
@@ -111,6 +115,7 @@ public sealed class MainLayoutTests : TestContext
             .Setup(x => x.RequestPermissionIfNeededAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);
         Services.AddSingleton(backupNotificationPermissionServiceMock.Object);
+        Services.AddSingleton(Mock.Of<IReminderNotificationPermissionService>());
     }
 
     private void RegisterHabitDetailsServices(Habit habit)

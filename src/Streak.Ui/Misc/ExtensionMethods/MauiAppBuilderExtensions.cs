@@ -43,15 +43,19 @@ public static class MauiAppBuilderExtensions
             builder.Services.AddSingleton<IAppStoragePathService, AppStoragePathService>();
             builder.Services.AddSingleton<ICheckinProofService, CheckinProofService>();
             builder.Services.AddSingleton<IAutomatedBackupConfigurationService, AutomatedBackupConfigurationService>();
+            builder.Services.AddSingleton<IReminderConfigurationService, ReminderConfigurationService>();
             builder.Services.AddTransient<IManualBackupCompletionNotifier, ManualBackupCompletionNotifier>();
             builder.Services.AddTransient<IDatabaseImportService, DatabaseImportService>();
             builder.Services.AddTransient<IDatabaseExportService, DatabaseExportService>();
             builder.Services.AddTransient<IDiagnosticsExportService, DiagnosticsExportService>();
 #if WINDOWS
             builder.Services.AddSingleton<IAutomatedBackupScheduler, NoOpAutomatedBackupScheduler>();
+            builder.Services.AddSingleton<IReminderScheduler, NoOpReminderScheduler>();
             builder.Services.AddSingleton<IBackupFolderOpener, WindowsBackupFolderOpener>();
             builder.Services.AddSingleton<IAutomatedBackupCompletionNotifier, NoOpAutomatedBackupCompletionNotifier>();
             builder.Services.AddSingleton<IBackupNotificationPermissionService, NoOpBackupNotificationPermissionService>();
+            builder.Services.AddSingleton<IReminderNotifier, NoOpReminderNotifier>();
+            builder.Services.AddSingleton<IReminderNotificationPermissionService, NoOpReminderNotificationPermissionService>();
             builder.Services.AddTransient<IDatabaseImportFilePicker, WindowsDatabaseImportFilePicker>();
             builder.Services.AddTransient<ICheckinProofMediaPickerService, WindowsCheckinProofMediaPickerService>();
             builder.Services.AddTransient<IDatabaseExportFileSaver, WindowsDatabaseExportFileSaver>();
@@ -61,6 +65,8 @@ public static class MauiAppBuilderExtensions
             builder.Services.AddSingleton<IBackupFolderOpener, AndroidBackupFolderOpener>();
             builder.Services.AddSingleton<IAutomatedBackupCompletionNotifier, AndroidAutomatedBackupCompletionNotifier>();
             builder.Services.AddSingleton<IBackupNotificationPermissionService, AndroidBackupNotificationPermissionService>();
+            builder.Services.AddSingleton<IReminderNotifier, AndroidReminderNotifier>();
+            builder.Services.AddSingleton<IReminderNotificationPermissionService, AndroidReminderNotificationPermissionService>();
             builder.Services.AddTransient<IDatabaseImportFilePicker, AndroidDatabaseImportFilePicker>();
             builder.Services.AddTransient<ICheckinProofMediaPickerService, AndroidCheckinProofMediaPickerService>();
             builder.Services.AddTransient<IDatabaseExportFileSaver, AndroidDatabaseExportFileSaver>();
@@ -69,12 +75,16 @@ public static class MauiAppBuilderExtensions
             builder.Services.AddTransient<IAutomatedBackupExecutionService, AutomatedBackupExecutionService>();
             builder.Services.AddSingleton<IShare>(_ => Share.Default);
             builder.Services.AddSingleton<IAutomatedBackupScheduler, AndroidAutomatedBackupScheduler>();
+            builder.Services.AddSingleton<IReminderScheduler, AndroidReminderScheduler>();
             builder.Services.AddTransient<IDatabaseShareService, DatabaseShareService>();
 #else
             builder.Services.AddSingleton<IAutomatedBackupScheduler, NoOpAutomatedBackupScheduler>();
+            builder.Services.AddSingleton<IReminderScheduler, NoOpReminderScheduler>();
             builder.Services.AddSingleton<IBackupFolderOpener, UnsupportedBackupFolderOpener>();
             builder.Services.AddSingleton<IAutomatedBackupCompletionNotifier, NoOpAutomatedBackupCompletionNotifier>();
             builder.Services.AddSingleton<IBackupNotificationPermissionService, NoOpBackupNotificationPermissionService>();
+            builder.Services.AddSingleton<IReminderNotifier, NoOpReminderNotifier>();
+            builder.Services.AddSingleton<IReminderNotificationPermissionService, NoOpReminderNotificationPermissionService>();
             builder.Services.AddTransient<IDiagnosticsExportFileSaver, WindowsDiagnosticsExportFileSaver>();
             builder.Services.AddTransient<ICheckinProofMediaPickerService, UnsupportedCheckinProofMediaPickerService>();
             builder.Services.AddTransient<IDatabaseShareService, UnsupportedDatabaseShareService>();
