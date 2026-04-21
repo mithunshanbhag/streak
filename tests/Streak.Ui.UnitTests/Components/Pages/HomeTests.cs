@@ -104,7 +104,9 @@ public sealed class HomeTests : TestContext
         dialogProvider.WaitForAssertion(() =>
         {
             dialogProvider.Markup.Should().Contain("Remove 'Exercise' check-in?");
-            dialogProvider.Markup.Should().Contain("may also discard any saved note");
+            dialogProvider.Markup.Should().Contain("also remove any saved note and picture-proof details");
+            dialogProvider.Markup.Should().Contain("Saved note");
+            dialogProvider.Markup.Should().Contain("Picture proof");
             cut.Find("input[type='checkbox']").HasAttribute("checked").Should().BeTrue();
         });
 

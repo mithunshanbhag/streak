@@ -1,13 +1,52 @@
 <MudDialog>
     <TitleContent>
-        <MudText Typo="Typo.h6">
+        <MudText Typo="Typo.h6"
+                 Class="mb-2">
             @DialogTitleText
         </MudText>
     </TitleContent>
     <DialogContent>
-        <MudText Typo="Typo.body2">
-            @DialogMessageText
-        </MudText>
+        <MudStack Spacing="3">
+            <MudStack Row="true"
+                      AlignItems="AlignItems.Center"
+                      Spacing="2">
+                <MudPaper Elevation="0"
+                          Class="d-inline-flex pa-2"
+                          Style="@WarningIconContainerStyle">
+                    <MudIcon Icon="@WarningIcon"
+                             Color="Color.Warning"
+                             Size="Size.Medium"/>
+                </MudPaper>
+                <MudText Typo="Typo.body2">
+                    @DialogMessageText
+                </MudText>
+            </MudStack>
+
+            <MudPaper Elevation="0"
+                      Class="pa-3 rounded-lg"
+                      Style="@ImpactPanelStyle">
+                <MudStack Spacing="1">
+                    <MudStack Row="true"
+                              AlignItems="AlignItems.Center"
+                              Spacing="1">
+                        <MudIcon Icon="@SavedNoteIcon"
+                                 Size="Size.Small"/>
+                        <MudText Typo="Typo.caption">
+                            @SavedNoteImpactText
+                        </MudText>
+                    </MudStack>
+                    <MudStack Row="true"
+                              AlignItems="AlignItems.Center"
+                              Spacing="1">
+                        <MudIcon Icon="@SavedPictureProofIcon"
+                                 Size="Size.Small"/>
+                        <MudText Typo="Typo.caption">
+                            @SavedPictureProofImpactText
+                        </MudText>
+                    </MudStack>
+                </MudStack>
+            </MudPaper>
+        </MudStack>
     </DialogContent>
     <DialogActions>
         <MudButton Variant="Variant.Text"
@@ -80,15 +119,33 @@
 
     #endregion
 
+    #region CSS Style Properties
+
+    private const string WarningIconContainerStyle = "align-self: flex-start; border-radius: 999px; background-color: var(--mud-palette-warning-hover);";
+
+    private const string ImpactPanelStyle = "background-color: var(--mud-palette-surface); border: 1px solid var(--mud-palette-lines-default);";
+
+    #endregion
+
     #region Text, Label Properties
 
     private string DialogTitleText => $"Remove '{HabitName}' check-in?";
 
-    private const string DialogMessageText = "This will remove today's check-in and may also discard any saved note.";
+    private const string DialogMessageText = "This will remove today's check-in and also remove any saved note and picture-proof details from the app's record.";
 
     private const string CancelButtonText = "Keep check-in";
 
     private const string ConfirmButtonText = "Remove check-in";
+
+    private const string SavedNoteImpactText = "Saved note";
+
+    private const string SavedPictureProofImpactText = "Picture proof";
+
+    private const string WarningIcon = Icons.Material.Filled.Warning;
+
+    private const string SavedNoteIcon = Icons.Material.Filled.Notes;
+
+    private const string SavedPictureProofIcon = Icons.Material.Filled.Image;
 
     #endregion
 
