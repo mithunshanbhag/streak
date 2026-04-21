@@ -6,7 +6,7 @@ public sealed class DatabaseShareService(
     ILogger<DatabaseShareService> logger)
     : IDatabaseShareService
 {
-    private const string DatabaseMimeType = "application/octet-stream";
+    private const string DataBackupMimeType = "application/zip";
 
     private readonly IAppStoragePathService _appStoragePathService = appStoragePathService;
     private readonly IShare _share = share;
@@ -21,21 +21,22 @@ public sealed class DatabaseShareService(
             throw new FileNotFoundException("The local Streak database could not be found.", sourceDatabasePath);
 
         var exportDirectoryPath = _appStoragePathService.ExportDirectoryPath;
-        DatabaseBackupFileUtility.DeleteCachedBackups(exportDirectoryPath);
+        DataBackupArchiveUtility.DeleteCachedBackups(exportDirectoryPath);
 
-        var backupFilePath = DatabaseBackupFileUtility.CreateBackupFilePath(exportDirectoryPath);
+        var backupFilePath = DataBackupArchiveUtility.CreateBackupFilePath(exportDirectoryPath);
 
         try
         {
-            await DatabaseBackupFileUtility.CreateBackupAsync(
+            await DataBackupArchiveUtility.CreateBackupAsync(
                 sourceDatabasePath,
+                _appStoragePathService.CheckinProofsDirectoryPath,
                 backupFilePath,
                 cancellationToken);
 
             await _share.RequestAsync(new ShareFileRequest
             {
-                Title = "Share DB",
-                File = new ShareFile(backupFilePath, DatabaseMimeType)
+                Title = "Share data",
+                File = new ShareFile(backupFilePath, DataBackupMimeType)
             });
         }
         catch (Exception exception)

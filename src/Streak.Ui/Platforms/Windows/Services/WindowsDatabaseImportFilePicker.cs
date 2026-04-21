@@ -16,7 +16,7 @@ public sealed class WindowsDatabaseImportFilePicker : IDatabaseImportFilePicker
             ViewMode = PickerViewMode.List
         };
 
-        picker.FileTypeFilter.Add(".db");
+        picker.FileTypeFilter.Add(".zip");
 
         InitializeWithWindow.Initialize(picker, GetWindowHandle());
 

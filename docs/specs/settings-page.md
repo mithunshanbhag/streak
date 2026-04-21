@@ -42,7 +42,7 @@ The page contains two vertically stacked sections presented as clean cards:
 | Enable/disable toggle         | `MudSwitch`           | ON = daily automated backups enabled, OFF = disabled. Default: **OFF**. The switch sits on its own trailing action row with no extra inline label or helper copy. The control is disabled on Windows because this feature is Android-only in this iteration. |
 | Dividers                      | Visual                | Simple horizontal rules separate **Daily automated backups**, **Backup**, **Diagnostic logs**, and **Restore** so the four subsections read as one stacked group.                                                                                            |
 | Backup header                 | Text                  | **"Backup"**                                                                                                                                                                                                                                                 |
-| Backup info icon              | Glyph + tooltip       | Small info icon beside **Backup**. Hover/focus/press shows: *"Creates a '.zip' data archive with your database and uploaded pictures. Android saves to 'Downloads/Streak'. Windows lets you choose where to save."*                                          |
+| Backup info icon              | Glyph + tooltip       | Small info icon beside **Backup**. Hover/focus/press shows: *"Creates a '.zip' data archive with your local data and uploaded pictures. Android saves to 'Downloads/Streak'. Windows lets you choose where to save."*                                        |
 | Backup description            | Caption               | *"Save or share a copy of your local data."*                                                                                                                                                                                                                 |
 | Backup action cluster         | `MudIconButton` group | Two filled icon-only buttons shown side-by-side: download and share. Tooltips provide the visible labels **"Download data"** and **"Share data"**.                                                                                                           |
 | Diagnostic logs header        | Text                  | **"Diagnostic logs"**                                                                                                                                                                                                                                        |
@@ -146,7 +146,7 @@ The page contains two vertically stacked sections presented as clean cards:
 - The exported support bundle may include:
   - recent structured log files
   - a small manifest or metadata file with app version, platform, OS version, and export timestamp
-- The exported support bundle must **not** silently include the live database or a database backup. Database export/share remains a separate explicit action.
+- The exported support bundle must **not** silently include the live database or a data-backup archive. Data export/share remains a separate explicit action.
 - Diagnostic export is considered a low-frequency support / troubleshooting action, so it lives in **Settings** beside the other maintenance actions.
 - If the app has few or no recent logs available, export should still succeed by creating a valid diagnostics bundle with whatever diagnostic metadata is available.
 

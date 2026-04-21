@@ -3,14 +3,14 @@ namespace Streak.Ui.Services.Implementations;
 
 public sealed class AndroidDatabaseImportFilePicker : IDatabaseImportFilePicker
 {
-    private const string PickerTitleText = "Choose a database backup";
+    private const string PickerTitleText = "Choose a data backup";
 
     private static readonly PickOptions PickOptions = new()
     {
         PickerTitle = PickerTitleText,
         FileTypes = new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
         {
-            [DevicePlatform.Android] = ["application/octet-stream", "application/x-sqlite3", "application/vnd.sqlite3"]
+            [DevicePlatform.Android] = ["application/zip"]
         })
     };
 

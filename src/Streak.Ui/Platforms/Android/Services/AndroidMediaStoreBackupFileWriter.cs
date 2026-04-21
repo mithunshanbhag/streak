@@ -8,7 +8,7 @@ namespace Streak.Ui.Services.Implementations;
 
 internal static class AndroidMediaStoreBackupFileWriter
 {
-    private const string DatabaseMimeType = "application/octet-stream";
+    private const string BackupMimeType = "application/zip";
 
     public static Task<SavedFileLocation> SaveBackupAsync(
         string sourceFilePath,
@@ -19,7 +19,7 @@ internal static class AndroidMediaStoreBackupFileWriter
         return SaveFileAsync(
             sourceFilePath,
             relativePath,
-            DatabaseMimeType,
+            BackupMimeType,
             displayRelativePath,
             cancellationToken);
     }
@@ -42,7 +42,7 @@ internal static class AndroidMediaStoreBackupFileWriter
         var normalizedDisplayRelativePath = (displayRelativePath ?? normalizedRelativePath).TrimEnd('/', '\\');
         var fileName = Path.GetFileName(sourceFilePath);
         var contentResolver = Application.Context.ContentResolver
-                              ?? throw new InvalidOperationException("An Android content resolver is required to persist database backups.");
+                              ?? throw new InvalidOperationException("An Android content resolver is required to persist data backups.");
         var targetUri = InsertDownloadRecord(contentResolver, fileName, normalizedRelativePath, mimeType);
 
         try

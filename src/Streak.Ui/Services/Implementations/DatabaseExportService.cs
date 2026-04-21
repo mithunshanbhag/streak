@@ -16,11 +16,15 @@ public sealed class DatabaseExportService(
         if (!File.Exists(sourceDatabasePath))
             throw new FileNotFoundException("The local Streak database could not be found.", sourceDatabasePath);
 
-        var backupFilePath = DatabaseBackupFileUtility.CreateBackupFilePath(_appStoragePathService.ExportDirectoryPath);
+        var backupFilePath = DataBackupArchiveUtility.CreateBackupFilePath(_appStoragePathService.ExportDirectoryPath);
 
         try
         {
-            await DatabaseBackupFileUtility.CreateBackupAsync(sourceDatabasePath, backupFilePath, cancellationToken);
+            await DataBackupArchiveUtility.CreateBackupAsync(
+                sourceDatabasePath,
+                _appStoragePathService.CheckinProofsDirectoryPath,
+                backupFilePath,
+                cancellationToken);
 
             return await _databaseExportFileSaver.SaveBackupAsync(
                 backupFilePath,
@@ -33,7 +37,7 @@ public sealed class DatabaseExportService(
         }
         finally
         {
-            DatabaseBackupFileUtility.DeleteBackupIfExists(backupFilePath);
+            DataBackupArchiveUtility.DeleteBackupIfExists(backupFilePath);
         }
     }
 }

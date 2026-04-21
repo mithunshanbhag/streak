@@ -72,7 +72,7 @@ public sealed class ManualBackupCompletionNotifierTests
     {
         return DatabaseExportResult.Saved(new SavedFileLocation
         {
-            SavedFileDisplayPath = "Downloads/Streak/Backups/Manual/streak-backup-20260420-004200.db",
+            SavedFileDisplayPath = "Downloads/Streak/Backups/Manual/streak-data-backup-20260420-004200.zip",
             ParentFolderDisplayPath = StreakExportStorageConstants.ManualBackupsDisplayDirectoryPath
         });
     }

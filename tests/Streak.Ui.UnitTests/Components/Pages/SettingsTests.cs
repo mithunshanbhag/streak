@@ -28,8 +28,8 @@ public sealed class SettingsTests : TestContext
         cut.Markup.Should().Contain("Backup");
         cut.Markup.Should().Contain("Save or share a copy of your local data.");
         cut.Find("button[aria-label='Backup save location information']");
-        cut.Find("button[aria-label='Download database']");
-        cut.Find("button[aria-label='Share database']").HasAttribute("disabled").Should().BeTrue();
+        cut.Find("button[aria-label='Download data']");
+        cut.Find("button[aria-label='Share data']").HasAttribute("disabled").Should().BeTrue();
         cut.Markup.Should().Contain("Diagnostic logs");
         cut.Markup.Should().Contain("Export a support bundle of recent app logs.");
         cut.Find("button[aria-label='Diagnostic export details']");
@@ -65,12 +65,12 @@ public sealed class SettingsTests : TestContext
 
         var cut = RenderSettings();
 
-        cut.Find("button[aria-label='Download database']").Click();
+        cut.Find("button[aria-label='Download data']").Click();
         await exportStarted.Task;
 
         cut.WaitForAssertion(() =>
         {
-            var button = cut.Find("button[aria-label='Download database']");
+            var button = cut.Find("button[aria-label='Download data']");
             button.HasAttribute("disabled").Should().BeTrue();
             cut.Find("button[aria-label='Export diagnostic logs']").HasAttribute("disabled").Should().BeTrue();
             cut.Markup.Should().Contain("mud-progress-circular");
@@ -80,7 +80,7 @@ public sealed class SettingsTests : TestContext
 
         cut.WaitForAssertion(() =>
         {
-            var button = cut.Find("button[aria-label='Download database']");
+            var button = cut.Find("button[aria-label='Download data']");
             button.HasAttribute("disabled").Should().BeFalse();
             cut.Find("button[aria-label='Export diagnostic logs']").HasAttribute("disabled").Should().BeFalse();
         });
@@ -98,9 +98,9 @@ public sealed class SettingsTests : TestContext
 
         var cut = RenderSettings();
 
-        cut.Find("button[aria-label='Share database']").HasAttribute("disabled").Should().BeFalse();
+        cut.Find("button[aria-label='Share data']").HasAttribute("disabled").Should().BeFalse();
 
-        await cut.Find("button[aria-label='Share database']").ClickAsync(new MouseEventArgs());
+        await cut.Find("button[aria-label='Share data']").ClickAsync(new MouseEventArgs());
 
         shareServiceMock.Verify(
             x => x.ShareDatabaseAsync(It.IsAny<CancellationToken>()),
@@ -129,7 +129,7 @@ public sealed class SettingsTests : TestContext
 
         var cut = RenderSettings();
 
-        await cut.Find("button[aria-label='Download database']").ClickAsync(new MouseEventArgs());
+        await cut.Find("button[aria-label='Download data']").ClickAsync(new MouseEventArgs());
 
         manualBackupCompletionNotifierMock.Verify(
             x => x.NotifyCompleted(It.Is<DatabaseExportResult>(result =>
@@ -161,15 +161,15 @@ public sealed class SettingsTests : TestContext
 
         var cut = RenderSettings();
 
-        cut.Find("button[aria-label='Share database']").Click();
+        cut.Find("button[aria-label='Share data']").Click();
         await shareStarted.Task;
 
         cut.WaitForAssertion(() =>
         {
-            cut.Find("button[aria-label='Download database']").HasAttribute("disabled").Should().BeTrue();
+            cut.Find("button[aria-label='Download data']").HasAttribute("disabled").Should().BeTrue();
             cut.Find("button[aria-label='Export diagnostic logs']").HasAttribute("disabled").Should().BeTrue();
-            cut.Find("button[aria-label='Share database']").HasAttribute("disabled").Should().BeTrue();
-            cut.Find("button[aria-label='Import database']").HasAttribute("disabled").Should().BeTrue();
+            cut.Find("button[aria-label='Share data']").HasAttribute("disabled").Should().BeTrue();
+            cut.Find("button[aria-label='Upload data']").HasAttribute("disabled").Should().BeTrue();
             cut.Markup.Should().Contain("mud-progress-circular");
         });
 
@@ -177,10 +177,10 @@ public sealed class SettingsTests : TestContext
 
         cut.WaitForAssertion(() =>
         {
-            cut.Find("button[aria-label='Download database']").HasAttribute("disabled").Should().BeFalse();
+            cut.Find("button[aria-label='Download data']").HasAttribute("disabled").Should().BeFalse();
             cut.Find("button[aria-label='Export diagnostic logs']").HasAttribute("disabled").Should().BeFalse();
-            cut.Find("button[aria-label='Share database']").HasAttribute("disabled").Should().BeFalse();
-            cut.Find("button[aria-label='Import database']").HasAttribute("disabled").Should().BeFalse();
+            cut.Find("button[aria-label='Share data']").HasAttribute("disabled").Should().BeFalse();
+            cut.Find("button[aria-label='Upload data']").HasAttribute("disabled").Should().BeFalse();
         });
     }
 
@@ -212,10 +212,10 @@ public sealed class SettingsTests : TestContext
 
         cut.WaitForAssertion(() =>
         {
-            cut.Find("button[aria-label='Download database']").HasAttribute("disabled").Should().BeTrue();
+            cut.Find("button[aria-label='Download data']").HasAttribute("disabled").Should().BeTrue();
             cut.Find("button[aria-label='Export diagnostic logs']").HasAttribute("disabled").Should().BeTrue();
-            cut.Find("button[aria-label='Share database']").HasAttribute("disabled").Should().BeTrue();
-            cut.Find("button[aria-label='Import database']").HasAttribute("disabled").Should().BeTrue();
+            cut.Find("button[aria-label='Share data']").HasAttribute("disabled").Should().BeTrue();
+            cut.Find("button[aria-label='Upload data']").HasAttribute("disabled").Should().BeTrue();
             cut.Markup.Should().Contain("mud-progress-circular");
         });
 
@@ -223,10 +223,10 @@ public sealed class SettingsTests : TestContext
 
         cut.WaitForAssertion(() =>
         {
-            cut.Find("button[aria-label='Download database']").HasAttribute("disabled").Should().BeFalse();
+            cut.Find("button[aria-label='Download data']").HasAttribute("disabled").Should().BeFalse();
             cut.Find("button[aria-label='Export diagnostic logs']").HasAttribute("disabled").Should().BeFalse();
-            cut.Find("button[aria-label='Share database']").HasAttribute("disabled").Should().BeFalse();
-            cut.Find("button[aria-label='Import database']").HasAttribute("disabled").Should().BeFalse();
+            cut.Find("button[aria-label='Share data']").HasAttribute("disabled").Should().BeFalse();
+            cut.Find("button[aria-label='Upload data']").HasAttribute("disabled").Should().BeFalse();
         });
     }
 
@@ -249,9 +249,9 @@ public sealed class SettingsTests : TestContext
 
         var cut = RenderSettings();
 
-        await cut.Find("button[aria-label='Download database']").ClickAsync(new MouseEventArgs());
+        await cut.Find("button[aria-label='Download data']").ClickAsync(new MouseEventArgs());
 
-        cut.WaitForAssertion(() => { cut.Markup.Should().NotContain("Unable to export your database right now. Please try again."); });
+        cut.WaitForAssertion(() => { cut.Markup.Should().NotContain("Unable to export your data right now. Please try again."); });
     }
 
     [Fact]
@@ -278,13 +278,13 @@ public sealed class SettingsTests : TestContext
 
         var cut = RenderSettings();
 
-        await cut.Find("button[aria-label='Download database']").ClickAsync(new MouseEventArgs());
+        await cut.Find("button[aria-label='Download data']").ClickAsync(new MouseEventArgs());
 
-        cut.WaitForAssertion(() => { cut.Markup.Should().Contain("Unable to export your database right now. Please try again."); });
+        cut.WaitForAssertion(() => { cut.Markup.Should().Contain("Unable to export your data right now. Please try again."); });
 
-        await cut.Find("button[aria-label='Download database']").ClickAsync(new MouseEventArgs());
+        await cut.Find("button[aria-label='Download data']").ClickAsync(new MouseEventArgs());
 
-        cut.WaitForAssertion(() => { cut.Markup.Should().NotContain("Unable to export your database right now. Please try again."); });
+        cut.WaitForAssertion(() => { cut.Markup.Should().NotContain("Unable to export your data right now. Please try again."); });
     }
 
     [Fact]
@@ -311,13 +311,13 @@ public sealed class SettingsTests : TestContext
 
         var cut = RenderSettings();
 
-        await cut.Find("button[aria-label='Share database']").ClickAsync(new MouseEventArgs());
+        await cut.Find("button[aria-label='Share data']").ClickAsync(new MouseEventArgs());
 
-        cut.WaitForAssertion(() => { cut.Markup.Should().Contain("Unable to share your database right now. Please try again."); });
+        cut.WaitForAssertion(() => { cut.Markup.Should().Contain("Unable to share your data right now. Please try again."); });
 
-        await cut.Find("button[aria-label='Share database']").ClickAsync(new MouseEventArgs());
+        await cut.Find("button[aria-label='Share data']").ClickAsync(new MouseEventArgs());
 
-        cut.WaitForAssertion(() => { cut.Markup.Should().NotContain("Unable to share your database right now. Please try again."); });
+        cut.WaitForAssertion(() => { cut.Markup.Should().NotContain("Unable to share your data right now. Please try again."); });
     }
 
     [Fact]
@@ -531,7 +531,7 @@ public sealed class SettingsTests : TestContext
     {
         return DatabaseExportResult.Saved(new SavedFileLocation
         {
-            SavedFileDisplayPath = "Downloads/Streak/Backups/Manual/streak-backup-20260420-004200.db",
+            SavedFileDisplayPath = "Downloads/Streak/Backups/Manual/streak-data-backup-20260420-004200.zip",
             ParentFolderDisplayPath = StreakExportStorageConstants.ManualBackupsDisplayDirectoryPath
         });
     }

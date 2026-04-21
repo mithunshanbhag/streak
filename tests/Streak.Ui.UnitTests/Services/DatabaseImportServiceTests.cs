@@ -9,16 +9,20 @@ public sealed class DatabaseImportServiceTests
     {
         using var backupDirectory = new TemporaryDirectory();
         using var appDataDirectory = new TemporaryDirectory();
+        using var liveProofDirectory = new TemporaryDirectory();
         using var exportDirectory = new TemporaryDirectory();
 
         var backupDatabasePath = Path.Combine(backupDirectory.Path, "legacy-backup.db");
+        var backupArchivePath = Path.Combine(backupDirectory.Path, "legacy-backup.zip");
         var liveDatabasePath = Path.Combine(appDataDirectory.Path, "streak.local.db");
 
         CreateLegacyDatabase(backupDatabasePath);
+        CreateBackupArchive(backupArchivePath, backupDatabasePath);
         CreatePlaceholderDatabase(liveDatabasePath);
 
         var appStoragePathServiceMock = new Mock<IAppStoragePathService>();
         appStoragePathServiceMock.SetupGet(x => x.DatabasePath).Returns(liveDatabasePath);
+        appStoragePathServiceMock.SetupGet(x => x.CheckinProofsDirectoryPath).Returns(liveProofDirectory.Path);
         appStoragePathServiceMock.SetupGet(x => x.ExportDirectoryPath).Returns(exportDirectory.Path);
 
         var schemaUpgrader = new SqliteDatabaseSchemaUpgrader(new Mock<ILogger<SqliteDatabaseSchemaUpgrader>>().Object);
@@ -27,7 +31,7 @@ public sealed class DatabaseImportServiceTests
             schemaUpgrader,
             new Mock<ILogger<DatabaseImportService>>().Object);
 
-        await sut.ImportDatabaseAsync(new FileResult(backupDatabasePath));
+        await sut.ImportDatabaseAsync(new FileResult(backupArchivePath));
 
         var habitColumns = GetTableColumns(liveDatabasePath, "Habits");
         habitColumns.Should().Contain("Description");
@@ -59,6 +63,49 @@ public sealed class DatabaseImportServiceTests
         checkinReader.IsDBNull(4).Should().BeTrue();
         checkinReader.IsDBNull(5).Should().BeTrue();
         checkinReader.IsDBNull(6).Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task ImportDatabaseAsync_ShouldRestorePictureProofFilesFromBackupArchive()
+    {
+        using var backupDirectory = new TemporaryDirectory();
+        using var backupProofDirectory = new TemporaryDirectory();
+        using var appDataDirectory = new TemporaryDirectory();
+        using var liveProofDirectory = new TemporaryDirectory();
+        using var exportDirectory = new TemporaryDirectory();
+
+        var backupDatabasePath = Path.Combine(backupDirectory.Path, "current-backup.db");
+        var backupArchivePath = Path.Combine(backupDirectory.Path, "current-backup.zip");
+        var liveDatabasePath = Path.Combine(appDataDirectory.Path, "streak.local.db");
+        var proofRelativePath = "Habit-7/2026/04/2026-04-21/proof.jpg";
+        var expectedProofBytes = new byte[] { 9, 8, 7, 6 };
+        var staleProofPath = Path.Combine(liveProofDirectory.Path, "old-proof.jpg");
+
+        CreateCurrentDatabase(backupDatabasePath, proofRelativePath);
+        CreateProofFile(backupProofDirectory.Path, proofRelativePath, expectedProofBytes);
+        CreateBackupArchive(backupArchivePath, backupDatabasePath, backupProofDirectory.Path, proofRelativePath);
+        CreatePlaceholderDatabase(liveDatabasePath);
+        File.WriteAllText(staleProofPath, "stale");
+
+        var appStoragePathServiceMock = new Mock<IAppStoragePathService>();
+        appStoragePathServiceMock.SetupGet(x => x.DatabasePath).Returns(liveDatabasePath);
+        appStoragePathServiceMock.SetupGet(x => x.CheckinProofsDirectoryPath).Returns(liveProofDirectory.Path);
+        appStoragePathServiceMock.SetupGet(x => x.ExportDirectoryPath).Returns(exportDirectory.Path);
+
+        var schemaUpgrader = new SqliteDatabaseSchemaUpgrader(new Mock<ILogger<SqliteDatabaseSchemaUpgrader>>().Object);
+        var sut = new DatabaseImportService(
+            appStoragePathServiceMock.Object,
+            schemaUpgrader,
+            new Mock<ILogger<DatabaseImportService>>().Object);
+
+        await sut.ImportDatabaseAsync(new FileResult(backupArchivePath));
+
+        File.Exists(staleProofPath).Should().BeFalse();
+
+        var restoredProofPath = Path.Combine(
+            [.. new[] { liveProofDirectory.Path }, .. proofRelativePath.Split('/', StringSplitOptions.RemoveEmptyEntries)]);
+        File.Exists(restoredProofPath).Should().BeTrue();
+        File.ReadAllBytes(restoredProofPath).Should().Equal(expectedProofBytes);
     }
 
     #endregion
@@ -130,6 +177,81 @@ public sealed class DatabaseImportServiceTests
             VALUES (1);
             """;
         command.ExecuteNonQuery();
+    }
+
+    private static void CreateCurrentDatabase(string databasePath, string proofImageUri)
+    {
+        Directory.CreateDirectory(Path.GetDirectoryName(databasePath)!);
+
+        using var connection = OpenConnection(databasePath);
+        using var command = connection.CreateCommand();
+        command.CommandText =
+            """
+            CREATE TABLE Habits (
+                Id INTEGER NOT NULL PRIMARY KEY,
+                Name TEXT NOT NULL,
+                Emoji TEXT NULL,
+                Description TEXT NULL
+            );
+
+            CREATE TABLE Checkins (
+                CheckinDate TEXT NOT NULL,
+                HabitId INTEGER NOT NULL,
+                Notes TEXT NULL,
+                ProofImageUri TEXT NULL,
+                ProofImageDisplayName TEXT NULL,
+                ProofImageSizeBytes INTEGER NULL,
+                ProofImageModifiedOn TEXT NULL,
+                PRIMARY KEY (HabitId, CheckinDate)
+            );
+
+            INSERT INTO Habits (Id, Name, Emoji, Description)
+            VALUES (7, 'Practice', '🎯', NULL);
+
+            INSERT INTO Checkins (CheckinDate, HabitId, Notes, ProofImageUri, ProofImageDisplayName, ProofImageSizeBytes, ProofImageModifiedOn)
+            VALUES ('2026-04-21', 7, NULL, $proofImageUri, 'proof.jpg', 4, '2026-04-21T08:30:12.0000000+00:00');
+            """;
+        command.Parameters.AddWithValue("$proofImageUri", proofImageUri);
+        command.ExecuteNonQuery();
+    }
+
+    private static void CreateBackupArchive(
+        string archivePath,
+        string databasePath,
+        string? proofDirectoryPath = null,
+        string? relativeProofPath = null)
+    {
+        using var archiveStream = File.Create(archivePath);
+        using var archive = new ZipArchive(archiveStream, ZipArchiveMode.Create);
+
+        AddArchiveEntryFromFile(archive, databasePath, "streak.db");
+
+        if (!string.IsNullOrWhiteSpace(proofDirectoryPath) && !string.IsNullOrWhiteSpace(relativeProofPath))
+        {
+            var proofPath = Path.Combine(
+                [.. new[] { proofDirectoryPath }, .. relativeProofPath.Split('/', StringSplitOptions.RemoveEmptyEntries)]);
+            AddArchiveEntryFromFile(
+                archive,
+                proofPath,
+                $"CheckinProofs/{relativeProofPath}");
+        }
+    }
+
+    private static void AddArchiveEntryFromFile(ZipArchive archive, string sourceFilePath, string entryPath)
+    {
+        var entry = archive.CreateEntry(entryPath, CompressionLevel.Optimal);
+
+        using var sourceStream = File.OpenRead(sourceFilePath);
+        using var entryStream = entry.Open();
+        sourceStream.CopyTo(entryStream);
+    }
+
+    private static void CreateProofFile(string proofDirectoryPath, string relativeProofPath, byte[] proofBytes)
+    {
+        var proofPath = Path.Combine(
+            [.. new[] { proofDirectoryPath }, .. relativeProofPath.Split('/', StringSplitOptions.RemoveEmptyEntries)]);
+        Directory.CreateDirectory(Path.GetDirectoryName(proofPath)!);
+        File.WriteAllBytes(proofPath, proofBytes);
     }
 
     private static SqliteConnection OpenConnection(string databasePath)

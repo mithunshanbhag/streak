@@ -17,5 +17,6 @@ global using Streak.Ui.Components.Pages;
 global using Streak.Ui.Services.Implementations;
 global using Streak.Ui.Services.Interfaces;
 global using Streak.Ui.Services.Models;
+global using System.IO.Compression;
 global using System.Globalization;
 global using Xunit;

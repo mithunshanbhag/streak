@@ -1,3 +1,5 @@
+using System.IO.Compression;
+
 namespace Streak.Ui.Services.Implementations;
 
 public sealed class DatabaseImportService(
@@ -17,26 +19,35 @@ public sealed class DatabaseImportService(
         ArgumentNullException.ThrowIfNull(backupFile);
 
         var databasePath = _appStoragePathService.DatabasePath;
+        var checkinProofsDirectoryPath = _appStoragePathService.CheckinProofsDirectoryPath;
         var workingDirectoryPath = _appStoragePathService.ExportDirectoryPath;
-        var candidateBackupPath = CreateWorkingFilePath(workingDirectoryPath, "candidate");
+        var candidateArchivePath = CreateWorkingFilePath(workingDirectoryPath, "candidate", ".zip");
+        var extractedArchiveDirectoryPath = CreateWorkingDirectoryPath(workingDirectoryPath, "extracted");
+        var candidateBackupPath = Path.Combine(extractedArchiveDirectoryPath, DataBackupArchiveUtility.DatabaseEntryName);
         var rollbackDirectoryPath = CreateWorkingDirectoryPath(workingDirectoryPath, "rollback");
+        var rollbackProofsDirectoryPath = Path.Combine(rollbackDirectoryPath, DataBackupArchiveUtility.CheckinProofsEntryRootName);
+        var extractedProofsDirectoryPath = Path.Combine(extractedArchiveDirectoryPath, DataBackupArchiveUtility.CheckinProofsEntryRootName);
 
         try
         {
-            await CopyBackupToWorkingFileAsync(backupFile, candidateBackupPath, cancellationToken);
+            await CopyBackupToWorkingFileAsync(backupFile, candidateArchivePath, cancellationToken);
+            await ExtractBackupArchiveAsync(candidateArchivePath, extractedArchiveDirectoryPath, cancellationToken);
             await ValidateBackupAsync(candidateBackupPath, cancellationToken);
 
             BackupLiveDatabaseArtifacts(databasePath, rollbackDirectoryPath);
+            BackupLiveCheckinProofArtifacts(checkinProofsDirectoryPath, rollbackProofsDirectoryPath);
 
             try
             {
                 ReplaceLiveDatabase(databasePath, candidateBackupPath);
+                ReplaceLiveCheckinProofArtifacts(checkinProofsDirectoryPath, extractedProofsDirectoryPath);
                 _sqliteDatabaseSchemaUpgrader.UpgradeIfNeeded(databasePath);
                 await ValidateBackupAsync(databasePath, cancellationToken);
             }
             catch
             {
                 RestoreLiveDatabaseArtifacts(databasePath, rollbackDirectoryPath);
+                RestoreLiveCheckinProofArtifacts(checkinProofsDirectoryPath, rollbackProofsDirectoryPath);
                 throw;
             }
         }
@@ -47,23 +58,28 @@ public sealed class DatabaseImportService(
         }
         finally
         {
-            DeleteIfExists(candidateBackupPath);
+            DeleteIfExists(candidateArchivePath);
             DeleteDirectoryIfExists(rollbackDirectoryPath);
+            DeleteDirectoryIfExists(extractedArchiveDirectoryPath);
         }
     }
 
     #region Private Helper Methods
 
-    private static string CreateWorkingFilePath(string workingDirectoryPath, string operationName)
+    private static string CreateWorkingFilePath(
+        string workingDirectoryPath,
+        string operationName,
+        string fileExtension)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(workingDirectoryPath);
         ArgumentException.ThrowIfNullOrWhiteSpace(operationName);
+        ArgumentException.ThrowIfNullOrWhiteSpace(fileExtension);
 
         Directory.CreateDirectory(workingDirectoryPath);
 
         return Path.Combine(
             workingDirectoryPath,
-            $"streak-{operationName}-{Guid.NewGuid():N}.db");
+            $"streak-{operationName}-{Guid.NewGuid():N}{fileExtension}");
     }
 
     private static string CreateWorkingDirectoryPath(string workingDirectoryPath, string operationName)
@@ -80,15 +96,68 @@ public sealed class DatabaseImportService(
 
     private static async Task CopyBackupToWorkingFileAsync(
         FileResult backupFile,
-        string candidateBackupPath,
+        string candidateArchivePath,
         CancellationToken cancellationToken)
     {
         await using var sourceStream = await backupFile.OpenReadAsync();
         if (sourceStream.CanSeek && sourceStream.Length == 0)
             throw new InvalidDataException("The selected backup file is empty.");
 
-        await using var destinationStream = File.Create(candidateBackupPath);
+        await using var destinationStream = File.Create(candidateArchivePath);
         await sourceStream.CopyToAsync(destinationStream, cancellationToken);
+    }
+
+    private static async Task ExtractBackupArchiveAsync(
+        string archivePath,
+        string extractedArchiveDirectoryPath,
+        CancellationToken cancellationToken)
+    {
+        if (!File.Exists(archivePath))
+            throw new InvalidDataException("The selected backup file could not be read.");
+
+        DeleteDirectoryIfExists(extractedArchiveDirectoryPath);
+        Directory.CreateDirectory(extractedArchiveDirectoryPath);
+
+        using var archive = ZipFile.OpenRead(archivePath);
+        var databaseEntry = archive.GetEntry(DataBackupArchiveUtility.DatabaseEntryName)
+                            ?? throw new InvalidDataException("The selected backup archive is missing the database file.");
+
+        foreach (var entry in archive.Entries)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var normalizedEntryPath = entry.FullName.Replace('\\', '/');
+            if (string.IsNullOrWhiteSpace(normalizedEntryPath))
+                continue;
+
+            if (normalizedEntryPath.EndsWith("/", StringComparison.Ordinal))
+                continue;
+
+            if (!string.Equals(normalizedEntryPath, DataBackupArchiveUtility.DatabaseEntryName, StringComparison.Ordinal)
+                && !normalizedEntryPath.StartsWith($"{DataBackupArchiveUtility.CheckinProofsEntryRootName}/", StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            var entryPathSegments = normalizedEntryPath
+                .Split('/', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+            if (entryPathSegments.Any(entryPathSegment => entryPathSegment is "." or ".."))
+                throw new InvalidDataException("The selected backup archive contains invalid paths.");
+
+            var destinationPath = Path.Combine(
+                [.. new[] { extractedArchiveDirectoryPath }, .. entryPathSegments]);
+            var destinationDirectoryPath = Path.GetDirectoryName(destinationPath);
+            if (!string.IsNullOrWhiteSpace(destinationDirectoryPath))
+                Directory.CreateDirectory(destinationDirectoryPath);
+
+            await using var entryStream = entry.Open();
+            await using var destinationStream = File.Create(destinationPath);
+            await entryStream.CopyToAsync(destinationStream, cancellationToken);
+        }
+
+        if (!File.Exists(Path.Combine(extractedArchiveDirectoryPath, databaseEntry.FullName)))
+            throw new InvalidDataException("The selected backup archive is missing the database file.");
     }
 
     private static async Task ValidateBackupAsync(string databasePath, CancellationToken cancellationToken)
@@ -156,6 +225,16 @@ public sealed class DatabaseImportService(
         }
     }
 
+    private static void BackupLiveCheckinProofArtifacts(string checkinProofsDirectoryPath, string rollbackProofsDirectoryPath)
+    {
+        DeleteDirectoryIfExists(rollbackProofsDirectoryPath);
+
+        if (!Directory.Exists(checkinProofsDirectoryPath))
+            return;
+
+        CopyDirectory(checkinProofsDirectoryPath, rollbackProofsDirectoryPath);
+    }
+
     private static void ReplaceLiveDatabase(string databasePath, string candidateBackupPath)
     {
         SqliteConnection.ClearAllPools();
@@ -179,6 +258,30 @@ public sealed class DatabaseImportService(
             if (File.Exists(rollbackArtifactPath))
                 File.Copy(rollbackArtifactPath, artifactPath, true);
         }
+    }
+
+    private static void ReplaceLiveCheckinProofArtifacts(
+        string checkinProofsDirectoryPath,
+        string extractedProofsDirectoryPath)
+    {
+        DeleteDirectoryIfExists(checkinProofsDirectoryPath);
+
+        if (!Directory.Exists(extractedProofsDirectoryPath))
+            return;
+
+        CopyDirectory(extractedProofsDirectoryPath, checkinProofsDirectoryPath);
+    }
+
+    private static void RestoreLiveCheckinProofArtifacts(
+        string checkinProofsDirectoryPath,
+        string rollbackProofsDirectoryPath)
+    {
+        DeleteDirectoryIfExists(checkinProofsDirectoryPath);
+
+        if (!Directory.Exists(rollbackProofsDirectoryPath))
+            return;
+
+        CopyDirectory(rollbackProofsDirectoryPath, checkinProofsDirectoryPath);
     }
 
     private static IEnumerable<string> GetDatabaseArtifactPaths(string databasePath)
@@ -209,6 +312,20 @@ public sealed class DatabaseImportService(
     {
         if (Directory.Exists(directoryPath))
             Directory.Delete(directoryPath, true);
+    }
+
+    private static void CopyDirectory(string sourceDirectoryPath, string destinationDirectoryPath)
+    {
+        Directory.CreateDirectory(destinationDirectoryPath);
+
+        foreach (var sourceFilePath in Directory.GetFiles(sourceDirectoryPath, "*", SearchOption.AllDirectories))
+        {
+            var relativePath = Path.GetRelativePath(sourceDirectoryPath, sourceFilePath);
+            var destinationFilePath = Path.Combine(destinationDirectoryPath, relativePath);
+
+            Directory.CreateDirectory(Path.GetDirectoryName(destinationFilePath)!);
+            File.Copy(sourceFilePath, destinationFilePath, true);
+        }
     }
 
     #endregion

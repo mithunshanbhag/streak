@@ -9,8 +9,8 @@ public sealed class WindowsDatabaseExportFileSaver : IDatabaseExportFileSaver
     {
         var savedFileLocation = await WindowsFileSavePickerExportUtility.SaveFileAsync(
             backupFilePath,
-            "SQLite database backup",
-            ".db",
+            "Streak data backup archive",
+            ".zip",
             cancellationToken);
 
         return savedFileLocation is not null
