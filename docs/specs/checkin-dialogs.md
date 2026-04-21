@@ -27,12 +27,11 @@ These dialogs are intentionally compact and homepage-centered. The habit card sh
 | Element                 | Type                     | Details                                                                                                                                                |
 | ----------------------- | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Dialog title            | Text                     | Uses the selected habit name, for example **"Check in 'Read'"**.                                                                                       |
-| Supporting copy         | Body text                | Short explanatory sentence such as *"Add an optional note or picture proof for today's check-in."*                                                     |
-| Note field              | Single-line text field   | Optional plain-text note, capped at **50 characters**. Empty is allowed.                                                                               |
-| Proof section label     | Caption / support text   | Short label such as **"Picture proof (optional)"**.                                                                                                    |
+| Supporting copy         | Body text                | Optional. Omit it when the title plus controls already make the flow obvious.                                                                          |
+| Note field              | Single-line text field   | Optional plain-text note, capped at **50 characters**. Prefer placeholder text such as **"Add a note (optional)"** over a separate label/helper row. |
 | Camera action           | Icon-leading button      | Opens the system camera flow to capture a new picture. Available on Android.                                                                           |
 | Gallery action          | Icon-leading button      | Opens the system gallery / file picker flow to choose one existing picture. Available on Android and Windows.                                          |
-| Picture preview control | Inline preview container | Shows the currently selected picture when present, plus compact metadata and a remove/replace affordance. Empty state is shown when no picture is set. |
+| Picture preview control | Inline preview container | Shows the currently selected picture when present, plus compact metadata and one concise replace/remove affordance pattern. Empty state is shown when no picture is set. |
 | Footer actions          | Buttons                  | **Cancel** and **Save check-in**.                                                                                                                      |
 
 ### Behavior
@@ -55,13 +54,14 @@ These dialogs are intentionally compact and homepage-centered. The habit card sh
 ### Picture Preview Control
 
 - The dialog shows a **single-picture preview panel** rather than a gallery grid.
+- The camera/gallery action row can sit directly above the preview panel without a separate **Picture proof** heading.
 - In the empty state:
   - show a muted inset panel with an image placeholder icon and brief text such as *"No picture selected"*
   - keep the panel visually compact so it does not overwhelm the note field
 - In the populated state:
   - show one thumbnail/preview image
-  - show a short metadata line beneath or beside it, such as the selected file name
-  - allow the user to remove the current picture or replace it with a new capture/selection
+  - show at most one short metadata line beneath or beside it, such as the selected file name
+  - allow the user to remove the current picture or replace it with a new capture/selection, but avoid duplicate stacked remove controls
 - The preview is for confirmation only; it is not a browsing surface and does not navigate away from the dialog.
 
 ### Action Outcomes

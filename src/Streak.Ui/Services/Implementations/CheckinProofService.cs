@@ -105,8 +105,8 @@ public sealed class CheckinProofService(
             PreviewDataUrl = $"data:{mimeType};base64,{Convert.ToBase64String(fileBytes)}",
             Source = source,
             SourceDescription = source == CheckinProofSource.Camera
-                ? "Captured with camera"
-                : "Selected from gallery"
+                ? "Camera"
+                : "Gallery"
         };
     }
 

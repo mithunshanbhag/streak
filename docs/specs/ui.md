@@ -177,11 +177,17 @@ Use semantic roles rather than one-off hex values.
 
 - Prefer standard `MudDialog` treatments for compact overlay flows instead of custom bottom sheets or full-screen modal patterns.
 - Dialog surfaces should use `Surface`, `RadiusCard`, and `ShadowDialog`.
+- Dialog headers should stay visually matched across quick-add, edit, delete, restore, check-in, and undo-check-in flows:
+  - standard title row with the built-in close affordance
+  - at most one short supporting paragraph when supporting copy is needed, and it may be omitted entirely for very small self-explanatory flows
+  - no hero-style header treatments, stacked warning badges, or custom header color blocks
 - Daily check-in dialogs should stay compact and action-oriented, with the homepage still visible behind a dimmed backdrop.
+- Supporting dialog copy should stay brief and scannable. Prefer one sentence over multi-paragraph explanations or repeated helper panels.
 - Use standard two- or three-action dialog footers with clear emphasis:
   - secondary text actions for cancel/skip flows
   - primary filled action for the main completion path
   - destructive filled action when the user is confirming data removal
+- Destructive confirmation dialogs should keep the surface palette neutral. The destructive CTA is the main place to introduce `Danger`; avoid separate warning-colored icon wells, banners, or chip collections unless the dialog is surfacing a true error state.
 - When a dialog is dismissed without confirming the primary action, the underlying homepage check-in state should remain unchanged.
 
 ### Form fields
@@ -191,22 +197,29 @@ Use semantic roles rather than one-off hex values.
 - Multiline fields should preserve line breaks and avoid looking like a separate editor product.
 - Field labels should use **Caption / 12sp / 400** or equivalent MudBlazor label styling.
 - Helper/meta text under fields should use **Caption / 12sp / 400**.
-- Short note-entry flows should prefer a standard text field with an inline helper or counter rather than a large editor treatment.
+- Short note-entry flows should prefer a standard text field with placeholder text and a compact inline counter rather than stacked label + helper rows when the field purpose is already obvious from context.
 
 ### Homepage check-in dialogs
 
 - **Check-in dialog**:
   - opens when the user marks a homepage habit as done
-  - uses a compact title plus short supporting copy
+  - uses a compact title; supporting copy is optional and should be omitted when the controls are already self-explanatory
+  - should visually match other standard dialogs in the app: title-first header, standard close affordance, normal body copy, and no decorative hero treatment
   - contains one optional plain-text note field capped at **50 characters**
+  - should prefer placeholder text such as **"Add a note (optional)"** plus a compact counter instead of a separate note label and helper sentence
   - includes a compact picture-proof area with camera/gallery actions and a single preview control
+  - should place camera/gallery actions directly above the preview panel without extra subsection headings or captions
+  - should avoid duplicate maintenance affordances in the selected-picture state; one replace action plus a compact remove affordance is enough
+  - uses standard outlined inline action buttons for camera/gallery actions and preview maintenance actions, with `RadiusControl` rather than pill/chip styling
   - should offer **Cancel** and **Save check-in** footer actions
   - cancelling or dismissing the dialog leaves the habit unchecked
 - **Undo check-in dialog**:
   - opens when the user tries to remove today's check-in from the homepage
   - uses calm but explicit copy warning that the saved note and picture-proof details will be lost from the app's check-in record
+  - should stay as compact as delete confirmation dialogs elsewhere in the app: title, one short warning sentence, and footer actions only
+  - should not introduce extra warning badges, impact panels, or saved-item chips inside the dialog body
   - should offer **Keep check-in** and **Remove check-in** actions
-  - the destructive action should use `Danger`
+  - the destructive action should use `Danger`, while the rest of the dialog stays on the standard dialog surface and text palette
 
 ### Picture preview control
 
@@ -216,6 +229,7 @@ Use semantic roles rather than one-off hex values.
   - `RadiusControl`
   - a subtle `BorderStrong` outline
   - compact internal padding
+- The picture action row may appear immediately above the preview panel without a separate **Picture proof** section label.
 - Empty state treatment:
   - show a centered image placeholder icon
   - show one short helper line such as *"No picture selected"*
@@ -223,8 +237,8 @@ Use semantic roles rather than one-off hex values.
 - Populated state treatment:
   - show a single image preview with a roughly **4:3** rectangular crop area
   - keep corners rounded to match the surrounding control radius
-  - show one short metadata line underneath or beside the preview, such as the file name
-  - expose a small remove/retry affordance without turning the preview into a standalone browsing surface
+  - show at most one short metadata line underneath or beside the preview, such as the file name
+  - expose one compact replace/remove affordance pattern without turning the preview into a standalone browsing surface
 - The preview control should feel like a supportive inline form control, not a full media gallery.
 
 ### Habit identity and descriptions

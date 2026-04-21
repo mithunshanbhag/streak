@@ -18,16 +18,7 @@
                 </MudAlert>
             }
 
-            <MudText Typo="Typo.body2">
-                @DialogMessageText
-            </MudText>
-
             <MudStack Spacing="1">
-                <MudText Typo="Typo.caption"
-                         Style="@CaptionTextStyle">
-                    @NoteLabel
-                </MudText>
-
                 <MudTextField T="string"
                               Margin="Margin.Dense"
                               Clearable="true"
@@ -37,12 +28,8 @@
                               MaxLength="@CoreConstants.CheckinNotesMaxLength"/>
 
                 <MudStack Row="true"
-                          Justify="Justify.SpaceBetween"
+                          Justify="Justify.FlexEnd"
                           Spacing="2">
-                    <MudText Typo="Typo.caption"
-                             Style="@SupportingTextStyle">
-                        @NoteHelperText
-                    </MudText>
                     <MudText Typo="Typo.caption"
                              Style="@SupportingTextStyle">
                         @NoteCounterText
@@ -51,17 +38,8 @@
             </MudStack>
 
             <MudStack Spacing="1">
-                <MudText Typo="Typo.caption"
-                         Style="@CaptionTextStyle">
-                    @ProofSectionLabel
-                </MudText>
-                <MudText Typo="Typo.caption"
-                         Style="@SupportingTextStyle">
-                    @ProofSectionCaption
-                </MudText>
-
                 <MudStack Row="true"
-                          Spacing="1">
+                           Spacing="1">
                     @if (CanUseCamera)
                     {
                         <MudButton Variant="Variant.Outlined"
@@ -136,10 +114,6 @@
                                 <MudButton Variant="Variant.Text"
                                            OnClick="HandleReplacePhotoClickAsync">
                                     @ReplacePhotoButtonText
-                                </MudButton>
-                                <MudButton Variant="Variant.Text"
-                                           OnClick="ClearSelectedProof">
-                                    @RemovePhotoButtonText
                                 </MudButton>
                             </MudStack>
                         </MudStack>
@@ -289,19 +263,17 @@
 
     #region CSS Style Properties
 
-    private const string CaptionTextStyle = "color: var(--mud-palette-text-secondary);";
-
     private const string SupportingTextStyle = "color: var(--mud-palette-text-secondary);";
 
-    private const string ProofActionButtonStyle = "flex: 1 1 0;";
+    private const string ProofActionButtonStyle = "flex: 1 1 0; border-radius: 12px;";
 
-    private const string EmptyPreviewPanelStyle = "border: 1px solid var(--mud-palette-lines-default); background-color: var(--mud-palette-surface);";
+    private const string EmptyPreviewPanelStyle = "border: 1px solid var(--mud-palette-lines-default); background-color: var(--mud-palette-background-grey);";
 
     private const string EmptyPreviewContentStyle = "min-height: 120px;";
 
     private const string EmptyPreviewIconStyle = "color: var(--mud-palette-text-secondary);";
 
-    private const string PopulatedPreviewPanelStyle = "border: 1px solid var(--mud-palette-lines-default); background-color: var(--mud-palette-surface);";
+    private const string PopulatedPreviewPanelStyle = "border: 1px solid var(--mud-palette-lines-default); background-color: var(--mud-palette-background-grey);";
 
     private const string PreviewImageContainerStyle = "width: 100%; aspect-ratio: 4 / 3; overflow: hidden; border-radius: 12px; background-color: var(--mud-palette-background-grey);";
 
@@ -313,31 +285,19 @@
 
     private string DialogTitleText => $"Check in '{HabitName}'";
 
-    private const string DialogMessageText = "Add an optional note or picture proof for today's check-in.";
-
-    private const string NoteLabel = "Note (optional)";
-
-    private const string NotePlaceholder = "Optional note";
-
-    private const string NoteHelperText = "Plain text only";
+    private const string NotePlaceholder = "Add a note (optional)";
 
     private const string CancelButtonText = "Cancel";
 
     private const string ConfirmButtonText = "Save check-in";
 
-    private const string ProofSectionLabel = "Picture proof (optional)";
+    private const string UseCameraButtonText = "Camera";
 
-    private const string ProofSectionCaption = "One picture max for this check-in.";
-
-    private const string UseCameraButtonText = "Use camera";
-
-    private const string ChoosePhotoButtonText = "Choose photo";
+    private const string ChoosePhotoButtonText = "Gallery";
 
     private const string EmptyPreviewText = "No picture selected";
 
     private const string ReplacePhotoButtonText = "Replace";
-
-    private const string RemovePhotoButtonText = "Remove picture";
 
     private const string UseCameraIcon = Icons.Material.Filled.PhotoCamera;
 

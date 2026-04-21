@@ -13,8 +13,6 @@
     --color-primary-soft: #EDE7F6;
     --color-primary-strong: #4527A0;
     --color-success: #4CAF50;
-    --color-warning: #E65100;
-    --color-warning-soft: #FFF3E0;
     --color-danger: #D32F2F;
     --color-border-subtle: #E0E0E0;
     --color-text-primary: #1F1F1F;
@@ -210,23 +208,34 @@ body {
 }
 
 .dialog__header {
-    display: grid;
-    gap: 10px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
 }
 
-.warning-marker {
-    width: 40px;
-    height: 40px;
+.dialog__heading {
+    min-width: 0;
+    display: grid;
+    gap: 8px;
+    flex: 1;
+}
+
+.icon-button {
+    width: 36px;
+    height: 36px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    flex: none;
+    border: none;
     border-radius: 50%;
-    background: var(--color-warning-soft);
-    color: var(--color-warning);
+    background: var(--color-surface-muted);
+    color: var(--color-text-secondary);
 }
 
-.warning-marker .material-icons {
-    font-size: 22px;
+.icon-button .material-icons {
+    font-size: 20px;
 }
 
 .dialog__title {
@@ -241,37 +250,10 @@ body {
     color: var(--color-text-secondary);
 }
 
-.impact-panel {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    padding: 12px;
-    border-radius: var(--radius-control);
-    background: var(--color-surface-muted);
-    border: 1px solid var(--color-border-subtle);
-}
-
-.impact-chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    min-height: 32px;
-    padding: 0 10px;
-    border-radius: 999px;
-    background: var(--color-surface);
-    border: 1px solid var(--color-border-subtle);
-    font-size: 12px;
-    color: var(--color-text-secondary);
-}
-
-.impact-chip .material-icons {
-    font-size: 16px;
-}
-
 .dialog__footer {
     display: flex;
     justify-content: flex-end;
-    gap: 10px;
+    gap: 8px;
 }
 
 .dialog-btn {

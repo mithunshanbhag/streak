@@ -38,11 +38,12 @@ public sealed class HomeTests : TestContext
         dialogProvider.WaitForAssertion(() =>
         {
             dialogProvider.Markup.Should().Contain("Check in 'Exercise'");
-            dialogProvider.Markup.Should().Contain("Add an optional note or picture proof for today's check-in.");
-            dialogProvider.Find("input[placeholder='Optional note']");
-            dialogProvider.Markup.Should().Contain("Picture proof (optional)");
-            dialogProvider.Markup.Should().Contain("Use camera");
-            dialogProvider.Markup.Should().Contain("Choose photo");
+            dialogProvider.Markup.Should().NotContain("Add an optional note or picture proof.");
+            dialogProvider.Find("input[placeholder='Add a note (optional)']");
+            dialogProvider.Markup.Should().NotContain("Picture proof (optional)");
+            dialogProvider.Markup.Should().NotContain("One photo max.");
+            dialogProvider.Markup.Should().Contain("Camera");
+            dialogProvider.Markup.Should().Contain("Gallery");
             dialogProvider.Markup.Should().Contain("No picture selected");
             cut.Find("input[type='checkbox']").HasAttribute("checked").Should().BeFalse();
         });
@@ -73,8 +74,8 @@ public sealed class HomeTests : TestContext
 
         cut.Find("input[type='checkbox']").Change(true);
 
-        dialogProvider.WaitForAssertion(() => dialogProvider.Find("input[placeholder='Optional note']"));
-        dialogProvider.Find("input[placeholder='Optional note']").Input("30 mins cardio");
+        dialogProvider.WaitForAssertion(() => dialogProvider.Find("input[placeholder='Add a note (optional)']"));
+        dialogProvider.Find("input[placeholder='Add a note (optional)']").Input("30 mins cardio");
         dialogProvider.FindAll("button")
             .Single(x => x.TextContent.Contains("Save check-in", StringComparison.Ordinal))
             .Click();
@@ -110,17 +111,17 @@ public sealed class HomeTests : TestContext
 
         cut.Find("input[type='checkbox']").Change(true);
 
-        dialogProvider.WaitForAssertion(() => dialogProvider.Markup.Should().Contain("Choose photo"));
+        dialogProvider.WaitForAssertion(() => dialogProvider.Markup.Should().Contain("Gallery"));
         dialogProvider.FindAll("button")
-            .Single(x => x.TextContent.Contains("Choose photo", StringComparison.Ordinal))
+            .Single(x => x.TextContent.Contains("Gallery", StringComparison.Ordinal))
             .Click();
 
         dialogProvider.WaitForAssertion(() =>
         {
             dialogProvider.Markup.Should().Contain(selectedProof.DisplayName);
-            dialogProvider.Markup.Should().Contain("Selected from gallery");
+            dialogProvider.Markup.Should().Contain("Gallery");
             dialogProvider.Markup.Should().Contain("Replace");
-            dialogProvider.Markup.Should().Contain("Remove picture");
+            dialogProvider.Markup.Should().NotContain("Remove picture");
         });
     }
 
@@ -149,9 +150,9 @@ public sealed class HomeTests : TestContext
 
         cut.Find("input[type='checkbox']").Change(true);
 
-        dialogProvider.WaitForAssertion(() => dialogProvider.Markup.Should().Contain("Choose photo"));
+        dialogProvider.WaitForAssertion(() => dialogProvider.Markup.Should().Contain("Gallery"));
         dialogProvider.FindAll("button")
-            .Single(x => x.TextContent.Contains("Choose photo", StringComparison.Ordinal))
+            .Single(x => x.TextContent.Contains("Gallery", StringComparison.Ordinal))
             .Click();
 
         dialogProvider.WaitForAssertion(() => dialogProvider.Markup.Should().Contain(selectedProof.DisplayName));
@@ -201,9 +202,9 @@ public sealed class HomeTests : TestContext
         dialogProvider.WaitForAssertion(() =>
         {
             dialogProvider.Markup.Should().Contain("Remove 'Exercise' check-in?");
-            dialogProvider.Markup.Should().Contain("also remove any saved note and picture-proof details");
-            dialogProvider.Markup.Should().Contain("Saved note");
-            dialogProvider.Markup.Should().Contain("Picture proof");
+            dialogProvider.Markup.Should().Contain("This also removes today's saved note and picture proof.");
+            dialogProvider.Markup.Should().NotContain("Saved note");
+            dialogProvider.Markup.Should().NotContain("Picture proof");
             cut.Find("input[type='checkbox']").HasAttribute("checked").Should().BeTrue();
         });
 
@@ -426,7 +427,7 @@ public sealed class HomeTests : TestContext
 
         cut.Find("input[type='checkbox']").Change(true);
 
-        dialogProvider.WaitForAssertion(() => dialogProvider.Find("input[placeholder='Optional note']"));
+        dialogProvider.WaitForAssertion(() => dialogProvider.Find("input[placeholder='Add a note (optional)']"));
         dialogProvider.FindAll("button")
             .Single(x => x.TextContent.Contains("Save check-in", StringComparison.Ordinal))
             .Click();
@@ -496,7 +497,7 @@ public sealed class HomeTests : TestContext
             ModifiedOn = "2026-04-21T08:30:12.0000000+05:30",
             PreviewDataUrl = "data:image/jpeg;base64,AQIDBA==",
             Source = CheckinProofSource.Gallery,
-            SourceDescription = "Selected from gallery"
+            SourceDescription = "Gallery"
         };
     }
 

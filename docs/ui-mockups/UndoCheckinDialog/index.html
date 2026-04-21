@@ -64,24 +64,15 @@
         <div class="dialog-backdrop">
             <section class="dialog" aria-labelledby="undoDialogTitle">
                 <div class="dialog__header">
-                    <div class="warning-marker" aria-hidden="true">
-                        <span class="material-icons">warning</span>
+                    <div class="dialog__heading">
+                        <h2 class="dialog__title" id="undoDialogTitle">Remove 'Read' check-in?</h2>
+                        <p class="dialog__body">
+                            This also removes today's saved note and picture proof.
+                        </p>
                     </div>
-                    <h2 class="dialog__title" id="undoDialogTitle">Remove 'Read' check-in?</h2>
-                    <p class="dialog__body">
-                        This will remove today's check-in and also discard the saved note and picture proof from the app's record.
-                    </p>
-                </div>
-
-                <div class="impact-panel">
-                    <div class="impact-chip">
-                        <span class="material-icons">notes</span>
-                        <span>Note saved</span>
-                    </div>
-                    <div class="impact-chip">
-                        <span class="material-icons">image</span>
-                        <span>Picture proof saved</span>
-                    </div>
+                    <button class="icon-button" type="button" aria-label="Close dialog">
+                        <span class="material-icons">close</span>
+                    </button>
                 </div>
 
                 <div class="dialog__footer">

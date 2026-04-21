@@ -206,8 +206,32 @@ body {
 }
 
 .dialog__header {
-    display: grid;
-    gap: 8px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.dialog__heading {
+    min-width: 0;
+    flex: 1;
+}
+
+.icon-button {
+    width: 36px;
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+    border: none;
+    border-radius: 50%;
+    background: var(--color-surface-muted);
+    color: var(--color-text-secondary);
+}
+
+.icon-button .material-icons {
+    font-size: 20px;
 }
 
 .dialog__title {
@@ -216,21 +240,9 @@ body {
     font-weight: 500;
 }
 
-.dialog__body {
-    font-size: 14px;
-    line-height: 1.5;
-    color: var(--color-text-secondary);
-}
-
 .field-group {
     display: grid;
     gap: 6px;
-}
-
-.field-label {
-    font-size: 12px;
-    font-weight: 400;
-    color: var(--color-text-secondary);
 }
 
 .text-field {
@@ -258,22 +270,13 @@ body {
     color: var(--color-text-muted);
 }
 
+.field-meta--end {
+    justify-content: flex-end;
+}
+
 .proof-section {
     display: grid;
     gap: 12px;
-}
-
-.proof-section__label {
-    font-size: 13px;
-    line-height: 1.45;
-    color: var(--color-text-primary);
-}
-
-.proof-section__caption {
-    margin-top: 4px;
-    font-size: 12px;
-    line-height: 1.4;
-    color: var(--color-text-secondary);
 }
 
 .proof-actions {
@@ -288,7 +291,7 @@ body {
     align-items: center;
     justify-content: center;
     gap: 6px;
-    border-radius: 999px;
+    border-radius: var(--radius-control);
     border: 1px solid var(--color-border-strong);
     background: var(--color-surface);
     color: var(--color-primary);
@@ -380,14 +383,10 @@ body {
     font-weight: 500;
 }
 
-.text-action--muted {
-    color: var(--color-text-secondary);
-}
-
 .dialog__footer {
     display: flex;
     justify-content: flex-end;
-    gap: 10px;
+    gap: 8px;
 }
 
 .dialog-btn {

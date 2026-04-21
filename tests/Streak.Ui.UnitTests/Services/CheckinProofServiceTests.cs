@@ -24,7 +24,7 @@ public sealed class CheckinProofServiceTests
         result!.DisplayName.Should().Be("proof.png");
         result.FileExtension.Should().Be(".png");
         result.Source.Should().Be(CheckinProofSource.Gallery);
-        result.SourceDescription.Should().Be("Selected from gallery");
+        result.SourceDescription.Should().Be("Gallery");
         result.PreviewDataUrl.Should().StartWith("data:image/png;base64,");
     }
 
@@ -43,7 +43,7 @@ public sealed class CheckinProofServiceTests
             ModifiedOn = "2026-04-21T08:30:12.0000000+05:30",
             PreviewDataUrl = "data:image/jpeg;base64,AQIDBA==",
             Source = CheckinProofSource.Gallery,
-            SourceDescription = "Selected from gallery"
+            SourceDescription = "Gallery"
         };
 
         var result = await sut.PersistAsync(selection, 7, "2026-04-21");
