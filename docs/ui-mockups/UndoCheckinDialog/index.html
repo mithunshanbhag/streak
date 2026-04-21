@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Streak - Undo Check-in Dialog Mockup</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<main class="mockup-panel">
+    <div class="mockup-panel__intro">
+        <p class="mockup-panel__eyebrow">Dialog mockup</p>
+        <h1 class="mockup-panel__title">Undo check-in dialog</h1>
+        <p class="mockup-panel__text">
+            Destructive confirmation dialog shown before today's check-in is removed from the homepage.
+        </p>
+    </div>
+
+    <div class="phone-frame">
+        <header class="app-bar">
+            <span class="app-bar__logo">Streak</span>
+            <div class="app-bar__actions">
+                <span class="material-icons">settings</span>
+            </div>
+        </header>
+
+        <main class="page-content">
+            <div class="date-banner">
+                <span class="material-icons">today</span>
+                <span>Tuesday, Apr 21</span>
+            </div>
+
+            <article class="habit-card habit-card--done">
+                <div class="habit-card__identity">
+                    <div class="habit-card__emoji">📖</div>
+                    <div class="habit-card__copy">
+                        <div class="habit-card__name">Read</div>
+                        <div class="habit-card__meta">👏 4 day streak</div>
+                    </div>
+                </div>
+                <div class="habit-card__toggle">
+                    <span class="material-icons">check_circle</span>
+                </div>
+            </article>
+
+            <article class="habit-card habit-card--muted">
+                <div class="habit-card__identity">
+                    <div class="habit-card__emoji">🧘</div>
+                    <div class="habit-card__copy">
+                        <div class="habit-card__name">Meditate</div>
+                        <div class="habit-card__meta">🔥 12 day streak</div>
+                    </div>
+                </div>
+                <div class="habit-card__toggle">
+                    <span class="material-icons">check_circle</span>
+                </div>
+            </article>
+        </main>
+
+        <div class="dialog-backdrop">
+            <section class="dialog" aria-labelledby="undoDialogTitle">
+                <div class="dialog__header">
+                    <div class="warning-marker" aria-hidden="true">
+                        <span class="material-icons">warning</span>
+                    </div>
+                    <h2 class="dialog__title" id="undoDialogTitle">Remove 'Read' check-in?</h2>
+                    <p class="dialog__body">
+                        This will remove today's check-in and also discard the saved note and picture proof from the app's record.
+                    </p>
+                </div>
+
+                <div class="impact-panel">
+                    <div class="impact-chip">
+                        <span class="material-icons">notes</span>
+                        <span>Note saved</span>
+                    </div>
+                    <div class="impact-chip">
+                        <span class="material-icons">image</span>
+                        <span>Picture proof saved</span>
+                    </div>
+                </div>
+
+                <div class="dialog__footer">
+                    <button class="dialog-btn dialog-btn--text" type="button">Keep check-in</button>
+                    <button class="dialog-btn dialog-btn--danger" type="button">Remove check-in</button>
+                </div>
+            </section>
+        </div>
+    </div>
+</main>
+</body>
+</html>

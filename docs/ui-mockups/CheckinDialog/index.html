@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Streak - Check-in Dialog Mockup</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<main class="mockup-panel">
+    <div class="mockup-panel__intro">
+        <p class="mockup-panel__eyebrow">Dialog mockup</p>
+        <h1 class="mockup-panel__title">Check-in dialog</h1>
+        <p class="mockup-panel__text">
+            Compact homepage dialog with an optional note, Android camera/gallery actions,
+            and a single-picture preview control in the populated state.
+        </p>
+    </div>
+
+    <div class="phone-frame">
+        <header class="app-bar">
+            <span class="app-bar__logo">Streak</span>
+            <div class="app-bar__actions">
+                <span class="material-icons">settings</span>
+            </div>
+        </header>
+
+        <main class="page-content">
+            <div class="date-banner">
+                <span class="material-icons">today</span>
+                <span>Tuesday, Apr 21</span>
+            </div>
+
+            <article class="habit-card">
+                <div class="habit-card__identity">
+                    <div class="habit-card__emoji">📖</div>
+                    <div class="habit-card__copy">
+                        <div class="habit-card__name">Read</div>
+                        <div class="habit-card__meta">👏 3 day streak</div>
+                    </div>
+                </div>
+                <div class="habit-card__toggle">
+                    <span class="material-icons">radio_button_unchecked</span>
+                </div>
+            </article>
+
+            <article class="habit-card habit-card--muted">
+                <div class="habit-card__identity">
+                    <div class="habit-card__emoji">🏃</div>
+                    <div class="habit-card__copy">
+                        <div class="habit-card__name">Run</div>
+                        <div class="habit-card__meta">👍 2 day streak</div>
+                    </div>
+                </div>
+                <div class="habit-card__toggle">
+                    <span class="material-icons">check_circle</span>
+                </div>
+            </article>
+        </main>
+
+        <div class="dialog-backdrop">
+            <section class="dialog" aria-labelledby="dialogTitle">
+                <div class="dialog__header">
+                    <h2 class="dialog__title" id="dialogTitle">Check in 'Read'</h2>
+                    <p class="dialog__body">
+                        Add an optional note or picture proof for today's check-in.
+                    </p>
+                </div>
+
+                <div class="field-group">
+                    <label class="field-label" for="checkinNote">Note (optional)</label>
+                    <div class="text-field">
+                        <input id="checkinNote" type="text" value="20 pages before lunch">
+                    </div>
+                    <div class="field-meta">
+                        <span>Plain text only</span>
+                        <span>21 / 50</span>
+                    </div>
+                </div>
+
+                <div class="proof-section">
+                    <div class="proof-section__header">
+                        <div>
+                            <p class="proof-section__label">Picture proof (optional)</p>
+                            <p class="proof-section__caption">One picture max for this check-in.</p>
+                        </div>
+                    </div>
+
+                    <div class="proof-actions">
+                        <button class="proof-action proof-action--neutral" type="button">
+                            <span class="material-icons">photo_camera</span>
+                            <span>Use camera</span>
+                        </button>
+                        <button class="proof-action proof-action--neutral" type="button">
+                            <span class="material-icons">photo_library</span>
+                            <span>Choose photo</span>
+                        </button>
+                    </div>
+
+                    <div class="preview-panel">
+                        <div class="preview-image" aria-hidden="true">
+                            <svg viewBox="0 0 180 135" role="img" aria-label="Selected picture preview">
+                                <defs>
+                                    <linearGradient id="skyGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                                        <stop offset="0%" stop-color="#d8ecff"></stop>
+                                        <stop offset="100%" stop-color="#f7fbff"></stop>
+                                    </linearGradient>
+                                </defs>
+                                <rect width="180" height="135" rx="12" fill="url(#skyGradient)"></rect>
+                                <circle cx="140" cy="28" r="14" fill="#ffd166"></circle>
+                                <path d="M0 98 L42 58 L82 100 L108 74 L148 112 L180 86 L180 135 L0 135 Z" fill="#9bd0b6"></path>
+                                <path d="M0 116 L36 86 L66 110 L101 84 L131 108 L180 82 L180 135 L0 135 Z" fill="#67b08f"></path>
+                                <rect x="18" y="49" width="28" height="22" rx="6" fill="#ffffff" opacity="0.62"></rect>
+                            </svg>
+                        </div>
+
+                        <div class="preview-meta">
+                            <div class="preview-meta__copy">
+                                <div class="preview-meta__name">read-proof-20260421-083012.jpg</div>
+                                <div class="preview-meta__details">1.8 MB · Selected from gallery</div>
+                            </div>
+                            <button class="preview-remove" type="button" aria-label="Remove selected picture">
+                                <span class="material-icons">close</span>
+                            </button>
+                        </div>
+
+                        <div class="preview-actions">
+                            <button class="text-action" type="button">Replace</button>
+                            <button class="text-action text-action--muted" type="button">Remove picture</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dialog__footer">
+                    <button class="dialog-btn dialog-btn--text" type="button">Cancel</button>
+                    <button class="dialog-btn dialog-btn--primary" type="button">Save check-in</button>
+                </div>
+            </section>
+        </div>
+    </div>
+</main>
+</body>
+</html>
