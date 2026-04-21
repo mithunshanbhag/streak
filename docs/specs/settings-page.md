@@ -78,6 +78,9 @@ The page contains two vertically stacked sections presented as clean cards:
 - Automated backups should include the same local data as manual backups:
   - the SQLite database
   - uploaded picture-proof files referenced by check-ins
+- Newly saved proof pictures should live outside uninstall-sensitive app storage:
+  - on **Android**, under **Pictures/Streak/CheckinProofs**
+  - on **Windows**, under **Pictures\Streak\CheckinProofs**
 - Automated backups should use a timestamped filename pattern such as `streak-auto-data-backup-YYYYMMdd-HHmmss.zip`.
 - On Android, a successful nightly automated backup should post a native completion notification when the app has notification permission.
 - Tapping that Android completion notification should attempt to open the shared parent folder that contains the automated backups (`Downloads/Streak/Backups/Automated`). If the platform cannot deep-link to that exact folder, falling back to the broader Downloads surface is acceptable.
@@ -170,7 +173,7 @@ The page contains two vertically stacked sections presented as clean cards:
   - **`.zip` data-backup archive**:
     1. close the current database connection
     2. replace the live database file with the archived database
-    3. restore uploaded picture-proof files from the archive
+    3. restore uploaded picture-proof files from the archive back into the current shared proof-media location
     4. reopen the database connection
   - **`.db` database file**:
      1. close the current database connection

@@ -15,8 +15,7 @@ public sealed class CheckinProofServiceTests
         var pickerService = new FakeCheckinProofMediaPickerService(
             selectedPhoto: new FileResult(sourcePath),
             supportsCameraCapture: true);
-        var appStoragePathServiceMock = CreateAppStoragePathServiceMock(proofDirectory.Path);
-        var sut = new CheckinProofService(pickerService, appStoragePathServiceMock.Object);
+        var sut = new CheckinProofService(pickerService, CreateProofFileStore(proofDirectory.Path));
 
         var result = await sut.PickPhotoAsync();
 
@@ -33,8 +32,7 @@ public sealed class CheckinProofServiceTests
     {
         using var proofDirectory = new TemporaryDirectory();
         var pickerService = new FakeCheckinProofMediaPickerService();
-        var appStoragePathServiceMock = CreateAppStoragePathServiceMock(proofDirectory.Path);
-        var sut = new CheckinProofService(pickerService, appStoragePathServiceMock.Object);
+        var sut = new CheckinProofService(pickerService, CreateProofFileStore(proofDirectory.Path));
         var selection = new CheckinProofSelection
         {
             DisplayName = "proof.jpg",
@@ -71,8 +69,7 @@ public sealed class CheckinProofServiceTests
         await File.WriteAllBytesAsync(absolutePath, [1, 2, 3, 4]);
 
         var pickerService = new FakeCheckinProofMediaPickerService();
-        var appStoragePathServiceMock = CreateAppStoragePathServiceMock(proofDirectory.Path);
-        var sut = new CheckinProofService(pickerService, appStoragePathServiceMock.Object);
+        var sut = new CheckinProofService(pickerService, CreateProofFileStore(proofDirectory.Path));
 
         await sut.DeleteIfExistsAsync(relativePath);
 
@@ -92,8 +89,7 @@ public sealed class CheckinProofServiceTests
         await File.WriteAllBytesAsync(sourcePath, new byte[CoreConstants.CheckinProofMaxSizeBytes + 1]);
 
         var pickerService = new FakeCheckinProofMediaPickerService(selectedPhoto: new FileResult(sourcePath));
-        var appStoragePathServiceMock = CreateAppStoragePathServiceMock(proofDirectory.Path);
-        var sut = new CheckinProofService(pickerService, appStoragePathServiceMock.Object);
+        var sut = new CheckinProofService(pickerService, CreateProofFileStore(proofDirectory.Path));
 
         var act = () => sut.PickPhotoAsync();
 
@@ -105,7 +101,7 @@ public sealed class CheckinProofServiceTests
 
     #region Private helper methods
 
-    private static Mock<IAppStoragePathService> CreateAppStoragePathServiceMock(string proofDirectoryPath)
+    private static ICheckinProofFileStore CreateProofFileStore(string proofDirectoryPath)
     {
         var appStoragePathServiceMock = new Mock<IAppStoragePathService>();
         appStoragePathServiceMock.SetupGet(x => x.CheckinProofsDirectoryPath).Returns(proofDirectoryPath);
@@ -113,7 +109,7 @@ public sealed class CheckinProofServiceTests
         appStoragePathServiceMock.SetupGet(x => x.DiagnosticsDirectoryPath).Returns(Path.Combine(proofDirectoryPath, "Diagnostics"));
         appStoragePathServiceMock.SetupGet(x => x.DiagnosticsLogFilePath).Returns(Path.Combine(proofDirectoryPath, "Diagnostics", "log.txt"));
         appStoragePathServiceMock.SetupGet(x => x.ExportDirectoryPath).Returns(Path.Combine(proofDirectoryPath, "ExportWorking"));
-        return appStoragePathServiceMock;
+        return new FileSystemCheckinProofFileStore(appStoragePathServiceMock.Object);
     }
 
     private sealed class FakeCheckinProofMediaPickerService(

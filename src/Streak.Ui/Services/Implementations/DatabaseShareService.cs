@@ -2,6 +2,7 @@ namespace Streak.Ui.Services.Implementations;
 
 public sealed class DatabaseShareService(
     IAppStoragePathService appStoragePathService,
+    ICheckinProofFileStore checkinProofFileStore,
     IShare share,
     ILogger<DatabaseShareService> logger)
     : IDatabaseShareService
@@ -9,6 +10,7 @@ public sealed class DatabaseShareService(
     private const string DataBackupMimeType = "application/zip";
 
     private readonly IAppStoragePathService _appStoragePathService = appStoragePathService;
+    private readonly ICheckinProofFileStore _checkinProofFileStore = checkinProofFileStore;
     private readonly IShare _share = share;
     private readonly ILogger<DatabaseShareService> _logger = logger;
 
@@ -29,7 +31,7 @@ public sealed class DatabaseShareService(
         {
             var unavailableReferencedProofPaths = await DataBackupArchiveUtility.CreateBackupAsync(
                 sourceDatabasePath,
-                _appStoragePathService.CheckinProofsDirectoryPath,
+                _checkinProofFileStore,
                 backupFilePath,
                 cancellationToken);
 

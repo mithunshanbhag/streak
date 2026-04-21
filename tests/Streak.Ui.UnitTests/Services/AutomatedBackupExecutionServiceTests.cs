@@ -201,6 +201,7 @@ public sealed class AutomatedBackupExecutionServiceTests
 
         return new AutomatedBackupExecutionService(
             appStoragePathServiceMock.Object,
+            new FileSystemCheckinProofFileStore(appStoragePathServiceMock.Object),
             backupFileSaver,
             loggerMock.Object);
     }

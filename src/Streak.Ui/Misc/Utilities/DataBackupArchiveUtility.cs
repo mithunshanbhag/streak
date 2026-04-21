@@ -37,12 +37,12 @@ internal static class DataBackupArchiveUtility
 
     internal static async Task<IReadOnlyList<string>> CreateBackupAsync(
         string sourceDatabasePath,
-        string checkinProofsDirectoryPath,
+        ICheckinProofFileStore checkinProofFileStore,
         string backupFilePath,
         CancellationToken cancellationToken)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(sourceDatabasePath);
-        ArgumentException.ThrowIfNullOrWhiteSpace(checkinProofsDirectoryPath);
+        ArgumentNullException.ThrowIfNull(checkinProofFileStore);
         ArgumentException.ThrowIfNullOrWhiteSpace(backupFilePath);
 
         DeleteBackupIfExists(backupFilePath);
@@ -55,13 +55,14 @@ internal static class DataBackupArchiveUtility
 
             var (referencedProofFiles, unavailableReferencedProofPaths) = await ScanReferencedProofFilesAsync(
                 workingDatabasePath,
-                checkinProofsDirectoryPath,
+                checkinProofFileStore,
                 cancellationToken);
 
             await CreateArchiveAsync(
                 backupFilePath,
                 workingDatabasePath,
                 referencedProofFiles,
+                checkinProofFileStore,
                 cancellationToken);
 
             return unavailableReferencedProofPaths;
@@ -74,12 +75,12 @@ internal static class DataBackupArchiveUtility
 
     internal static async Task<IReadOnlyList<string>> GetUnavailableReferencedProofPathsAsync(
         string databasePath,
-        string checkinProofsDirectoryPath,
+        ICheckinProofFileStore checkinProofFileStore,
         CancellationToken cancellationToken)
     {
         var (_, unavailableReferencedProofPaths) = await ScanReferencedProofFilesAsync(
             databasePath,
-            checkinProofsDirectoryPath,
+            checkinProofFileStore,
             cancellationToken);
 
         return unavailableReferencedProofPaths;
@@ -145,7 +146,7 @@ internal static class DataBackupArchiveUtility
 
     private static async Task<(IReadOnlyList<ReferencedProofFile> ReferencedProofFiles, IReadOnlyList<string> UnavailableReferencedProofPaths)> ScanReferencedProofFilesAsync(
         string databasePath,
-        string checkinProofsDirectoryPath,
+        ICheckinProofFileStore checkinProofFileStore,
         CancellationToken cancellationToken)
     {
         if (!await HasProofImageUriColumnAsync(databasePath, cancellationToken))
@@ -178,15 +179,13 @@ internal static class DataBackupArchiveUtility
         while (await reader.ReadAsync(cancellationToken))
         {
             var relativeProofPath = reader.GetString(0);
-            if (!TryNormalizeRelativeProofPath(relativeProofPath, out var normalizedRelativeProofPath))
+            if (!CheckinProofPathUtility.TryNormalizeRelativeProofPath(relativeProofPath, out var normalizedRelativeProofPath))
             {
                 unavailableReferencedProofPaths.Add(relativeProofPath);
                 continue;
             }
 
-            var absoluteProofPath = GetAbsoluteProofPath(checkinProofsDirectoryPath, normalizedRelativeProofPath);
-
-            if (!File.Exists(absoluteProofPath))
+            if (!await checkinProofFileStore.ExistsAsync(normalizedRelativeProofPath, cancellationToken))
             {
                 unavailableReferencedProofPaths.Add(relativeProofPath);
                 continue;
@@ -194,7 +193,7 @@ internal static class DataBackupArchiveUtility
 
             referencedProofFiles.Add(new ReferencedProofFile
             {
-                AbsolutePath = absoluteProofPath,
+                ProofImageUri = normalizedRelativeProofPath,
                 ArchiveEntryPath = $"{CheckinProofsEntryRootName}/{normalizedRelativeProofPath}"
             });
         }
@@ -227,39 +226,11 @@ internal static class DataBackupArchiveUtility
         return false;
     }
 
-    private static bool TryNormalizeRelativeProofPath(string relativeProofPath, out string normalizedRelativeProofPath)
-    {
-        normalizedRelativeProofPath = string.Empty;
-
-        if (string.IsNullOrWhiteSpace(relativeProofPath))
-            return false;
-
-        var pathSegments = relativeProofPath
-            .Split(['/', '\\'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-
-        if (pathSegments.Length == 0)
-            return false;
-
-        if (pathSegments.Any(pathSegment => pathSegment is "." or ".."))
-            return false;
-
-        normalizedRelativeProofPath = string.Join('/', pathSegments);
-        return true;
-    }
-
-    private static string GetAbsoluteProofPath(string checkinProofsDirectoryPath, string relativeProofPath)
-    {
-        var pathSegments = relativeProofPath
-            .Split(['/', '\\'], StringSplitOptions.RemoveEmptyEntries);
-
-        return Path.Combine(
-            [.. new[] { checkinProofsDirectoryPath }, .. pathSegments]);
-    }
-
     private static async Task CreateArchiveAsync(
         string archiveFilePath,
         string databasePath,
         IReadOnlyCollection<ReferencedProofFile> referencedProofFiles,
+        ICheckinProofFileStore checkinProofFileStore,
         CancellationToken cancellationToken)
     {
         await using var bundleStream = new FileStream(
@@ -272,11 +243,16 @@ internal static class DataBackupArchiveUtility
         await AddFileAsync(zipArchive, databasePath, DatabaseEntryName, cancellationToken);
 
         foreach (var referencedProofFile in referencedProofFiles)
-            await AddFileAsync(
+        {
+            await using var sourceStream = await checkinProofFileStore.OpenReadAsync(
+                referencedProofFile.ProofImageUri,
+                cancellationToken);
+            await AddStreamAsync(
                 zipArchive,
-                referencedProofFile.AbsolutePath,
+                sourceStream,
                 referencedProofFile.ArchiveEntryPath,
                 cancellationToken);
+        }
     }
 
     private static async Task AddFileAsync(
@@ -285,9 +261,17 @@ internal static class DataBackupArchiveUtility
         string archiveEntryPath,
         CancellationToken cancellationToken)
     {
-        var entry = zipArchive.CreateEntry(archiveEntryPath, CompressionLevel.Optimal);
-
         await using var sourceStream = File.OpenRead(sourceFilePath);
+        await AddStreamAsync(zipArchive, sourceStream, archiveEntryPath, cancellationToken);
+    }
+
+    private static async Task AddStreamAsync(
+        ZipArchive zipArchive,
+        Stream sourceStream,
+        string archiveEntryPath,
+        CancellationToken cancellationToken)
+    {
+        var entry = zipArchive.CreateEntry(archiveEntryPath, CompressionLevel.Optimal);
         await using var entryStream = entry.Open();
         await sourceStream.CopyToAsync(entryStream, cancellationToken);
     }
@@ -303,7 +287,7 @@ internal static class DataBackupArchiveUtility
 
     private sealed class ReferencedProofFile
     {
-        public required string AbsolutePath { get; init; }
+        public required string ProofImageUri { get; init; }
 
         public required string ArchiveEntryPath { get; init; }
     }

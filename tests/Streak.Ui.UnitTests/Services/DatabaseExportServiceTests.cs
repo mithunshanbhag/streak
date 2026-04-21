@@ -225,6 +225,7 @@ public sealed class DatabaseExportServiceTests
 
         return new DatabaseExportService(
             appStoragePathServiceMock.Object,
+            new FileSystemCheckinProofFileStore(appStoragePathServiceMock.Object),
             fileSaver,
             loggerMock.Object);
     }

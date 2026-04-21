@@ -28,6 +28,7 @@ public sealed class DatabaseImportServiceTests
         var schemaUpgrader = new SqliteDatabaseSchemaUpgrader(new Mock<ILogger<SqliteDatabaseSchemaUpgrader>>().Object);
         var sut = new DatabaseImportService(
             appStoragePathServiceMock.Object,
+            new FileSystemCheckinProofFileStore(appStoragePathServiceMock.Object),
             schemaUpgrader,
             new Mock<ILogger<DatabaseImportService>>().Object);
 
@@ -95,6 +96,7 @@ public sealed class DatabaseImportServiceTests
         var schemaUpgrader = new SqliteDatabaseSchemaUpgrader(new Mock<ILogger<SqliteDatabaseSchemaUpgrader>>().Object);
         var sut = new DatabaseImportService(
             appStoragePathServiceMock.Object,
+            new FileSystemCheckinProofFileStore(appStoragePathServiceMock.Object),
             schemaUpgrader,
             new Mock<ILogger<DatabaseImportService>>().Object);
 
@@ -133,6 +135,7 @@ public sealed class DatabaseImportServiceTests
         var schemaUpgrader = new SqliteDatabaseSchemaUpgrader(new Mock<ILogger<SqliteDatabaseSchemaUpgrader>>().Object);
         var sut = new DatabaseImportService(
             appStoragePathServiceMock.Object,
+            new FileSystemCheckinProofFileStore(appStoragePathServiceMock.Object),
             schemaUpgrader,
             new Mock<ILogger<DatabaseImportService>>().Object);
 
@@ -169,6 +172,7 @@ public sealed class DatabaseImportServiceTests
         var schemaUpgrader = new SqliteDatabaseSchemaUpgrader(new Mock<ILogger<SqliteDatabaseSchemaUpgrader>>().Object);
         var sut = new DatabaseImportService(
             appStoragePathServiceMock.Object,
+            new FileSystemCheckinProofFileStore(appStoragePathServiceMock.Object),
             schemaUpgrader,
             new Mock<ILogger<DatabaseImportService>>().Object);
 

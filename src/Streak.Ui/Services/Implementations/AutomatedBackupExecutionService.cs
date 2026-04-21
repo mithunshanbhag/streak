@@ -2,11 +2,13 @@ namespace Streak.Ui.Services.Implementations;
 
 public sealed class AutomatedBackupExecutionService(
     IAppStoragePathService appStoragePathService,
+    ICheckinProofFileStore checkinProofFileStore,
     IAutomatedBackupFileSaver automatedBackupFileSaver,
     ILogger<AutomatedBackupExecutionService> logger)
     : IAutomatedBackupExecutionService
 {
     private readonly IAppStoragePathService _appStoragePathService = appStoragePathService;
+    private readonly ICheckinProofFileStore _checkinProofFileStore = checkinProofFileStore;
     private readonly IAutomatedBackupFileSaver _automatedBackupFileSaver = automatedBackupFileSaver;
     private readonly ILogger<AutomatedBackupExecutionService> _logger = logger;
 
@@ -22,7 +24,7 @@ public sealed class AutomatedBackupExecutionService(
         {
             var unavailableReferencedProofPaths = await DataBackupArchiveUtility.CreateBackupAsync(
                 sourceDatabasePath,
-                _appStoragePathService.CheckinProofsDirectoryPath,
+                _checkinProofFileStore,
                 workingBackupPath,
                 cancellationToken);
 

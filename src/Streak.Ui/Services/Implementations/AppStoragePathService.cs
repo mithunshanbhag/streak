@@ -10,9 +10,23 @@ public sealed class AppStoragePathService : IAppStoragePathService
 
     public string DiagnosticsDirectoryPath => DiagnosticsStoragePathHelper.GetDiagnosticsDirectoryPath(FileSystem.Current.AppDataDirectory);
 
-    public string CheckinProofsDirectoryPath => Path.Combine(
-        FileSystem.Current.AppDataDirectory,
-        CheckinProofStorageConstants.CheckinProofsDirectoryName);
+    public string CheckinProofsDirectoryPath =>
+#if WINDOWS
+        Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.MyPictures),
+            StreakExportStorageConstants.AndroidRootDirectoryName,
+            CheckinProofStorageConstants.CheckinProofsDirectoryName);
+#elif ANDROID
+        Path.Combine(
+            "/storage/emulated/0",
+            Android.OS.Environment.DirectoryPictures,
+            StreakExportStorageConstants.AndroidRootDirectoryName,
+            CheckinProofStorageConstants.CheckinProofsDirectoryName);
+#else
+        Path.Combine(
+            FileSystem.Current.AppDataDirectory,
+            CheckinProofStorageConstants.CheckinProofsDirectoryName);
+#endif
 
     public string DiagnosticsLogFilePath => DiagnosticsStoragePathHelper.GetDiagnosticsLogFilePath(FileSystem.Current.AppDataDirectory);
 }

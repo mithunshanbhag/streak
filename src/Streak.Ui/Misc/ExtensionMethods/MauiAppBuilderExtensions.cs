@@ -41,6 +41,7 @@ public static class MauiAppBuilderExtensions
             builder.Services.AddTransient<IHabitService, HabitService>();
             builder.Services.AddTransient<ICheckinService, CheckinService>();
             builder.Services.AddSingleton<IAppStoragePathService, AppStoragePathService>();
+            builder.Services.AddSingleton<ICheckinProofFileStore, FileSystemCheckinProofFileStore>();
             builder.Services.AddSingleton<ICheckinProofService, CheckinProofService>();
             builder.Services.AddSingleton<IAutomatedBackupConfigurationService, AutomatedBackupConfigurationService>();
             builder.Services.AddSingleton<IReminderConfigurationService, ReminderConfigurationService>();
@@ -62,6 +63,7 @@ public static class MauiAppBuilderExtensions
             builder.Services.AddTransient<IDiagnosticsExportFileSaver, WindowsDiagnosticsExportFileSaver>();
             builder.Services.AddTransient<IDatabaseShareService, UnsupportedDatabaseShareService>();
 #elif ANDROID
+            builder.Services.AddSingleton<ICheckinProofFileStore, AndroidCheckinProofFileStore>();
             builder.Services.AddSingleton<IBackupFolderOpener, AndroidBackupFolderOpener>();
             builder.Services.AddSingleton<IAutomatedBackupCompletionNotifier, AndroidAutomatedBackupCompletionNotifier>();
             builder.Services.AddSingleton<IBackupNotificationPermissionService, AndroidBackupNotificationPermissionService>();

@@ -67,12 +67,13 @@ A streak is the count of **consecutive calendar days** on which a habit was chec
 
 The app uses four categories of storage:
 
-| Category                | Android                                                       | Windows                                                       | Purpose                                                                                                                                              |
-| ----------------------- | ------------------------------------------------------------- | ------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Live app data           | App-private `FileSystem.Current.AppDataDirectory`             | App-private `FileSystem.Current.AppDataDirectory`             | Live SQLite database, saved check-in proof files, and persistent diagnostics that users should not edit directly.                                    |
-| Temporary working files | App-private `FileSystem.Current.CacheDirectory/ExportWorking` | App-private `FileSystem.Current.CacheDirectory/ExportWorking` | Disposable backup, share, restore, and diagnostics-export staging files.                                                                             |
-| User-visible exports    | `Downloads/Streak/...` through Android `MediaStore.Downloads` | User-selected save location through the Windows file picker   | Files the user explicitly exports, shares, or keeps as local backups, including data-backup archives and diagnostics.                                |
-| Proof-file resilience   | Raw `.db` restore reconciles missing proof references         | Raw `.db` restore reconciles missing proof references         | Direct database restores keep check-ins but clear proof metadata whose referenced files are unavailable; `.zip` backups preserve and restore proofs. |
+| Category                 | Android                                                       | Windows                                                       | Purpose                                                                                                                                              |
+| ------------------------ | ------------------------------------------------------------- | ------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Live app data            | App-private `FileSystem.Current.AppDataDirectory`             | App-private `FileSystem.Current.AppDataDirectory`             | Live SQLite database and persistent diagnostics that users should not edit directly.                                                                  |
+| Shared proof media       | `Pictures/Streak/CheckinProofs` through Android `MediaStore`  | `Pictures\Streak\CheckinProofs`                               | New user-uploaded check-in proof pictures live outside uninstall-sensitive app storage so they survive app upgrades and uninstalls.                 |
+| Temporary working files  | App-private `FileSystem.Current.CacheDirectory/ExportWorking` | App-private `FileSystem.Current.CacheDirectory/ExportWorking` | Disposable backup, share, restore, and diagnostics-export staging files.                                                                             |
+| User-visible exports     | `Downloads/Streak/...` through Android `MediaStore.Downloads` | User-selected save location through the Windows file picker   | Files the user explicitly exports, shares, or keeps as local backups, including data-backup archives and diagnostics.                                |
+| Proof-file resilience    | Raw `.db` restore reconciles missing proof references         | Raw `.db` restore reconciles missing proof references         | Direct database restores keep check-ins but clear proof metadata whose referenced files are unavailable; `.zip` backups preserve and restore proofs. |
 
 Android app-private storage:
 
@@ -81,12 +82,6 @@ AppDataDirectory/
   streak.db
   streak.db-wal
   streak.db-shm
-  CheckinProofs/
-    Habit-7/
-      2026/
-        04/
-          2026-04-21/
-            habit-7-20260421-083012.jpg
   Diagnostics/
     streak-diagnostics.log
 
@@ -98,6 +93,19 @@ CacheDirectory/
       streak.db
       CheckinProofs/
     streak-diagnostics-YYYYMMdd-HHmmss.zip
+```
+
+Android shared proof-media storage:
+
+```text
+Pictures/
+  Streak/
+    CheckinProofs/
+      Habit-7/
+        2026/
+          04/
+            2026-04-21/
+              habit-7-20260421-083012.jpg
 ```
 
 Android user-visible storage:
@@ -121,12 +129,6 @@ AppDataDirectory/
   streak.db
   streak.db-wal
   streak.db-shm
-  CheckinProofs\
-    Habit-7\
-      2026\
-        04\
-          2026-04-21\
-            habit-7-20260421-083012.jpg
   Diagnostics/
     streak-diagnostics.log
 
@@ -137,6 +139,19 @@ CacheDirectory/
       streak.db
       CheckinProofs/
     streak-diagnostics-YYYYMMdd-HHmmss.zip
+```
+
+Windows shared proof-media storage:
+
+```text
+Pictures\
+  Streak\
+    CheckinProofs\
+      Habit-7\
+        2026\
+          04\
+            2026-04-21\
+              habit-7-20260421-083012.jpg
 ```
 
 Windows user-visible storage:

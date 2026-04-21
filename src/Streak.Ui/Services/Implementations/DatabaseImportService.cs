@@ -4,6 +4,7 @@ namespace Streak.Ui.Services.Implementations;
 
 public sealed class DatabaseImportService(
     IAppStoragePathService appStoragePathService,
+    ICheckinProofFileStore checkinProofFileStore,
     SqliteDatabaseSchemaUpgrader sqliteDatabaseSchemaUpgrader,
     ILogger<DatabaseImportService> logger)
     : IDatabaseImportService
@@ -12,6 +13,7 @@ public sealed class DatabaseImportService(
     private static readonly char[] PathSeparatorChars = ['\\', '/'];
 
     private readonly IAppStoragePathService _appStoragePathService = appStoragePathService;
+    private readonly ICheckinProofFileStore _checkinProofFileStore = checkinProofFileStore;
     private readonly ILogger<DatabaseImportService> _logger = logger;
     private readonly SqliteDatabaseSchemaUpgrader _sqliteDatabaseSchemaUpgrader = sqliteDatabaseSchemaUpgrader;
 
@@ -20,7 +22,6 @@ public sealed class DatabaseImportService(
         ArgumentNullException.ThrowIfNull(backupFile);
 
         var databasePath = _appStoragePathService.DatabasePath;
-        var checkinProofsDirectoryPath = _appStoragePathService.CheckinProofsDirectoryPath;
         var workingDirectoryPath = _appStoragePathService.ExportDirectoryPath;
         var candidateImportPath = CreateWorkingFilePath(workingDirectoryPath, "candidate", ".bin");
         var extractedArchiveDirectoryPath = CreateWorkingDirectoryPath(workingDirectoryPath, "extracted");
@@ -41,7 +42,6 @@ public sealed class DatabaseImportService(
                     candidateImportPath,
                     candidateBackupPath,
                     databasePath,
-                    checkinProofsDirectoryPath,
                     extractedArchiveDirectoryPath,
                     extractedProofsDirectoryPath,
                     rollbackDirectoryPath,
@@ -53,7 +53,6 @@ public sealed class DatabaseImportService(
                 await ImportDatabaseFileAsync(
                     candidateImportPath,
                     databasePath,
-                    checkinProofsDirectoryPath,
                     rollbackDirectoryPath,
                     cancellationToken);
             }
@@ -118,7 +117,6 @@ public sealed class DatabaseImportService(
         string candidateArchivePath,
         string candidateBackupPath,
         string databasePath,
-        string checkinProofsDirectoryPath,
         string extractedArchiveDirectoryPath,
         string extractedProofsDirectoryPath,
         string rollbackDirectoryPath,
@@ -129,19 +127,19 @@ public sealed class DatabaseImportService(
         await ValidateBackupAsync(candidateBackupPath, cancellationToken);
 
         BackupLiveDatabaseArtifacts(databasePath, rollbackDirectoryPath);
-        BackupLiveCheckinProofArtifacts(checkinProofsDirectoryPath, rollbackProofsDirectoryPath);
+        await BackupLiveCheckinProofArtifactsAsync(rollbackProofsDirectoryPath, cancellationToken);
 
         try
         {
             ReplaceLiveDatabase(databasePath, candidateBackupPath);
-            ReplaceLiveCheckinProofArtifacts(checkinProofsDirectoryPath, extractedProofsDirectoryPath);
+            await ReplaceLiveCheckinProofArtifactsAsync(extractedProofsDirectoryPath, cancellationToken);
             _sqliteDatabaseSchemaUpgrader.UpgradeIfNeeded(databasePath);
             await ValidateBackupAsync(databasePath, cancellationToken);
         }
         catch
         {
             RestoreLiveDatabaseArtifacts(databasePath, rollbackDirectoryPath);
-            RestoreLiveCheckinProofArtifacts(checkinProofsDirectoryPath, rollbackProofsDirectoryPath);
+            await RestoreLiveCheckinProofArtifactsAsync(rollbackProofsDirectoryPath, cancellationToken);
             throw;
         }
     }
@@ -149,7 +147,6 @@ public sealed class DatabaseImportService(
     private async Task ImportDatabaseFileAsync(
         string candidateDatabasePath,
         string databasePath,
-        string checkinProofsDirectoryPath,
         string rollbackDirectoryPath,
         CancellationToken cancellationToken)
     {
@@ -163,7 +160,6 @@ public sealed class DatabaseImportService(
             _sqliteDatabaseSchemaUpgrader.UpgradeIfNeeded(databasePath);
             await ReconcileUnavailableProofReferencesAsync(
                 databasePath,
-                checkinProofsDirectoryPath,
                 cancellationToken);
             await ValidateBackupAsync(databasePath, cancellationToken);
         }
@@ -323,12 +319,11 @@ public sealed class DatabaseImportService(
 
     private async Task ReconcileUnavailableProofReferencesAsync(
         string databasePath,
-        string checkinProofsDirectoryPath,
         CancellationToken cancellationToken)
     {
         var unavailableReferencedProofPaths = await DataBackupArchiveUtility.GetUnavailableReferencedProofPathsAsync(
             databasePath,
-            checkinProofsDirectoryPath,
+            _checkinProofFileStore,
             cancellationToken);
 
         if (unavailableReferencedProofPaths.Count == 0)
@@ -388,14 +383,25 @@ public sealed class DatabaseImportService(
         }
     }
 
-    private static void BackupLiveCheckinProofArtifacts(string checkinProofsDirectoryPath, string rollbackProofsDirectoryPath)
+    private async Task BackupLiveCheckinProofArtifactsAsync(string rollbackProofsDirectoryPath, CancellationToken cancellationToken)
     {
         DeleteDirectoryIfExists(rollbackProofsDirectoryPath);
+        Directory.CreateDirectory(rollbackProofsDirectoryPath);
 
-        if (!Directory.Exists(checkinProofsDirectoryPath))
-            return;
+        var proofImageUris = await _checkinProofFileStore.GetAllProofImageUrisAsync(cancellationToken);
+        foreach (var proofImageUri in proofImageUris)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
 
-        CopyDirectory(checkinProofsDirectoryPath, rollbackProofsDirectoryPath);
+            var destinationPath = CheckinProofPathUtility.GetAbsolutePath(
+                rollbackProofsDirectoryPath,
+                proofImageUri);
+            Directory.CreateDirectory(Path.GetDirectoryName(destinationPath)!);
+
+            await using var sourceStream = await _checkinProofFileStore.OpenReadAsync(proofImageUri, cancellationToken);
+            await using var destinationStream = File.Create(destinationPath);
+            await sourceStream.CopyToAsync(destinationStream, cancellationToken);
+        }
     }
 
     private static void ReplaceLiveDatabase(string databasePath, string candidateBackupPath)
@@ -423,28 +429,23 @@ public sealed class DatabaseImportService(
         }
     }
 
-    private static void ReplaceLiveCheckinProofArtifacts(
-        string checkinProofsDirectoryPath,
-        string extractedProofsDirectoryPath)
+    private async Task ReplaceLiveCheckinProofArtifactsAsync(
+        string extractedProofsDirectoryPath,
+        CancellationToken cancellationToken)
     {
-        DeleteDirectoryIfExists(checkinProofsDirectoryPath);
+        await _checkinProofFileStore.DeleteAllAsync(cancellationToken);
 
         if (!Directory.Exists(extractedProofsDirectoryPath))
             return;
 
-        CopyDirectory(extractedProofsDirectoryPath, checkinProofsDirectoryPath);
+        await ImportCheckinProofArtifactsFromDirectoryAsync(extractedProofsDirectoryPath, cancellationToken);
     }
 
-    private static void RestoreLiveCheckinProofArtifacts(
-        string checkinProofsDirectoryPath,
-        string rollbackProofsDirectoryPath)
+    private async Task RestoreLiveCheckinProofArtifactsAsync(
+        string rollbackProofsDirectoryPath,
+        CancellationToken cancellationToken)
     {
-        DeleteDirectoryIfExists(checkinProofsDirectoryPath);
-
-        if (!Directory.Exists(rollbackProofsDirectoryPath))
-            return;
-
-        CopyDirectory(rollbackProofsDirectoryPath, checkinProofsDirectoryPath);
+        await ReplaceLiveCheckinProofArtifactsAsync(rollbackProofsDirectoryPath, cancellationToken);
     }
 
     private static IEnumerable<string> GetDatabaseArtifactPaths(string databasePath)
@@ -477,17 +478,24 @@ public sealed class DatabaseImportService(
             Directory.Delete(directoryPath, true);
     }
 
-    private static void CopyDirectory(string sourceDirectoryPath, string destinationDirectoryPath)
+    private async Task ImportCheckinProofArtifactsFromDirectoryAsync(
+        string sourceDirectoryPath,
+        CancellationToken cancellationToken)
     {
-        Directory.CreateDirectory(destinationDirectoryPath);
-
         foreach (var sourceFilePath in Directory.GetFiles(sourceDirectoryPath, "*", SearchOption.AllDirectories))
         {
-            var relativePath = Path.GetRelativePath(sourceDirectoryPath, sourceFilePath);
-            var destinationFilePath = Path.Combine(destinationDirectoryPath, relativePath);
+            cancellationToken.ThrowIfCancellationRequested();
 
-            Directory.CreateDirectory(Path.GetDirectoryName(destinationFilePath)!);
-            File.Copy(sourceFilePath, destinationFilePath, true);
+            var relativePath = Path
+                .GetRelativePath(sourceDirectoryPath, sourceFilePath)
+                .Replace(Path.DirectorySeparatorChar, '/');
+
+            await using var sourceStream = File.OpenRead(sourceFilePath);
+            await _checkinProofFileStore.SaveAsync(
+                relativePath,
+                sourceStream,
+                CheckinProofFileUtility.GetMimeType(Path.GetExtension(sourceFilePath)),
+                cancellationToken);
         }
     }
 

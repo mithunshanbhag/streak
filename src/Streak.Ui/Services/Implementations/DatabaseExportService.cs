@@ -2,11 +2,13 @@ namespace Streak.Ui.Services.Implementations;
 
 public sealed class DatabaseExportService(
     IAppStoragePathService appStoragePathService,
+    ICheckinProofFileStore checkinProofFileStore,
     IDatabaseExportFileSaver databaseExportFileSaver,
     ILogger<DatabaseExportService> logger)
     : IDatabaseExportService
 {
     private readonly IAppStoragePathService _appStoragePathService = appStoragePathService;
+    private readonly ICheckinProofFileStore _checkinProofFileStore = checkinProofFileStore;
     private readonly IDatabaseExportFileSaver _databaseExportFileSaver = databaseExportFileSaver;
     private readonly ILogger<DatabaseExportService> _logger = logger;
 
@@ -22,7 +24,7 @@ public sealed class DatabaseExportService(
         {
             var unavailableReferencedProofPaths = await DataBackupArchiveUtility.CreateBackupAsync(
                 sourceDatabasePath,
-                _appStoragePathService.CheckinProofsDirectoryPath,
+                _checkinProofFileStore,
                 backupFilePath,
                 cancellationToken);
 

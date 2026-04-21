@@ -2,10 +2,10 @@ namespace Streak.Ui.Services.Implementations;
 
 public sealed class CheckinProofService(
     ICheckinProofMediaPickerService mediaPickerService,
-    IAppStoragePathService appStoragePathService) : ICheckinProofService
+    ICheckinProofFileStore checkinProofFileStore) : ICheckinProofService
 {
     private readonly ICheckinProofMediaPickerService _mediaPickerService = mediaPickerService;
-    private readonly IAppStoragePathService _appStoragePathService = appStoragePathService;
+    private readonly ICheckinProofFileStore _checkinProofFileStore = checkinProofFileStore;
 
     public bool SupportsCameraCapture => _mediaPickerService.SupportsCameraCapture;
 
@@ -50,12 +50,12 @@ public sealed class CheckinProofService(
                 $"Selected picture proof must be {FormatFileSize(CoreConstants.CheckinProofMaxSizeBytes)} or smaller.");
 
         var relativePath = BuildRelativeProofPath(habitId, checkinDate, selection.FileExtension);
-        var absolutePath = GetAbsoluteProofPath(relativePath);
-        var directoryPath = Path.GetDirectoryName(absolutePath)
-                            ?? throw new InvalidOperationException("Unable to determine the proof storage directory.");
-
-        Directory.CreateDirectory(directoryPath);
-        await File.WriteAllBytesAsync(absolutePath, selection.FileBytes, cancellationToken);
+        await using var sourceStream = new MemoryStream(selection.FileBytes, writable: false);
+        await _checkinProofFileStore.SaveAsync(
+            relativePath,
+            sourceStream,
+            CheckinProofFileUtility.GetMimeType(selection.FileExtension),
+            cancellationToken);
 
         return new CheckinProofInputModel
         {
@@ -68,16 +68,7 @@ public sealed class CheckinProofService(
 
     public Task DeleteIfExistsAsync(string? proofImageUri, CancellationToken cancellationToken = default)
     {
-        cancellationToken.ThrowIfCancellationRequested();
-
-        if (string.IsNullOrWhiteSpace(proofImageUri))
-            return Task.CompletedTask;
-
-        var absolutePath = GetAbsoluteProofPath(proofImageUri);
-        if (File.Exists(absolutePath))
-            File.Delete(absolutePath);
-
-        return Task.CompletedTask;
+        return _checkinProofFileStore.DeleteIfExistsAsync(proofImageUri, cancellationToken);
     }
 
     private async Task<CheckinProofSelection?> CreateSelectionAsync(
@@ -93,7 +84,7 @@ public sealed class CheckinProofService(
         await using var fileStream = await fileResult.OpenReadAsync();
         var fileBytes = await ReadFileBytesAsync(fileStream, cancellationToken);
         var fileExtension = NormalizeFileExtension(fileResult.FileName, fileResult.FullPath);
-        var mimeType = GetMimeType(fileExtension);
+        var mimeType = CheckinProofFileUtility.GetMimeType(fileExtension);
         var modifiedOn = GetModifiedOn(fileResult.FullPath);
 
         return new CheckinProofSelection
@@ -139,7 +130,7 @@ public sealed class CheckinProofService(
     private string BuildRelativeProofPath(int habitId, string checkinDate, string fileExtension)
     {
         var date = DateOnly.ParseExact(checkinDate, CoreConstants.CheckinDateFormat, CultureInfo.InvariantCulture);
-        var normalizedExtension = NormalizeStoredFileExtension(fileExtension);
+        var normalizedExtension = CheckinProofFileUtility.NormalizeStoredFileExtension(fileExtension);
 
         return string.Join(
             '/',
@@ -148,15 +139,6 @@ public sealed class CheckinProofService(
             date.Month.ToString("00", CultureInfo.InvariantCulture),
             date.ToString(CoreConstants.CheckinDateFormat, CultureInfo.InvariantCulture),
             $"{Guid.NewGuid():N}{normalizedExtension}");
-    }
-
-    private string GetAbsoluteProofPath(string proofImageUri)
-    {
-        var pathSegments = proofImageUri
-            .Split(['/', '\\'], StringSplitOptions.RemoveEmptyEntries);
-
-        return Path.Combine(
-            [.. new[] { _appStoragePathService.CheckinProofsDirectoryPath }, .. pathSegments]);
     }
 
     private static string ResolveDisplayName(string? fileName, string fileExtension)
@@ -168,7 +150,7 @@ public sealed class CheckinProofService(
         if (!string.IsNullOrWhiteSpace(normalizedFileName))
             return normalizedFileName;
 
-        return $"proof{NormalizeStoredFileExtension(fileExtension)}";
+        return $"proof{CheckinProofFileUtility.NormalizeStoredFileExtension(fileExtension)}";
     }
 
     private static string NormalizeFileExtension(string? fileName, string? fullPath)
@@ -177,29 +159,7 @@ public sealed class CheckinProofService(
         if (string.IsNullOrWhiteSpace(extension))
             extension = Path.GetExtension(fullPath);
 
-        return NormalizeStoredFileExtension(extension);
-    }
-
-    private static string NormalizeStoredFileExtension(string? fileExtension)
-    {
-        if (string.IsNullOrWhiteSpace(fileExtension))
-            return ".jpg";
-
-        return fileExtension.StartsWith('.')
-            ? fileExtension.ToLowerInvariant()
-            : $".{fileExtension.ToLowerInvariant()}";
-    }
-
-    private static string GetMimeType(string fileExtension)
-    {
-        return fileExtension.ToLowerInvariant() switch
-        {
-            ".png" => "image/png",
-            ".gif" => "image/gif",
-            ".bmp" => "image/bmp",
-            ".webp" => "image/webp",
-            _ => "image/jpeg"
-        };
+        return CheckinProofFileUtility.NormalizeStoredFileExtension(extension);
     }
 
     private static DateTimeOffset GetModifiedOn(string? fullPath)
