@@ -19,6 +19,10 @@ CREATE TABLE IF NOT EXISTS Checkins (
     CheckinDate TEXT NOT NULL,
     HabitId INTEGER NOT NULL,
     Notes TEXT NULL,
+    ProofImageUri TEXT NULL,
+    ProofImageDisplayName TEXT NULL,
+    ProofImageSizeBytes INTEGER NULL,
+    ProofImageModifiedOn TEXT NULL,
     CONSTRAINT PK_Checkins PRIMARY KEY (HabitId, CheckinDate),
     CONSTRAINT FK_Checkins_Habits FOREIGN KEY (HabitId) REFERENCES Habits (Id) ON DELETE CASCADE ON UPDATE CASCADE,
     -- Because CheckinDate is stored as TEXT, we need to ensure it follows the 'YYYY-MM-DD' format and represents a valid date.

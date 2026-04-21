@@ -33,6 +33,10 @@ public sealed class DatabaseImportServiceTests
         habitColumns.Should().Contain("Description");
         var checkinColumns = GetTableColumns(liveDatabasePath, "Checkins");
         checkinColumns.Should().Contain("Notes");
+        checkinColumns.Should().Contain("ProofImageUri");
+        checkinColumns.Should().Contain("ProofImageDisplayName");
+        checkinColumns.Should().Contain("ProofImageSizeBytes");
+        checkinColumns.Should().Contain("ProofImageModifiedOn");
 
         using var connection = OpenConnection(liveDatabasePath);
         using var command = connection.CreateCommand();
@@ -45,12 +49,16 @@ public sealed class DatabaseImportServiceTests
         reader.IsDBNull(2).Should().BeTrue();
 
         using var checkinCommand = connection.CreateCommand();
-        checkinCommand.CommandText = "SELECT HabitId, CheckinDate, Notes FROM Checkins;";
+        checkinCommand.CommandText = "SELECT HabitId, CheckinDate, Notes, ProofImageUri, ProofImageDisplayName, ProofImageSizeBytes, ProofImageModifiedOn FROM Checkins;";
         using var checkinReader = checkinCommand.ExecuteReader();
         checkinReader.Read().Should().BeTrue();
         checkinReader.GetInt64(0).Should().Be(1);
         checkinReader.GetString(1).Should().Be("2025-01-01");
         checkinReader.IsDBNull(2).Should().BeTrue();
+        checkinReader.IsDBNull(3).Should().BeTrue();
+        checkinReader.IsDBNull(4).Should().BeTrue();
+        checkinReader.IsDBNull(5).Should().BeTrue();
+        checkinReader.IsDBNull(6).Should().BeTrue();
     }
 
     #endregion

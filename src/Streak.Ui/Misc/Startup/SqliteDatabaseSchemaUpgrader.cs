@@ -24,11 +24,22 @@ public sealed class SqliteDatabaseSchemaUpgrader(ILogger<SqliteDatabaseSchemaUpg
 
         var hasHabitDescriptionColumn = ColumnExists(connection, "Habits", "Description");
         var hasCheckinNotesColumn = ColumnExists(connection, "Checkins", "Notes");
+        var hasCheckinProofImageUriColumn = ColumnExists(connection, "Checkins", "ProofImageUri");
+        var hasCheckinProofImageDisplayNameColumn = ColumnExists(connection, "Checkins", "ProofImageDisplayName");
+        var hasCheckinProofImageSizeBytesColumn = ColumnExists(connection, "Checkins", "ProofImageSizeBytes");
+        var hasCheckinProofImageModifiedOnColumn = ColumnExists(connection, "Checkins", "ProofImageModifiedOn");
         var hasAutomatedBackupSettingsTable = TableExists(connection, AutomatedBackupConstants.SettingsTableName);
         var hasAutomatedBackupSettingsRow = hasAutomatedBackupSettingsTable
-                                            && RowExists(connection, AutomatedBackupConstants.SettingsTableName, AutomatedBackupConstants.SettingsRowId);
+                                             && RowExists(connection, AutomatedBackupConstants.SettingsTableName, AutomatedBackupConstants.SettingsRowId);
 
-        if (hasHabitDescriptionColumn && hasCheckinNotesColumn && hasAutomatedBackupSettingsTable && hasAutomatedBackupSettingsRow)
+        if (hasHabitDescriptionColumn &&
+            hasCheckinNotesColumn &&
+            hasCheckinProofImageUriColumn &&
+            hasCheckinProofImageDisplayNameColumn &&
+            hasCheckinProofImageSizeBytesColumn &&
+            hasCheckinProofImageModifiedOnColumn &&
+            hasAutomatedBackupSettingsTable &&
+            hasAutomatedBackupSettingsRow)
         {
             _logger.LogDebug("SQLite schema is already up to date for {DatabasePath}.", databasePath);
             return;
@@ -49,35 +60,77 @@ public sealed class SqliteDatabaseSchemaUpgrader(ILogger<SqliteDatabaseSchemaUpg
 
         if (!hasCheckinNotesColumn)
         {
+            var copyLegacyCheckinsSql = hasCheckinProofImageUriColumn
+                ? """
+                  INSERT INTO Checkins (CheckinDate, HabitId, ProofImageUri)
+                  SELECT CheckinDate, HabitId, ProofImageUri
+                  FROM Checkins_Legacy;
+                  """
+                : """
+                  INSERT INTO Checkins (CheckinDate, HabitId)
+                  SELECT CheckinDate, HabitId
+                  FROM Checkins_Legacy;
+                  """;
+
             command.CommandText =
-                $"""
-                 ALTER TABLE Checkins RENAME TO Checkins_Legacy;
+                $$"""
+                  ALTER TABLE Checkins RENAME TO Checkins_Legacy;
 
-                 CREATE TABLE Checkins (
-                     CheckinDate TEXT NOT NULL,
-                     HabitId INTEGER NOT NULL,
-                     Notes TEXT NULL,
-                     CONSTRAINT PK_Checkins PRIMARY KEY (HabitId, CheckinDate),
-                     CONSTRAINT FK_Checkins_Habits FOREIGN KEY (HabitId) REFERENCES Habits (Id) ON DELETE CASCADE ON UPDATE CASCADE,
-                     CONSTRAINT CK_Checkins_CheckinDate CHECK (
-                         length (CheckinDate) = 10
-                         AND CheckinDate GLOB '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]'
-                         AND strftime ('%Y-%m-%d', CheckinDate) IS NOT NULL
-                         AND strftime ('%Y-%m-%d', CheckinDate) = CheckinDate
-                     ),
-                     CONSTRAINT CK_Checkins_Notes_Length CHECK (
-                         Notes IS NULL OR length(Notes) <= {CoreConstants.CheckinNotesMaxLength}
-                     )
-                 ) STRICT;
+                  CREATE TABLE Checkins (
+                      CheckinDate TEXT NOT NULL,
+                      HabitId INTEGER NOT NULL,
+                      Notes TEXT NULL,
+                      ProofImageUri TEXT NULL,
+                      ProofImageDisplayName TEXT NULL,
+                      ProofImageSizeBytes INTEGER NULL,
+                      ProofImageModifiedOn TEXT NULL,
+                      CONSTRAINT PK_Checkins PRIMARY KEY (HabitId, CheckinDate),
+                      CONSTRAINT FK_Checkins_Habits FOREIGN KEY (HabitId) REFERENCES Habits (Id) ON DELETE CASCADE ON UPDATE CASCADE,
+                      CONSTRAINT CK_Checkins_CheckinDate CHECK (
+                          length (CheckinDate) = 10
+                          AND CheckinDate GLOB '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]'
+                          AND strftime ('%Y-%m-%d', CheckinDate) IS NOT NULL
+                          AND strftime ('%Y-%m-%d', CheckinDate) = CheckinDate
+                      ),
+                      CONSTRAINT CK_Checkins_Notes_Length CHECK (
+                          Notes IS NULL OR length(Notes) <= {{CoreConstants.CheckinNotesMaxLength}}
+                      )
+                  ) STRICT;
 
-                 INSERT INTO Checkins (CheckinDate, HabitId)
-                 SELECT CheckinDate, HabitId
-                 FROM Checkins_Legacy;
+                  {{copyLegacyCheckinsSql}}
 
-                 DROP TABLE Checkins_Legacy;
-                 """;
+                  DROP TABLE Checkins_Legacy;
+                  """;
             command.ExecuteNonQuery();
             _logger.LogDebug("Rebuilt Checkins table with nullable Notes column in {DatabasePath}.", databasePath);
+        }
+
+        if (!hasCheckinProofImageUriColumn && hasCheckinNotesColumn)
+        {
+            command.CommandText = "ALTER TABLE Checkins ADD COLUMN ProofImageUri TEXT NULL;";
+            command.ExecuteNonQuery();
+            _logger.LogDebug("Added Checkins.ProofImageUri column to {DatabasePath}.", databasePath);
+        }
+
+        if (!hasCheckinProofImageDisplayNameColumn && hasCheckinNotesColumn)
+        {
+            command.CommandText = "ALTER TABLE Checkins ADD COLUMN ProofImageDisplayName TEXT NULL;";
+            command.ExecuteNonQuery();
+            _logger.LogDebug("Added Checkins.ProofImageDisplayName column to {DatabasePath}.", databasePath);
+        }
+
+        if (!hasCheckinProofImageSizeBytesColumn && hasCheckinNotesColumn)
+        {
+            command.CommandText = "ALTER TABLE Checkins ADD COLUMN ProofImageSizeBytes INTEGER NULL;";
+            command.ExecuteNonQuery();
+            _logger.LogDebug("Added Checkins.ProofImageSizeBytes column to {DatabasePath}.", databasePath);
+        }
+
+        if (!hasCheckinProofImageModifiedOnColumn && hasCheckinNotesColumn)
+        {
+            command.CommandText = "ALTER TABLE Checkins ADD COLUMN ProofImageModifiedOn TEXT NULL;";
+            command.ExecuteNonQuery();
+            _logger.LogDebug("Added Checkins.ProofImageModifiedOn column to {DatabasePath}.", databasePath);
         }
 
         if (!hasAutomatedBackupSettingsTable)
