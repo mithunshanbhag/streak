@@ -35,8 +35,11 @@ A daily record that exists only when a habit is marked **done** for a given cale
 - Checkins apply to **today only**, where **today** means the device's current **local calendar day**. Backdating (marking a past day) is not supported.
 - A habit that has no checkin recorded for a day is treated as **not done**.
 - If the user unchecks a same-day habit, that day's checkin record is deleted.
+- A same-day checkin may also include:
+  - one optional short note
+  - one optional picture proof linked from the checkin record
 - There are two ways a checkin happens:
-  1. **Voluntary**: the user taps the toggle on the homepage as soon as they complete the activity.
+  1. **Voluntary**: the user taps the toggle on the homepage as soon as they complete the activity, then completes the [check-in dialog flow](./checkin-dialogs.md).
   2. **Via reminder**: at a user-configured time each day, the app sends a notification prompting the user to check in on any habits that are still pending (not yet marked done).
 
 ### Streak
@@ -52,22 +55,23 @@ A streak is the count of **consecutive calendar days** on which a habit was chec
 ## Data Storage
 
 - All data is stored **locally on the device**. There is no cloud sync, no user accounts, and no authentication.
-- Users may manually export or share `.db` backup copies to other apps and services, but the app does not automate uploads or synchronization.
-- After a manual database export succeeds, the app should show a lightweight in-app confirmation and let the user quickly open the parent folder that now contains the backup.
+- Users may manually export or share full **data backup archives** (`.zip`) that include the local database plus uploaded picture-proof files.
+- After a manual data-backup export succeeds, the app should show a lightweight in-app confirmation and let the user quickly open the parent folder that now contains the backup archive.
 - On **Android**, manual exports, automated backups, and diagnostics exports are organized under `Downloads/Streak` so Streak artifacts stay easy to find without cluttering the top-level Downloads folder.
-- On **Android**, users may also enable nightly automated local backups that save timestamped `.db` copies into shared device storage.
+- On **Android**, users may also enable nightly automated local backups that save timestamped `.zip` data archives into shared device storage.
 - On Android, a successful nightly automated backup should also be able to post a local completion notification, subject to the platform's notification permission.
 - Data will be persisted across app restarts.
 
 ### Storage Layout
 
-The app uses three categories of storage:
+The app uses four categories of storage:
 
-| Category                | Android                                                       | Windows                                                       | Purpose                                                                              |
-| ----------------------- | ------------------------------------------------------------- | ------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
-| Live app data           | App-private `FileSystem.Current.AppDataDirectory`             | App-private `FileSystem.Current.AppDataDirectory`             | Live SQLite database and persistent diagnostics that users should not edit directly. |
-| Temporary working files | App-private `FileSystem.Current.CacheDirectory/ExportWorking` | App-private `FileSystem.Current.CacheDirectory/ExportWorking` | Disposable backup, share, restore, and diagnostics-export staging files.             |
-| User-visible exports    | `Downloads/Streak/...` through Android `MediaStore.Downloads` | User-selected save location through the Windows file picker   | Files the user explicitly exports, shares, or keeps as local backups.                |
+| Category                 | Android                                                       | Windows                                                       | Purpose                                                                                                               |
+| ------------------------ | ------------------------------------------------------------- | ------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| Live app data            | App-private `FileSystem.Current.AppDataDirectory`             | App-private `FileSystem.Current.AppDataDirectory`             | Live SQLite database and persistent diagnostics that users should not edit directly.                                  |
+| User-managed proof media | Shared gallery / pictures storage                             | Shared pictures / gallery storage                             | The saved picture-proof files that Streak links to from check-ins and later includes in data-backup archives.         |
+| Temporary working files  | App-private `FileSystem.Current.CacheDirectory/ExportWorking` | App-private `FileSystem.Current.CacheDirectory/ExportWorking` | Disposable backup, share, restore, and diagnostics-export staging files.                                              |
+| User-visible exports     | `Downloads/Streak/...` through Android `MediaStore.Downloads` | User-selected save location through the Windows file picker   | Files the user explicitly exports, shares, or keeps as local backups, including data-backup archives and diagnostics. |
 
 Android app-private storage:
 
@@ -81,9 +85,24 @@ AppDataDirectory/
 
 CacheDirectory/
   ExportWorking/
-    streak-backup-YYYYMMdd-HHmmss.db
-    streak-auto-backup-YYYYMMdd-HHmmss.db
+    streak-data-backup-YYYYMMdd-HHmmss.zip
+    streak-auto-data-backup-YYYYMMdd-HHmmss.zip
+    RestoreExtracted/
+      streak.db
+      CheckinProofs/
     streak-diagnostics-YYYYMMdd-HHmmss.zip
+```
+
+Android shared proof-media storage:
+
+```text
+Pictures/
+  Streak/
+    CheckinProofs/
+      2026/
+        04/
+          2026-04-21/
+            habit-7-20260421-083012.jpg
 ```
 
 Android user-visible storage:
@@ -93,9 +112,9 @@ Downloads/
   Streak/
     Backups/
       Manual/
-        streak-backup-YYYYMMdd-HHmmss.db
+        streak-data-backup-YYYYMMdd-HHmmss.zip
       Automated/
-        streak-auto-backup-YYYYMMdd-HHmmss.db
+        streak-auto-data-backup-YYYYMMdd-HHmmss.zip
     Diagnostics/
       streak-diagnostics-YYYYMMdd-HHmmss.zip
 ```
@@ -112,19 +131,34 @@ AppDataDirectory/
 
 CacheDirectory/
   ExportWorking/
-    streak-backup-YYYYMMdd-HHmmss.db
+    streak-data-backup-YYYYMMdd-HHmmss.zip
+    RestoreExtracted/
+      streak.db
+      CheckinProofs/
     streak-diagnostics-YYYYMMdd-HHmmss.zip
+```
+
+Windows shared proof-media storage:
+
+```text
+Pictures\
+  Streak\
+    CheckinProofs\
+      2026\
+        04\
+          2026-04-21\
+            habit-7-20260421-083012.jpg
 ```
 
 Windows user-visible storage:
 
 ```text
 <user-selected-folder>/
-  streak-backup-YYYYMMdd-HHmmss.db
+  streak-data-backup-YYYYMMdd-HHmmss.zip
   streak-diagnostics-YYYYMMdd-HHmmss.zip
 ```
 
-Windows does not currently support automated backups or DB sharing. Android DB sharing uses a cache-backed `streak-backup-YYYYMMdd-HHmmss.db` copy and hands it to the native share sheet; it does not create a separate durable export unless the user chooses to save it through another app.
+Windows does not currently support automated backups. Android manual share uses a generated `streak-data-backup-YYYYMMdd-HHmmss.zip` archive and hands it to the native share sheet; it does not create a separate durable export unless the user chooses to save it through another app.
 
 ## Notifications and Reminders
 
@@ -135,7 +169,7 @@ Windows does not currently support automated backups or DB sharing. Android DB s
 - The default reminder time is **9:00 PM** (local device time).
 - Reminders can be disabled entirely by the user.
 - Backup-completion feedback is separate from reminder notifications:
-  - manual **Download DB** success uses an in-app confirmation with a quick folder-open action
+  - manual **Download data** success uses an in-app confirmation with a quick folder-open action
   - Android nightly automated backups may post a native completion notification that attempts to open the backup folder when tapped
 
 ## Time and Timezone Behavior
@@ -169,12 +203,13 @@ See [non-functional-requirements.md](./non-functional-requirements.md).
 
 Each major surface has its own detailed spec:
 
-| Surface         | Route / Trigger           | Spec                                             | Purpose                                                                                     |
-| --------------- | ------------------------- | ------------------------------------------------ | ------------------------------------------------------------------------------------------- |
-| Homepage        | `/`                       | [homepage.md](./homepage.md)                     | Landing page, daily checkin surface, and habit list                                         |
-| Habit Details   | `/habits/{habitId}`       | [habit-details-page.md](./habit-details-page.md) | Habit details, trends, edit dialog, and deletion                                            |
-| Quick Add Habit | `+ New Habit` on Homepage | [create-habit-page.md](./create-habit-page.md)   | Create a new habit in a compact dialog without leaving the homepage                         |
-| Settings        | `/settings`               | [settings-page.md](./settings-page.md)           | Configure reminders and manage automated/manual local backups plus diagnostics export/share |
+| Surface          | Route / Trigger           | Spec                                             | Purpose                                                                                        |
+| ---------------- | ------------------------- | ------------------------------------------------ | ---------------------------------------------------------------------------------------------- |
+| Homepage         | `/`                       | [homepage.md](./homepage.md)                     | Landing page, daily checkin surface, and habit list                                            |
+| Check-in Dialogs | Homepage habit toggle     | [checkin-dialogs.md](./checkin-dialogs.md)       | Collect optional note / picture proof before save and confirm removal before undoing a checkin |
+| Habit Details    | `/habits/{habitId}`       | [habit-details-page.md](./habit-details-page.md) | Habit details, trends, edit dialog, and deletion                                               |
+| Quick Add Habit  | `+ New Habit` on Homepage | [create-habit-page.md](./create-habit-page.md)   | Create a new habit in a compact dialog without leaving the homepage                            |
+| Settings         | `/settings`               | [settings-page.md](./settings-page.md)           | Configure reminders and manage automated/manual local backups plus diagnostics export/share    |
 
 ## Information Architecture Notes
 
@@ -183,7 +218,7 @@ Each major surface has its own detailed spec:
 - The **Homepage** doubles as the habit-list maintenance surface: habits are shown alphabetically and each habit opens its details on the Habit Details page.
 - The Homepage app bar keeps **Settings** plus a right-most **GitHub** repo link instead of a global create icon.
 - The **Habit Details** page contains the heatmap, edit dialog flow, and delete confirmation dialog for a single habit.
-- **Settings** groups reminder preferences plus low-frequency data actions such as **Daily automated backups**, **Download DB**, **Share DB**, **Upload DB**, and diagnostics export/share.
+- **Settings** groups reminder preferences plus low-frequency data actions such as **Daily automated backups**, **Download data**, **Share data**, **Upload data**, and diagnostics export/share.
 - **Homepage** opens directly into the habit list without instructional header copy, progress summary text, or a habit-count chip.
 - There is no dedicated habit-list routed page separate from **Homepage**.
 - There is no dedicated routed **Create Habit** page in the simplified direction.

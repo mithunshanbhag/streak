@@ -2,7 +2,7 @@
 
 > **Route**: `/settings`
 
-The settings page lets users configure **daily reminders** and access low-frequency **data management** actions such as daily automated backups, downloading, sharing, restoring the local database, and exporting diagnostic logs. Users access it from the **⚙** icon in the app bar.
+The settings page lets users configure **daily reminders** and access low-frequency **data management** actions such as daily automated backups, downloading, sharing, and restoring full data-backup archives, plus exporting diagnostic logs. Users access it from the **⚙** icon in the app bar.
 
 ## Navigation
 
@@ -42,9 +42,9 @@ The page contains two vertically stacked sections presented as clean cards:
 | Enable/disable toggle         | `MudSwitch`           | ON = daily automated backups enabled, OFF = disabled. Default: **OFF**. The switch sits on its own trailing action row with no extra inline label or helper copy. The control is disabled on Windows because this feature is Android-only in this iteration. |
 | Dividers                      | Visual                | Simple horizontal rules separate **Daily automated backups**, **Backup**, **Diagnostic logs**, and **Restore** so the four subsections read as one stacked group.                                                                                            |
 | Backup header                 | Text                  | **"Backup"**                                                                                                                                                                                                                                                 |
-| Backup info icon              | Glyph + tooltip       | Small info icon beside **Backup**. Hover/focus/press shows: *"Android saves to 'Downloads/Streak'. Windows lets you choose where to save."*                                                                                                                  |
+| Backup info icon              | Glyph + tooltip       | Small info icon beside **Backup**. Hover/focus/press shows: *"Creates a '.zip' data archive with your database and uploaded pictures. Android saves to 'Downloads/Streak'. Windows lets you choose where to save."*                                          |
 | Backup description            | Caption               | *"Save or share a copy of your local data."*                                                                                                                                                                                                                 |
-| Backup action cluster         | `MudIconButton` group | Two filled icon-only buttons shown side-by-side: download and share. Tooltips provide the visible labels **"Download DB"** and **"Share DB"**.                                                                                                               |
+| Backup action cluster         | `MudIconButton` group | Two filled icon-only buttons shown side-by-side: download and share. Tooltips provide the visible labels **"Download data"** and **"Share data"**.                                                                                                           |
 | Diagnostic logs header        | Text                  | **"Diagnostic logs"**                                                                                                                                                                                                                                        |
 | Diagnostic logs info icon     | Glyph + tooltip       | Small info icon beside **Diagnostic logs**. Hover/focus/press shows: *"Exports recent app logs and basic support metadata. Does not include your full database."*                                                                                            |
 | Diagnostic logs description   | Caption               | *"Export a support bundle of recent app logs."*                                                                                                                                                                                                              |
@@ -52,15 +52,15 @@ The page contains two vertically stacked sections presented as clean cards:
 | Restore header                | Text                  | **"Restore"**                                                                                                                                                                                                                                                |
 | Restore warning icon          | Glyph + tooltip       | Small warning icon beside **Restore**. Hover/focus/press shows: *"This will replace ALL existing data. This action cannot be undone."*                                                                                                                       |
 | Restore description           | Caption               | *"Restore your data from a previous backup."*                                                                                                                                                                                                                |
-| Import action                 | `MudIconButton`       | Filled icon-only button with an upload icon. Tooltip text is **"Upload DB"**. Opens a file picker to select a `.db` backup file.                                                                                                                             |
+| Restore action                | `MudIconButton`       | Filled icon-only button with an upload icon. Tooltip text is **"Upload data"**. Opens a file picker to select a `.zip` data-backup archive.                                                                                                                  |
 
 - Daily automated backups, Backup, Diagnostic logs, and Restore should read as four vertically stacked subsections within the same card.
 - The automated backups subsection should use the same quiet structure as Backup, Diagnostic logs, and Restore: heading, subtle tooltip icon, one short description line, then a single trailing control row.
 - Backup, Diagnostic logs, and Restore should use the same subsection layout and spacing so they read as sibling manual actions within the same card.
-- The backup action cluster should place **Share DB** immediately next to **Download DB** with the same size, shape, fill, and icon-button styling.
+- The backup action cluster should place **Share data** immediately next to **Download data** with the same size, shape, fill, and icon-button styling.
 - The tooltip trigger icons should be visually subtle but clearly interactive, with the warning icon using a caution color treatment.
 - Do not show the backup/help text, button labels, or restore warning as always-visible inline callouts inside the card body.
-- **Download DB**, **Share DB**, **Export logs**, and **Upload DB** should all use the same filled icon-button treatment so they read as one cohesive action family.
+- **Download data**, **Share data**, **Export logs**, and **Upload data** should all use the same filled icon-button treatment so they read as one cohesive action family.
 
 ## Daily Automated Backup Behavior
 
@@ -75,8 +75,10 @@ The page contains two vertically stacked sections presented as clean cards:
 - On Android, automated backups are saved into **Downloads/Streak/Backups/Automated**.
 - Automated backups should run without prompting the user for a destination. No file picker, save dialog, or share sheet is part of the automated flow.
 - Automated backups should create a standalone backup copy rather than writing directly against the live in-use database file.
-- Automated backups should include the same local SQLite contents as manual backups, including habits, checkins, and saved settings.
-- Automated backups should use a timestamped filename pattern such as `streak-auto-backup-YYYYMMdd-HHmmss.db`.
+- Automated backups should include the same local data as manual backups:
+  - the SQLite database
+  - uploaded picture-proof files referenced by check-ins
+- Automated backups should use a timestamped filename pattern such as `streak-auto-data-backup-YYYYMMdd-HHmmss.zip`.
 - On Android, a successful nightly automated backup should post a native completion notification when the app has notification permission.
 - Tapping that Android completion notification should attempt to open the shared parent folder that contains the automated backups (`Downloads/Streak/Backups/Automated`). If the platform cannot deep-link to that exact folder, falling back to the broader Downloads surface is acceptable.
 - If Android notification permission is denied, nightly backups should still run normally; only the completion notification is skipped.
@@ -84,30 +86,32 @@ The page contains two vertically stacked sections presented as clean cards:
 
 ### Platform-specific Automated Backup UX
 
-| Platform | Expected behavior                                                                                                                                                                                                                                                                                            |
-| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Windows  | Automated backups are unavailable. The toggle remains disabled, and the app does not schedule or run nightly automated backups.                                                                                                                                                                              |
-| Android  | The toggle is enabled. Turning it ON schedules the nightly 11:30 PM local alarm, each run saves a timestamped `.db` backup into `Downloads/Streak/Backups/Automated` without prompting the user, and successful runs can post a completion notification that attempts to open the backup folder when tapped. |
+| Platform | Expected behavior                                                                                                                                                                                                                                                                                                          |
+| -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Windows  | Automated backups are unavailable. The toggle remains disabled, and the app does not schedule or run nightly automated backups.                                                                                                                                                                                            |
+| Android  | The toggle is enabled. Turning it ON schedules the nightly 11:30 PM local alarm, each run saves a timestamped `.zip` data-backup archive into `Downloads/Streak/Backups/Automated` without prompting the user, and successful runs can post a completion notification that attempts to open the backup folder when tapped. |
 
 ## Export Behavior
 
-- Tapping **Download DB** creates a backup of the app's local database and then saves it using a platform-specific file flow.
+- Tapping **Download data** creates a data-backup archive of the app's local data and then saves it using a platform-specific file flow.
 - Export is a **manual** action; it does not run automatically.
 - Manual export remains available even when automated backups are enabled.
-- Export and Share should both create a standalone backup copy rather than handing out the live in-use database file directly.
+- Export and Share should both create a standalone archive rather than handing out the live in-use database file directly.
 - The export action does **not** modify habits, checkins, reminder settings, or automated backup settings.
-- The exported backup should include the user's habit data plus saved reminder and backup preferences stored in the local database.
+- The exported backup should include:
+  - the user's habit data plus saved reminder and backup preferences stored in the local database
+  - uploaded picture-proof files referenced by the backup's check-ins
 - Export is considered a low-frequency maintenance / safety action, so it lives in **Settings** rather than in the Homepage app bar.
-- The exported filename should use a timestamped pattern such as `streak-backup-YYYYMMdd-HHmmss.db`.
+- The exported filename should use a timestamped pattern such as `streak-data-backup-YYYYMMdd-HHmmss.zip`.
 - The platform-specific save note is exposed from the **Backup** info tooltip rather than as persistent inline helper text.
 - After a successful manual export, the page should show an in-app success confirmation with an **Open folder** affordance so the user can jump straight to the saved backup location.
 
 ### Platform-specific Export UX
 
-| Platform | Expected behavior                                                                                                                                                                                                                                                       |
-| -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Windows  | Open a standard **Save As** file dialog prefilled with the timestamped backup filename. The user chooses where to save the `.db` file and confirms the dialog, then sees an in-app confirmation with an **Open folder** action that opens Explorer to the saved backup. |
-| Android  | Save the timestamped backup file directly into **Downloads/Streak/Backups/Manual**. No share sheet should be shown for the normal export flow. After save, show an in-app confirmation with an **Open folder** action for that folder.                                  |
+| Platform | Expected behavior                                                                                                                                                                                                                                                           |
+| -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Windows  | Open a standard **Save As** file dialog prefilled with the timestamped backup filename. The user chooses where to save the `.zip` archive and confirms the dialog, then sees an in-app confirmation with an **Open folder** action that opens Explorer to the saved backup. |
+| Android  | Save the timestamped backup archive directly into **Downloads/Streak/Backups/Manual**. No share sheet should be shown for the normal export flow. After save, show an in-app confirmation with an **Open folder** action for that folder.                                   |
 
 - Do **not** use the operating system share sheet as the primary export UX on either platform.
 - On Windows, cancelling the file-save dialog is treated as a user cancellation, not as an export error.
@@ -115,22 +119,22 @@ The page contains two vertically stacked sections presented as clean cards:
 
 ## Share Behavior
 
-- Tapping **Share DB** creates a backup copy of the app's local database and opens a platform-native share flow so the user can hand that `.db` file to another app or service manually.
+- Tapping **Share data** creates a data-backup archive and opens a platform-native share flow so the user can hand that `.zip` file to another app or service manually.
 - Share is a **manual** action; it does not run automatically or on a schedule.
 - Share does **not** create cloud sync, account linkage, or periodic uploads. It is strictly a one-time user-initiated handoff.
-- The shared backup should include the user's habit data plus saved reminder and backup preferences stored in the local database.
-- The shared backup should use the same timestamped filename pattern as export, such as `streak-backup-YYYYMMdd-HHmmss.db`.
-- Share is considered a low-frequency maintenance / portability action, so it lives in **Settings** beside **Download DB**.
+- The shared backup should include the same database contents and uploaded picture-proof files as the normal export flow.
+- The shared backup should use the same timestamped filename pattern as export, such as `streak-data-backup-YYYYMMdd-HHmmss.zip`.
+- Share is considered a low-frequency maintenance / portability action, so it lives in **Settings** beside **Download data**.
 
 ### Platform-specific Share UX
 
-| Platform | Expected behavior                                                                                                                                 |
-| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Windows  | Sharing is disabled. During local Windows development/debugging, use **Download DB** instead to save the backup file where you want it.           |
-| Android  | Create the backup copy, then open the system share sheet with the generated `.db` file so the user can send it to apps such as Drive or WhatsApp. |
+| Platform | Expected behavior                                                                                                                                     |
+| -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Windows  | Sharing is disabled. During local Windows development/debugging, use **Download data** instead to save the backup archive where you want it.          |
+| Android  | Create the backup archive, then open the system share sheet with the generated `.zip` file so the user can send it to apps such as Drive or WhatsApp. |
 
 - On Android, dismissing or cancelling the share UI is treated as a user cancellation, not as a share error.
-- On Windows, the **Share DB** control remains disabled.
+- On Windows, the **Share data** control remains disabled.
 - Share should remain additive to the normal export flow rather than replacing it.
 
 ## Diagnostic Export Behavior
@@ -157,26 +161,30 @@ The page contains two vertically stacked sections presented as clean cards:
 - On Windows, cancelling the file-save dialog is treated as a user cancellation, not as a diagnostics export error.
 - On Android, a successful diagnostics export should leave the `.zip` file available in **Downloads/Streak/Diagnostics** so the user can inspect it or share it later if they choose.
 
-## Import Behavior
+## Restore Behavior
 
-- Tapping **Upload DB** opens a platform-native file picker scoped to `.db` files.
-- Once a valid backup file is selected, the user is shown a **confirmation dialog** warning that all existing data will be replaced.
-- If the user confirms, the app closes the current database connection, replaces the live database file with the selected backup, then reopens the connection.
-- Import is a **manual** action; it does not run automatically.
-- After a successful import the app **navigates to the Homepage** so the user sees freshly loaded data.
+- Tapping **Upload data** opens a platform-native file picker scoped to `.zip` files.
+- Once a valid backup archive is selected, the user is shown a **confirmation dialog** warning that all existing data will be replaced.
+- If the user confirms, the app restores from the selected data archive by:
+  1. closing the current database connection
+  2. replacing the live database file with the archived database
+  3. restoring uploaded picture-proof files from the archive
+  4. reopening the database connection
+- Restore is a **manual** action; it does not run automatically.
+- After a successful restore the app **navigates to the Homepage** so the user sees freshly loaded data.
 - On failure the app rolls back to the previous database state and surfaces a clear error message; the user remains on Settings.
-- Import is considered a destructive, low-frequency action so it lives in **Settings** with a prominent warning.
-- The destructive warning should be available from the **Restore** warning tooltip in the resting page layout, then repeated in the confirmation dialog before import proceeds.
+- Restore is considered a destructive, low-frequency action so it lives in **Settings** with a prominent warning.
+- The destructive warning should be available from the **Restore** warning tooltip in the resting page layout, then repeated in the confirmation dialog before restore proceeds.
 
-### Platform-specific Import UX
+### Platform-specific Restore UX
 
-| Platform | Expected behavior                                                                                                            |
-| -------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| Windows  | Open a standard **Open File** dialog filtered to `.db` files. The user selects a backup file and confirms the dialog.        |
-| Android  | Open the system file picker filtered to `.db` files (via `StorageAccessFramework` / intent). The user selects a backup file. |
+| Platform | Expected behavior                                                                                                                     |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| Windows  | Open a standard **Open File** dialog filtered to `.zip` files. The user selects a data-backup archive and confirms the dialog.        |
+| Android  | Open the system file picker filtered to `.zip` files (via `StorageAccessFramework` / intent). The user selects a data-backup archive. |
 
-- On both platforms, cancelling the file-picker dialog is treated as a user cancellation, not as an import error.
-- The app must validate that the selected file is a recognizable Streak backup before overwriting the live database.
+- On both platforms, cancelling the file-picker dialog is treated as a user cancellation, not as a restore error.
+- The app must validate that the selected file is a recognizable Streak data-backup archive before overwriting the live database.
 
 ## Reminder Behavior
 
@@ -206,9 +214,9 @@ The page contains two vertically stacked sections presented as clean cards:
   - On **Windows**, automated backups are not available.
 - Export creates a backup on demand; it is not auto-saved in the background.
 - Diagnostic export creates a diagnostics bundle on demand; it is not auto-saved or regenerated continuously in the background.
-- Share creates a backup on demand and immediately hands it to the operating system's share flow; it is not auto-saved or repeated in the background.
-- Import replaces the live database on demand; the previous data is permanently overwritten after user confirmation.
-- Exported backup files are stored outside the live app database location:
+- Share creates a backup archive on demand and immediately hands it to the operating system's share flow; it is not auto-saved or repeated in the background.
+- Restore replaces the live database on demand and reloads picture-proof files from the selected archive after user confirmation.
+- Exported backup archives are stored outside the live app database location:
   - On **Windows**, wherever the user selects in the file-save dialog.
   - On **Android**, in **Downloads/Streak/Backups/Manual**.
 - Exported diagnostics bundles are stored outside the app's private log directory:
@@ -217,29 +225,29 @@ The page contains two vertically stacked sections presented as clean cards:
 
 ## Edge Cases
 
-| Scenario                                       | Behavior                                                                                                                                           |
-| ---------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| User has no habits                             | Reminder toggle is still available but no notification will fire (0 pending habits).                                                               |
-| User enables automated backups before 11:30 PM | The first automated backup should run at **11:30 PM local time today**.                                                                            |
-| User enables automated backups after 11:30 PM  | The first automated backup should run at **11:30 PM local time tomorrow**.                                                                         |
-| User disables automated backups                | Future scheduled automated backups stop; previously created backup files remain untouched.                                                         |
-| User changes device timezone or clock          | The next automated backup follows the device's current local-time interpretation of **11:30 PM**.                                                  |
-| App is uninstalled                             | Previously created automated backup files remain in `Downloads/Streak/Backups/Automated` because they are outside uninstall-sensitive app storage. |
-| User has no habits but exports                 | Export is still allowed so the user can back up reminder settings, automated backup settings, or an empty database state.                          |
-| User has no habits but shares                  | Share is still allowed so the user can manually hand off reminder settings, automated backup settings, or an empty database state.                 |
-| User disables reminders                        | No notifications are scheduled. The time picker is hidden.                                                                                         |
-| User changes time                              | The next reminder is rescheduled to the new time. If the new time has already passed for today, the next reminder fires tomorrow.                  |
-| App is force-closed                            | Reminders should still fire (use Android's alarm/notification scheduling APIs that persist beyond app lifecycle).                                  |
-| User cancels Windows save dialog               | Keep the user on Settings and treat the action as cancelled rather than failed.                                                                    |
-| Android export succeeds                        | The backup file appears in **Downloads/Streak/Backups/Manual** with the generated timestamped filename.                                            |
-| Export fails                                   | Keep the user on Settings and surface a clear error message rather than silently failing.                                                          |
-| User exports diagnostics with few/no logs      | Export still succeeds, creating a valid diagnostics bundle with any available metadata and log content.                                            |
-| User cancels diagnostics export save dialog    | Keep the user on Settings and treat the action as cancelled rather than failed.                                                                    |
-| Android diagnostics export succeeds            | The diagnostics `.zip` appears in **Downloads/Streak/Diagnostics** with the generated timestamped filename.                                        |
-| Diagnostics export fails                       | Keep the user on Settings and surface a clear error message rather than silently failing.                                                          |
-| User cancels share sheet                       | Keep the user on Settings and treat the action as cancelled rather than failed.                                                                    |
-| Share fails                                    | Keep the user on Settings and surface a clear error message rather than silently failing.                                                          |
-| User cancels import file picker                | Keep the user on Settings and treat the action as cancelled rather than failed.                                                                    |
-| User selects invalid/corrupt file              | Keep the user on Settings and surface a clear error message; do not overwrite the live database.                                                   |
-| Import succeeds                                | Replace the live database with the backup, then navigate the user to the Homepage with freshly loaded data.                                        |
-| Import fails mid-way                           | Roll back to the previous database state, keep the user on Settings, and surface a clear error message.                                            |
+| Scenario                                       | Behavior                                                                                                                                                     |
+| ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| User has no habits                             | Reminder toggle is still available but no notification will fire (0 pending habits).                                                                         |
+| User enables automated backups before 11:30 PM | The first automated backup should run at **11:30 PM local time today**.                                                                                      |
+| User enables automated backups after 11:30 PM  | The first automated backup should run at **11:30 PM local time tomorrow**.                                                                                   |
+| User disables automated backups                | Future scheduled automated backups stop; previously created backup files remain untouched.                                                                   |
+| User changes device timezone or clock          | The next automated backup follows the device's current local-time interpretation of **11:30 PM**.                                                            |
+| App is uninstalled                             | Previously created automated backup files remain in `Downloads/Streak/Backups/Automated` because they are outside uninstall-sensitive app storage.           |
+| User has no habits but exports                 | Export is still allowed so the user can back up reminder settings, automated backup settings, or an empty database state.                                    |
+| User has no habits but shares                  | Share is still allowed so the user can manually hand off reminder settings, automated backup settings, or an empty database state.                           |
+| User disables reminders                        | No notifications are scheduled. The time picker is hidden.                                                                                                   |
+| User changes time                              | The next reminder is rescheduled to the new time. If the new time has already passed for today, the next reminder fires tomorrow.                            |
+| App is force-closed                            | Reminders should still fire (use Android's alarm/notification scheduling APIs that persist beyond app lifecycle).                                            |
+| User cancels Windows save dialog               | Keep the user on Settings and treat the action as cancelled rather than failed.                                                                              |
+| Android export succeeds                        | The backup archive appears in **Downloads/Streak/Backups/Manual** with the generated timestamped filename.                                                   |
+| Export fails                                   | Keep the user on Settings and surface a clear error message rather than silently failing.                                                                    |
+| User exports diagnostics with few/no logs      | Export still succeeds, creating a valid diagnostics bundle with any available metadata and log content.                                                      |
+| User cancels diagnostics export save dialog    | Keep the user on Settings and treat the action as cancelled rather than failed.                                                                              |
+| Android diagnostics export succeeds            | The diagnostics `.zip` appears in **Downloads/Streak/Diagnostics** with the generated timestamped filename.                                                  |
+| Diagnostics export fails                       | Keep the user on Settings and surface a clear error message rather than silently failing.                                                                    |
+| User cancels share sheet                       | Keep the user on Settings and treat the action as cancelled rather than failed.                                                                              |
+| Share fails                                    | Keep the user on Settings and surface a clear error message rather than silently failing.                                                                    |
+| User cancels restore file picker               | Keep the user on Settings and treat the action as cancelled rather than failed.                                                                              |
+| User selects invalid/corrupt archive           | Keep the user on Settings and surface a clear error message; do not overwrite the live database.                                                             |
+| Restore succeeds                               | Replace the live database with the archived copy, restore any archived picture-proof files, then navigate the user to the Homepage with freshly loaded data. |
+| Restore fails mid-way                          | Roll back to the previous database state, keep the user on Settings, and surface a clear error message.                                                      |

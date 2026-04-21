@@ -95,6 +95,9 @@ Use semantic roles rather than one-off hex values.
 - Homepage habit names should use **Body strong**.
 - Supporting streak lines and descriptive copy should use **Support**.
 - Optional habit descriptions should render as standard **Body** text with preserved line breaks.
+- Check-in and undo-check-in dialog titles should use **Page title**.
+- Check-in dialog body copy, warning copy, and empty-preview helper copy should use **Body**.
+- Note-field labels, photo metadata rows, and preview helper text should use **Caption** or **Support** depending on prominence.
 - Eyebrows should stay uppercase with light letter spacing; do not use them for large blocks of copy.
 - Avoid mixing 700 weight into ordinary labels unless it is truly a hero or brand moment.
 
@@ -192,17 +195,37 @@ Use semantic roles rather than one-off hex values.
 
 ### Homepage check-in dialogs
 
-- **Optional note dialog**:
+- **Check-in dialog**:
   - opens when the user marks a homepage habit as done
   - uses a compact title plus short supporting copy
   - contains one optional plain-text note field capped at **50 characters**
-  - should offer **Cancel**, **Skip note**, and **Save check-in** actions
+  - includes a compact picture-proof area with camera/gallery actions and a single preview control
+  - should offer **Cancel** and **Save check-in** footer actions
   - cancelling or dismissing the dialog leaves the habit unchecked
-- **Uncheck confirmation dialog**:
+- **Undo check-in dialog**:
   - opens when the user tries to remove today's check-in from the homepage
-  - uses calm but explicit copy warning that the saved note may be lost
+  - uses calm but explicit copy warning that the saved note and picture-proof details will be lost from the app's check-in record
   - should offer **Keep check-in** and **Remove check-in** actions
   - the destructive action should use `Danger`
+
+### Picture preview control
+
+- The check-in dialog should use a **single-photo preview panel**, not a carousel or gallery grid.
+- The preview container should use:
+  - `SurfaceMuted` or `SurfaceAccent`
+  - `RadiusControl`
+  - a subtle `BorderStrong` outline
+  - compact internal padding
+- Empty state treatment:
+  - show a centered image placeholder icon
+  - show one short helper line such as *"No picture selected"*
+  - keep the panel visually quiet and clearly secondary to the main save action
+- Populated state treatment:
+  - show a single image preview with a roughly **4:3** rectangular crop area
+  - keep corners rounded to match the surrounding control radius
+  - show one short metadata line underneath or beside the preview, such as the file name
+  - expose a small remove/retry affordance without turning the preview into a standalone browsing surface
+- The preview control should feel like a supportive inline form control, not a full media gallery.
 
 ### Habit identity and descriptions
 
@@ -225,7 +248,12 @@ Use semantic roles rather than one-off hex values.
 - **Settings data actions:** `Download`, `Share`, and `Upload` for backup download, backup share, and restore respectively.
 - **Habit detail actions:** `Edit` and `Delete`.
 - **Checkin toggle:** use MudBlazor's `MudCheckBox` pattern with done/not-done icon states.
-- **Homepage check-in note flow:** the dialog is text-first; no extra iconography is required beyond standard dialog chrome and the existing checkbox state.
+- **Check-in dialog proof actions:**
+  - camera: `PhotoCamera` or `CameraAlt`
+  - gallery / choose existing picture: `PhotoLibrary`
+  - empty preview placeholder: `Image`
+  - remove selected picture: `Close` or `DeleteOutline`
+- The check-in dialog should use icon-leading actions for camera/gallery rather than oversized decorative illustration.
 
 ## Navigation
 
