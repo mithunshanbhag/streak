@@ -47,15 +47,14 @@ internal static class AndroidMediaStoreBackupFileWriter
 
         try
         {
-            await using var sourceStream = File.OpenRead(sourceFilePath);
-            await using var destinationStream = contentResolver.OpenOutputStream(targetUri)
-                                                ?? throw new InvalidOperationException("The Android backup destination could not be opened.");
+            await using (var sourceStream = File.OpenRead(sourceFilePath))
+            await using (var destinationStream = contentResolver.OpenOutputStream(targetUri)
+                                              ?? throw new InvalidOperationException("The Android backup destination could not be opened."))
+            {
+                await sourceStream.CopyToAsync(destinationStream, cancellationToken);
+            }
 
-            await sourceStream.CopyToAsync(destinationStream, cancellationToken);
-
-            using var completionValues = new ContentValues();
-            completionValues.Put(MediaStore.IMediaColumns.IsPending, 0);
-            contentResolver.Update(targetUri, completionValues, null, null);
+            FinalizePendingDownloadRecord(contentResolver, targetUri);
 
             return new SavedFileLocation
             {
@@ -84,6 +83,16 @@ internal static class AndroidMediaStoreBackupFileWriter
 
         return contentResolver.Insert(MediaStore.Downloads.GetContentUri(MediaStore.VolumeExternalPrimary), values)
                ?? throw new InvalidOperationException("The Android backup destination could not be created.");
+    }
+
+    private static void FinalizePendingDownloadRecord(ContentResolver contentResolver, Uri targetUri)
+    {
+        using var completionValues = new ContentValues();
+        completionValues.Put(MediaStore.IMediaColumns.IsPending, 0);
+
+        var updatedRowCount = contentResolver.Update(targetUri, completionValues, null, null);
+        if (updatedRowCount <= 0)
+            throw new InvalidOperationException("The Android export destination could not be finalized.");
     }
 }
 #endif
