@@ -3,7 +3,7 @@ namespace Streak.Ui.Services.Interfaces;
 public interface IDatabaseImportFilePicker
 {
     /// <summary>
-    ///     Opens a native file picker for selecting a Streak data-backup archive.
+    ///     Opens a native file picker for selecting a Streak backup archive or legacy database backup.
     /// </summary>
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>

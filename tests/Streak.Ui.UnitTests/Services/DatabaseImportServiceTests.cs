@@ -108,6 +108,44 @@ public sealed class DatabaseImportServiceTests
         File.ReadAllBytes(restoredProofPath).Should().Equal(expectedProofBytes);
     }
 
+    [Fact]
+    public async Task ImportDatabaseAsync_ShouldKeepExistingProofFiles_WhenDirectDatabaseBackupIsSelected()
+    {
+        using var backupDirectory = new TemporaryDirectory();
+        using var appDataDirectory = new TemporaryDirectory();
+        using var liveProofDirectory = new TemporaryDirectory();
+        using var exportDirectory = new TemporaryDirectory();
+
+        var backupDatabasePath = Path.Combine(backupDirectory.Path, "legacy-backup.db");
+        var liveDatabasePath = Path.Combine(appDataDirectory.Path, "streak.local.db");
+        var existingProofRelativePath = "Habit-2/2026/04/2026-04-21/existing-proof.jpg";
+        var existingProofBytes = new byte[] { 5, 4, 3, 2, 1 };
+
+        CreateLegacyDatabase(backupDatabasePath);
+        CreatePlaceholderDatabase(liveDatabasePath);
+        CreateProofFile(liveProofDirectory.Path, existingProofRelativePath, existingProofBytes);
+
+        var appStoragePathServiceMock = new Mock<IAppStoragePathService>();
+        appStoragePathServiceMock.SetupGet(x => x.DatabasePath).Returns(liveDatabasePath);
+        appStoragePathServiceMock.SetupGet(x => x.CheckinProofsDirectoryPath).Returns(liveProofDirectory.Path);
+        appStoragePathServiceMock.SetupGet(x => x.ExportDirectoryPath).Returns(exportDirectory.Path);
+
+        var schemaUpgrader = new SqliteDatabaseSchemaUpgrader(new Mock<ILogger<SqliteDatabaseSchemaUpgrader>>().Object);
+        var sut = new DatabaseImportService(
+            appStoragePathServiceMock.Object,
+            schemaUpgrader,
+            new Mock<ILogger<DatabaseImportService>>().Object);
+
+        await sut.ImportDatabaseAsync(new FileResult(backupDatabasePath));
+
+        var habitColumns = GetTableColumns(liveDatabasePath, "Habits");
+        habitColumns.Should().Contain("Description");
+        var restoredProofPath = Path.Combine(
+            [.. new[] { liveProofDirectory.Path }, .. existingProofRelativePath.Split('/', StringSplitOptions.RemoveEmptyEntries)]);
+        File.Exists(restoredProofPath).Should().BeTrue();
+        File.ReadAllBytes(restoredProofPath).Should().Equal(existingProofBytes);
+    }
+
     #endregion
 
     private sealed class TemporaryDirectory : IDisposable

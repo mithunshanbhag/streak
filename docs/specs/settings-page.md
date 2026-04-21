@@ -52,7 +52,7 @@ The page contains two vertically stacked sections presented as clean cards:
 | Restore header                | Text                  | **"Restore"**                                                                                                                                                                                                                                                |
 | Restore warning icon          | Glyph + tooltip       | Small warning icon beside **Restore**. Hover/focus/press shows: *"This will replace ALL existing data. This action cannot be undone."*                                                                                                                       |
 | Restore description           | Caption               | *"Restore your data from a previous backup."*                                                                                                                                                                                                                |
-| Restore action                | `MudIconButton`       | Filled icon-only button with an upload icon. Tooltip text is **"Upload data"**. Opens a file picker to select a `.zip` data-backup archive.                                                                                                                  |
+| Restore action                | `MudIconButton`       | Filled icon-only button with an upload icon. Tooltip text is **"Upload data"**. Opens a file picker to select either a `.zip` data-backup archive or a legacy `.db` database backup.                                                                          |
 
 - Daily automated backups, Backup, Diagnostic logs, and Restore should read as four vertically stacked subsections within the same card.
 - The automated backups subsection should use the same quiet structure as Backup, Diagnostic logs, and Restore: heading, subtle tooltip icon, one short description line, then a single trailing control row.
@@ -163,13 +163,19 @@ The page contains two vertically stacked sections presented as clean cards:
 
 ## Restore Behavior
 
-- Tapping **Upload data** opens a platform-native file picker scoped to `.zip` files.
-- Once a valid backup archive is selected, the user is shown a **confirmation dialog** warning that all existing data will be replaced.
-- If the user confirms, the app restores from the selected data archive by:
-  1. closing the current database connection
-  2. replacing the live database file with the archived database
-  3. restoring uploaded picture-proof files from the archive
-  4. reopening the database connection
+- Tapping **Upload data** opens a platform-native file picker that accepts both `.zip` files and raw `.db` files.
+- Once a valid backup file is selected, the user is shown a **confirmation dialog** warning that all existing data will be replaced.
+- If the user confirms, the app restores from the selected file:
+  - **`.zip` data-backup archive**:
+    1. close the current database connection
+    2. replace the live database file with the archived database
+    3. restore uploaded picture-proof files from the archive
+    4. reopen the database connection
+  - **`.db` database file**:
+    1. close the current database connection
+    2. replace only the live SQLite database file
+    3. leave the current uploaded picture-proof files untouched
+    4. reopen the database connection
 - Restore is a **manual** action; it does not run automatically.
 - After a successful restore the app **navigates to the Homepage** so the user sees freshly loaded data.
 - On failure the app rolls back to the previous database state and surfaces a clear error message; the user remains on Settings.
@@ -178,13 +184,13 @@ The page contains two vertically stacked sections presented as clean cards:
 
 ### Platform-specific Restore UX
 
-| Platform | Expected behavior                                                                                                                     |
-| -------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| Windows  | Open a standard **Open File** dialog filtered to `.zip` files. The user selects a data-backup archive and confirms the dialog.        |
-| Android  | Open the system file picker filtered to `.zip` files (via `StorageAccessFramework` / intent). The user selects a data-backup archive. |
+| Platform | Expected behavior                                                                                                                                             |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Windows  | Open a standard **Open File** dialog filtered to `.zip` and `.db` files. The user selects a Streak backup archive or legacy database backup and confirms.   |
+| Android  | Open the system file picker for a Streak backup archive or legacy database backup (via `StorageAccessFramework` / intent). The user selects a `.zip` or `.db` file. |
 
 - On both platforms, cancelling the file-picker dialog is treated as a user cancellation, not as a restore error.
-- The app must validate that the selected file is a recognizable Streak data-backup archive before overwriting the live database.
+- The app must validate that the selected file is a recognizable Streak data-backup archive or SQLite database before overwriting the live database.
 
 ## Reminder Behavior
 
@@ -215,7 +221,7 @@ The page contains two vertically stacked sections presented as clean cards:
 - Export creates a backup on demand; it is not auto-saved in the background.
 - Diagnostic export creates a diagnostics bundle on demand; it is not auto-saved or regenerated continuously in the background.
 - Share creates a backup archive on demand and immediately hands it to the operating system's share flow; it is not auto-saved or repeated in the background.
-- Restore replaces the live database on demand and reloads picture-proof files from the selected archive after user confirmation.
+- Restore replaces the live database on demand after user confirmation. When the selected file is a `.zip` archive, it also reloads picture-proof files from that archive. When the selected file is a `.db` backup, the current uploaded picture-proof files remain untouched.
 - Exported backup archives are stored outside the live app database location:
   - On **Windows**, wherever the user selects in the file-save dialog.
   - On **Android**, in **Downloads/Streak/Backups/Manual**.
@@ -248,6 +254,7 @@ The page contains two vertically stacked sections presented as clean cards:
 | User cancels share sheet                       | Keep the user on Settings and treat the action as cancelled rather than failed.                                                                              |
 | Share fails                                    | Keep the user on Settings and surface a clear error message rather than silently failing.                                                                    |
 | User cancels restore file picker               | Keep the user on Settings and treat the action as cancelled rather than failed.                                                                              |
-| User selects invalid/corrupt archive           | Keep the user on Settings and surface a clear error message; do not overwrite the live database.                                                             |
-| Restore succeeds                               | Replace the live database with the archived copy, restore any archived picture-proof files, then navigate the user to the Homepage with freshly loaded data. |
+| User selects invalid/corrupt backup file       | Keep the user on Settings and surface a clear error message; do not overwrite the live database.                                                             |
+| User restores from a `.db` file                | Replace only the live database, keep existing uploaded picture-proof files untouched, then navigate the user to the Homepage with freshly loaded data.       |
+| Restore succeeds                               | Replace the live database with the selected backup copy, restore any archived picture-proof files only for `.zip` restores, then navigate the user to the Homepage with freshly loaded data. |
 | Restore fails mid-way                          | Roll back to the previous database state, keep the user on Settings, and surface a clear error message.                                                      |

@@ -45,7 +45,7 @@ public sealed class SettingsTests : TestContext
         cut.Find("button[aria-label='Diagnostic export details']");
         cut.Find("button[aria-label='Export diagnostic logs']");
         cut.Markup.Should().Contain("Restore");
-        cut.Markup.Should().Contain("Restore your data from a previous backup.");
+        cut.Markup.Should().Contain("Restore from a .zip backup or a legacy .db file. Existing proof photos stay in place for .db restores.");
         cut.Markup.Should().NotContain("Automated backups enabled");
         cut.Markup.Should().NotContain("Turns the nightly backup on or off.");
         cut.Markup.Should().NotContain("Create a manual backup of your local Streak data");
