@@ -36,7 +36,12 @@ public sealed class HomeTests : TestContext
         dialogProvider.WaitForAssertion(() =>
         {
             dialogProvider.Markup.Should().Contain("Check in 'Exercise'");
+            dialogProvider.Markup.Should().Contain("Add an optional note or picture proof for today's check-in.");
             dialogProvider.Find("input[placeholder='Optional note']");
+            dialogProvider.Markup.Should().Contain("Picture proof (optional)");
+            dialogProvider.Markup.Should().Contain("Use camera");
+            dialogProvider.Markup.Should().Contain("Choose photo");
+            dialogProvider.Markup.Should().Contain("No picture selected");
             cut.Find("input[type='checkbox']").HasAttribute("checked").Should().BeFalse();
         });
 
@@ -68,7 +73,7 @@ public sealed class HomeTests : TestContext
         dialogProvider.WaitForAssertion(() => dialogProvider.Find("input[placeholder='Optional note']"));
         dialogProvider.Find("input[placeholder='Optional note']").Input("30 mins cardio");
         dialogProvider.FindAll("button")
-            .Single(x => x.TextContent.Contains("Checkin", StringComparison.Ordinal))
+            .Single(x => x.TextContent.Contains("Save check-in", StringComparison.Ordinal))
             .Click();
 
         cut.WaitForAssertion(() =>
@@ -313,7 +318,7 @@ public sealed class HomeTests : TestContext
 
         dialogProvider.WaitForAssertion(() => dialogProvider.Find("input[placeholder='Optional note']"));
         dialogProvider.FindAll("button")
-            .Single(x => x.TextContent.Contains("Checkin", StringComparison.Ordinal))
+            .Single(x => x.TextContent.Contains("Save check-in", StringComparison.Ordinal))
             .Click();
 
         cut.WaitForAssertion(() =>

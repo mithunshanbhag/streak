@@ -11,16 +11,77 @@
                 @DialogMessageText
             </MudText>
 
-            <MudTextField T="string"
-                          Margin="Margin.Dense"
-                          ShrinkLabel="true"
-                          Clearable="true"
-                          Immediate="true"
-                          @bind-Value="_note"
-                          Label="@NoteLabel"
-                          Placeholder="@NotePlaceholder"
-                          MaxLength="@CoreConstants.CheckinNotesMaxLength"
-                          Counter="@CoreConstants.CheckinNotesMaxLength"/>
+            <MudStack Spacing="1">
+                <MudText Typo="Typo.caption"
+                         Style="@CaptionTextStyle">
+                    @NoteLabel
+                </MudText>
+
+                <MudTextField T="string"
+                              Margin="Margin.Dense"
+                              Clearable="true"
+                              Immediate="true"
+                              @bind-Value="_note"
+                              Placeholder="@NotePlaceholder"
+                              MaxLength="@CoreConstants.CheckinNotesMaxLength"/>
+
+                <MudStack Row="true"
+                          Justify="Justify.SpaceBetween"
+                          Spacing="2">
+                    <MudText Typo="Typo.caption"
+                             Style="@SupportingTextStyle">
+                        @NoteHelperText
+                    </MudText>
+                    <MudText Typo="Typo.caption"
+                             Style="@SupportingTextStyle">
+                        @NoteCounterText
+                    </MudText>
+                </MudStack>
+            </MudStack>
+
+            <MudStack Spacing="1">
+                <MudText Typo="Typo.caption"
+                         Style="@CaptionTextStyle">
+                    @ProofSectionLabel
+                </MudText>
+                <MudText Typo="Typo.caption"
+                         Style="@SupportingTextStyle">
+                    @ProofSectionCaption
+                </MudText>
+
+                <MudStack Row="true"
+                          Spacing="1">
+                    <MudButton Variant="Variant.Outlined"
+                               StartIcon="@UseCameraIcon"
+                               Style="@ProofActionButtonStyle"
+                               OnClick="HandleUseCameraClick">
+                        @UseCameraButtonText
+                    </MudButton>
+                    <MudButton Variant="Variant.Outlined"
+                               StartIcon="@ChoosePhotoIcon"
+                               Style="@ProofActionButtonStyle"
+                               OnClick="HandleChoosePhotoClick">
+                        @ChoosePhotoButtonText
+                    </MudButton>
+                </MudStack>
+
+                <MudPaper Elevation="0"
+                          Class="pa-3 rounded-lg"
+                          Style="@EmptyPreviewPanelStyle">
+                    <MudStack AlignItems="AlignItems.Center"
+                              Justify="Justify.Center"
+                              Spacing="1"
+                              Style="@EmptyPreviewContentStyle">
+                        <MudIcon Icon="@EmptyPreviewIcon"
+                                 Size="Size.Large"
+                                 Style="@EmptyPreviewIconStyle"/>
+                        <MudText Typo="Typo.body2"
+                                 Align="Align.Center">
+                            @EmptyPreviewText
+                        </MudText>
+                    </MudStack>
+                </MudPaper>
+            </MudStack>
         </MudStack>
     </DialogContent>
     <DialogActions>
@@ -82,6 +143,14 @@
         MudDialogInstance?.Close(DialogResult.Ok(_note));
     }
 
+    private void HandleUseCameraClick()
+    {
+    }
+
+    private void HandleChoosePhotoClick()
+    {
+    }
+
     #endregion
 
     #region Private Helper Methods
@@ -100,19 +169,55 @@
 
     #endregion
 
+    #region CSS Style Properties
+
+    private const string CaptionTextStyle = "color: var(--mud-palette-text-secondary);";
+
+    private const string SupportingTextStyle = "color: var(--mud-palette-text-secondary);";
+
+    private const string ProofActionButtonStyle = "flex: 1 1 0;";
+
+    private const string EmptyPreviewPanelStyle = "border: 1px solid var(--mud-palette-lines-default); background-color: var(--mud-palette-surface);";
+
+    private const string EmptyPreviewContentStyle = "min-height: 120px;";
+
+    private const string EmptyPreviewIconStyle = "color: var(--mud-palette-text-secondary);";
+
+    #endregion
+
     #region Text, Label Properties
 
     private string DialogTitleText => $"Check in '{HabitName}'";
 
-    private const string DialogMessageText = "Add an optional note for today's check-in.";
+    private const string DialogMessageText = "Add an optional note or picture proof for today's check-in.";
 
     private const string NoteLabel = "Note (optional)";
 
     private const string NotePlaceholder = "Optional note";
 
+    private const string NoteHelperText = "Plain text only";
+
     private const string CancelButtonText = "Cancel";
 
-    private const string ConfirmButtonText = "Checkin";
+    private const string ConfirmButtonText = "Save check-in";
+
+    private const string ProofSectionLabel = "Picture proof (optional)";
+
+    private const string ProofSectionCaption = "One picture max for this check-in.";
+
+    private const string UseCameraButtonText = "Use camera";
+
+    private const string ChoosePhotoButtonText = "Choose photo";
+
+    private const string EmptyPreviewText = "No picture selected";
+
+    private const string UseCameraIcon = Icons.Material.Filled.PhotoCamera;
+
+    private const string ChoosePhotoIcon = Icons.Material.Filled.PhotoLibrary;
+
+    private const string EmptyPreviewIcon = Icons.Material.Filled.Image;
+
+    private string NoteCounterText => $"{_note.Length} / {CoreConstants.CheckinNotesMaxLength}";
 
     #endregion
 
