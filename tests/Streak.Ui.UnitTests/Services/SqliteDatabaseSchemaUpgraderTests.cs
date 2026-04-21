@@ -40,6 +40,10 @@ public sealed class SqliteDatabaseSchemaUpgraderTests
         habitColumns.Should().Contain("Description");
         var checkinColumns = GetTableColumns(databasePath, "Checkins");
         checkinColumns.Should().Contain("Notes");
+        checkinColumns.Should().Contain("ProofImageUri");
+        checkinColumns.Should().Contain("ProofImageDisplayName");
+        checkinColumns.Should().Contain("ProofImageSizeBytes");
+        checkinColumns.Should().Contain("ProofImageModifiedOn");
 
         using var connection = OpenConnection(databasePath);
         using var command = connection.CreateCommand();
@@ -52,12 +56,16 @@ public sealed class SqliteDatabaseSchemaUpgraderTests
         reader.IsDBNull(2).Should().BeTrue();
 
         using var checkinCommand = connection.CreateCommand();
-        checkinCommand.CommandText = "SELECT HabitId, CheckinDate, Notes FROM Checkins;";
+        checkinCommand.CommandText = "SELECT HabitId, CheckinDate, Notes, ProofImageUri, ProofImageDisplayName, ProofImageSizeBytes, ProofImageModifiedOn FROM Checkins;";
         using var checkinReader = checkinCommand.ExecuteReader();
         checkinReader.Read().Should().BeTrue();
         checkinReader.GetInt64(0).Should().Be(1);
         checkinReader.GetString(1).Should().Be("2025-01-01");
         checkinReader.IsDBNull(2).Should().BeTrue();
+        checkinReader.IsDBNull(3).Should().BeTrue();
+        checkinReader.IsDBNull(4).Should().BeTrue();
+        checkinReader.IsDBNull(5).Should().BeTrue();
+        checkinReader.IsDBNull(6).Should().BeTrue();
 
         GetAutomatedBackupSetting(databasePath).Should().BeFalse();
     }
@@ -81,13 +89,62 @@ public sealed class SqliteDatabaseSchemaUpgraderTests
         var notesColumns = GetTableColumns(databasePath, "Checkins")
             .Where(columnName => string.Equals(columnName, "Notes", StringComparison.OrdinalIgnoreCase))
             .ToArray();
+        var proofImageUriColumns = GetTableColumns(databasePath, "Checkins")
+            .Where(columnName => string.Equals(columnName, "ProofImageUri", StringComparison.OrdinalIgnoreCase))
+            .ToArray();
+        var proofImageDisplayNameColumns = GetTableColumns(databasePath, "Checkins")
+            .Where(columnName => string.Equals(columnName, "ProofImageDisplayName", StringComparison.OrdinalIgnoreCase))
+            .ToArray();
+        var proofImageSizeBytesColumns = GetTableColumns(databasePath, "Checkins")
+            .Where(columnName => string.Equals(columnName, "ProofImageSizeBytes", StringComparison.OrdinalIgnoreCase))
+            .ToArray();
+        var proofImageModifiedOnColumns = GetTableColumns(databasePath, "Checkins")
+            .Where(columnName => string.Equals(columnName, "ProofImageModifiedOn", StringComparison.OrdinalIgnoreCase))
+            .ToArray();
 
         descriptionColumns.Should().ContainSingle();
         notesColumns.Should().ContainSingle();
+        proofImageUriColumns.Should().ContainSingle();
+        proofImageDisplayNameColumns.Should().ContainSingle();
+        proofImageSizeBytesColumns.Should().ContainSingle();
+        proofImageModifiedOnColumns.Should().ContainSingle();
         GetTableColumns(databasePath, AutomatedBackupConstants.SettingsTableName)
             .Should()
             .Contain(["Id", "IsEnabled"]);
         GetAutomatedBackupSetting(databasePath).Should().BeFalse();
+    }
+
+    [Fact]
+    public void UpgradeIfNeeded_ShouldAddProofMetadataColumns_WhenCheckinsAlreadyHaveNotes()
+    {
+        using var databaseDirectory = new TemporaryDirectory();
+        var databasePath = Path.Combine(databaseDirectory.Path, "partial.db");
+        CreateDatabaseWithoutProofMetadataColumns(databasePath);
+
+        var loggerMock = new Mock<ILogger<SqliteDatabaseSchemaUpgrader>>();
+        var sut = new SqliteDatabaseSchemaUpgrader(loggerMock.Object);
+
+        sut.UpgradeIfNeeded(databasePath);
+
+        var checkinColumns = GetTableColumns(databasePath, "Checkins");
+        checkinColumns.Should().Contain("ProofImageUri");
+        checkinColumns.Should().Contain("ProofImageDisplayName");
+        checkinColumns.Should().Contain("ProofImageSizeBytes");
+        checkinColumns.Should().Contain("ProofImageModifiedOn");
+
+        using var connection = OpenConnection(databasePath);
+        using var command = connection.CreateCommand();
+        command.CommandText = "SELECT HabitId, CheckinDate, Notes, ProofImageUri, ProofImageDisplayName, ProofImageSizeBytes, ProofImageModifiedOn FROM Checkins;";
+
+        using var reader = command.ExecuteReader();
+        reader.Read().Should().BeTrue();
+        reader.GetInt64(0).Should().Be(1);
+        reader.GetString(1).Should().Be("2025-01-01");
+        reader.GetString(2).Should().Be("Existing note");
+        reader.IsDBNull(3).Should().BeTrue();
+        reader.IsDBNull(4).Should().BeTrue();
+        reader.IsDBNull(5).Should().BeTrue();
+        reader.IsDBNull(6).Should().BeTrue();
     }
 
     #endregion
@@ -119,6 +176,45 @@ public sealed class SqliteDatabaseSchemaUpgraderTests
 
             INSERT INTO Checkins (CheckinDate, HabitId)
             VALUES ('2025-01-01', 1);
+            """;
+        command.ExecuteNonQuery();
+    }
+
+    private static void CreateDatabaseWithoutProofMetadataColumns(string databasePath)
+    {
+        Directory.CreateDirectory(Path.GetDirectoryName(databasePath)!);
+
+        using var connection = OpenConnection(databasePath);
+        using var command = connection.CreateCommand();
+        command.CommandText =
+            $"""
+            CREATE TABLE Habits (
+                Id INTEGER NOT NULL PRIMARY KEY,
+                Name TEXT NOT NULL,
+                Emoji TEXT NULL,
+                Description TEXT NULL
+            );
+
+            CREATE TABLE Checkins (
+                CheckinDate TEXT NOT NULL,
+                HabitId INTEGER NOT NULL,
+                Notes TEXT NULL,
+                PRIMARY KEY (HabitId, CheckinDate)
+            );
+
+            CREATE TABLE {AutomatedBackupConstants.SettingsTableName} (
+                Id INTEGER NOT NULL PRIMARY KEY,
+                IsEnabled INTEGER NOT NULL DEFAULT 0
+            );
+
+            INSERT INTO {AutomatedBackupConstants.SettingsTableName} (Id, IsEnabled)
+            VALUES ({AutomatedBackupConstants.SettingsRowId}, 0);
+
+            INSERT INTO Habits (Id, Name, Emoji, Description)
+            VALUES (1, 'Read', '📖', 'Daily reading');
+
+            INSERT INTO Checkins (CheckinDate, HabitId, Notes)
+            VALUES ('2025-01-01', 1, 'Existing note');
             """;
         command.ExecuteNonQuery();
     }
