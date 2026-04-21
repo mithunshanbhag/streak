@@ -35,7 +35,7 @@ internal static class DataBackupArchiveUtility
         return Path.Combine(exportDirectoryPath, fileName);
     }
 
-    internal static async Task CreateBackupAsync(
+    internal static async Task<IReadOnlyList<string>> CreateBackupAsync(
         string sourceDatabasePath,
         string checkinProofsDirectoryPath,
         string backupFilePath,
@@ -53,7 +53,7 @@ internal static class DataBackupArchiveUtility
         {
             await CreateDatabaseSnapshotAsync(sourceDatabasePath, workingDatabasePath, cancellationToken);
 
-            var referencedProofFiles = await GetReferencedProofFilesAsync(
+            var (referencedProofFiles, unavailableReferencedProofPaths) = await ScanReferencedProofFilesAsync(
                 workingDatabasePath,
                 checkinProofsDirectoryPath,
                 cancellationToken);
@@ -63,11 +63,26 @@ internal static class DataBackupArchiveUtility
                 workingDatabasePath,
                 referencedProofFiles,
                 cancellationToken);
+
+            return unavailableReferencedProofPaths;
         }
         finally
         {
             DeleteBackupIfExists(workingDatabasePath);
         }
+    }
+
+    internal static async Task<IReadOnlyList<string>> GetUnavailableReferencedProofPathsAsync(
+        string databasePath,
+        string checkinProofsDirectoryPath,
+        CancellationToken cancellationToken)
+    {
+        var (_, unavailableReferencedProofPaths) = await ScanReferencedProofFilesAsync(
+            databasePath,
+            checkinProofsDirectoryPath,
+            cancellationToken);
+
+        return unavailableReferencedProofPaths;
     }
 
     internal static void DeleteBackupIfExists(string backupFilePath)
@@ -128,13 +143,13 @@ internal static class DataBackupArchiveUtility
         sourceConnection.BackupDatabase(destinationConnection);
     }
 
-    private static async Task<IReadOnlyList<ReferencedProofFile>> GetReferencedProofFilesAsync(
+    private static async Task<(IReadOnlyList<ReferencedProofFile> ReferencedProofFiles, IReadOnlyList<string> UnavailableReferencedProofPaths)> ScanReferencedProofFilesAsync(
         string databasePath,
         string checkinProofsDirectoryPath,
         CancellationToken cancellationToken)
     {
         if (!await HasProofImageUriColumnAsync(databasePath, cancellationToken))
-            return [];
+            return ([], []);
 
         var connectionString = new SqliteConnectionStringBuilder
         {
@@ -157,17 +172,25 @@ internal static class DataBackupArchiveUtility
             """;
 
         var referencedProofFiles = new List<ReferencedProofFile>();
+        var unavailableReferencedProofPaths = new List<string>();
 
         await using var reader = await command.ExecuteReaderAsync(cancellationToken);
         while (await reader.ReadAsync(cancellationToken))
         {
             var relativeProofPath = reader.GetString(0);
-            var normalizedRelativeProofPath = NormalizeRelativeProofPath(relativeProofPath);
+            if (!TryNormalizeRelativeProofPath(relativeProofPath, out var normalizedRelativeProofPath))
+            {
+                unavailableReferencedProofPaths.Add(relativeProofPath);
+                continue;
+            }
+
             var absoluteProofPath = GetAbsoluteProofPath(checkinProofsDirectoryPath, normalizedRelativeProofPath);
 
             if (!File.Exists(absoluteProofPath))
-                throw new InvalidOperationException(
-                    $"The uploaded picture proof '{relativeProofPath}' could not be found for backup export.");
+            {
+                unavailableReferencedProofPaths.Add(relativeProofPath);
+                continue;
+            }
 
             referencedProofFiles.Add(new ReferencedProofFile
             {
@@ -176,7 +199,7 @@ internal static class DataBackupArchiveUtility
             });
         }
 
-        return referencedProofFiles;
+        return (referencedProofFiles, unavailableReferencedProofPaths);
     }
 
     private static async Task<bool> HasProofImageUriColumnAsync(string databasePath, CancellationToken cancellationToken)
@@ -204,20 +227,24 @@ internal static class DataBackupArchiveUtility
         return false;
     }
 
-    private static string NormalizeRelativeProofPath(string relativeProofPath)
+    private static bool TryNormalizeRelativeProofPath(string relativeProofPath, out string normalizedRelativeProofPath)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(relativeProofPath);
+        normalizedRelativeProofPath = string.Empty;
+
+        if (string.IsNullOrWhiteSpace(relativeProofPath))
+            return false;
 
         var pathSegments = relativeProofPath
             .Split(['/', '\\'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
         if (pathSegments.Length == 0)
-            throw new InvalidOperationException("The uploaded picture proof path is invalid for backup export.");
+            return false;
 
         if (pathSegments.Any(pathSegment => pathSegment is "." or ".."))
-            throw new InvalidOperationException("The uploaded picture proof path contains invalid traversal segments.");
+            return false;
 
-        return string.Join('/', pathSegments);
+        normalizedRelativeProofPath = string.Join('/', pathSegments);
+        return true;
     }
 
     private static string GetAbsoluteProofPath(string checkinProofsDirectoryPath, string relativeProofPath)

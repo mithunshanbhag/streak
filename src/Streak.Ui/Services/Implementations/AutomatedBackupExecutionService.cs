@@ -20,11 +20,20 @@ public sealed class AutomatedBackupExecutionService(
 
         try
         {
-            await DataBackupArchiveUtility.CreateBackupAsync(
+            var unavailableReferencedProofPaths = await DataBackupArchiveUtility.CreateBackupAsync(
                 sourceDatabasePath,
                 _appStoragePathService.CheckinProofsDirectoryPath,
                 workingBackupPath,
                 cancellationToken);
+
+            if (unavailableReferencedProofPaths.Count > 0)
+            {
+                _logger.LogWarning(
+                    "Automated backup skipped {UnavailableProofFileCount} unavailable picture proof reference(s) for {DatabasePath}: {@UnavailableProofPaths}",
+                    unavailableReferencedProofPaths.Count,
+                    sourceDatabasePath,
+                    unavailableReferencedProofPaths);
+            }
 
             return await _automatedBackupFileSaver.SaveBackupAsync(
                 workingBackupPath,

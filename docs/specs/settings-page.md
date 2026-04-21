@@ -100,11 +100,12 @@ The page contains two vertically stacked sections presented as clean cards:
 - The export action does **not** modify habits, checkins, reminder settings, or automated backup settings.
 - The exported backup should include:
   - the user's habit data plus saved reminder and backup preferences stored in the local database
-  - uploaded picture-proof files referenced by the backup's check-ins
+  - uploaded picture-proof files referenced by the backup's check-ins and still available in current proof storage
 - Export is considered a low-frequency maintenance / safety action, so it lives in **Settings** rather than in the Homepage app bar.
 - The exported filename should use a timestamped pattern such as `streak-data-backup-YYYYMMdd-HHmmss.zip`.
 - The platform-specific save note is exposed from the **Backup** info tooltip rather than as persistent inline helper text.
 - After a successful manual export, the page should show an in-app success confirmation with an **Open folder** affordance so the user can jump straight to the saved backup location.
+- If some check-ins still point to proof files that are no longer available in current app storage, export should still succeed and skip only those unavailable proof files.
 
 ### Platform-specific Export UX
 
@@ -122,7 +123,7 @@ The page contains two vertically stacked sections presented as clean cards:
 - Tapping **Share data** creates a data-backup archive and opens a platform-native share flow so the user can hand that `.zip` file to another app or service manually.
 - Share is a **manual** action; it does not run automatically or on a schedule.
 - Share does **not** create cloud sync, account linkage, or periodic uploads. It is strictly a one-time user-initiated handoff.
-- The shared backup should include the same database contents and uploaded picture-proof files as the normal export flow.
+- The shared backup should include the same database contents and uploaded picture-proof files as the normal export flow, including the same skip behavior for any unavailable proof files.
 - The shared backup should use the same timestamped filename pattern as export, such as `streak-data-backup-YYYYMMdd-HHmmss.zip`.
 - Share is considered a low-frequency maintenance / portability action, so it lives in **Settings** beside **Download data**.
 
@@ -172,10 +173,11 @@ The page contains two vertically stacked sections presented as clean cards:
     3. restore uploaded picture-proof files from the archive
     4. reopen the database connection
   - **`.db` database file**:
-    1. close the current database connection
-    2. replace only the live SQLite database file
-    3. leave the current uploaded picture-proof files untouched
-    4. reopen the database connection
+     1. close the current database connection
+     2. replace only the live SQLite database file
+     3. leave the current uploaded picture-proof files untouched
+     4. clear proof metadata for any restored check-ins whose referenced proof files are unavailable in current app storage
+     5. reopen the database connection
 - Restore is a **manual** action; it does not run automatically.
 - After a successful restore the app **navigates to the Homepage** so the user sees freshly loaded data.
 - On failure the app rolls back to the previous database state and surfaces a clear error message; the user remains on Settings.
@@ -221,7 +223,7 @@ The page contains two vertically stacked sections presented as clean cards:
 - Export creates a backup on demand; it is not auto-saved in the background.
 - Diagnostic export creates a diagnostics bundle on demand; it is not auto-saved or regenerated continuously in the background.
 - Share creates a backup archive on demand and immediately hands it to the operating system's share flow; it is not auto-saved or repeated in the background.
-- Restore replaces the live database on demand after user confirmation. When the selected file is a `.zip` archive, it also reloads picture-proof files from that archive. When the selected file is a `.db` backup, the current uploaded picture-proof files remain untouched.
+- Restore replaces the live database on demand after user confirmation. When the selected file is a `.zip` archive, it also reloads picture-proof files from that archive. When the selected file is a `.db` backup, the current uploaded picture-proof files remain untouched, but any restored proof references without matching files are cleared during reconciliation.
 - Exported backup archives are stored outside the live app database location:
   - On **Windows**, wherever the user selects in the file-save dialog.
   - On **Android**, in **Downloads/Streak/Backups/Manual**.
@@ -255,6 +257,7 @@ The page contains two vertically stacked sections presented as clean cards:
 | Share fails                                    | Keep the user on Settings and surface a clear error message rather than silently failing.                                                                    |
 | User cancels restore file picker               | Keep the user on Settings and treat the action as cancelled rather than failed.                                                                              |
 | User selects invalid/corrupt backup file       | Keep the user on Settings and surface a clear error message; do not overwrite the live database.                                                             |
-| User restores from a `.db` file                | Replace only the live database, keep existing uploaded picture-proof files untouched, then navigate the user to the Homepage with freshly loaded data.       |
+| Backup/share encounters missing proof files    | Keep the user on Settings, create the `.zip` archive anyway, and omit only the unavailable proof files from that archive.                                    |
+| User restores from a `.db` file                | Replace only the live database, keep existing uploaded picture-proof files untouched, clear any restored proof metadata whose files are unavailable, then navigate the user to the Homepage with freshly loaded data. |
 | Restore succeeds                               | Replace the live database with the selected backup copy, restore any archived picture-proof files only for `.zip` restores, then navigate the user to the Homepage with freshly loaded data. |
 | Restore fails mid-way                          | Roll back to the previous database state, keep the user on Settings, and surface a clear error message.                                                      |

@@ -20,11 +20,20 @@ public sealed class DatabaseExportService(
 
         try
         {
-            await DataBackupArchiveUtility.CreateBackupAsync(
+            var unavailableReferencedProofPaths = await DataBackupArchiveUtility.CreateBackupAsync(
                 sourceDatabasePath,
                 _appStoragePathService.CheckinProofsDirectoryPath,
                 backupFilePath,
                 cancellationToken);
+
+            if (unavailableReferencedProofPaths.Count > 0)
+            {
+                _logger.LogWarning(
+                    "Database export skipped {UnavailableProofFileCount} unavailable picture proof reference(s) for {DatabasePath}: {@UnavailableProofPaths}",
+                    unavailableReferencedProofPaths.Count,
+                    sourceDatabasePath,
+                    unavailableReferencedProofPaths);
+            }
 
             return await _databaseExportFileSaver.SaveBackupAsync(
                 backupFilePath,

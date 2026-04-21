@@ -53,6 +53,7 @@ public sealed class DatabaseImportService(
                 await ImportDatabaseFileAsync(
                     candidateImportPath,
                     databasePath,
+                    checkinProofsDirectoryPath,
                     rollbackDirectoryPath,
                     cancellationToken);
             }
@@ -148,6 +149,7 @@ public sealed class DatabaseImportService(
     private async Task ImportDatabaseFileAsync(
         string candidateDatabasePath,
         string databasePath,
+        string checkinProofsDirectoryPath,
         string rollbackDirectoryPath,
         CancellationToken cancellationToken)
     {
@@ -159,6 +161,10 @@ public sealed class DatabaseImportService(
         {
             ReplaceLiveDatabase(databasePath, candidateDatabasePath);
             _sqliteDatabaseSchemaUpgrader.UpgradeIfNeeded(databasePath);
+            await ReconcileUnavailableProofReferencesAsync(
+                databasePath,
+                checkinProofsDirectoryPath,
+                cancellationToken);
             await ValidateBackupAsync(databasePath, cancellationToken);
         }
         catch
@@ -313,6 +319,58 @@ public sealed class DatabaseImportService(
 
         if (actualColumns.Count == 0 || expectedColumns.Any(expectedColumn => !actualColumns.Contains(expectedColumn)))
             throw new InvalidDataException("The selected file is not a recognizable Streak backup.");
+    }
+
+    private async Task ReconcileUnavailableProofReferencesAsync(
+        string databasePath,
+        string checkinProofsDirectoryPath,
+        CancellationToken cancellationToken)
+    {
+        var unavailableReferencedProofPaths = await DataBackupArchiveUtility.GetUnavailableReferencedProofPathsAsync(
+            databasePath,
+            checkinProofsDirectoryPath,
+            cancellationToken);
+
+        if (unavailableReferencedProofPaths.Count == 0)
+            return;
+
+        var connectionString = new SqliteConnectionStringBuilder
+        {
+            DataSource = databasePath,
+            Mode = SqliteOpenMode.ReadWrite,
+            Pooling = false
+        }.ToString();
+
+        await using var connection = new SqliteConnection(connectionString);
+        await connection.OpenAsync(cancellationToken);
+        await using var transaction = (SqliteTransaction)await connection.BeginTransactionAsync(cancellationToken);
+
+        foreach (var unavailableReferencedProofPath in unavailableReferencedProofPaths)
+        {
+            await using var command = connection.CreateCommand();
+            command.Transaction = transaction;
+            command.CommandText =
+                """
+                UPDATE Checkins
+                SET ProofImageUri = NULL,
+                    ProofImageDisplayName = NULL,
+                    ProofImageSizeBytes = NULL,
+                    ProofImageModifiedOn = NULL
+                WHERE ProofImageUri IS NOT NULL
+                  AND LENGTH(TRIM(ProofImageUri)) > 0
+                  AND TRIM(ProofImageUri) = $proofImageUri;
+                """;
+            command.Parameters.AddWithValue("$proofImageUri", unavailableReferencedProofPath);
+            await command.ExecuteNonQueryAsync(cancellationToken);
+        }
+
+        await transaction.CommitAsync(cancellationToken);
+
+        _logger.LogWarning(
+            "Direct database restore cleared {UnavailableProofFileCount} unavailable picture proof reference(s) for {DatabasePath}: {@UnavailableProofPaths}",
+            unavailableReferencedProofPaths.Count,
+            databasePath,
+            unavailableReferencedProofPaths);
     }
 
     private static void BackupLiveDatabaseArtifacts(string databasePath, string rollbackDirectoryPath)

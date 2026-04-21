@@ -104,6 +104,50 @@ public sealed class DatabaseShareServiceTests
         Directory.GetFiles(exportDirectory.Path, "streak-data-backup-*.zip").Should().HaveCount(1);
     }
 
+    [Fact]
+    public async Task ShareDatabaseAsync_ShouldSkipUnavailableProofFilesAndStillOpenShareSheet()
+    {
+        using var sourceDirectory = new TemporaryDirectory();
+        using var proofDirectory = new TemporaryDirectory();
+        using var exportDirectory = new TemporaryDirectory();
+
+        var sourceDatabasePath = Path.Combine(sourceDirectory.Path, "streak.local.db");
+        var missingProofRelativePath = "Habit-1/2026/04/2026-04-21/missing-proof.jpg";
+
+        SeedDatabase(sourceDatabasePath, missingProofRelativePath);
+
+        ShareFileRequest? shareRequest = null;
+        string? inspectedBackupPath = null;
+
+        var shareMock = new Mock<IShare>();
+        shareMock
+            .Setup(x => x.RequestAsync(It.IsAny<ShareFileRequest>()))
+            .Returns<ShareFileRequest>(request =>
+            {
+                shareRequest = request;
+                inspectedBackupPath = Path.Combine(exportDirectory.Path, "inspected-missing-proof-share.zip");
+                File.Copy(request.File.FullPath, inspectedBackupPath, true);
+
+                return Task.CompletedTask;
+            });
+
+        var sut = CreateSut(
+            sourceDatabasePath,
+            proofDirectory.Path,
+            exportDirectory.Path,
+            shareMock.Object);
+
+        await sut.ShareDatabaseAsync();
+
+        shareRequest.Should().NotBeNull();
+        inspectedBackupPath.Should().NotBeNull();
+
+        using var archive = ZipFile.OpenRead(inspectedBackupPath!);
+        var entryNames = archive.Entries.Select(entry => entry.FullName).ToList();
+        entryNames.Should().Contain("streak.db");
+        entryNames.Should().NotContain($"CheckinProofs/{missingProofRelativePath}");
+    }
+
     #endregion
 
     #region Negative tests

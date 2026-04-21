@@ -27,11 +27,20 @@ public sealed class DatabaseShareService(
 
         try
         {
-            await DataBackupArchiveUtility.CreateBackupAsync(
+            var unavailableReferencedProofPaths = await DataBackupArchiveUtility.CreateBackupAsync(
                 sourceDatabasePath,
                 _appStoragePathService.CheckinProofsDirectoryPath,
                 backupFilePath,
                 cancellationToken);
+
+            if (unavailableReferencedProofPaths.Count > 0)
+            {
+                _logger.LogWarning(
+                    "Database share skipped {UnavailableProofFileCount} unavailable picture proof reference(s) for {DatabasePath}: {@UnavailableProofPaths}",
+                    unavailableReferencedProofPaths.Count,
+                    sourceDatabasePath,
+                    unavailableReferencedProofPaths);
+            }
 
             await _share.RequestAsync(new ShareFileRequest
             {

@@ -78,6 +78,52 @@ public sealed class AutomatedBackupExecutionServiceTests
             Times.Once);
     }
 
+    [Fact]
+    public async Task ExecuteAutomatedBackupAsync_ShouldSkipUnavailableProofFilesAndStillSaveBackup()
+    {
+        using var sourceDirectory = new TemporaryDirectory();
+        using var proofDirectory = new TemporaryDirectory();
+        using var exportDirectory = new TemporaryDirectory();
+
+        var sourceDatabasePath = Path.Combine(sourceDirectory.Path, "streak.local.db");
+        var missingProofRelativePath = "Habit-1/2026/04/2026-04-21/missing-proof.jpg";
+
+        SeedDatabase(sourceDatabasePath, missingProofRelativePath);
+
+        var backupFileSaverMock = new Mock<IAutomatedBackupFileSaver>();
+        string? inspectedBackupPath = null;
+
+        backupFileSaverMock
+            .Setup(x => x.SaveBackupAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Returns<string, CancellationToken>((filePath, _) =>
+            {
+                inspectedBackupPath = Path.Combine(exportDirectory.Path, "inspected-missing-proof-auto-backup.zip");
+                File.Copy(filePath, inspectedBackupPath, true);
+
+                return Task.FromResult(new SavedFileLocation
+                {
+                    SavedFileDisplayPath = $"{StreakExportStorageConstants.AutomatedBackupsDisplayDirectoryPath}/{Path.GetFileName(filePath)}",
+                    ParentFolderDisplayPath = StreakExportStorageConstants.AutomatedBackupsDisplayDirectoryPath
+                });
+            });
+
+        var sut = CreateSut(
+            sourceDatabasePath,
+            proofDirectory.Path,
+            exportDirectory.Path,
+            backupFileSaverMock.Object);
+
+        var savedLocation = await sut.ExecuteAutomatedBackupAsync();
+
+        savedLocation.ParentFolderDisplayPath.Should().Be(StreakExportStorageConstants.AutomatedBackupsDisplayDirectoryPath);
+        inspectedBackupPath.Should().NotBeNull();
+
+        using var archive = ZipFile.OpenRead(inspectedBackupPath!);
+        var entryNames = archive.Entries.Select(entry => entry.FullName).ToList();
+        entryNames.Should().Contain("streak.db");
+        entryNames.Should().NotContain($"CheckinProofs/{missingProofRelativePath}");
+    }
+
     #endregion
 
     #region Negative tests

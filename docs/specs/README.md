@@ -55,23 +55,24 @@ A streak is the count of **consecutive calendar days** on which a habit was chec
 ## Data Storage
 
 - All data is stored **locally on the device**. There is no cloud sync, no user accounts, and no authentication.
-- Users may manually export or share full **data backup archives** (`.zip`) that include the local database plus uploaded picture-proof files.
+- Users may manually export or share full **data backup archives** (`.zip`) that include the local database plus any uploaded picture-proof files that are still available in the app's current proof storage.
 - After a manual data-backup export succeeds, the app should show a lightweight in-app confirmation and let the user quickly open the parent folder that now contains the backup archive.
 - On **Android**, manual exports, automated backups, and diagnostics exports are organized under `Downloads/Streak` so Streak artifacts stay easy to find without cluttering the top-level Downloads folder.
 - On **Android**, users may also enable nightly automated local backups that save timestamped `.zip` data archives into shared device storage.
 - On Android, a successful nightly automated backup should also be able to post a local completion notification, subject to the platform's notification permission.
 - Data will be persisted across app restarts.
+- If a raw `.db` restore recreates check-ins whose proof files are no longer present in current app storage, the restore should keep the check-ins but clear those orphaned proof references so later backups remain healthy.
 
 ### Storage Layout
 
 The app uses four categories of storage:
 
-| Category                 | Android                                                       | Windows                                                       | Purpose                                                                                                               |
-| ------------------------ | ------------------------------------------------------------- | ------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| Live app data            | App-private `FileSystem.Current.AppDataDirectory`             | App-private `FileSystem.Current.AppDataDirectory`             | Live SQLite database and persistent diagnostics that users should not edit directly.                                  |
-| User-managed proof media | Shared gallery / pictures storage                             | Shared pictures / gallery storage                             | The saved picture-proof files that Streak links to from check-ins and later includes in data-backup archives.         |
-| Temporary working files  | App-private `FileSystem.Current.CacheDirectory/ExportWorking` | App-private `FileSystem.Current.CacheDirectory/ExportWorking` | Disposable backup, share, restore, and diagnostics-export staging files.                                              |
-| User-visible exports     | `Downloads/Streak/...` through Android `MediaStore.Downloads` | User-selected save location through the Windows file picker   | Files the user explicitly exports, shares, or keeps as local backups, including data-backup archives and diagnostics. |
+| Category                | Android                                                       | Windows                                                       | Purpose                                                                                                                                              |
+| ----------------------- | ------------------------------------------------------------- | ------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Live app data           | App-private `FileSystem.Current.AppDataDirectory`             | App-private `FileSystem.Current.AppDataDirectory`             | Live SQLite database, saved check-in proof files, and persistent diagnostics that users should not edit directly.                                    |
+| Temporary working files | App-private `FileSystem.Current.CacheDirectory/ExportWorking` | App-private `FileSystem.Current.CacheDirectory/ExportWorking` | Disposable backup, share, restore, and diagnostics-export staging files.                                                                             |
+| User-visible exports    | `Downloads/Streak/...` through Android `MediaStore.Downloads` | User-selected save location through the Windows file picker   | Files the user explicitly exports, shares, or keeps as local backups, including data-backup archives and diagnostics.                                |
+| Proof-file resilience   | Raw `.db` restore reconciles missing proof references         | Raw `.db` restore reconciles missing proof references         | Direct database restores keep check-ins but clear proof metadata whose referenced files are unavailable; `.zip` backups preserve and restore proofs. |
 
 Android app-private storage:
 
@@ -80,6 +81,12 @@ AppDataDirectory/
   streak.db
   streak.db-wal
   streak.db-shm
+  CheckinProofs/
+    Habit-7/
+      2026/
+        04/
+          2026-04-21/
+            habit-7-20260421-083012.jpg
   Diagnostics/
     streak-diagnostics.log
 
@@ -91,18 +98,6 @@ CacheDirectory/
       streak.db
       CheckinProofs/
     streak-diagnostics-YYYYMMdd-HHmmss.zip
-```
-
-Android shared proof-media storage:
-
-```text
-Pictures/
-  Streak/
-    CheckinProofs/
-      2026/
-        04/
-          2026-04-21/
-            habit-7-20260421-083012.jpg
 ```
 
 Android user-visible storage:
@@ -126,6 +121,12 @@ AppDataDirectory/
   streak.db
   streak.db-wal
   streak.db-shm
+  CheckinProofs\
+    Habit-7\
+      2026\
+        04\
+          2026-04-21\
+            habit-7-20260421-083012.jpg
   Diagnostics/
     streak-diagnostics.log
 
@@ -136,18 +137,6 @@ CacheDirectory/
       streak.db
       CheckinProofs/
     streak-diagnostics-YYYYMMdd-HHmmss.zip
-```
-
-Windows shared proof-media storage:
-
-```text
-Pictures\
-  Streak\
-    CheckinProofs\
-      2026\
-        04\
-          2026-04-21\
-            habit-7-20260421-083012.jpg
 ```
 
 Windows user-visible storage:

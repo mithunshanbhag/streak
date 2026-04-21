@@ -87,6 +87,52 @@ public sealed class DatabaseExportServiceTests
     }
 
     [Fact]
+    public async Task ExportDatabaseAsync_ShouldSkipUnavailableProofFilesAndStillSaveBackup()
+    {
+        using var sourceDirectory = new TemporaryDirectory();
+        using var proofDirectory = new TemporaryDirectory();
+        using var exportDirectory = new TemporaryDirectory();
+
+        var sourceDatabasePath = Path.Combine(sourceDirectory.Path, "streak.local.db");
+        var missingProofRelativePath = "Habit-1/2026/04/2026-04-21/missing-proof.jpg";
+
+        SeedDatabase(sourceDatabasePath, missingProofRelativePath);
+
+        var fileSaverMock = new Mock<IDatabaseExportFileSaver>();
+        string? inspectedBackupPath = null;
+
+        fileSaverMock
+            .Setup(x => x.SaveBackupAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Returns<string, CancellationToken>((filePath, _) =>
+            {
+                inspectedBackupPath = Path.Combine(exportDirectory.Path, "inspected-missing-proof-backup.zip");
+                File.Copy(filePath, inspectedBackupPath, true);
+
+                return Task.FromResult(DatabaseExportResult.Saved(new SavedFileLocation
+                {
+                    SavedFileDisplayPath = $"{StreakExportStorageConstants.ManualBackupsDisplayDirectoryPath}/{Path.GetFileName(filePath)}",
+                    ParentFolderDisplayPath = StreakExportStorageConstants.ManualBackupsDisplayDirectoryPath
+                }));
+            });
+
+        var sut = CreateSut(
+            sourceDatabasePath,
+            proofDirectory.Path,
+            exportDirectory.Path,
+            fileSaverMock.Object);
+
+        var exportResult = await sut.ExportDatabaseAsync();
+
+        exportResult.Status.Should().Be(DatabaseExportStatus.Saved);
+        inspectedBackupPath.Should().NotBeNull();
+
+        using var archive = ZipFile.OpenRead(inspectedBackupPath!);
+        var entryNames = archive.Entries.Select(entry => entry.FullName).ToList();
+        entryNames.Should().Contain("streak.db");
+        entryNames.Should().NotContain($"CheckinProofs/{missingProofRelativePath}");
+    }
+
+    [Fact]
     public async Task ExportDatabaseAsync_ShouldThrow_WhenSourceDatabaseDoesNotExist()
     {
         using var exportDirectory = new TemporaryDirectory();

@@ -146,6 +146,52 @@ public sealed class DatabaseImportServiceTests
         File.ReadAllBytes(restoredProofPath).Should().Equal(existingProofBytes);
     }
 
+    [Fact]
+    public async Task ImportDatabaseAsync_ShouldClearMissingProofMetadata_WhenDirectDatabaseBackupReferencesUnavailableProofFiles()
+    {
+        using var backupDirectory = new TemporaryDirectory();
+        using var appDataDirectory = new TemporaryDirectory();
+        using var liveProofDirectory = new TemporaryDirectory();
+        using var exportDirectory = new TemporaryDirectory();
+
+        var backupDatabasePath = Path.Combine(backupDirectory.Path, "current-backup.db");
+        var liveDatabasePath = Path.Combine(appDataDirectory.Path, "streak.local.db");
+        var missingProofRelativePath = "Habit-7/2026/04/2026-04-21/missing-proof.jpg";
+
+        CreateCurrentDatabase(backupDatabasePath, missingProofRelativePath);
+        CreatePlaceholderDatabase(liveDatabasePath);
+
+        var appStoragePathServiceMock = new Mock<IAppStoragePathService>();
+        appStoragePathServiceMock.SetupGet(x => x.DatabasePath).Returns(liveDatabasePath);
+        appStoragePathServiceMock.SetupGet(x => x.CheckinProofsDirectoryPath).Returns(liveProofDirectory.Path);
+        appStoragePathServiceMock.SetupGet(x => x.ExportDirectoryPath).Returns(exportDirectory.Path);
+
+        var schemaUpgrader = new SqliteDatabaseSchemaUpgrader(new Mock<ILogger<SqliteDatabaseSchemaUpgrader>>().Object);
+        var sut = new DatabaseImportService(
+            appStoragePathServiceMock.Object,
+            schemaUpgrader,
+            new Mock<ILogger<DatabaseImportService>>().Object);
+
+        await sut.ImportDatabaseAsync(new FileResult(backupDatabasePath));
+
+        using var connection = OpenConnection(liveDatabasePath);
+        using var command = connection.CreateCommand();
+        command.CommandText =
+            """
+            SELECT HabitId, CheckinDate, ProofImageUri, ProofImageDisplayName, ProofImageSizeBytes, ProofImageModifiedOn
+            FROM Checkins;
+            """;
+
+        using var reader = command.ExecuteReader();
+        reader.Read().Should().BeTrue();
+        reader.GetInt64(0).Should().Be(7);
+        reader.GetString(1).Should().Be("2026-04-21");
+        reader.IsDBNull(2).Should().BeTrue();
+        reader.IsDBNull(3).Should().BeTrue();
+        reader.IsDBNull(4).Should().BeTrue();
+        reader.IsDBNull(5).Should().BeTrue();
+    }
+
     #endregion
 
     private sealed class TemporaryDirectory : IDisposable
