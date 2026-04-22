@@ -34,36 +34,14 @@ jobs:
         run: dotnet publish ./src/Streak.Ui/Streak.Ui.csproj -f ${{ env.WINDOWS_TARGET_FRAMEWORK }} -c Release -o ./Publish/Streak.Ui --nologo
       - name: decode android release keystore
         shell: pwsh
-        env:
-          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
         run: |
-          if ([string]::IsNullOrWhiteSpace($env:ANDROID_KEYSTORE_BASE64)) {
-            throw "ANDROID_KEYSTORE_BASE64 secret is not set."
-          }
-
           [IO.File]::WriteAllBytes(
             "$env:RUNNER_TEMP\streak-release.jks",
-            [Convert]::FromBase64String($env:ANDROID_KEYSTORE_BASE64)
+            [Convert]::FromBase64String(${{ secrets.ANDROID_KEYSTORE_BASE64 }})
           )
       - name: build streak app (android arm64 apk)
         shell: pwsh
-        env:
-          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
-          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD || secrets.ANDROID_KEYSTORE_PASSWORD }}
         run: |
-          $requiredSecrets = @(
-            "ANDROID_KEY_ALIAS",
-            "ANDROID_KEYSTORE_PASSWORD",
-            "ANDROID_KEY_PASSWORD"
-          )
-
-          foreach ($secretName in $requiredSecrets) {
-            if ([string]::IsNullOrWhiteSpace((Get-Item -Path "env:$secretName").Value)) {
-              throw "$secretName secret is not set."
-            }
-          }
-
           dotnet publish ./src/Streak.Ui/Streak.Ui.csproj `
             -f ${{ env.ANDROID_TARGET_FRAMEWORK }} `
             -c Release `
@@ -72,9 +50,9 @@ jobs:
             -p:ApplicationVersion=${{ github.run_number }} `
             -p:AndroidKeyStore=true `
             -p:AndroidSigningKeyStore="$env:RUNNER_TEMP\streak-release.jks" `
-            -p:AndroidSigningKeyAlias="$env:ANDROID_KEY_ALIAS" `
-            -p:AndroidSigningStorePass="$env:ANDROID_KEYSTORE_PASSWORD" `
-            -p:AndroidSigningKeyPass="$env:ANDROID_KEY_PASSWORD" `
+            -p:AndroidSigningKeyAlias="${{ secrets.ANDROID_KEY_ALIAS }}" `
+            -p:AndroidSigningStorePass="${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" `
+            -p:AndroidSigningKeyPass="${{ secrets.ANDROID_KEY_PASSWORD }}" `
             -o ./Publish/Streak.Ui.Android `
             --nologo
       - name: collect streak app artifact (android apk)
