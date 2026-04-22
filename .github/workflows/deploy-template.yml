@@ -37,7 +37,7 @@ jobs:
         run: |
           [IO.File]::WriteAllBytes(
             "$env:RUNNER_TEMP\streak-release.jks",
-            [Convert]::FromBase64String(${{ secrets.ANDROID_KEYSTORE_BASE64 }})
+            [Convert]::FromBase64String("${{ secrets.ANDROID_KEYSTORE_BASE64 }}")
           )
       - name: build streak app (android arm64 apk)
         shell: pwsh
