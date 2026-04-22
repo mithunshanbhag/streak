@@ -55,6 +55,9 @@ jobs:
             -p:AndroidSigningKeyPass="${{ secrets.ANDROID_KEY_PASSWORD }}" `
             -o ./Publish/Streak.Ui.Android `
             --nologo
+      - name: delete decoded keystore
+        shell: pwsh
+        run: Remove-Item -Path "$env:RUNNER_TEMP\streak-release.jks" -Force
       - name: collect streak app artifact (android apk)
         shell: pwsh
         run: |
