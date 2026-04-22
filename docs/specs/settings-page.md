@@ -18,6 +18,9 @@ The page contains two vertically stacked sections presented as clean cards:
 1. **Daily Reminder**
 2. **Data**
 
+- At the top of the page content, above the cards, show one centered non-interactive metadata banner using the same visual treatment as the Homepage date banner.
+- The banner text should read: **Version {display version} · Build {build number}**.
+- This banner is read-only metadata sourced from the app's runtime version information and should stay visually subtle so it does not compete with the page actions.
 - Prefer `MudCard` or `MudPaper` plus built-in spacing utilities.
 - Prefer `MudSwitch`, `MudTimePicker`, `MudIconButton`, `MudTooltip`, and `MudText` rather than custom control treatments.
 - No custom page-specific CSS should be required beyond ordinary spacing or width adjustments.

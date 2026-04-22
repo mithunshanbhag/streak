@@ -31,7 +31,19 @@ public sealed class MainLayoutTests : TestContext
         {
             cut.Find("[aria-label='Back to habits']");
             cut.Find(".app-bar-title-text").TextContent.Should().Be("Settings");
+            cut.FindAll("[aria-label='Scroll to top of page']").Should().BeEmpty();
         });
+    }
+
+    [Fact]
+    public void MainLayout_ShouldRenderScrollToTop_OnHomeRoute()
+    {
+        RegisterHomeServices();
+        RegisterSettingsServices();
+
+        var cut = RenderRoutes();
+
+        cut.WaitForAssertion(() => { cut.Find("[aria-label='Scroll to top of page']"); });
     }
 
     #endregion
@@ -100,6 +112,18 @@ public sealed class MainLayoutTests : TestContext
         var reminderConfigurationServiceMock = new Mock<IReminderConfigurationService>();
         reminderConfigurationServiceMock.Setup(x => x.GetIsEnabled()).Returns(true);
         reminderConfigurationServiceMock.Setup(x => x.GetTimeLocal()).Returns(new TimeOnly(21, 0));
+        var reminderNotificationPermissionCoordinatorMock = new Mock<IReminderNotificationPermissionCoordinator>();
+        reminderNotificationPermissionCoordinatorMock
+            .Setup(x => x.RequestPermissionIfRemindersEnabledAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+        var appVersionInfoServiceMock = new Mock<IAppVersionInfoService>();
+        appVersionInfoServiceMock
+            .Setup(x => x.GetCurrent())
+            .Returns(new AppVersionInfo
+            {
+                DisplayVersion = "1.0",
+                BuildNumber = "123"
+            });
 
         Services.AddSingleton(exportServiceMock.Object);
         Services.AddSingleton(diagnosticsExportServiceMock.Object);
@@ -109,13 +133,14 @@ public sealed class MainLayoutTests : TestContext
         Services.AddSingleton(Mock.Of<IDatabaseImportFilePicker>());
         Services.AddSingleton(Mock.Of<IDatabaseImportService>());
         Services.AddSingleton(Mock.Of<IManualBackupCompletionNotifier>());
+        Services.AddSingleton(reminderNotificationPermissionCoordinatorMock.Object);
+        Services.AddSingleton(appVersionInfoServiceMock.Object);
 
         var backupNotificationPermissionServiceMock = new Mock<IBackupNotificationPermissionService>();
         backupNotificationPermissionServiceMock
             .Setup(x => x.RequestPermissionIfNeededAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);
         Services.AddSingleton(backupNotificationPermissionServiceMock.Object);
-        Services.AddSingleton(Mock.Of<IReminderNotificationPermissionService>());
     }
 
     private void RegisterHabitDetailsServices(Habit habit)

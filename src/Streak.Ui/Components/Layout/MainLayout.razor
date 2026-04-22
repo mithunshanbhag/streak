@@ -84,15 +84,18 @@
             </main>
         </MudMainContent>
 
-        <MudScrollToTop>
-            <MudTooltip Text="@ScrollToTopTooltipText">
-                <MudFab Color="Color.Primary"
-                        IconSize="Size.Large"
-                        Size="Size.Large"
-                        StartIcon="@Icons.Material.Filled.ArrowUpward"
-                        aria-label="@ScrollToTopAriaLabel"/>
-            </MudTooltip>
-        </MudScrollToTop>
+        @if (!_isSettingsPage)
+        {
+            <MudScrollToTop>
+                <MudTooltip Text="@ScrollToTopTooltipText">
+                    <MudFab Color="Color.Primary"
+                            IconSize="Size.Large"
+                            Size="Size.Large"
+                            StartIcon="@Icons.Material.Filled.ArrowUpward"
+                            aria-label="@ScrollToTopAriaLabel"/>
+                </MudTooltip>
+            </MudScrollToTop>
+        }
 
     </MudLayout>
 </CascadingValue>
@@ -103,6 +106,8 @@
     #region Private Fields, Properties
 
     private bool _isHomePage;
+
+    private bool _isSettingsPage;
 
     private readonly AppBarTitleState _appBarTitleState = new();
 
@@ -134,7 +139,7 @@
 
     protected override void OnInitialized()
     {
-        CheckIfHomePage(NavigationManager.Uri);
+        UpdateRouteState(NavigationManager.Uri);
         _appBarTitleState.Changed += HandleAppBarTitleChanged;
         NavigationManager.LocationChanged += HandleLocationChanged;
     }
@@ -156,7 +161,7 @@
 
     private void HandleLocationChanged(object? sender, LocationChangedEventArgs e)
     {
-        CheckIfHomePage(e.Location);
+        UpdateRouteState(e.Location);
 
         // @TODO: Check if this line is really needed.
         _ = InvokeAsync(StateHasChanged);
@@ -166,7 +171,7 @@
 
     #region Private Helper Methods
 
-    private void CheckIfHomePage(string uri)
+    private void UpdateRouteState(string uri)
     {
         var relativePath = NavigationManager.ToBaseRelativePath(uri);
 
@@ -179,6 +184,7 @@
         var normalizedPathTrimmed = normalizedPath.Trim('/');
 
         _isHomePage = string.IsNullOrEmpty(normalizedPathTrimmed);
+        _isSettingsPage = string.Equals(normalizedPathTrimmed, RouteConstants.Settings.Trim('/'), StringComparison.Ordinal);
     }
 
     #endregion

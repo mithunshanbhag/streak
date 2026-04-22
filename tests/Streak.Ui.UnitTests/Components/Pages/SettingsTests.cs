@@ -18,12 +18,14 @@ public sealed class SettingsTests : TestContext
         var shareServiceMock = CreateShareServiceMock(canShare: false);
         var backupConfigurationServiceMock = CreateBackupConfigurationServiceMock(isEnabled: false);
         var reminderConfigurationServiceMock = CreateReminderConfigurationServiceMock(isEnabled: true);
+        var appVersionInfoServiceMock = CreateAppVersionInfoServiceMock();
         RegisterSettingsServices(
             exportServiceMock,
             diagnosticsExportServiceMock,
             shareServiceMock,
             backupConfigurationServiceMock,
-            reminderConfigurationServiceMock);
+            reminderConfigurationServiceMock,
+            appVersionInfoServiceMock: appVersionInfoServiceMock);
 
         var cut = RenderSettings();
 
@@ -49,6 +51,35 @@ public sealed class SettingsTests : TestContext
         cut.Markup.Should().NotContain("Automated backups enabled");
         cut.Markup.Should().NotContain("Turns the nightly backup on or off.");
         cut.Markup.Should().NotContain("Create a manual backup of your local Streak data");
+    }
+
+    [Fact]
+    public void Settings_ShouldRenderVersionAndBuildBanner_AboveReminderCard()
+    {
+        var exportServiceMock = new Mock<IDatabaseExportService>();
+        var diagnosticsExportServiceMock = new Mock<IDiagnosticsExportService>();
+        var shareServiceMock = CreateShareServiceMock(canShare: false);
+        var backupConfigurationServiceMock = CreateBackupConfigurationServiceMock(isEnabled: false);
+        var reminderConfigurationServiceMock = CreateReminderConfigurationServiceMock(isEnabled: true);
+        var appVersionInfoServiceMock = CreateAppVersionInfoServiceMock("1.2.0", "456");
+
+        RegisterSettingsServices(
+            exportServiceMock,
+            diagnosticsExportServiceMock,
+            shareServiceMock,
+            backupConfigurationServiceMock,
+            reminderConfigurationServiceMock,
+            appVersionInfoServiceMock: appVersionInfoServiceMock);
+
+        var cut = RenderSettings();
+        var markup = cut.Markup;
+        var metadataBanner = cut.Find("[aria-label='App version and build']");
+
+        metadataBanner.TextContent.Should().Contain("Version 1.2.0").And.Contain("Build 456");
+        markup.Should().NotContain("mud-chip");
+        markup.IndexOf("Version 1.2.0", StringComparison.Ordinal)
+            .Should()
+            .BeLessThan(markup.IndexOf("Daily reminder", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -732,6 +763,21 @@ public sealed class SettingsTests : TestContext
         return reminderConfigurationServiceMock;
     }
 
+    private static Mock<IAppVersionInfoService> CreateAppVersionInfoServiceMock(
+        string displayVersion = "1.0",
+        string buildNumber = "123")
+    {
+        var appVersionInfoServiceMock = new Mock<IAppVersionInfoService>();
+        appVersionInfoServiceMock
+            .Setup(x => x.GetCurrent())
+            .Returns(new AppVersionInfo
+            {
+                DisplayVersion = displayVersion,
+                BuildNumber = buildNumber
+            });
+        return appVersionInfoServiceMock;
+    }
+
     private void RegisterSettingsServices(
         Mock<IDatabaseExportService> exportServiceMock,
         Mock<IDiagnosticsExportService> diagnosticsExportServiceMock,
@@ -741,6 +787,7 @@ public sealed class SettingsTests : TestContext
         Mock<IManualBackupCompletionNotifier>? manualBackupCompletionNotifierMock = null,
         Mock<IBackupNotificationPermissionService>? backupNotificationPermissionServiceMock = null,
         Mock<IReminderNotificationPermissionCoordinator>? reminderNotificationPermissionCoordinatorMock = null,
+        Mock<IAppVersionInfoService>? appVersionInfoServiceMock = null,
         Mock<ISnackbar>? snackbarMock = null)
     {
         var importFilePickerMock = new Mock<IDatabaseImportFilePicker>();
@@ -760,6 +807,7 @@ public sealed class SettingsTests : TestContext
                 .Setup(x => x.RequestPermissionIfRemindersEnabledAsync(It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);
         }
+        appVersionInfoServiceMock ??= CreateAppVersionInfoServiceMock();
         snackbarMock ??= new Mock<ISnackbar>();
         snackbarMock
             .Setup(x => x.Add(
@@ -779,6 +827,7 @@ public sealed class SettingsTests : TestContext
         Services.AddSingleton(backupNotificationPermissionServiceMock.Object);
         Services.AddSingleton(reminderConfigurationServiceMock.Object);
         Services.AddSingleton(reminderNotificationPermissionCoordinatorMock.Object);
+        Services.AddSingleton(appVersionInfoServiceMock.Object);
         Services.AddSingleton(snackbarMock.Object);
     }
 

@@ -11,6 +11,7 @@
   --color-surface-muted: #F1F3F4;
   --color-primary: #6200EE;
   --color-primary-soft: #EDE7F6;
+  --color-primary-strong: #4527A0;
   --color-success: #4CAF50;
   --color-warning: #E65100;
   --color-border-subtle: #E0E0E0;
@@ -88,6 +89,27 @@ body {
   gap: 12px;
   padding: 16px 16px 28px;
   background: var(--color-surface-subtle);
+}
+
+.settings-meta-banner {
+  display: inline-flex;
+  align-items: center;
+  align-self: center;
+  gap: 6px;
+  margin-bottom: 4px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: var(--color-primary-soft);
+  color: var(--color-primary-strong);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.2px;
+  user-select: none;
+}
+
+.settings-meta-banner .material-icons {
+  font-size: 16px;
+  line-height: 1;
 }
 
 .settings-card {

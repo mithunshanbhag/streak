@@ -9,6 +9,7 @@
 @inject IManualBackupCompletionNotifier ManualBackupCompletionNotifier
 @inject IBackupNotificationPermissionService BackupNotificationPermissionService
 @inject IReminderNotificationPermissionCoordinator ReminderNotificationPermissionCoordinator
+@inject IAppVersionInfoService AppVersionInfoService
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
 @inject NavigationManager NavigationManager
@@ -19,6 +20,24 @@
 <MudContainer MaxWidth="MaxWidth.Small"
               Class="pa-4">
     <MudStack Spacing="3">
+        @if (!string.IsNullOrWhiteSpace(SettingsMetadataBannerText))
+        {
+            <MudPaper Elevation="0"
+                      Class="px-3 py-1 rounded-pill"
+                      Style="@SettingsMetadataBannerStyle"
+                      aria-label="@SettingsMetadataBannerAriaLabel">
+                <MudStack Row="true"
+                          AlignItems="AlignItems.Center"
+                          Spacing="1">
+                    <MudIcon Icon="@Icons.Material.Filled.Info"
+                             Size="Size.Small"/>
+                    <MudText Typo="Typo.body2">
+                        @SettingsMetadataBannerText
+                    </MudText>
+                </MudStack>
+            </MudPaper>
+        }
+
         @if (!string.IsNullOrWhiteSpace(_operationErrorMessage))
         {
             <MudAlert Severity="Severity.Error"
@@ -347,7 +366,13 @@
 
     private bool _automatedBackupSettingsUpdateInProgress;
 
+    private AppVersionInfo? _appVersionInfo;
+
     private string? _operationErrorMessage;
+
+    private string? SettingsMetadataBannerText => _appVersionInfo is null
+        ? null
+        : $"{VersionLabelText} {_appVersionInfo.DisplayVersion} {BuildSeparatorText} {BuildLabelText} {_appVersionInfo.BuildNumber}";
 
     private bool ReminderControlsDisabled =>
         _reminderSettingsUpdateInProgress
@@ -374,6 +399,7 @@
 
     protected override async Task OnInitializedAsync()
     {
+        _appVersionInfo = AppVersionInfoService.GetCurrent();
         _remindersEnabled = ReminderConfigurationService.GetIsEnabled();
         _reminderTimeLocal = ReminderConfigurationService.GetTimeLocal().ToTimeSpan();
         _automatedBackupsSupported = AutomatedBackupConfigurationService.IsSupported;
@@ -387,6 +413,8 @@
     #region CSS Style Properties
 
     private const string DataActionButtonStyle = "width: 42px; min-width: 42px; height: 42px; border-radius: 999px; padding: 0;";
+
+    private const string SettingsMetadataBannerStyle = "align-self: center; background-color: var(--mud-palette-primary-hover); color: var(--mud-palette-primary);";
 
     #endregion
 
@@ -595,6 +623,14 @@
     #region Text, Label Properties
 
     private const string SettingsPageTitleText = "Settings";
+
+    private const string SettingsMetadataBannerAriaLabel = "App version and build";
+
+    private const string VersionLabelText = "Version";
+
+    private const string BuildLabelText = "Build";
+
+    private const string BuildSeparatorText = "·";
 
     private const string ReminderSectionEyebrowText = "Reminders";
 

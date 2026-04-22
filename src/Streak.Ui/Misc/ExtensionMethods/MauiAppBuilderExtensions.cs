@@ -38,6 +38,8 @@ public static class MauiAppBuilderExtensions
 
             // services
             builder.Services.AddSingleton(TimeProvider.System);
+            builder.Services.AddSingleton<IAppInfo>(_ => AppInfo.Current);
+            builder.Services.AddSingleton<IAppVersionInfoService, AppVersionInfoService>();
             builder.Services.AddTransient<IHabitService, HabitService>();
             builder.Services.AddTransient<ICheckinService, CheckinService>();
             builder.Services.AddSingleton<IAppStoragePathService, AppStoragePathService>();

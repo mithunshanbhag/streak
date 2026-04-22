@@ -251,6 +251,7 @@ Use semantic roles rather than one-off hex values.
 
 - The homepage date banner should use `PrimarySoft` background with `PrimaryStrong` text.
 - It should read as a non-interactive chip/pill, not a CTA.
+- Other low-priority metadata surfaces may reuse this same treatment when they should feel informative rather than actionable. The Settings page version/build banner is one such reuse case.
 
 ## Iconography
 
@@ -302,6 +303,7 @@ Use semantic roles rather than one-off hex values.
 - Prefer a `MudChip` or an equivalent pill-style non-interactive treatment.
 - Center it horizontally and let it scroll with the page content.
 - The displayed date and any same-screen check-in state must agree on the device's current **local** day.
+- The **Settings** page may reuse this same centered, non-interactive pill styling for app metadata such as **Version {display version} · Build {build number}**.
 
 ## Time and timezone notes
 
