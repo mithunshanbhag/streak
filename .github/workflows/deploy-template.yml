@@ -12,6 +12,7 @@ env:
 jobs:
   build-deploy-streak-ui:
     runs-on: windows-2025-vs2026
+    environment: test
     timeout-minutes: 20
     steps:
       - name: checkout code
@@ -31,8 +32,32 @@ jobs:
           path: ./tests/Streak.Core.UnitTests/TestResults-${{ github.run_id }}-${{ github.run_attempt }}
       - name: build streak app (windows)
         run: dotnet publish ./src/Streak.Ui/Streak.Ui.csproj -f ${{ env.WINDOWS_TARGET_FRAMEWORK }} -c Release -o ./Publish/Streak.Ui --nologo
+      - name: decode android release keystore
+        shell: pwsh
+        run: |
+          [IO.File]::WriteAllBytes(
+            "$env:RUNNER_TEMP\streak-release.jks",
+            [Convert]::FromBase64String("${{ secrets.ANDROID_KEYSTORE_BASE64 }}")
+          )
       - name: build streak app (android arm64 apk)
-        run: dotnet publish ./src/Streak.Ui/Streak.Ui.csproj -f ${{ env.ANDROID_TARGET_FRAMEWORK }} -c Release -r ${{ env.ANDROID_RUNTIME_IDENTIFIER }} -p:AndroidPackageFormat=apk -o ./Publish/Streak.Ui.Android --nologo
+        shell: pwsh
+        run: |
+          dotnet publish ./src/Streak.Ui/Streak.Ui.csproj `
+            -f ${{ env.ANDROID_TARGET_FRAMEWORK }} `
+            -c Release `
+            -r ${{ env.ANDROID_RUNTIME_IDENTIFIER }} `
+            -p:AndroidPackageFormat=apk `
+            -p:ApplicationVersion=${{ github.run_number }} `
+            -p:AndroidKeyStore=true `
+            -p:AndroidSigningKeyStore="$env:RUNNER_TEMP\streak-release.jks" `
+            -p:AndroidSigningKeyAlias="${{ secrets.ANDROID_KEY_ALIAS }}" `
+            -p:AndroidSigningStorePass="${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" `
+            -p:AndroidSigningKeyPass="${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" `
+            -o ./Publish/Streak.Ui.Android `
+            --nologo
+      - name: delete decoded keystore
+        shell: pwsh
+        run: Remove-Item -Path "$env:RUNNER_TEMP\streak-release.jks" -Force
       - name: collect streak app artifact (android apk)
         shell: pwsh
         run: |
