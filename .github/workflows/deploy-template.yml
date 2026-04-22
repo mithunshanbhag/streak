@@ -12,6 +12,7 @@ env:
 jobs:
   build-deploy-streak-ui:
     runs-on: windows-2025-vs2026
+    environment: test
     timeout-minutes: 20
     steps:
       - name: checkout code
