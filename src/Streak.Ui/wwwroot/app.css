@@ -1,6 +1,9 @@
 h1:focus { outline: none; }
 
-html, body { min-height: 100%; }
+html, body {
+    font-family: Roboto, system-ui, "Segoe UI", Arial, sans-serif;
+    min-height: 100%;
+}
 
 body { margin: 0; }
 

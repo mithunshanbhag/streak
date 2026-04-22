@@ -111,6 +111,15 @@
 
     private readonly AppBarTitleState _appBarTitleState = new();
 
+    private static readonly string[] AppFontFamily =
+    [
+        "Roboto",
+        "system-ui",
+        "\"Segoe UI\"",
+        "Arial",
+        "sans-serif"
+    ];
+
     private static readonly MudTheme AppTheme = new()
     {
         PaletteLight = new PaletteLight
@@ -130,6 +139,13 @@
             Surface = "#121212",
             TextPrimary = "#FFFFFF",
             TextSecondary = "#757575"
+        },
+        Typography = new Typography
+        {
+            Default = new DefaultTypography
+            {
+                FontFamily = AppFontFamily
+            }
         }
     };
 

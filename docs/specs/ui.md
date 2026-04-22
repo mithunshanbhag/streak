@@ -70,10 +70,18 @@ Use semantic roles rather than one-off hex values.
 
 ### Font family and weights
 
-- **Font family:** Roboto
+- **Font family:** Roboto on Android, resolved from the platform/system font stack rather than an externally hosted web font.
+- **Implementation stack:** `Roboto, system-ui, "Segoe UI", Arial, sans-serif`
 - **Regular:** 400
 - **Medium:** 500
 - **Bold:** 700
+
+### Font loading rules
+
+- Do not load Roboto from Google Fonts or any other external font CDN in the production app.
+- On Android, the local system Roboto face is the intended default.
+- On Windows development builds, allow the stack to fall back to `system-ui` / `Segoe UI`.
+- Static mockups should use the same local/system font stack so visual inspection works offline without fetching Roboto.
 
 ### Type scale
 

@@ -29,7 +29,7 @@
 
 body {
   margin: 0;
-  font-family: 'Roboto', sans-serif;
+    font-family: Roboto, system-ui, "Segoe UI", Arial, sans-serif;
   background: var(--color-canvas);
   color: var(--color-text-primary);
   display: flex;
