@@ -24,12 +24,12 @@ The page contains two vertically stacked sections presented as clean cards:
 
 ### Daily Reminder Section
 
-| Element               | Type            | Details                                                                                                                                   |
-| --------------------- | --------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| Section header        | Text            | **"Daily Reminder"**                                                                                                                      |
-| Enable/disable toggle | `MudSwitch`     | ON = reminders enabled, OFF = reminders disabled. Default: **ON**.                                                                        |
-| Reminder time picker  | `MudTimePicker` | Allows the user to select the time of day for the reminder. Visible only when the toggle is ON. Default: **9:00 PM** (local device time). |
-| Helper text           | Caption         | *"You'll be reminded only if there are habits you haven't checked in yet."*                                                               |
+| Element               | Type            | Details                                                                                                                                      |
+| --------------------- | --------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| Section header        | Text            | **"Daily Reminder"**                                                                                                                         |
+| Enable/disable toggle | `MudSwitch`     | ON = reminders enabled, OFF = reminders disabled. Default: **OFF**. Enabling reminders requests Android notification permission when needed. |
+| Reminder time picker  | `MudTimePicker` | Allows the user to select the time of day for the reminder. Visible only when the toggle is ON. Default: **9:00 PM** (local device time).    |
+| Helper text           | Caption         | *"You'll be reminded only if there are habits you haven't checked in yet."*                                                                  |
 
 ### Data Section
 
@@ -52,7 +52,7 @@ The page contains two vertically stacked sections presented as clean cards:
 | Restore header                | Text                  | **"Restore"**                                                                                                                                                                                                                                                |
 | Restore warning icon          | Glyph + tooltip       | Small warning icon beside **Restore**. Hover/focus/press shows: *"This will replace ALL existing data. This action cannot be undone."*                                                                                                                       |
 | Restore description           | Caption               | *"Restore your data from a previous backup."*                                                                                                                                                                                                                |
-| Restore action                | `MudIconButton`       | Filled icon-only button with an upload icon. Tooltip text is **"Upload data"**. Opens a file picker to select either a `.zip` data-backup archive or a legacy `.db` database backup.                                                                          |
+| Restore action                | `MudIconButton`       | Filled icon-only button with an upload icon. Tooltip text is **"Upload data"**. Opens a file picker to select either a `.zip` data-backup archive or a legacy `.db` database backup.                                                                         |
 
 - Daily automated backups, Backup, Diagnostic logs, and Restore should read as four vertically stacked subsections within the same card.
 - The automated backups subsection should use the same quiet structure as Backup, Diagnostic logs, and Restore: heading, subtle tooltip icon, one short description line, then a single trailing control row.
@@ -189,9 +189,9 @@ The page contains two vertically stacked sections presented as clean cards:
 
 ### Platform-specific Restore UX
 
-| Platform | Expected behavior                                                                                                                                             |
-| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Windows  | Open a standard **Open File** dialog filtered to `.zip` and `.db` files. The user selects a Streak backup archive or legacy database backup and confirms.   |
+| Platform | Expected behavior                                                                                                                                                   |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Windows  | Open a standard **Open File** dialog filtered to `.zip` and `.db` files. The user selects a Streak backup archive or legacy database backup and confirms.           |
 | Android  | Open the system file picker for a Streak backup archive or legacy database backup (via `StorageAccessFramework` / intent). The user selects a `.zip` or `.db` file. |
 
 - On both platforms, cancelling the file-picker dialog is treated as a user cancellation, not as a restore error.
@@ -200,6 +200,8 @@ The page contains two vertically stacked sections presented as clean cards:
 ## Reminder Behavior
 
 - When enabled, the app schedules a **local notification** at the configured time each day.
+- Fresh installs default reminders to **disabled** so Android notification permission is requested only after the user explicitly enables reminders.
+- If reminders are already enabled from an existing database or restored backup, the app should request Android notification permission on app launch and when the user opens Settings.
 - The notification fires **only if** at least one habit has not been checked in as done for that day.
 - If all habits are already marked done before the reminder time, **no notification is sent**.
 - The notification content should include:
@@ -211,7 +213,7 @@ The page contains two vertically stacked sections presented as clean cards:
 
 | Setting                   | Default Value               |
 | ------------------------- | --------------------------- |
-| Reminder enabled          | ON                          |
+| Reminder enabled          | OFF                         |
 | Reminder time             | 9:00 PM (local device time) |
 | Automated backups enabled | OFF                         |
 
@@ -236,31 +238,31 @@ The page contains two vertically stacked sections presented as clean cards:
 
 ## Edge Cases
 
-| Scenario                                       | Behavior                                                                                                                                                     |
-| ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| User has no habits                             | Reminder toggle is still available but no notification will fire (0 pending habits).                                                                         |
-| User enables automated backups before 11:30 PM | The first automated backup should run at **11:30 PM local time today**.                                                                                      |
-| User enables automated backups after 11:30 PM  | The first automated backup should run at **11:30 PM local time tomorrow**.                                                                                   |
-| User disables automated backups                | Future scheduled automated backups stop; previously created backup files remain untouched.                                                                   |
-| User changes device timezone or clock          | The next automated backup follows the device's current local-time interpretation of **11:30 PM**.                                                            |
-| App is uninstalled                             | Previously created automated backup files remain in `Downloads/Streak/Backups/Automated` because they are outside uninstall-sensitive app storage.           |
-| User has no habits but exports                 | Export is still allowed so the user can back up reminder settings, automated backup settings, or an empty database state.                                    |
-| User has no habits but shares                  | Share is still allowed so the user can manually hand off reminder settings, automated backup settings, or an empty database state.                           |
-| User disables reminders                        | No notifications are scheduled. The time picker is hidden.                                                                                                   |
-| User changes time                              | The next reminder is rescheduled to the new time. If the new time has already passed for today, the next reminder fires tomorrow.                            |
-| App is force-closed                            | Reminders should still fire (use Android's alarm/notification scheduling APIs that persist beyond app lifecycle).                                            |
-| User cancels Windows save dialog               | Keep the user on Settings and treat the action as cancelled rather than failed.                                                                              |
-| Android export succeeds                        | The backup archive appears in **Downloads/Streak/Backups/Manual** with the generated timestamped filename.                                                   |
-| Export fails                                   | Keep the user on Settings and surface a clear error message rather than silently failing.                                                                    |
-| User exports diagnostics with few/no logs      | Export still succeeds, creating a valid diagnostics bundle with any available metadata and log content.                                                      |
-| User cancels diagnostics export save dialog    | Keep the user on Settings and treat the action as cancelled rather than failed.                                                                              |
-| Android diagnostics export succeeds            | The diagnostics `.zip` appears in **Downloads/Streak/Diagnostics** with the generated timestamped filename.                                                  |
-| Diagnostics export fails                       | Keep the user on Settings and surface a clear error message rather than silently failing.                                                                    |
-| User cancels share sheet                       | Keep the user on Settings and treat the action as cancelled rather than failed.                                                                              |
-| Share fails                                    | Keep the user on Settings and surface a clear error message rather than silently failing.                                                                    |
-| User cancels restore file picker               | Keep the user on Settings and treat the action as cancelled rather than failed.                                                                              |
-| User selects invalid/corrupt backup file       | Keep the user on Settings and surface a clear error message; do not overwrite the live database.                                                             |
-| Backup/share encounters missing proof files    | Keep the user on Settings, create the `.zip` archive anyway, and omit only the unavailable proof files from that archive.                                    |
+| Scenario                                       | Behavior                                                                                                                                                                                                              |
+| ---------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| User has no habits                             | Reminder toggle is still available but no notification will fire (0 pending habits).                                                                                                                                  |
+| User enables automated backups before 11:30 PM | The first automated backup should run at **11:30 PM local time today**.                                                                                                                                               |
+| User enables automated backups after 11:30 PM  | The first automated backup should run at **11:30 PM local time tomorrow**.                                                                                                                                            |
+| User disables automated backups                | Future scheduled automated backups stop; previously created backup files remain untouched.                                                                                                                            |
+| User changes device timezone or clock          | The next automated backup follows the device's current local-time interpretation of **11:30 PM**.                                                                                                                     |
+| App is uninstalled                             | Previously created automated backup files remain in `Downloads/Streak/Backups/Automated` because they are outside uninstall-sensitive app storage.                                                                    |
+| User has no habits but exports                 | Export is still allowed so the user can back up reminder settings, automated backup settings, or an empty database state.                                                                                             |
+| User has no habits but shares                  | Share is still allowed so the user can manually hand off reminder settings, automated backup settings, or an empty database state.                                                                                    |
+| User disables reminders                        | No notifications are scheduled. The time picker is hidden.                                                                                                                                                            |
+| User changes time                              | The next reminder is rescheduled to the new time. If the new time has already passed for today, the next reminder fires tomorrow.                                                                                     |
+| App is force-closed                            | Reminders should still fire (use Android's alarm/notification scheduling APIs that persist beyond app lifecycle).                                                                                                     |
+| User cancels Windows save dialog               | Keep the user on Settings and treat the action as cancelled rather than failed.                                                                                                                                       |
+| Android export succeeds                        | The backup archive appears in **Downloads/Streak/Backups/Manual** with the generated timestamped filename.                                                                                                            |
+| Export fails                                   | Keep the user on Settings and surface a clear error message rather than silently failing.                                                                                                                             |
+| User exports diagnostics with few/no logs      | Export still succeeds, creating a valid diagnostics bundle with any available metadata and log content.                                                                                                               |
+| User cancels diagnostics export save dialog    | Keep the user on Settings and treat the action as cancelled rather than failed.                                                                                                                                       |
+| Android diagnostics export succeeds            | The diagnostics `.zip` appears in **Downloads/Streak/Diagnostics** with the generated timestamped filename.                                                                                                           |
+| Diagnostics export fails                       | Keep the user on Settings and surface a clear error message rather than silently failing.                                                                                                                             |
+| User cancels share sheet                       | Keep the user on Settings and treat the action as cancelled rather than failed.                                                                                                                                       |
+| Share fails                                    | Keep the user on Settings and surface a clear error message rather than silently failing.                                                                                                                             |
+| User cancels restore file picker               | Keep the user on Settings and treat the action as cancelled rather than failed.                                                                                                                                       |
+| User selects invalid/corrupt backup file       | Keep the user on Settings and surface a clear error message; do not overwrite the live database.                                                                                                                      |
+| Backup/share encounters missing proof files    | Keep the user on Settings, create the `.zip` archive anyway, and omit only the unavailable proof files from that archive.                                                                                             |
 | User restores from a `.db` file                | Replace only the live database, keep existing uploaded picture-proof files untouched, clear any restored proof metadata whose files are unavailable, then navigate the user to the Homepage with freshly loaded data. |
-| Restore succeeds                               | Replace the live database with the selected backup copy, restore any archived picture-proof files only for `.zip` restores, then navigate the user to the Homepage with freshly loaded data. |
-| Restore fails mid-way                          | Roll back to the previous database state, keep the user on Settings, and surface a clear error message.                                                      |
+| Restore succeeds                               | Replace the live database with the selected backup copy, restore any archived picture-proof files only for `.zip` restores, then navigate the user to the Homepage with freshly loaded data.                          |
+| Restore fails mid-way                          | Roll back to the previous database state, keep the user on Settings, and surface a clear error message.                                                                                                               |

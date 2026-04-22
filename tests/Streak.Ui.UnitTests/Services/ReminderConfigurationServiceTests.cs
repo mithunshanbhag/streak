@@ -38,6 +38,18 @@ public sealed class ReminderConfigurationServiceTests
     }
 
     [Fact]
+    public void GetIsEnabled_ShouldReturnFalse_WhenDatabaseDoesNotExist()
+    {
+        using var databaseDirectory = new TemporaryDirectory();
+        var databasePath = Path.Combine(databaseDirectory.Path, "missing.db");
+
+        var schedulerMock = new Mock<IReminderScheduler>();
+        var sut = CreateSut(databasePath, schedulerMock.Object);
+
+        sut.GetIsEnabled().Should().BeFalse();
+    }
+
+    [Fact]
     public void GetTimeLocal_ShouldReturnPersistedValue()
     {
         using var databaseDirectory = new TemporaryDirectory();
@@ -151,7 +163,7 @@ public sealed class ReminderConfigurationServiceTests
             $"""
              CREATE TABLE {ReminderConstants.SettingsTableName} (
                  Id INTEGER NOT NULL PRIMARY KEY,
-                 IsEnabled INTEGER NOT NULL DEFAULT 1,
+                 IsEnabled INTEGER NOT NULL DEFAULT 0,
                  {ReminderConstants.TimeLocalColumnName} TEXT NOT NULL
              ) STRICT;
 

@@ -8,7 +8,7 @@
 @inject IDatabaseImportService DatabaseImportService
 @inject IManualBackupCompletionNotifier ManualBackupCompletionNotifier
 @inject IBackupNotificationPermissionService BackupNotificationPermissionService
-@inject IReminderNotificationPermissionService ReminderNotificationPermissionService
+@inject IReminderNotificationPermissionCoordinator ReminderNotificationPermissionCoordinator
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
 @inject NavigationManager NavigationManager
@@ -372,12 +372,14 @@
 
     #region Lifecycle Methods
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         _remindersEnabled = ReminderConfigurationService.GetIsEnabled();
         _reminderTimeLocal = ReminderConfigurationService.GetTimeLocal().ToTimeSpan();
         _automatedBackupsSupported = AutomatedBackupConfigurationService.IsSupported;
         _automatedBackupsEnabled = _automatedBackupsSupported && AutomatedBackupConfigurationService.GetIsEnabled();
+
+        await RequestReminderNotificationPermissionIfEnabledAsync();
     }
 
     #endregion
@@ -401,9 +403,7 @@
 
             if (isEnabled)
             {
-                var notificationsEnabled = await ReminderNotificationPermissionService.RequestPermissionIfNeededAsync();
-                if (!notificationsEnabled)
-                    Snackbar.Add(ReminderNotificationsPermissionText, Severity.Info);
+                await RequestReminderNotificationPermissionIfEnabledAsync();
             }
         }
         catch (Exception)
@@ -578,6 +578,16 @@
             _reminderSettingsUpdateInProgress = false;
             await InvokeAsync(StateHasChanged);
         }
+    }
+
+    private async Task RequestReminderNotificationPermissionIfEnabledAsync()
+    {
+        if (!_remindersEnabled)
+            return;
+
+        var notificationsEnabled = await ReminderNotificationPermissionCoordinator.RequestPermissionIfRemindersEnabledAsync();
+        if (!notificationsEnabled)
+            Snackbar.Add(ReminderNotificationsPermissionText, Severity.Info);
     }
 
     #endregion

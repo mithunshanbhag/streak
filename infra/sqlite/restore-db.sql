@@ -50,7 +50,7 @@ ON CONFLICT(Id) DO NOTHING;
 
 CREATE TABLE IF NOT EXISTS ReminderSettings (
     Id INTEGER NOT NULL,
-    IsEnabled INTEGER NOT NULL DEFAULT 1,
+    IsEnabled INTEGER NOT NULL DEFAULT 0,
     TimeLocal TEXT NOT NULL DEFAULT '21:00:00',
     CONSTRAINT PK_ReminderSettings PRIMARY KEY (Id),
     CONSTRAINT CK_ReminderSettings_IsEnabled CHECK (IsEnabled IN (0, 1)),
@@ -63,5 +63,5 @@ CREATE TABLE IF NOT EXISTS ReminderSettings (
 ) STRICT;
 
 INSERT INTO ReminderSettings (Id, IsEnabled, TimeLocal)
-VALUES (1, 1, '21:00:00')
+VALUES (1, 0, '21:00:00')
 ON CONFLICT(Id) DO NOTHING;

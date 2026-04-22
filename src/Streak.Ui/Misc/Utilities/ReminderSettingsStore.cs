@@ -65,7 +65,7 @@ public static class ReminderSettingsStore
 
     private static ReminderSettings GetDefaultSettings()
     {
-        return new ReminderSettings(true, GetDefaultTimeLocal());
+        return new ReminderSettings(false, GetDefaultTimeLocal());
     }
 
     private static TimeOnly GetDefaultTimeLocal()

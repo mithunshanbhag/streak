@@ -45,6 +45,7 @@ public static class MauiAppBuilderExtensions
             builder.Services.AddSingleton<ICheckinProofService, CheckinProofService>();
             builder.Services.AddSingleton<IAutomatedBackupConfigurationService, AutomatedBackupConfigurationService>();
             builder.Services.AddSingleton<IReminderConfigurationService, ReminderConfigurationService>();
+            builder.Services.AddSingleton<IReminderNotificationPermissionCoordinator, ReminderNotificationPermissionCoordinator>();
             builder.Services.AddTransient<IManualBackupCompletionNotifier, ManualBackupCompletionNotifier>();
             builder.Services.AddTransient<IDatabaseImportService, DatabaseImportService>();
             builder.Services.AddTransient<IDatabaseExportService, DatabaseExportService>();

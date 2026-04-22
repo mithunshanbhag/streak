@@ -172,7 +172,7 @@ public sealed class SqliteDatabaseSchemaUpgrader(ILogger<SqliteDatabaseSchemaUpg
                 $"""
                  CREATE TABLE IF NOT EXISTS {ReminderConstants.SettingsTableName} (
                      Id INTEGER NOT NULL,
-                     IsEnabled INTEGER NOT NULL DEFAULT 1,
+                     IsEnabled INTEGER NOT NULL DEFAULT 0,
                      {ReminderConstants.TimeLocalColumnName} TEXT NOT NULL DEFAULT '{CoreConstants.DefaultReminderTimeLocal}',
                      CONSTRAINT PK_{ReminderConstants.SettingsTableName} PRIMARY KEY (Id),
                      CONSTRAINT CK_{ReminderConstants.SettingsTableName}_IsEnabled CHECK (IsEnabled IN (0, 1)),
@@ -202,7 +202,7 @@ public sealed class SqliteDatabaseSchemaUpgrader(ILogger<SqliteDatabaseSchemaUpg
             command.CommandText =
                 $"""
                  INSERT INTO {ReminderConstants.SettingsTableName} (Id, IsEnabled, {ReminderConstants.TimeLocalColumnName})
-                 VALUES ({ReminderConstants.SettingsRowId}, 1, '{CoreConstants.DefaultReminderTimeLocal}')
+                 VALUES ({ReminderConstants.SettingsRowId}, 0, '{CoreConstants.DefaultReminderTimeLocal}')
                  ON CONFLICT(Id) DO NOTHING;
                  """;
             command.ExecuteNonQuery();

@@ -68,7 +68,7 @@ public sealed class SqliteDatabaseSchemaUpgraderTests
         checkinReader.IsDBNull(6).Should().BeTrue();
 
         GetAutomatedBackupSetting(databasePath).Should().BeFalse();
-        GetReminderSettings(databasePath).Should().Be(new ReminderSettings(true, new TimeOnly(21, 0)));
+        GetReminderSettings(databasePath).Should().Be(new ReminderSettings(false, new TimeOnly(21, 0)));
     }
 
     [Fact]
@@ -116,7 +116,7 @@ public sealed class SqliteDatabaseSchemaUpgraderTests
             .Should()
             .Contain(["Id", "IsEnabled", "TimeLocal"]);
         GetAutomatedBackupSetting(databasePath).Should().BeFalse();
-        GetReminderSettings(databasePath).Should().Be(new ReminderSettings(true, new TimeOnly(21, 0)));
+        GetReminderSettings(databasePath).Should().Be(new ReminderSettings(false, new TimeOnly(21, 0)));
     }
 
     [Fact]

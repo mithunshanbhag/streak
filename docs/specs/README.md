@@ -170,6 +170,7 @@ Windows does not currently support automated backups. Android manual share uses 
 - The reminder fires **only if** there is at least one habit that has not been checked in as done for the day.
 - If all habits are already checked in, no reminder is sent.
 - The reminder should include a summary (e.g., "You have 2 habits pending today").
+- Daily reminders are **disabled by default** on fresh installs. If the user enables them, the app requests the platform notification permission before reminder notifications can be shown.
 - The default reminder time is **9:00 PM** (local device time).
 - Reminders can be disabled entirely by the user.
 - Backup-completion feedback is separate from reminder notifications:

@@ -563,10 +563,10 @@ public sealed class SettingsTests : TestContext
         var shareServiceMock = CreateShareServiceMock(canShare: false);
         var backupConfigurationServiceMock = CreateBackupConfigurationServiceMock(isEnabled: false);
         var reminderConfigurationServiceMock = CreateReminderConfigurationServiceMock(isEnabled: false);
-        var reminderNotificationPermissionServiceMock = new Mock<IReminderNotificationPermissionService>();
+        var reminderNotificationPermissionCoordinatorMock = new Mock<IReminderNotificationPermissionCoordinator>();
         var snackbarMock = new Mock<ISnackbar>();
-        reminderNotificationPermissionServiceMock
-            .Setup(x => x.RequestPermissionIfNeededAsync(It.IsAny<CancellationToken>()))
+        reminderNotificationPermissionCoordinatorMock
+            .Setup(x => x.RequestPermissionIfRemindersEnabledAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(false);
 
         RegisterSettingsServices(
@@ -575,7 +575,7 @@ public sealed class SettingsTests : TestContext
             shareServiceMock,
             backupConfigurationServiceMock,
             reminderConfigurationServiceMock,
-            reminderNotificationPermissionServiceMock: reminderNotificationPermissionServiceMock,
+            reminderNotificationPermissionCoordinatorMock: reminderNotificationPermissionCoordinatorMock,
             snackbarMock: snackbarMock);
         var cut = RenderSettings();
 
@@ -583,8 +583,8 @@ public sealed class SettingsTests : TestContext
 
         cut.WaitForAssertion(() =>
         {
-            reminderNotificationPermissionServiceMock.Verify(
-                x => x.RequestPermissionIfNeededAsync(It.IsAny<CancellationToken>()),
+            reminderNotificationPermissionCoordinatorMock.Verify(
+                x => x.RequestPermissionIfRemindersEnabledAsync(It.IsAny<CancellationToken>()),
                 Times.Once);
             snackbarMock.Verify(
                 x => x.Add(
@@ -593,6 +593,68 @@ public sealed class SettingsTests : TestContext
                     It.IsAny<Action<SnackbarOptions>>(),
                     It.IsAny<string>()),
                 Times.Once);
+        });
+    }
+
+    [Fact]
+    public void Settings_ShouldRequestReminderNotificationPermission_WhenRemindersAreAlreadyEnabled()
+    {
+        var exportServiceMock = new Mock<IDatabaseExportService>();
+        var diagnosticsExportServiceMock = new Mock<IDiagnosticsExportService>();
+        var shareServiceMock = CreateShareServiceMock(canShare: false);
+        var backupConfigurationServiceMock = CreateBackupConfigurationServiceMock(isEnabled: false);
+        var reminderConfigurationServiceMock = CreateReminderConfigurationServiceMock(isEnabled: true);
+        var reminderNotificationPermissionCoordinatorMock = new Mock<IReminderNotificationPermissionCoordinator>();
+        reminderNotificationPermissionCoordinatorMock
+            .Setup(x => x.RequestPermissionIfRemindersEnabledAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+
+        RegisterSettingsServices(
+            exportServiceMock,
+            diagnosticsExportServiceMock,
+            shareServiceMock,
+            backupConfigurationServiceMock,
+            reminderConfigurationServiceMock,
+            reminderNotificationPermissionCoordinatorMock: reminderNotificationPermissionCoordinatorMock);
+
+        var cut = RenderSettings();
+
+        cut.WaitForAssertion(() =>
+        {
+            reminderNotificationPermissionCoordinatorMock.Verify(
+                x => x.RequestPermissionIfRemindersEnabledAsync(It.IsAny<CancellationToken>()),
+                Times.Once);
+        });
+    }
+
+    [Fact]
+    public void Settings_ShouldNotRequestReminderNotificationPermission_WhenRemindersAreDisabled()
+    {
+        var exportServiceMock = new Mock<IDatabaseExportService>();
+        var diagnosticsExportServiceMock = new Mock<IDiagnosticsExportService>();
+        var shareServiceMock = CreateShareServiceMock(canShare: false);
+        var backupConfigurationServiceMock = CreateBackupConfigurationServiceMock(isEnabled: false);
+        var reminderConfigurationServiceMock = CreateReminderConfigurationServiceMock(isEnabled: false);
+        var reminderNotificationPermissionCoordinatorMock = new Mock<IReminderNotificationPermissionCoordinator>();
+        reminderNotificationPermissionCoordinatorMock
+            .Setup(x => x.RequestPermissionIfRemindersEnabledAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+
+        RegisterSettingsServices(
+            exportServiceMock,
+            diagnosticsExportServiceMock,
+            shareServiceMock,
+            backupConfigurationServiceMock,
+            reminderConfigurationServiceMock,
+            reminderNotificationPermissionCoordinatorMock: reminderNotificationPermissionCoordinatorMock);
+
+        var cut = RenderSettings();
+
+        cut.WaitForAssertion(() =>
+        {
+            reminderNotificationPermissionCoordinatorMock.Verify(
+                x => x.RequestPermissionIfRemindersEnabledAsync(It.IsAny<CancellationToken>()),
+                Times.Never);
         });
     }
 
@@ -678,7 +740,7 @@ public sealed class SettingsTests : TestContext
         Mock<IReminderConfigurationService> reminderConfigurationServiceMock,
         Mock<IManualBackupCompletionNotifier>? manualBackupCompletionNotifierMock = null,
         Mock<IBackupNotificationPermissionService>? backupNotificationPermissionServiceMock = null,
-        Mock<IReminderNotificationPermissionService>? reminderNotificationPermissionServiceMock = null,
+        Mock<IReminderNotificationPermissionCoordinator>? reminderNotificationPermissionCoordinatorMock = null,
         Mock<ISnackbar>? snackbarMock = null)
     {
         var importFilePickerMock = new Mock<IDatabaseImportFilePicker>();
@@ -691,11 +753,11 @@ public sealed class SettingsTests : TestContext
                 .Setup(x => x.RequestPermissionIfNeededAsync(It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);
         }
-        if (reminderNotificationPermissionServiceMock is null)
+        if (reminderNotificationPermissionCoordinatorMock is null)
         {
-            reminderNotificationPermissionServiceMock = new Mock<IReminderNotificationPermissionService>();
-            reminderNotificationPermissionServiceMock
-                .Setup(x => x.RequestPermissionIfNeededAsync(It.IsAny<CancellationToken>()))
+            reminderNotificationPermissionCoordinatorMock = new Mock<IReminderNotificationPermissionCoordinator>();
+            reminderNotificationPermissionCoordinatorMock
+                .Setup(x => x.RequestPermissionIfRemindersEnabledAsync(It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);
         }
         snackbarMock ??= new Mock<ISnackbar>();
@@ -716,7 +778,7 @@ public sealed class SettingsTests : TestContext
         Services.AddSingleton(manualBackupCompletionNotifierMock.Object);
         Services.AddSingleton(backupNotificationPermissionServiceMock.Object);
         Services.AddSingleton(reminderConfigurationServiceMock.Object);
-        Services.AddSingleton(reminderNotificationPermissionServiceMock.Object);
+        Services.AddSingleton(reminderNotificationPermissionCoordinatorMock.Object);
         Services.AddSingleton(snackbarMock.Object);
     }
 
