@@ -67,6 +67,7 @@ public static class MauiAppBuilderExtensions
             builder.Services.AddTransient<IDatabaseExportFileSaver, WindowsDatabaseExportFileSaver>();
             builder.Services.AddTransient<IDiagnosticsExportFileSaver, WindowsDiagnosticsExportFileSaver>();
             builder.Services.AddTransient<IDatabaseShareService, UnsupportedDatabaseShareService>();
+            builder.Services.AddTransient<IDiagnosticsShareService, UnsupportedDiagnosticsShareService>();
 #elif ANDROID
             builder.Services.AddSingleton<ICheckinProofFileStore, AndroidCheckinProofFileStore>();
             builder.Services.AddSingleton<IBackupFolderOpener, AndroidBackupFolderOpener>();
@@ -84,6 +85,7 @@ public static class MauiAppBuilderExtensions
             builder.Services.AddSingleton<IAutomatedBackupScheduler, AndroidAutomatedBackupScheduler>();
             builder.Services.AddSingleton<IReminderScheduler, AndroidReminderScheduler>();
             builder.Services.AddTransient<IDatabaseShareService, DatabaseShareService>();
+            builder.Services.AddTransient<IDiagnosticsShareService, DiagnosticsShareService>();
 #else
             builder.Services.AddSingleton<IAutomatedBackupScheduler, NoOpAutomatedBackupScheduler>();
             builder.Services.AddSingleton<IReminderScheduler, NoOpReminderScheduler>();
@@ -95,6 +97,7 @@ public static class MauiAppBuilderExtensions
             builder.Services.AddTransient<IDiagnosticsExportFileSaver, WindowsDiagnosticsExportFileSaver>();
             builder.Services.AddTransient<ICheckinProofMediaPickerService, UnsupportedCheckinProofMediaPickerService>();
             builder.Services.AddTransient<IDatabaseShareService, UnsupportedDatabaseShareService>();
+            builder.Services.AddTransient<IDiagnosticsShareService, UnsupportedDiagnosticsShareService>();
 #endif
 
             builder.Services.AddMauiBlazorWebView();
