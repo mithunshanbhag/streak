@@ -157,13 +157,13 @@ Automated testing is still early, but the repository already has a test project 
 Build the test project:
 
 ```powershell
-dotnet build .\tests\Streak.Core.UnitTests\Streak.Core.UnitTests.csproj -c Debug --nologo
+dotnet build .\tests\Streak.Ui.UnitTests\Streak.Ui.UnitTests.csproj -c Debug --nologo
 ```
 
 Run the tests:
 
 ```powershell
-dotnet test .\tests\Streak.Core.UnitTests\Streak.Core.UnitTests.csproj -c Debug --no-build --nologo
+dotnet test .\tests\Streak.Ui.UnitTests\Streak.Ui.UnitTests.csproj -c Debug --no-build --nologo
 ```
 
 As implementation expands, this section will be updated to describe the full testing story more accurately.

@@ -1,9 +1,9 @@
 namespace Streak.Ui.UnitTests.Components.Pages;
 
-using Streak.Core.Models.Storage;
-using Streak.Core.Models.ViewModels;
-using Streak.Core.Models.ViewModels.InputModels;
-using Streak.Core.Services.Interfaces;
+using Streak.Ui.Models.Storage;
+using Streak.Ui.Models.ViewModels;
+using Streak.Ui.Models.ViewModels.InputModels;
+using Streak.Ui.Services.Interfaces;
 
 public sealed class HomeTests : TestContext
 {

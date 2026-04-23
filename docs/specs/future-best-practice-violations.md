@@ -32,11 +32,11 @@ The homepage and reminder-related reads ask for bounded date windows, but `Check
 
 **Evidence**
 
-- `src\Streak.Core\Repositories\Implementations\CheckinRepository.cs:30-35`
-- `src\Streak.Core\Repositories\Implementations\CheckinRepository.cs:55-60`
-- `src\Streak.Core\Repositories\Implementations\CheckinRepository.cs:102-121`
-- `src\Streak.Core\Services\Implementations\CheckinService.cs:56-70`
-- `src\Streak.Core\Services\Implementations\CheckinService.cs:73-91`
+- `src\Streak.Ui\Repositories\Implementations\CheckinRepository.cs:30-35`
+- `src\Streak.Ui\Repositories\Implementations\CheckinRepository.cs:55-60`
+- `src\Streak.Ui\Repositories\Implementations\CheckinRepository.cs:102-121`
+- `src\Streak.Ui\Services\Implementations\CheckinService.cs:56-70`
+- `src\Streak.Ui\Services\Implementations\CheckinService.cs:73-91`
 
 `GetByHabitNamesAsync(...)` and `GetByHabitIdsAsync(...)` call `ToListAsync(...)` before `ApplyDateRange(...)`. `GetHomePageHabitCheckinsAsync(...)` and `GetPendingHabitCountForTodayAsync(...)` both rely on that path.
 
@@ -98,8 +98,8 @@ The repository guidance for this repo says the repository layer should own persi
 
 **Evidence**
 
-- `src\Streak.Core\Services\Interfaces\IHabitService.cs:17,30,46,78,101`
-- `src\Streak.Core\Services\Interfaces\ICheckinService.cs:23,45,90,116`
+- `src\Streak.Ui\Services\Interfaces\IHabitService.cs:17,30,46,78,101`
+- `src\Streak.Ui\Services\Interfaces\ICheckinService.cs:23,45,90,116`
 - `src\Streak.Ui\Components\Dialogs\NewHabitDialog.razor:122-128`
 - `src\Streak.Ui\Components\Dialogs\NewHabitDialog.razor:187-195`
 - `src\Streak.Ui\Components\Dialogs\EditHabitDialog.razor:150-152`
@@ -159,9 +159,9 @@ Validators are registered globally, but the current dialog and service flows do 
 **Evidence**
 
 - `src\Streak.Ui\Misc\ExtensionMethods\MauiAppBuilderExtensions.cs:26-29`
-- `src\Streak.Core\Services\Validators\NewHabitDialogInputModelValidator.cs:1-37`
-- `src\Streak.Core\Services\Validators\CreateHabitRequestDtoValidator.cs:1-39`
-- `src\Streak.Core\Services\Validators\UpdateHabitRequestDtoValidator.cs:1-39`
+- `src\Streak.Ui\Services\Validators\NewHabitDialogInputModelValidator.cs:1-37`
+- `src\Streak.Ui\Services\Validators\CreateHabitRequestDtoValidator.cs:1-39`
+- `src\Streak.Ui\Services\Validators\UpdateHabitRequestDtoValidator.cs:1-39`
 - `src\Streak.Ui\Components\Dialogs\NewHabitDialog.razor:140-173`
 - `src\Streak.Ui\Components\Dialogs\EditHabitDialog.razor:172-205`
 

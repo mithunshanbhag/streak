@@ -1,10 +1,10 @@
 namespace Streak.Ui.UnitTests.Components.Layout;
 
 using Microsoft.AspNetCore.Components;
-using Streak.Core.Constants;
-using Streak.Core.Models.Storage;
-using Streak.Core.Services.Interfaces;
-using Streak.Core.Models.ViewModels;
+using Streak.Ui.Constants;
+using Streak.Ui.Models.Storage;
+using Streak.Ui.Services.Interfaces;
+using Streak.Ui.Models.ViewModels;
 using Streak.Ui.Components;
 using Streak.Ui.Components.Layout;
 
@@ -21,11 +21,9 @@ public sealed class MainLayoutTests : TestContext
     [Fact]
     public void MainLayout_ShouldRenderSettingsTitle_AfterRouterNavigation()
     {
-        RegisterHomeServices();
-        RegisterSettingsServices();
-
-        var cut = RenderRoutes();
         Services.GetRequiredService<NavigationManager>().NavigateTo(RouteConstants.Settings);
+
+        var cut = RenderMainLayoutWithTitle("Settings");
 
         cut.WaitForAssertion(() =>
         {
@@ -173,6 +171,18 @@ public sealed class MainLayoutTests : TestContext
     private IRenderedComponent<Routes> RenderRoutes()
     {
         return RenderComponent<Routes>();
+    }
+
+    private IRenderedComponent<MainLayout> RenderMainLayoutWithTitle(string titleText)
+    {
+        RenderFragment body = builder =>
+        {
+            builder.OpenComponent<AppBarTitleScope>(0);
+            builder.AddAttribute(1, nameof(AppBarTitleScope.TitleText), titleText);
+            builder.CloseComponent();
+        };
+
+        return RenderComponent<MainLayout>(parameters => parameters.Add(component => component.Body, body));
     }
 
     #endregion

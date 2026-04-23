@@ -1,7 +1,7 @@
 namespace Streak.Ui.UnitTests.Components;
 
-using Streak.Core.Models.ViewModels;
-using Streak.Core.Services.Interfaces;
+using Streak.Ui.Models.ViewModels;
+using Streak.Ui.Services.Interfaces;
 using Streak.Ui.Components;
 
 public sealed class AppRootTests : TestContext
