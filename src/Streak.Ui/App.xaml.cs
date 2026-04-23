@@ -2,38 +2,24 @@
 
 public partial class App : Application
 {
-    private readonly IAutomatedBackupConfigurationService _automatedBackupConfigurationService;
+    private readonly IAppInitializationService _appInitializationService;
     private readonly ILogger<App> _logger;
-    private readonly IReminderConfigurationService _reminderConfigurationService;
     private readonly IReminderNotificationPermissionCoordinator _reminderNotificationPermissionCoordinator;
-    private readonly SqliteDatabaseBootstrapper _sqliteDatabaseBootstrapper;
-    private readonly SqliteDatabaseSchemaUpgrader _sqliteDatabaseSchemaUpgrader;
 
     public App(
-        IAutomatedBackupConfigurationService automatedBackupConfigurationService,
+        IAppInitializationService appInitializationService,
         ILogger<App> logger,
-        IReminderConfigurationService reminderConfigurationService,
-        IReminderNotificationPermissionCoordinator reminderNotificationPermissionCoordinator,
-        SqliteDatabaseBootstrapper sqliteDatabaseBootstrapper,
-        SqliteDatabaseSchemaUpgrader sqliteDatabaseSchemaUpgrader)
+        IReminderNotificationPermissionCoordinator reminderNotificationPermissionCoordinator)
     {
-        _automatedBackupConfigurationService = automatedBackupConfigurationService;
+        _appInitializationService = appInitializationService;
         _logger = logger;
-        _reminderConfigurationService = reminderConfigurationService;
         _reminderNotificationPermissionCoordinator = reminderNotificationPermissionCoordinator;
-        _sqliteDatabaseBootstrapper = sqliteDatabaseBootstrapper;
-        _sqliteDatabaseSchemaUpgrader = sqliteDatabaseSchemaUpgrader;
 
         InitializeComponent();
     }
 
     protected override Window CreateWindow(IActivationState? activationState)
     {
-        _sqliteDatabaseBootstrapper.EnsureDbExists();
-        _sqliteDatabaseSchemaUpgrader.UpgradeIfNeeded(SqliteDatabaseBootstrapper.DatabasePath);
-        _automatedBackupConfigurationService.SynchronizeScheduler();
-        _reminderConfigurationService.SynchronizeScheduler();
-
         var window = new Window(new MainPage()) { Title = "Streak.Ui" };
         window.Created += OnWindowCreated;
 
@@ -42,6 +28,16 @@ public partial class App : Application
 
     private async void OnWindowCreated(object? sender, EventArgs e)
     {
+        try
+        {
+            await _appInitializationService.EnsureInitializedAsync();
+        }
+        catch (Exception exception)
+        {
+            _logger.LogError(exception, "Unable to finish app startup initialization.");
+            return;
+        }
+
         try
         {
             await _reminderNotificationPermissionCoordinator.RequestPermissionIfRemindersEnabledAsync();

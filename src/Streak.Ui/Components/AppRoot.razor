@@ -1,0 +1,80 @@
+@inject IAppInitializationService AppInitializationService
+@inject ILogger<AppRoot> Logger
+
+@if (_startupError is null)
+{
+    if (!_startupReady)
+    {
+        <div class="app-loading-screen app-startup-screen"
+             role="status"
+             aria-live="polite"
+             aria-label="@StartupLoadingAriaLabel">
+            <div class="app-startup-panel">
+                <h1 class="app-startup-title">@StartupLoadingTitleText</h1>
+                <p class="app-startup-message">@StartupLoadingMessageText</p>
+            </div>
+        </div>
+    }
+    else
+    {
+        <Routes />
+    }
+}
+else
+{
+    <div class="app-loading-screen app-startup-screen app-startup-screen--error"
+         role="alert"
+         aria-live="assertive"
+         aria-label="@StartupFailedAriaLabel">
+        <div class="app-startup-panel">
+            <h1 class="app-startup-title">@StartupFailedTitleText</h1>
+            <p class="app-startup-message">@StartupFailedMessageText</p>
+        </div>
+    </div>
+}
+
+@code
+{
+
+    #region Private Fields, Properties
+
+    private bool _startupReady;
+
+    private Exception? _startupError;
+
+    #endregion
+
+    #region Lifecycle Methods
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            await AppInitializationService.EnsureInitializedAsync();
+            _startupReady = true;
+        }
+        catch (Exception exception)
+        {
+            _startupError = exception;
+            Logger.LogError(exception, "App startup initialization failed before routes were rendered.");
+        }
+    }
+
+    #endregion
+
+    #region Text, Label Properties
+
+    private const string StartupLoadingAriaLabel = "Preparing Streak";
+
+    private const string StartupLoadingTitleText = "Preparing Streak...";
+
+    private const string StartupLoadingMessageText = "Loading your local data and startup settings.";
+
+    private const string StartupFailedAriaLabel = "Streak could not finish starting";
+
+    private const string StartupFailedTitleText = "Streak couldn't finish starting.";
+
+    private const string StartupFailedMessageText = "Close and reopen the app. If the problem persists, restore a backup or export diagnostics from Settings after a successful launch.";
+
+    #endregion
+}

@@ -2,59 +2,39 @@
 
 ## Android Page Load and Startup Performance
 
-This document captures follow-up work identified during an investigation into slow page loads and startup time, especially on Android devices.
-
-The items below are prioritized by the strength of consensus across three independent investigations (Claude Opus 4.6, GPT-5.4, and Claude Sonnet 4.6), with the highest-consensus and highest-impact findings listed first.
+This document tracks the performance follow-up items that are still open after the latest round of fixes. The original investigation produced a longer list; items that are already addressed have been moved into a short "Recently addressed" section so this file stays current.
 
 ## Highest Priority Findings
 
-### 1. Move database bootstrap work off the UI thread
+### 1. Stop concurrent use of a shared `DbContext`
 
-**Priority:** Critical  
-**Consensus:** Strong (all three investigations)
+**Priority:** Critical
 
-The app currently performs SQLite database bootstrap work during window creation on the UI thread. On cold start, this can block first paint while file I/O, resource loading, connection open, and schema execution complete.
-
-**Expected outcome**
-
-- Faster perceived startup on Android
-- Reduced splash-screen freeze on first launch
-- Improved responsiveness before the first interactive frame
-
-### 2. Stop concurrent use of a shared `DbContext`
-
-**Priority:** Critical  
-**Consensus:** Strong (all three investigations)
-
-The current dependency injection setup allows multiple concurrent operations to run against the same effective `DbContext` instance in the MAUI Blazor app. This is unsafe and can produce hangs, crashes, or intermittent failures under load.
+The MAUI Blazor host still registers `StreakDbContext` through `AddDbContext(...)` and resolves repositories/services from the root container. That leaves the app with a long-lived effective context during overlapping UI work, which is still a reliability and performance risk. The existing detach safeguards help with tracking conflicts, but they do not fix the underlying lifetime model.
 
 **Expected outcome**
 
-- Improved reliability during page loads
-- Elimination of concurrency-related data access issues
-- Safer foundation for future performance work
+- Improved reliability during page loads and dialog workflows
+- Elimination of context-concurrency failures under overlapping operations
+- Safer foundation for further performance work
 
-### 3. Optimize current streak calculation
+### 2. Optimize current streak calculation
 
-**Priority:** Critical  
-**Consensus:** Strong (all three investigations)
+**Priority:** Critical
 
-Current streak calculation loads full check-in history into memory for a habit and derives the streak in application code. This becomes increasingly expensive as history grows and is part of a hot path used repeatedly.
+`CheckinService.GetCurrentStreakAsync(...)` still loads the habit's full check-in history and calculates the streak in application code. Homepage loading already batches history more efficiently, but Habit Details and same-day refresh paths still pay for full-history reads.
 
 **Expected outcome**
 
-- Faster home page rendering
-- Faster habit details loading
-- Better long-term scalability for users with large histories
+- Faster Habit Details loading
+- Less memory churn as history grows
+- Better long-term scalability for large local histories
 
-## High Priority Findings
+### 3. Avoid loading the same history twice on Habit Details
 
-### 4. Avoid loading the same history twice on Habit Details
+**Priority:** High
 
-**Priority:** High  
-**Consensus:** Medium-high
-
-The Habit Details experience currently performs overlapping history work for streak and history visualization. The same underlying data should be loaded once and reused for derived calculations.
+Habit Details still calls `GetCurrentStreakAsync(...)` and `GetHistoryAsync(...)` separately for the same habit. That duplicates database work and repeats history processing during one page load.
 
 **Expected outcome**
 
@@ -62,25 +42,11 @@ The Habit Details experience currently performs overlapping history work for str
 - Less redundant database I/O
 - Less duplicate CPU work
 
-### 5. Push date filtering into SQL queries
+### 4. Prevent unnecessary full reloads on Habit Details
 
-**Priority:** High  
-**Consensus:** Medium-high
+**Priority:** High
 
-Some history filtering currently happens after rows are materialized in memory rather than in the database query itself. This increases I/O, memory usage, and CPU work.
-
-**Expected outcome**
-
-- Smaller query result sets
-- Lower memory pressure
-- Faster history-related operations
-
-### 6. Prevent unnecessary full reloads on Habit Details
-
-**Priority:** High  
-**Consensus:** Medium-high
-
-The Habit Details page currently reloads its full data set during parameter updates even when the active habit has not changed.
+`HabitDetails.razor` still reloads its full data set inside `OnParametersSetAsync()` even when the active `HabitId` has not changed. This can trigger redundant work during re-renders and in-page updates.
 
 **Expected outcome**
 
@@ -88,101 +54,81 @@ The Habit Details page currently reloads its full data set during parameter upda
 - Faster navigation and re-render behavior
 - Less unnecessary work on slower Android devices
 
-### 7. Stop querying the database on each validation keystroke
+### 5. Stop querying the database on each validation keystroke
 
-**Priority:** High  
-**Consensus:** Medium-high
+**Priority:** High
 
-The create/edit habit dialogs perform database-backed validation while the user types. Repeated queries during typing can introduce visible input lag on Android devices.
+The new/edit habit dialogs still run async uniqueness validation against `HabitService.GetAllAsync()` while the user types, with a short debounce. That continues to introduce avoidable database traffic during form entry.
 
 **Expected outcome**
 
 - Smoother typing experience
-- Reduced database activity during form entry
-- Better perceived performance in dialogs
-
-### 8. Remove startup dependency on externally hosted fonts
-
-**Priority:** High  
-**Consensus:** Medium-high
-
-The app currently references Google Fonts from the network. This adds startup variability and can delay first paint when connectivity is slow or unavailable.
-
-**Expected outcome**
-
-- More predictable startup time
-- Better offline behavior
-- Lower dependence on network conditions for first render
+- Reduced database activity during dialog input
+- Better perceived responsiveness on Android
 
 ## Medium Priority Findings
 
-### 9. Use direct indexed lookups instead of full habit scans
+### 6. Use direct repository lookups instead of full habit scans
 
-**Priority:** Medium  
-**Consensus:** Partial
+**Priority:** Medium
 
-Some habit lookup flows load all habits and then filter in memory rather than using targeted repository queries.
+Some service-layer flows still load all habits and filter in memory even though targeted repository APIs already exist. This is most visible in habit-name lookups and uniqueness checks.
 
 **Expected outcome**
 
 - More efficient hot-path lookups
 - Less unnecessary query work
 
-### 10. Tune SQLite for mobile performance
+### 7. Tune SQLite for mobile performance
 
-**Priority:** Medium  
-**Consensus:** Partial
+**Priority:** Medium
 
-The current SQLite configuration does not appear to take advantage of mobile-friendly performance settings such as WAL mode and less aggressive sync behavior.
+The current SQLite startup/connection path still does not apply mobile-focused settings such as WAL mode or tuned sync behavior.
 
 **Expected outcome**
 
-- Faster write operations
+- Faster writes
 - Better responsiveness on Android flash storage
 
-### 11. Reduce heatmap rendering cost on mobile
+### 8. Reduce heatmap rendering cost on mobile
 
-**Priority:** Medium  
-**Consensus:** Partial
+**Priority:** Medium
 
-The heatmap view renders a large number of interactive UI elements, including tooltip-related components that are less valuable on touch devices.
+The heatmap still renders a large grid of interactive elements, including tooltip wrappers for every day cell. On touch devices, that is a relatively expensive component tree for limited interaction value.
 
 **Expected outcome**
 
 - Faster Habit Details rendering
 - Smaller component tree on Android
-- Reduced rendering overhead in the WebView
+- Reduced WebView rendering overhead
 
-### 12. Avoid unnecessary layout re-renders on navigation
+### 9. Avoid unnecessary layout re-renders on navigation
 
-**Priority:** Medium  
-**Consensus:** Partial
+**Priority:** Medium
 
-The main layout currently forces a render on navigation even when visible layout state may not have changed.
+`MainLayout.razor` still forces `StateHasChanged()` in `HandleLocationChanged(...)` after updating route state. That may still trigger unnecessary layout work during navigation.
 
 **Expected outcome**
 
-- Fewer unnecessary renders
+- Fewer redundant renders
 - Smoother navigation transitions
 
-### 13. Reduce repeated style/string recomputation during rendering
+### 10. Reduce repeated style/string recomputation during rendering
 
-**Priority:** Medium  
-**Consensus:** Partial
+**Priority:** Medium
 
-Some UI components rebuild style strings and derived display values repeatedly during render cycles instead of reusing stable values.
+Some UI components still rebuild style strings and derived display values during render cycles, especially in the heatmap path.
 
 **Expected outcome**
 
 - Lower allocation pressure
 - Slightly cheaper render passes
 
-### 14. Revisit habit ID generation strategy
+### 11. Revisit habit ID generation strategy
 
-**Priority:** Medium  
-**Consensus:** Partial
+**Priority:** Medium
 
-Habit creation currently derives the next identifier through application-side list inspection, which is inefficient and can create race-condition risk if concurrency expands later.
+Habit creation still derives the next identifier by loading all habits and computing `Max(Id) + 1` in application code. That is inefficient and becomes riskier if concurrency expands later.
 
 **Expected outcome**
 
@@ -190,20 +136,24 @@ Habit creation currently derives the next identifier through application-side li
 - Less unnecessary read work
 - Safer long-term persistence behavior
 
+## Recently Addressed
+
+- **Move database bootstrap work off the UI thread.** Startup now creates the window immediately and runs bootstrap/schema/scheduler work through `IAppInitializationService`, while `AppRoot.razor` delays route rendering until startup is ready.
+- **Push date filtering into SQL queries.** `CheckinRepository.ApplyDateRange(...)` already applies `fromDate` / `toDate` filters to the query before materialization.
+- **Remove startup dependency on externally hosted fonts.** The app now relies on local MAUI/font-stack configuration only and no longer pulls Google Fonts over the network.
+
 ## Suggested Delivery Order
 
-1. Move DB bootstrap work off the UI thread
-2. Fix `DbContext` lifetime/concurrency behavior
-3. Optimize streak calculation
-4. Eliminate duplicate Habit Details history loads
-5. Push date filtering into SQL
-6. Remove unnecessary reloads and validation queries
-7. Remove network font dependency
-8. Tackle lower-level rendering and SQLite tuning improvements
+1. Fix `DbContext` lifetime/concurrency behavior
+2. Optimize streak calculation
+3. Eliminate duplicate Habit Details history loads
+4. Remove unnecessary Habit Details reloads and validation queries
+5. Replace full habit scans with direct lookups
+6. Tackle SQLite tuning and rendering refinements
 
 ## Success Criteria for Future Work
 
-Future implementation work should aim to satisfy the existing product expectations in `/home/runner/work/streak/streak/docs/specs/README.md`, especially:
+Future implementation work should continue to satisfy the existing product expectations in `docs\specs\README.md`, especially:
 
 - App launch should be ready for interaction within 2 seconds
 - Check-in toggling should feel instant

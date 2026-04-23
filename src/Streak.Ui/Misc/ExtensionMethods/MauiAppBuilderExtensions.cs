@@ -30,6 +30,8 @@ public static class MauiAppBuilderExtensions
 
             builder.Services.AddSingleton<SqliteDatabaseBootstrapper>();
             builder.Services.AddSingleton<SqliteDatabaseSchemaUpgrader>();
+            builder.Services.AddSingleton<IAppStartupWorkService, AppStartupWorkService>();
+            builder.Services.AddSingleton<IAppInitializationService, AppInitializationService>();
             builder.Services.AddDbContext<StreakDbContext>(options => { options.UseSqlite(SqliteDatabaseBootstrapper.ConnectionString); });
 
             // repositories
