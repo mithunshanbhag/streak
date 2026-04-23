@@ -4,6 +4,7 @@
 @inject IDatabaseExportService DatabaseExportService
 @inject IDiagnosticsExportService DiagnosticsExportService
 @inject IDatabaseShareService DatabaseShareService
+@inject IDiagnosticsShareService DiagnosticsShareService
 @inject IDatabaseImportFilePicker DatabaseImportFilePicker
 @inject IDatabaseImportService DatabaseImportService
 @inject IManualBackupCompletionNotifier ManualBackupCompletionNotifier
@@ -259,10 +260,11 @@
                 <MudPaper Elevation="0"
                           Class="pa-3 rounded-lg">
                     <MudStack Row="true"
-                              Justify="Justify.FlexEnd"
-                              AlignItems="AlignItems.Center">
+                               Justify="Justify.FlexEnd"
+                               AlignItems="AlignItems.Center"
+                               Spacing="3">
                         <MudTooltip Text="@DiagnosticsExportButtonTooltipText"
-                                    Placement="Placement.Top">
+                                     Placement="Placement.Top">
                             <MudButton Color="Color.Primary"
                                        Variant="Variant.Filled"
                                        Disabled="@DataActionsDisabled"
@@ -280,6 +282,29 @@
                                     <MudIcon Icon="@Icons.Material.Filled.Download"/>
                                 }
                             </MudButton>
+                        </MudTooltip>
+
+                        <MudTooltip Text="@DiagnosticsShareButtonTooltipText"
+                                    Placement="Placement.Top">
+                            <span class="d-inline-flex">
+                                <MudButton Color="Color.Primary"
+                                           Variant="Variant.Filled"
+                                           Disabled="@(!DiagnosticsShareService.CanShare || DataActionsDisabled)"
+                                           aria-label="@DiagnosticsShareButtonAriaLabel"
+                                           Style="@DataActionButtonStyle"
+                                           OnClick="ShareDiagnosticsAsync">
+                                    @if (_diagnosticsShareInProgress)
+                                    {
+                                        <MudProgressCircular Indeterminate="true"
+                                                             Color="Color.Inherit"
+                                                             Size="Size.Small"/>
+                                    }
+                                    else
+                                    {
+                                        <MudIcon Icon="@Icons.Material.Filled.Share"/>
+                                    }
+                                </MudButton>
+                            </span>
                         </MudTooltip>
                     </MudStack>
                 </MudPaper>
@@ -355,6 +380,8 @@
 
     private bool _diagnosticsExportInProgress;
 
+    private bool _diagnosticsShareInProgress;
+
     private bool _remindersEnabled;
 
     private TimeSpan? _reminderTimeLocal;
@@ -380,6 +407,7 @@
         || _automatedBackupSettingsUpdateInProgress
         || _exportInProgress
         || _diagnosticsExportInProgress
+        || _diagnosticsShareInProgress
         || _shareInProgress
         || _importInProgress;
 
@@ -389,6 +417,7 @@
     private bool DataActionsDisabled =>
         _exportInProgress
         || _diagnosticsExportInProgress
+        || _diagnosticsShareInProgress
         || _shareInProgress
         || _importInProgress
         || _reminderSettingsUpdateInProgress
@@ -543,6 +572,25 @@
         finally
         {
             _diagnosticsExportInProgress = false;
+        }
+    }
+
+    private async Task ShareDiagnosticsAsync()
+    {
+        try
+        {
+            _diagnosticsShareInProgress = true;
+            _operationErrorMessage = null;
+
+            await DiagnosticsShareService.ShareDiagnosticsAsync();
+        }
+        catch (Exception)
+        {
+            _operationErrorMessage = DiagnosticsShareFailedText;
+        }
+        finally
+        {
+            _diagnosticsShareInProgress = false;
         }
     }
 
@@ -704,15 +752,19 @@
 
     private const string DiagnosticsHeaderText = "Diagnostic logs";
 
-    private const string DiagnosticsDescriptionText = "Export a support bundle of recent app logs.";
+    private const string DiagnosticsDescriptionText = "Export or share a support bundle of recent app logs.";
 
     private const string DiagnosticsTooltipText = "Exports recent app logs and basic support metadata. Does not include your full database.";
 
-    private const string DiagnosticsTooltipAriaLabel = "Diagnostic export details";
+    private const string DiagnosticsTooltipAriaLabel = "Diagnostic log details";
 
     private const string DiagnosticsExportButtonTooltipText = "Export logs";
 
     private const string DiagnosticsExportButtonAriaLabel = "Export diagnostic logs";
+
+    private const string DiagnosticsShareButtonTooltipText = "Share logs";
+
+    private const string DiagnosticsShareButtonAriaLabel = "Share diagnostic logs";
 
     private const string RestoreHeaderText = "Restore";
 
@@ -733,6 +785,8 @@
     private const string ShareFailedText = "Unable to share your data right now. Please try again.";
 
     private const string DiagnosticsExportFailedText = "Unable to export your diagnostic logs right now. Please try again.";
+
+    private const string DiagnosticsShareFailedText = "Unable to share your diagnostic logs right now. Please try again.";
 
     private const string ImportValidationFailedText = "That file is not a valid Streak backup or database. Your current data was not changed.";
 

@@ -17,6 +17,7 @@ public sealed class SettingsTests : TestContext
         var exportServiceMock = new Mock<IDatabaseExportService>();
         var diagnosticsExportServiceMock = new Mock<IDiagnosticsExportService>();
         var shareServiceMock = CreateShareServiceMock(canShare: false);
+        var diagnosticsShareServiceMock = CreateDiagnosticsShareServiceMock(canShare: false);
         var backupConfigurationServiceMock = CreateBackupConfigurationServiceMock(isEnabled: false);
         var reminderConfigurationServiceMock = CreateReminderConfigurationServiceMock(isEnabled: true);
         var appVersionInfoServiceMock = CreateAppVersionInfoServiceMock();
@@ -26,6 +27,7 @@ public sealed class SettingsTests : TestContext
             shareServiceMock,
             backupConfigurationServiceMock,
             reminderConfigurationServiceMock,
+            diagnosticsShareServiceMock: diagnosticsShareServiceMock,
             appVersionInfoServiceMock: appVersionInfoServiceMock);
 
         var cut = RenderSettings();
@@ -44,9 +46,10 @@ public sealed class SettingsTests : TestContext
         cut.Find("button[aria-label='Download data']");
         cut.Find("button[aria-label='Share data']").HasAttribute("disabled").Should().BeTrue();
         cut.Markup.Should().Contain("Diagnostic logs");
-        cut.Markup.Should().Contain("Export a support bundle of recent app logs.");
-        cut.Find("button[aria-label='Diagnostic export details']");
+        cut.Markup.Should().Contain("Export or share a support bundle of recent app logs.");
+        cut.Find("button[aria-label='Diagnostic log details']");
         cut.Find("button[aria-label='Export diagnostic logs']");
+        cut.Find("button[aria-label='Share diagnostic logs']").HasAttribute("disabled").Should().BeTrue();
         cut.Markup.Should().Contain("Restore");
         cut.Markup.Should().Contain("Restore from a .zip backup or a legacy .db file. Existing proof photos stay in place for .db restores.");
         cut.Find("button[aria-label='Restore warning']");
@@ -62,6 +65,7 @@ public sealed class SettingsTests : TestContext
         var exportServiceMock = new Mock<IDatabaseExportService>();
         var diagnosticsExportServiceMock = new Mock<IDiagnosticsExportService>();
         var shareServiceMock = CreateShareServiceMock(canShare: false);
+        var diagnosticsShareServiceMock = CreateDiagnosticsShareServiceMock(canShare: false);
         var backupConfigurationServiceMock = CreateBackupConfigurationServiceMock(isEnabled: false);
         var reminderConfigurationServiceMock = CreateReminderConfigurationServiceMock(isEnabled: true);
         var appVersionInfoServiceMock = CreateAppVersionInfoServiceMock("1.2.0", "456");
@@ -72,6 +76,7 @@ public sealed class SettingsTests : TestContext
             shareServiceMock,
             backupConfigurationServiceMock,
             reminderConfigurationServiceMock,
+            diagnosticsShareServiceMock: diagnosticsShareServiceMock,
             appVersionInfoServiceMock: appVersionInfoServiceMock);
 
         var cut = RenderSettings();
@@ -93,6 +98,7 @@ public sealed class SettingsTests : TestContext
 
         var exportServiceMock = new Mock<IDatabaseExportService>();
         var diagnosticsExportServiceMock = new Mock<IDiagnosticsExportService>();
+        var diagnosticsShareServiceMock = CreateDiagnosticsShareServiceMock(canShare: true);
         exportServiceMock
             .Setup(x => x.ExportDatabaseAsync(It.IsAny<CancellationToken>()))
             .Returns(async () =>
@@ -110,7 +116,8 @@ public sealed class SettingsTests : TestContext
             diagnosticsExportServiceMock,
             shareServiceMock,
             backupConfigurationServiceMock,
-            reminderConfigurationServiceMock);
+            reminderConfigurationServiceMock,
+            diagnosticsShareServiceMock: diagnosticsShareServiceMock);
 
         var cut = RenderSettings();
 
@@ -122,6 +129,7 @@ public sealed class SettingsTests : TestContext
             var button = cut.Find("button[aria-label='Download data']");
             button.HasAttribute("disabled").Should().BeTrue();
             cut.Find("button[aria-label='Export diagnostic logs']").HasAttribute("disabled").Should().BeTrue();
+            cut.Find("button[aria-label='Share diagnostic logs']").HasAttribute("disabled").Should().BeTrue();
             cut.Markup.Should().Contain("mud-progress-circular");
         });
 
@@ -132,6 +140,7 @@ public sealed class SettingsTests : TestContext
             var button = cut.Find("button[aria-label='Download data']");
             button.HasAttribute("disabled").Should().BeFalse();
             cut.Find("button[aria-label='Export diagnostic logs']").HasAttribute("disabled").Should().BeFalse();
+            cut.Find("button[aria-label='Share diagnostic logs']").HasAttribute("disabled").Should().BeFalse();
         });
     }
 
@@ -159,6 +168,35 @@ public sealed class SettingsTests : TestContext
 
         shareServiceMock.Verify(
             x => x.ShareDatabaseAsync(It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task Settings_ShouldEnableDiagnosticsShareButtonAndInvokeShare_WhenSharingIsSupported()
+    {
+        var exportServiceMock = new Mock<IDatabaseExportService>();
+        var diagnosticsExportServiceMock = new Mock<IDiagnosticsExportService>();
+        var shareServiceMock = CreateShareServiceMock(canShare: false);
+        var diagnosticsShareServiceMock = CreateDiagnosticsShareServiceMock(canShare: true);
+        var backupConfigurationServiceMock = CreateBackupConfigurationServiceMock(isEnabled: false);
+        var reminderConfigurationServiceMock = CreateReminderConfigurationServiceMock(isEnabled: true);
+
+        RegisterSettingsServices(
+            exportServiceMock,
+            diagnosticsExportServiceMock,
+            shareServiceMock,
+            backupConfigurationServiceMock,
+            reminderConfigurationServiceMock,
+            diagnosticsShareServiceMock: diagnosticsShareServiceMock);
+
+        var cut = RenderSettings();
+
+        cut.Find("button[aria-label='Share diagnostic logs']").HasAttribute("disabled").Should().BeFalse();
+
+        await cut.Find("button[aria-label='Share diagnostic logs']").ClickAsync(new MouseEventArgs());
+
+        diagnosticsShareServiceMock.Verify(
+            x => x.ShareDiagnosticsAsync(It.IsAny<CancellationToken>()),
             Times.Once);
     }
 
@@ -203,6 +241,7 @@ public sealed class SettingsTests : TestContext
 
         var exportServiceMock = new Mock<IDatabaseExportService>();
         var diagnosticsExportServiceMock = new Mock<IDiagnosticsExportService>();
+        var diagnosticsShareServiceMock = CreateDiagnosticsShareServiceMock(canShare: true);
         var shareServiceMock = CreateShareServiceMock(canShare: true);
         shareServiceMock
             .Setup(x => x.ShareDatabaseAsync(It.IsAny<CancellationToken>()))
@@ -219,7 +258,8 @@ public sealed class SettingsTests : TestContext
             diagnosticsExportServiceMock,
             shareServiceMock,
             backupConfigurationServiceMock,
-            reminderConfigurationServiceMock);
+            reminderConfigurationServiceMock,
+            diagnosticsShareServiceMock: diagnosticsShareServiceMock);
 
         var cut = RenderSettings();
 
@@ -230,6 +270,7 @@ public sealed class SettingsTests : TestContext
         {
             cut.Find("button[aria-label='Download data']").HasAttribute("disabled").Should().BeTrue();
             cut.Find("button[aria-label='Export diagnostic logs']").HasAttribute("disabled").Should().BeTrue();
+            cut.Find("button[aria-label='Share diagnostic logs']").HasAttribute("disabled").Should().BeTrue();
             cut.Find("button[aria-label='Share data']").HasAttribute("disabled").Should().BeTrue();
             cut.Find("button[aria-label='Upload data']").HasAttribute("disabled").Should().BeTrue();
             cut.Markup.Should().Contain("mud-progress-circular");
@@ -241,6 +282,7 @@ public sealed class SettingsTests : TestContext
         {
             cut.Find("button[aria-label='Download data']").HasAttribute("disabled").Should().BeFalse();
             cut.Find("button[aria-label='Export diagnostic logs']").HasAttribute("disabled").Should().BeFalse();
+            cut.Find("button[aria-label='Share diagnostic logs']").HasAttribute("disabled").Should().BeFalse();
             cut.Find("button[aria-label='Share data']").HasAttribute("disabled").Should().BeFalse();
             cut.Find("button[aria-label='Upload data']").HasAttribute("disabled").Should().BeFalse();
         });
@@ -254,6 +296,7 @@ public sealed class SettingsTests : TestContext
 
         var exportServiceMock = new Mock<IDatabaseExportService>();
         var diagnosticsExportServiceMock = new Mock<IDiagnosticsExportService>();
+        var diagnosticsShareServiceMock = CreateDiagnosticsShareServiceMock(canShare: true);
         diagnosticsExportServiceMock
             .Setup(x => x.ExportDiagnosticsAsync(It.IsAny<CancellationToken>()))
             .Returns(async () =>
@@ -271,7 +314,8 @@ public sealed class SettingsTests : TestContext
             diagnosticsExportServiceMock,
             shareServiceMock,
             backupConfigurationServiceMock,
-            reminderConfigurationServiceMock);
+            reminderConfigurationServiceMock,
+            diagnosticsShareServiceMock: diagnosticsShareServiceMock);
 
         var cut = RenderSettings();
 
@@ -282,6 +326,7 @@ public sealed class SettingsTests : TestContext
         {
             cut.Find("button[aria-label='Download data']").HasAttribute("disabled").Should().BeTrue();
             cut.Find("button[aria-label='Export diagnostic logs']").HasAttribute("disabled").Should().BeTrue();
+            cut.Find("button[aria-label='Share diagnostic logs']").HasAttribute("disabled").Should().BeTrue();
             cut.Find("button[aria-label='Share data']").HasAttribute("disabled").Should().BeTrue();
             cut.Find("button[aria-label='Upload data']").HasAttribute("disabled").Should().BeTrue();
             cut.Markup.Should().Contain("mud-progress-circular");
@@ -293,6 +338,62 @@ public sealed class SettingsTests : TestContext
         {
             cut.Find("button[aria-label='Download data']").HasAttribute("disabled").Should().BeFalse();
             cut.Find("button[aria-label='Export diagnostic logs']").HasAttribute("disabled").Should().BeFalse();
+            cut.Find("button[aria-label='Share diagnostic logs']").HasAttribute("disabled").Should().BeFalse();
+            cut.Find("button[aria-label='Share data']").HasAttribute("disabled").Should().BeFalse();
+            cut.Find("button[aria-label='Upload data']").HasAttribute("disabled").Should().BeFalse();
+        });
+    }
+
+    [Fact]
+    public async Task Settings_ShouldDisableDataActionsWhileDiagnosticsShareIsInProgress()
+    {
+        var diagnosticsShareStarted = new TaskCompletionSource();
+        var allowDiagnosticsShareToFinish = new TaskCompletionSource();
+
+        var exportServiceMock = new Mock<IDatabaseExportService>();
+        var diagnosticsExportServiceMock = new Mock<IDiagnosticsExportService>();
+        var shareServiceMock = CreateShareServiceMock(canShare: true);
+        var diagnosticsShareServiceMock = CreateDiagnosticsShareServiceMock(canShare: true);
+        diagnosticsShareServiceMock
+            .Setup(x => x.ShareDiagnosticsAsync(It.IsAny<CancellationToken>()))
+            .Returns(async () =>
+            {
+                diagnosticsShareStarted.TrySetResult();
+                await allowDiagnosticsShareToFinish.Task;
+            });
+
+        var backupConfigurationServiceMock = CreateBackupConfigurationServiceMock(isEnabled: false);
+        var reminderConfigurationServiceMock = CreateReminderConfigurationServiceMock(isEnabled: true);
+        RegisterSettingsServices(
+            exportServiceMock,
+            diagnosticsExportServiceMock,
+            shareServiceMock,
+            backupConfigurationServiceMock,
+            reminderConfigurationServiceMock,
+            diagnosticsShareServiceMock: diagnosticsShareServiceMock);
+
+        var cut = RenderSettings();
+
+        cut.Find("button[aria-label='Share diagnostic logs']").Click();
+        await diagnosticsShareStarted.Task;
+
+        cut.WaitForAssertion(() =>
+        {
+            cut.Find("button[aria-label='Download data']").HasAttribute("disabled").Should().BeTrue();
+            cut.Find("button[aria-label='Export diagnostic logs']").HasAttribute("disabled").Should().BeTrue();
+            cut.Find("button[aria-label='Share diagnostic logs']").HasAttribute("disabled").Should().BeTrue();
+            cut.Find("button[aria-label='Share data']").HasAttribute("disabled").Should().BeTrue();
+            cut.Find("button[aria-label='Upload data']").HasAttribute("disabled").Should().BeTrue();
+            cut.Markup.Should().Contain("mud-progress-circular");
+        });
+
+        allowDiagnosticsShareToFinish.TrySetResult();
+
+        cut.WaitForAssertion(() =>
+        {
+            cut.Find("button[aria-label='Download data']").HasAttribute("disabled").Should().BeFalse();
+            cut.Find("button[aria-label='Export diagnostic logs']").HasAttribute("disabled").Should().BeFalse();
+            cut.Find("button[aria-label='Share diagnostic logs']").HasAttribute("disabled").Should().BeFalse();
             cut.Find("button[aria-label='Share data']").HasAttribute("disabled").Should().BeFalse();
             cut.Find("button[aria-label='Upload data']").HasAttribute("disabled").Should().BeFalse();
         });
@@ -469,6 +570,47 @@ public sealed class SettingsTests : TestContext
         await cut.Find("button[aria-label='Export diagnostic logs']").ClickAsync(new MouseEventArgs());
 
         cut.WaitForAssertion(() => { cut.Markup.Should().NotContain("Unable to export your diagnostic logs right now. Please try again."); });
+    }
+
+    [Fact]
+    public async Task Settings_ShouldShowDiagnosticsShareErrorAndClearItOnRetry()
+    {
+        var attemptCount = 0;
+
+        var exportServiceMock = new Mock<IDatabaseExportService>();
+        var diagnosticsExportServiceMock = new Mock<IDiagnosticsExportService>();
+        var shareServiceMock = CreateShareServiceMock(canShare: false);
+        var diagnosticsShareServiceMock = CreateDiagnosticsShareServiceMock(canShare: true);
+        diagnosticsShareServiceMock
+            .Setup(x => x.ShareDiagnosticsAsync(It.IsAny<CancellationToken>()))
+            .Returns(() =>
+            {
+                attemptCount++;
+                if (attemptCount == 1)
+                    throw new InvalidOperationException("Boom");
+
+                return Task.CompletedTask;
+            });
+
+        var backupConfigurationServiceMock = CreateBackupConfigurationServiceMock(isEnabled: false);
+        var reminderConfigurationServiceMock = CreateReminderConfigurationServiceMock(isEnabled: true);
+        RegisterSettingsServices(
+            exportServiceMock,
+            diagnosticsExportServiceMock,
+            shareServiceMock,
+            backupConfigurationServiceMock,
+            reminderConfigurationServiceMock,
+            diagnosticsShareServiceMock: diagnosticsShareServiceMock);
+
+        var cut = RenderSettings();
+
+        await cut.Find("button[aria-label='Share diagnostic logs']").ClickAsync(new MouseEventArgs());
+
+        cut.WaitForAssertion(() => { cut.Markup.Should().Contain("Unable to share your diagnostic logs right now. Please try again."); });
+
+        await cut.Find("button[aria-label='Share diagnostic logs']").ClickAsync(new MouseEventArgs());
+
+        cut.WaitForAssertion(() => { cut.Markup.Should().NotContain("Unable to share your diagnostic logs right now. Please try again."); });
     }
 
     #endregion
@@ -744,6 +886,13 @@ public sealed class SettingsTests : TestContext
         return shareServiceMock;
     }
 
+    private static Mock<IDiagnosticsShareService> CreateDiagnosticsShareServiceMock(bool canShare)
+    {
+        var shareServiceMock = new Mock<IDiagnosticsShareService>();
+        shareServiceMock.SetupGet(x => x.CanShare).Returns(canShare);
+        return shareServiceMock;
+    }
+
     private static Mock<IAutomatedBackupConfigurationService> CreateBackupConfigurationServiceMock(
         bool isEnabled,
         bool isSupported = true)
@@ -787,6 +936,7 @@ public sealed class SettingsTests : TestContext
         Mock<IDatabaseShareService> shareServiceMock,
         Mock<IAutomatedBackupConfigurationService> backupConfigurationServiceMock,
         Mock<IReminderConfigurationService> reminderConfigurationServiceMock,
+        Mock<IDiagnosticsShareService>? diagnosticsShareServiceMock = null,
         Mock<IManualBackupCompletionNotifier>? manualBackupCompletionNotifierMock = null,
         Mock<IBackupNotificationPermissionService>? backupNotificationPermissionServiceMock = null,
         Mock<IReminderNotificationPermissionCoordinator>? reminderNotificationPermissionCoordinatorMock = null,
@@ -796,6 +946,7 @@ public sealed class SettingsTests : TestContext
         var importFilePickerMock = new Mock<IDatabaseImportFilePicker>();
         var importServiceMock = new Mock<IDatabaseImportService>();
         manualBackupCompletionNotifierMock ??= new Mock<IManualBackupCompletionNotifier>();
+        diagnosticsShareServiceMock ??= CreateDiagnosticsShareServiceMock(canShare: false);
         if (backupNotificationPermissionServiceMock is null)
         {
             backupNotificationPermissionServiceMock = new Mock<IBackupNotificationPermissionService>();
@@ -824,6 +975,7 @@ public sealed class SettingsTests : TestContext
         Services.AddSingleton(exportServiceMock.Object);
         Services.AddSingleton(diagnosticsExportServiceMock.Object);
         Services.AddSingleton(shareServiceMock.Object);
+        Services.AddSingleton(diagnosticsShareServiceMock.Object);
         Services.AddSingleton(importFilePickerMock.Object);
         Services.AddSingleton(importServiceMock.Object);
         Services.AddSingleton(manualBackupCompletionNotifierMock.Object);

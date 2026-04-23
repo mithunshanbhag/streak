@@ -268,7 +268,7 @@ Use semantic roles rather than one-off hex values.
   - Settings: `Settings`
   - GitHub repo: `Icons.Custom.Brands.GitHub`
 - **Homepage create CTA:** `Add` icon paired with `New Habit`.
-- **Settings data actions:** `Download`, `Share`, and `Upload` for backup download, backup share, and restore respectively.
+- **Settings data actions:** `Download`, `Share`, and `Upload` for backup download, backup share, diagnostics export, diagnostics share, and restore respectively.
 - **Habit detail actions:** `Edit` and `Delete`.
 - **Checkin toggle:** use MudBlazor's `MudCheckBox` pattern with done/not-done icon states.
 - **Check-in dialog proof actions:**

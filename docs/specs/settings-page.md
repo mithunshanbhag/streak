@@ -2,14 +2,14 @@
 
 > **Route**: `/settings`
 
-The settings page lets users configure **daily reminders** and access low-frequency **data management** actions such as daily automated backups, downloading, sharing, and restoring full data-backup archives, plus exporting diagnostic logs. Users access it from the **⚙** icon in the app bar.
+The settings page lets users configure **daily reminders** and access low-frequency **data management** actions such as daily automated backups, downloading, sharing, and restoring full data-backup archives, plus exporting or sharing diagnostic logs. Users access it from the **⚙** icon in the app bar.
 
 ## Navigation
 
 - Accessible from the **⚙** icon in the Homepage app bar.
 - A **back arrow** in the app bar returns the user to the [Homepage](./homepage.md).
 - Secondary-screen chrome stays focused: show **Back** + `Settings` only.
-- Daily automated backups, backup download, backup share, diagnostic export, and restore remain inside the page content rather than becoming dedicated app-bar icons.
+- Daily automated backups, backup download, backup share, diagnostic export, diagnostic share, and restore remain inside the page content rather than becoming dedicated app-bar icons.
 
 ## Layout
 
@@ -50,8 +50,8 @@ The page contains two vertically stacked sections presented as clean cards:
 | Backup action cluster         | `MudIconButton` group | Two filled icon-only buttons shown side-by-side: download and share. Tooltips provide the visible labels **"Download data"** and **"Share data"**.                                                                                                           |
 | Diagnostic logs header        | Text                  | **"Diagnostic logs"**                                                                                                                                                                                                                                        |
 | Diagnostic logs info icon     | Glyph + tooltip       | Small info icon beside **Diagnostic logs**. Hover/focus/press shows: *"Exports recent app logs and basic support metadata. Does not include your full database."*                                                                                            |
-| Diagnostic logs description   | Caption               | *"Export a support bundle of recent app logs."*                                                                                                                                                                                                              |
-| Diagnostic export action      | `MudIconButton`       | Filled icon-only button with a download icon. Tooltip text is **"Export logs"**. Exports a `.zip` diagnostics bundle using the platform-specific save flow.                                                                                                  |
+| Diagnostic logs description   | Caption               | *"Export or share a support bundle of recent app logs."*                                                                                                                                                                                                     |
+| Diagnostic action cluster     | `MudIconButton` group | Two filled icon-only buttons shown side-by-side: download and share. Tooltips provide the visible labels **"Export logs"** and **"Share logs"**. Export uses the platform save flow. Share opens the native share flow when supported.                        |
 | Restore header                | Text                  | **"Restore"**                                                                                                                                                                                                                                                |
 | Restore warning icon          | Glyph + tooltip       | Small warning icon beside **Restore**. Hover/focus/press shows: *"This will replace ALL existing data. This action cannot be undone."*                                                                                                                       |
 | Restore description           | Caption               | *"Restore your data from a previous backup."*                                                                                                                                                                                                                |
@@ -61,9 +61,10 @@ The page contains two vertically stacked sections presented as clean cards:
 - The automated backups subsection should use the same quiet structure as Backup, Diagnostic logs, and Restore: heading, subtle tooltip icon, one short description line, then a single trailing control row.
 - Backup, Diagnostic logs, and Restore should use the same subsection layout and spacing so they read as sibling manual actions within the same card.
 - The backup action cluster should place **Share data** immediately next to **Download data** with the same size, shape, fill, and icon-button styling.
+- The diagnostics action cluster should place **Share logs** immediately next to **Export logs** with the same size, shape, fill, and icon-button styling.
 - The tooltip trigger icons should be visually subtle but clearly interactive, with the warning icon using a caution color treatment.
 - Do not show the backup/help text, button labels, or restore warning as always-visible inline callouts inside the card body.
-- **Download data**, **Share data**, **Export logs**, and **Upload data** should all use the same filled icon-button treatment so they read as one cohesive action family.
+- **Download data**, **Share data**, **Export logs**, **Share logs**, and **Upload data** should all use the same filled icon-button treatment so they read as one cohesive action family.
 
 ## Daily Automated Backup Behavior
 
@@ -168,6 +169,27 @@ The page contains two vertically stacked sections presented as clean cards:
 - On Windows, cancelling the file-save dialog is treated as a user cancellation, not as a diagnostics export error.
 - On Android, a successful diagnostics export should leave the `.zip` file available in **Downloads/Streak/Diagnostics** so the user can inspect it or share it later if they choose.
 
+## Diagnostic Share Behavior
+
+- Tapping **Share logs** packages recent diagnostic logs into the same standalone support artifact used by diagnostics export and opens a platform-native share flow so the user can hand that `.zip` file to another app or service manually.
+- Diagnostic share is a **manual** action; it does not run automatically or on a schedule.
+- Diagnostic share does **not** create cloud sync, account linkage, or recurring uploads. It is strictly a one-time user-initiated handoff.
+- The shared diagnostics bundle should include the same recent log files and lightweight manifest metadata as the normal diagnostics export flow.
+- The shared diagnostics bundle must **not** silently include the live database or a data-backup archive. Data export/share remains a separate explicit action.
+- The shared diagnostics bundle should use the same timestamped filename pattern as export, such as `streak-diagnostics-YYYYMMdd-HHmmss.zip`.
+- Diagnostic share is considered a low-frequency support / troubleshooting action, so it lives in **Settings** beside **Export logs**.
+
+### Platform-specific Diagnostic Share UX
+
+| Platform | Expected behavior                                                                                                                                                      |
+| -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Windows  | Sharing is disabled. During local Windows development/debugging, use **Export logs** instead to save the diagnostics bundle where you want it.                        |
+| Android  | Create the diagnostics bundle, then open the system share sheet with the generated `.zip` file so the user can send it to apps such as Drive, Gmail, or WhatsApp. |
+
+- On Android, dismissing or cancelling the diagnostics share UI is treated as a user cancellation, not as a share error.
+- On Windows, the **Share logs** control remains disabled.
+- Diagnostic share should remain additive to the normal diagnostics export flow rather than replacing it.
+
 ## Restore Behavior
 
 - Tapping **Upload data** opens a platform-native file picker that accepts both `.zip` files and raw `.db` files.
@@ -230,6 +252,7 @@ The page contains two vertically stacked sections presented as clean cards:
   - On **Windows**, automated backups are not available.
 - Export creates a backup on demand; it is not auto-saved in the background.
 - Diagnostic export creates a diagnostics bundle on demand; it is not auto-saved or regenerated continuously in the background.
+- Diagnostic share creates a diagnostics bundle on demand and immediately hands it to the operating system's share flow; it is not auto-saved or repeated in the background.
 - Share creates a backup archive on demand and immediately hands it to the operating system's share flow; it is not auto-saved or repeated in the background.
 - Restore replaces the live database on demand after user confirmation. When the selected file is a `.zip` archive, it also reloads picture-proof files from that archive. When the selected file is a `.db` backup, the current uploaded picture-proof files remain untouched, but any restored proof references without matching files are cleared during reconciliation.
 - Exported backup archives are stored outside the live app database location:
@@ -261,6 +284,8 @@ The page contains two vertically stacked sections presented as clean cards:
 | User cancels diagnostics export save dialog    | Keep the user on Settings and treat the action as cancelled rather than failed.                                                                                                                                       |
 | Android diagnostics export succeeds            | The diagnostics `.zip` appears in **Downloads/Streak/Diagnostics** with the generated timestamped filename.                                                                                                           |
 | Diagnostics export fails                       | Keep the user on Settings and surface a clear error message rather than silently failing.                                                                                                                             |
+| User cancels diagnostics share sheet           | Keep the user on Settings and treat the action as cancelled rather than failed.                                                                                                                                       |
+| Diagnostics share fails                        | Keep the user on Settings and surface a clear error message rather than silently failing.                                                                                                                             |
 | User cancels share sheet                       | Keep the user on Settings and treat the action as cancelled rather than failed.                                                                                                                                       |
 | Share fails                                    | Keep the user on Settings and surface a clear error message rather than silently failing.                                                                                                                             |
 | User cancels restore file picker               | Keep the user on Settings and treat the action as cancelled rather than failed.                                                                                                                                       |
