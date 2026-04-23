@@ -17,11 +17,6 @@ The current UI/UX is **not production ready yet**. The gap is not a missing rede
 
 The app is close enough that the right next step is a focused polish and validation pass, not a broad reimagining.
 
-## Completed Since This Assessment
-
-- **2026-04-22:** Fixed malformed MudBlazor utility classes in `Home.razor` and `HabitDetails.razor`, including spaced class names such as `pa - 4`, `rounded - lg`, `pa - 3`, and `text - secondary`. A follow-up search found no remaining malformed `Class="... - ..."` patterns in Razor/HTML/CSS sources, and `Streak.Ui.UnitTests` passed.
-- **2026-04-22:** Removed the production Roboto Google Fonts dependency from `src/Streak.Ui/wwwroot/index.html`, added a local/system font stack in `app.css`, configured MudBlazor theme typography in `MainLayout.razor`, updated `ui.md` with font-loading rules, and changed UI mockups to use the same local/system stack instead of importing Roboto from Google Fonts.
-
 ## What Is Working Well
 
 - **Clear primary job:** The homepage is correctly treated as the daily surface where users check in and leave.
@@ -69,25 +64,19 @@ This is understandable because notes and picture proof are now part of the model
 
 The implementation generally follows the spec, but there are several signs of drift:
 
-- **Resolved:** Some MudBlazor utility classes were malformed with spaces, such as `pa - 4`, `rounded - lg`, and `text - secondary`, which meant intended spacing, radius, or color could silently fail. These have been corrected in the current source.
-- Some colors use unspecified semantic roles such as `Color.Tertiary`, `Color.Info`, and raw CSS variables instead of the documented design tokens.
-- **Resolved:** The app previously referenced an external Google Fonts URL for Roboto, which conflicted with the local/offline product expectation and could affect first render. The production app now uses a local/system font stack in both global CSS and MudBlazor theme typography.
+- Some colors use unspecified semantic roles such as `Color.Tertiary`, `Color.Warning`, and raw CSS variables instead of the documented design tokens.
 - The loading screen uses a separate visual palette and custom gradient treatment that does not match the restrained app theme.
 - Some button labels still use all-caps copy such as `SAVE`, while the specs and mockups use calmer sentence-style actions.
 
 **Recommended actions**
 
-- Keep the malformed-utility-class search as a regression check when touching Razor markup.
 - Replace non-spec color roles with documented semantic tokens.
-- Keep the production font stack local/system-only and avoid reintroducing externally hosted typography assets.
 - Align the loading screen with the app palette and reduce decorative visual noise.
 - Normalize dialog action labels to sentence case: `Save`, `Save changes`, `Create habit`, `Save check-in`.
 
 **Acceptance criteria**
 
-- No malformed MudBlazor utility classes remain.
 - Light and dark theme screenshots match the intended design language.
-- The app renders acceptably offline with no dependency on externally hosted typography fonts.
 - Button copy and color semantics are consistent across create, edit, check-in, restore, and delete flows.
 
 ### 3. Settings Relies Too Heavily On Icon-Only Actions And Tooltips
@@ -270,11 +259,9 @@ Existing UI tests cover behavior and markup, which is valuable. They do not prov
 
 ### Phase 1: Production Polish Sweep
 
-1. Keep malformed utility classes fixed and guard against reintroduction.
-2. Normalize button copy and semantic color usage.
-3. Keep the external typography font dependency removed.
-4. Align loading screen visuals with the app theme.
-5. Replace raw exception messages with friendly error copy.
+1. Normalize button copy and semantic color usage.
+2. Align loading screen visuals with the app theme.
+3. Replace raw exception messages with friendly error copy.
 
 ### Phase 2: Mobile UX Validation
 
@@ -308,7 +295,6 @@ Before calling the UI production ready, the app should satisfy the following:
 
 - Core daily check-in flow is fast, obvious, and tested on Android.
 - Homepage, dialogs, Habit Details, and Settings match the accepted specs.
-- No malformed utility classes or accidental styling gaps remain.
 - All important actions are understandable without hover.
 - Light and dark themes are visually validated.
 - Empty, loading, error, success, disabled, permission, and destructive states are specified and implemented.

@@ -67,5 +67,4 @@ This document captures known drift and gap items identified during the cross-che
 
 - The core/view-model heatmap logic has some coverage, but there is still room for stronger boundary and component-level coverage:
   - Monday/week-boundary alignment
-  - exact 90-day window edges
   - component behavior around "scroll to latest" / client-side heatmap interaction wiring

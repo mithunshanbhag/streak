@@ -2,7 +2,7 @@
 
 ## Android Page Load and Startup Performance
 
-This document tracks the performance follow-up items that are still open after the latest round of fixes. The original investigation produced a longer list; items that are already addressed have been moved into a short "Recently addressed" section so this file stays current.
+This document tracks the performance follow-up items that are still open after the latest round of fixes.
 
 ## Highest Priority Findings
 
@@ -135,12 +135,6 @@ Habit creation still derives the next identifier by loading all habits and compu
 - Simpler create flow
 - Less unnecessary read work
 - Safer long-term persistence behavior
-
-## Recently Addressed
-
-- **Move database bootstrap work off the UI thread.** Startup now creates the window immediately and runs bootstrap/schema/scheduler work through `IAppInitializationService`, while `AppRoot.razor` delays route rendering until startup is ready.
-- **Push date filtering into SQL queries.** `CheckinRepository.ApplyDateRange(...)` already applies `fromDate` / `toDate` filters to the query before materialization.
-- **Remove startup dependency on externally hosted fonts.** The app now relies on local MAUI/font-stack configuration only and no longer pulls Google Fonts over the network.
 
 ## Suggested Delivery Order
 

@@ -13,38 +13,14 @@ The findings below were manually verified after the multi-model review. They are
 
 | Priority | Consensus | Severity | Finding                                                                                |
 | -------- | --------- | -------- | -------------------------------------------------------------------------------------- |
-| 1        | 2/3       | Resolved | Check-in date filters now run in the database query instead of loading full history    |
-| 2        | 1/3       | High     | Windows proof-path handling can escape the configured proof root                       |
-| 3        | 1/3       | High     | ZIP restore extraction is vulnerable to path traversal                                 |
-| 4        | 1/3       | Medium   | Service contracts leak persistence models into the Razor UI layer                      |
-| 5        | 1/3       | Medium   | UI date handling bypasses `TimeProvider` in a couple of user-facing places             |
-| 6        | 1/3       | Medium   | Android proof saves finalize `MediaStore` records before the output stream is disposed |
-| 7        | 1/3       | Low      | Registered FluentValidation validators and DTOs are effectively dead code today        |
+| 1        | 1/3       | High     | Windows proof-path handling can escape the configured proof root                       |
+| 2        | 1/3       | High     | ZIP restore extraction is vulnerable to path traversal                                 |
+| 3        | 1/3       | Medium   | Service contracts leak persistence models into the Razor UI layer                      |
+| 4        | 1/3       | Medium   | UI date handling bypasses `TimeProvider` in a couple of user-facing places             |
+| 5        | 1/3       | Medium   | Android proof saves finalize `MediaStore` records before the output stream is disposed |
+| 6        | 1/3       | Low      | Registered FluentValidation validators and DTOs are effectively dead code today        |
 
-## 1. Resolved: check-in date filters now run in the database query
-
-**Consensus:** 2/3 reviewers  
-**Status:** Resolved on 2026-04-23
-
-**Why it matters**
-
-The homepage and reminder-related reads ask for bounded date windows, but `CheckinRepository` fetches the full matching history first and trims it afterward in memory. That adds unnecessary I/O and allocations on core app paths, and the cost grows with every extra day of history.
-
-**Evidence**
-
-- `src\Streak.Ui\Repositories\Implementations\CheckinRepository.cs:30-35`
-- `src\Streak.Ui\Repositories\Implementations\CheckinRepository.cs:55-60`
-- `src\Streak.Ui\Repositories\Implementations\CheckinRepository.cs:102-121`
-- `src\Streak.Ui\Services\Implementations\CheckinService.cs:56-70`
-- `src\Streak.Ui\Services\Implementations\CheckinService.cs:73-91`
-
-`GetByHabitNamesAsync(...)` and `GetByHabitIdsAsync(...)` call `ToListAsync(...)` before `ApplyDateRange(...)`. `GetHomePageHabitCheckinsAsync(...)` and `GetPendingHabitCountForTodayAsync(...)` both rely on that path.
-
-**Resolution**
-
-`CheckinRepository.GetByHabitNamesAsync(...)` and `GetByHabitIdsAsync(...)` now apply the optional `fromDate` / `toDate` bounds to the `IQueryable` before materializing results. The repository tests also cover inclusive ranges plus lower-bound-only and upper-bound-only query paths.
-
-## 2. Windows proof-path handling can escape the configured proof root
+## 1. Windows proof-path handling can escape the configured proof root
 
 **Consensus:** 1/3 reviewers  
 **Severity:** High
@@ -68,7 +44,7 @@ The homepage and reminder-related reads ask for bounded date windows, but `Check
 
 After combining the root and relative path, call `Path.GetFullPath(...)` and reject anything that does not stay under the configured proof root. Also reject rooted or drive-qualified segments up front (`Path.IsPathRooted(...)`, colon checks on Windows) instead of only filtering `.` and `..`.
 
-## 3. ZIP restore extraction is vulnerable to path traversal
+## 2. ZIP restore extraction is vulnerable to path traversal
 
 **Consensus:** 1/3 reviewers  
 **Severity:** High
@@ -87,7 +63,7 @@ The current guard only rejects `.` and `..` at `:252-253`, then writes the entry
 
 Resolve the final destination with `Path.GetFullPath(...)` and verify it stays under the extraction root before writing the file. Reject rooted, drive-qualified, or otherwise escaping entry paths even if they begin with the allowed `CheckinProofs/` prefix.
 
-## 4. Service contracts leak persistence models into the Razor UI layer
+## 3. Service contracts leak persistence models into the Razor UI layer
 
 **Consensus:** 1/3 reviewers  
 **Severity:** Medium
@@ -109,7 +85,7 @@ The repository guidance for this repo says the repository layer should own persi
 
 Introduce explicit input/result models for create, update, and read flows, then map inside the service layer. Keep `Habit` and `Checkin` as repository-facing types.
 
-## 5. UI date handling bypasses `TimeProvider` in a couple of user-facing places
+## 4. UI date handling bypasses `TimeProvider` in a couple of user-facing places
 
 **Consensus:** 1/3 reviewers  
 **Severity:** Medium
@@ -120,8 +96,8 @@ The app is intentionally local-time-first and already injects `TimeProvider` in 
 
 **Evidence**
 
-- `src\Streak.Ui\Components\Pages\Home.razor:227-231`
-- `src\Streak.Ui\Components\Pages\HabitDetails.razor:266-268`
+- `src\Streak.Ui\Components\Pages\Home.razor:255`
+- `src\Streak.Ui\Components\Pages\HabitDetails.razor:270-272`
 
 `Home.razor` injects `TimeProvider`, but `DateBannerText` is `static` and uses `DateTime.Now`. `HabitDetails.razor` highlights the heatmap's current day with `DateTime.Now` and does not inject `TimeProvider`.
 
@@ -129,7 +105,7 @@ The app is intentionally local-time-first and already injects `TimeProvider` in 
 
 Use injected `TimeProvider` consistently for all user-visible "today" calculations and displays on these pages. The simplest fix is to drop the `static` banner property in `Home.razor` and inject `TimeProvider` into `HabitDetails.razor`.
 
-## 6. Android proof saves finalize `MediaStore` records before the output stream is disposed
+## 5. Android proof saves finalize `MediaStore` records before the output stream is disposed
 
 **Consensus:** 1/3 reviewers  
 **Severity:** Medium
@@ -147,7 +123,7 @@ The Android proof store clears `IS_PENDING` while the destination stream is stil
 
 Match the backup-writer sequence: fully dispose the destination stream first, then clear `IS_PENDING`.
 
-## 7. Registered FluentValidation validators and DTOs are effectively dead code today
+## 6. Registered FluentValidation validators and DTOs are effectively dead code today
 
 **Consensus:** 1/3 reviewers  
 **Severity:** Low
