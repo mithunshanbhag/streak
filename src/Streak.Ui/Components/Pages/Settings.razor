@@ -162,6 +162,109 @@
                               Spacing="1"
                               AlignItems="AlignItems.Center">
                         <MudText Typo="Typo.h6">
+                            @OneDriveBackupHeaderText
+                        </MudText>
+
+                        <MudTooltip Text="@OneDriveBackupTooltipText"
+                                    Placement="Placement.Top">
+                            <MudIconButton Icon="@Icons.Material.Filled.Info"
+                                           Color="Color.Default"
+                                           Size="Size.Small"
+                                           aria-label="@OneDriveBackupTooltipAriaLabel"/>
+                        </MudTooltip>
+                    </MudStack>
+
+                    <MudText Typo="Typo.body2"
+                             Class="text-secondary">
+                        @OneDriveBackupDescriptionText
+                    </MudText>
+                </MudStack>
+
+                <MudPaper Elevation="0"
+                          Class="pa-3 rounded-lg"
+                          Style="@OneDriveProviderPanelStyle">
+                    <MudStack Spacing="2">
+                        <MudStack Row="true"
+                                  Justify="Justify.SpaceBetween"
+                                  AlignItems="AlignItems.Center"
+                                  Spacing="2">
+                            <MudStack Row="true"
+                                      Spacing="1"
+                                      AlignItems="AlignItems.Center">
+                                <MudIcon Icon="@Icons.Material.Filled.Cloud"
+                                         Color="Color.Primary"/>
+
+                                <MudStack Spacing="0">
+                                    <MudText Typo="Typo.body1">
+                                        @OneDriveProviderNameText
+                                    </MudText>
+
+                                    <MudText Typo="Typo.caption"
+                                             Class="text-secondary">
+                                        @OneDriveProviderStateText
+                                    </MudText>
+                                </MudStack>
+                            </MudStack>
+
+                            <MudPaper Elevation="0"
+                                      Class="px-2 py-1 rounded-pill"
+                                      Style="@OneDriveStatusChipStyle">
+                                <MudText Typo="Typo.caption">
+                                    @OneDriveStatusChipText
+                                </MudText>
+                            </MudPaper>
+                        </MudStack>
+
+                        <MudText Typo="Typo.body2"
+                                 Class="text-secondary">
+                            @OneDriveProviderSupportText
+                        </MudText>
+                    </MudStack>
+                </MudPaper>
+
+                <MudPaper Elevation="0"
+                          Class="pa-3 rounded-lg">
+                    <MudStack Row="true"
+                              Justify="Justify.SpaceBetween"
+                              AlignItems="AlignItems.Center"
+                              Spacing="3">
+                        <MudStack Spacing="1">
+                            <MudText Typo="Typo.body1">
+                                @CloudAutomatedBackupsLabelText
+                            </MudText>
+
+                            <MudText Typo="Typo.caption"
+                                     Class="text-secondary">
+                                @CloudAutomatedBackupsDescriptionText
+                            </MudText>
+                        </MudStack>
+
+                        <MudSwitch T="bool"
+                                   Value="@OneDriveCloudBackupEnabledPlaceholder"
+                                   Disabled="@OneDriveBackupControlsDisabled"
+                                   Color="Color.Primary"
+                                   aria-label="@CloudAutomatedBackupsSwitchAriaLabel"/>
+                    </MudStack>
+                </MudPaper>
+
+                <MudPaper Elevation="0"
+                          Class="pa-3 rounded-lg">
+                    <MudButton Color="Color.Primary"
+                               Variant="Variant.Filled"
+                               Disabled="@OneDriveBackupControlsDisabled"
+                               StartIcon="@Icons.Material.Filled.CloudQueue"
+                               aria-label="@ConnectOneDriveButtonAriaLabel">
+                        @ConnectOneDriveButtonText
+                    </MudButton>
+                </MudPaper>
+
+                <MudDivider/>
+
+                <MudStack Spacing="1">
+                    <MudStack Row="true"
+                              Spacing="1"
+                              AlignItems="AlignItems.Center">
+                        <MudText Typo="Typo.h6">
                             @BackupHeaderText
                         </MudText>
 
@@ -394,6 +497,10 @@
 
     private bool _automatedBackupSettingsUpdateInProgress;
 
+    private const bool OneDriveCloudBackupEnabledPlaceholder = false;
+
+    private const bool OneDriveBackupControlsDisabled = true;
+
     private AppVersionInfo? _appVersionInfo;
 
     private string? _operationErrorMessage;
@@ -466,6 +573,10 @@
     private const string DataActionButtonStyle = "width: 42px; min-width: 42px; height: 42px; border-radius: 999px; padding: 0;";
 
     private const string SettingsMetadataBannerStyle = "align-self: center; background-color: var(--mud-palette-primary-hover); color: var(--mud-palette-primary);";
+
+    private const string OneDriveProviderPanelStyle = "border: 1px solid var(--mud-palette-lines-default); background-color: var(--mud-palette-background-grey);";
+
+    private const string OneDriveStatusChipStyle = "background-color: var(--mud-palette-surface); color: var(--mud-palette-text-secondary); border: 1px solid var(--mud-palette-lines-default);";
 
     #endregion
 
@@ -734,9 +845,35 @@
 
     private const string AutomatedBackupNotificationsPermissionText = "Android backup notifications are off. Nightly backups will still run, but completion notifications stay hidden until you allow notifications.";
 
-    private const string BackupHeaderText = "Backup";
+    private const string OneDriveBackupHeaderText = "OneDrive backup";
 
-    private const string BackupDescriptionText = "Save or share a copy of your local data.";
+    private const string OneDriveBackupDescriptionText = "Optional cloud backup using your private OneDrive app folder.";
+
+    private const string OneDriveBackupTooltipText = "Optional. Signs in with a personal Microsoft account and uploads the same '.zip' archive to your private OneDrive app folder.";
+
+    private const string OneDriveBackupTooltipAriaLabel = "OneDrive backup details";
+
+    private const string OneDriveProviderNameText = "OneDrive";
+
+    private const string OneDriveProviderStateText = "Not connected";
+
+    private const string OneDriveStatusChipText = "Coming soon";
+
+    private const string OneDriveProviderSupportText = "Cloud backup isn't available in this build yet. These controls are shown here as a placeholder for the upcoming OneDrive flow.";
+
+    private const string CloudAutomatedBackupsLabelText = "Nightly cloud backup";
+
+    private const string CloudAutomatedBackupsDescriptionText = "Will stay separate from local automated backups when available.";
+
+    private const string CloudAutomatedBackupsSwitchAriaLabel = "Nightly cloud backup toggle";
+
+    private const string ConnectOneDriveButtonText = "Connect OneDrive";
+
+    private const string ConnectOneDriveButtonAriaLabel = "Connect OneDrive";
+
+    private const string BackupHeaderText = "Local backup";
+
+    private const string BackupDescriptionText = "Save or share a copy of your local data on this device.";
 
     private const string ExportButtonTooltipText = "Download data";
 
@@ -768,7 +905,7 @@
 
     private const string RestoreHeaderText = "Restore";
 
-    private const string RestoreDescriptionText = "Restore from a .zip backup or a legacy .db file. Existing proof photos stay in place for .db restores.";
+    private const string RestoreDescriptionText = "Restore from a local .zip backup or a legacy .db file. Existing proof photos stay in place for .db restores.";
 
     private const string ImportButtonTooltipText = "Upload data";
 
