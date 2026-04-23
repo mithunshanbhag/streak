@@ -121,35 +121,57 @@ public sealed class AndroidCheckinProofFileStore : ICheckinProofFileStore
     {
         var contentResolver = GetContentResolver();
         var fileName = CheckinProofPathUtility.GetFileName(normalizedRelativeProofPath);
-        var relativeDirectoryPath = GetMediaStoreDirectoryPath(normalizedRelativeProofPath);
         var selection =
-            $"({MediaStore.IMediaColumns.RelativePath} = ? OR {MediaStore.IMediaColumns.RelativePath} = ?) AND {MediaStore.IMediaColumns.DisplayName} = ?";
+            $"{MediaStore.IMediaColumns.DisplayName} = ? AND ({MediaStore.IMediaColumns.RelativePath} = ? OR {MediaStore.IMediaColumns.RelativePath} = ? OR {MediaStore.IMediaColumns.RelativePath} LIKE ?)";
 
         using var cursor = contentResolver.Query(
             ExternalImagesUri,
-            [BaseColumns.Id],
+            [BaseColumns.Id, MediaStore.IMediaColumns.RelativePath, MediaStore.IMediaColumns.DisplayName],
             selection,
-            [relativeDirectoryPath, $"{relativeDirectoryPath}/", fileName],
+            [fileName, RootRelativePath, $"{RootRelativePath}/", $"{RootRelativePath}/%"],
             null);
 
-        if (cursor is null || !cursor.MoveToFirst())
+        if (cursor is null)
             return null;
 
         var idColumnIndex = cursor.GetColumnIndexOrThrow(BaseColumns.Id);
-        var mediaId = cursor.GetLong(idColumnIndex);
-        return ContentUris.WithAppendedId(ExternalImagesUri, mediaId);
+        var relativePathColumnIndex = cursor.GetColumnIndexOrThrow(MediaStore.IMediaColumns.RelativePath);
+        var displayNameColumnIndex = cursor.GetColumnIndexOrThrow(MediaStore.IMediaColumns.DisplayName);
+
+        while (cursor.MoveToNext())
+        {
+            var relativePath = cursor.GetString(relativePathColumnIndex);
+            var displayName = cursor.GetString(displayNameColumnIndex);
+
+            if (!CheckinProofMediaStorePathUtility.TryBuildRelativeProofPath(
+                    RootRelativePath,
+                    relativePath,
+                    displayName,
+                    out var candidateRelativeProofPath))
+            {
+                continue;
+            }
+
+            if (!string.Equals(candidateRelativeProofPath, normalizedRelativeProofPath, StringComparison.Ordinal))
+                continue;
+
+            var mediaId = cursor.GetLong(idColumnIndex);
+            return ContentUris.WithAppendedId(ExternalImagesUri, mediaId);
+        }
+
+        return null;
     }
 
     private static IReadOnlyList<string> GetAllProofImageUrisInternal(ContentResolver contentResolver)
     {
         var selection =
-            $"{MediaStore.IMediaColumns.RelativePath} = ? OR {MediaStore.IMediaColumns.RelativePath} LIKE ?";
+            $"{MediaStore.IMediaColumns.RelativePath} = ? OR {MediaStore.IMediaColumns.RelativePath} = ? OR {MediaStore.IMediaColumns.RelativePath} LIKE ?";
 
         using var cursor = contentResolver.Query(
             ExternalImagesUri,
             [MediaStore.IMediaColumns.RelativePath, MediaStore.IMediaColumns.DisplayName],
             selection,
-            [$"{RootRelativePath}/", $"{RootRelativePath}/%"],
+            [RootRelativePath, $"{RootRelativePath}/", $"{RootRelativePath}/%"],
             null);
 
         if (cursor is null)
@@ -161,13 +183,19 @@ public sealed class AndroidCheckinProofFileStore : ICheckinProofFileStore
 
         while (cursor.MoveToNext())
         {
-            var relativePath = NormalizeMediaStoreRelativePath(cursor.GetString(relativePathColumnIndex));
+            var relativePath = cursor.GetString(relativePathColumnIndex);
             var displayName = cursor.GetString(displayNameColumnIndex);
             if (string.IsNullOrWhiteSpace(displayName))
                 continue;
 
-            if (!TryBuildRelativeProofPath(relativePath, displayName, out var relativeProofPath))
+            if (!CheckinProofMediaStorePathUtility.TryBuildRelativeProofPath(
+                    RootRelativePath,
+                    relativePath,
+                    displayName,
+                    out var relativeProofPath))
+            {
                 continue;
+            }
 
             proofImageUris.Add(relativeProofPath);
         }
@@ -176,42 +204,12 @@ public sealed class AndroidCheckinProofFileStore : ICheckinProofFileStore
         return proofImageUris;
     }
 
-    private static bool TryBuildRelativeProofPath(
-        string normalizedMediaStoreRelativePath,
-        string displayName,
-        out string relativeProofPath)
-    {
-        relativeProofPath = string.Empty;
-
-        if (string.IsNullOrWhiteSpace(displayName))
-            return false;
-
-        var rootWithSeparator = $"{RootRelativePath}/";
-        if (!normalizedMediaStoreRelativePath.StartsWith(rootWithSeparator, StringComparison.Ordinal))
-            return false;
-
-        var nestedRelativePath = normalizedMediaStoreRelativePath[rootWithSeparator.Length..].Trim('/');
-        relativeProofPath = string.IsNullOrWhiteSpace(nestedRelativePath)
-            ? displayName
-            : $"{nestedRelativePath}/{displayName}";
-
-        return CheckinProofPathUtility.TryNormalizeRelativeProofPath(relativeProofPath, out relativeProofPath);
-    }
-
     private static string GetMediaStoreDirectoryPath(string normalizedRelativeProofPath)
     {
         var directoryRelativePath = CheckinProofPathUtility.GetDirectoryRelativePath(normalizedRelativeProofPath);
         return string.IsNullOrWhiteSpace(directoryRelativePath)
             ? RootRelativePath
             : $"{RootRelativePath}/{directoryRelativePath}";
-    }
-
-    private static string NormalizeMediaStoreRelativePath(string? relativePath)
-    {
-        return (relativePath ?? string.Empty)
-            .Replace('\\', '/')
-            .Trim()
-            .Trim('/');
     }
 
     private static Uri InsertImageRecord(
