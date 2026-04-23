@@ -13,7 +13,7 @@ The findings below were manually verified after the multi-model review. They are
 
 | Priority | Consensus | Severity | Finding                                                                                |
 | -------- | --------- | -------- | -------------------------------------------------------------------------------------- |
-| 1        | 2/3       | Medium   | Check-in queries load full history and only apply date filters in memory               |
+| 1        | 2/3       | Resolved | Check-in date filters now run in the database query instead of loading full history    |
 | 2        | 1/3       | High     | Windows proof-path handling can escape the configured proof root                       |
 | 3        | 1/3       | High     | ZIP restore extraction is vulnerable to path traversal                                 |
 | 4        | 1/3       | Medium   | Service contracts leak persistence models into the Razor UI layer                      |
@@ -21,10 +21,10 @@ The findings below were manually verified after the multi-model review. They are
 | 6        | 1/3       | Medium   | Android proof saves finalize `MediaStore` records before the output stream is disposed |
 | 7        | 1/3       | Low      | Registered FluentValidation validators and DTOs are effectively dead code today        |
 
-## 1. Check-in queries load full history and only apply date filters in memory
+## 1. Resolved: check-in date filters now run in the database query
 
 **Consensus:** 2/3 reviewers  
-**Severity:** Medium
+**Status:** Resolved on 2026-04-23
 
 **Why it matters**
 
@@ -40,9 +40,9 @@ The homepage and reminder-related reads ask for bounded date windows, but `Check
 
 `GetByHabitNamesAsync(...)` and `GetByHabitIdsAsync(...)` call `ToListAsync(...)` before `ApplyDateRange(...)`. `GetHomePageHabitCheckinsAsync(...)` and `GetPendingHabitCountForTodayAsync(...)` both rely on that path.
 
-**Recommendation**
+**Resolution**
 
-Push `fromDate` and `toDate` predicates into the EF query before `ToListAsync(...)`, then keep the current ordering logic. The stored `yyyy-MM-dd` format is lexicographically sortable, so the filtering can stay in SQL.
+`CheckinRepository.GetByHabitNamesAsync(...)` and `GetByHabitIdsAsync(...)` now apply the optional `fromDate` / `toDate` bounds to the `IQueryable` before materializing results. The repository tests also cover inclusive ranges plus lower-bound-only and upper-bound-only query paths.
 
 ## 2. Windows proof-path handling can escape the configured proof root
 

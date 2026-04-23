@@ -138,6 +138,60 @@ public class CheckinRepositoryTests
     }
 
     [Fact]
+    public async Task GetByHabitNamesAsync_ShouldApplyLowerBoundDateFilter_WhenOnlyFromDateIsProvided()
+    {
+        await using var context = TestDbContextFactory.CreateContext(out var connection);
+        await using (connection)
+        {
+            context.Habits.AddRange(
+                new Habit { Id = 1, Name = "Read" },
+                new Habit { Id = 2, Name = "Run" });
+            context.Checkins.AddRange(
+                new Checkin { HabitId = 1, CheckinDate = "2025-01-01" },
+                new Checkin { HabitId = 1, CheckinDate = "2025-01-03" },
+                new Checkin { HabitId = 2, CheckinDate = "2025-01-02" },
+                new Checkin { HabitId = 2, CheckinDate = "2025-01-04" });
+            await context.SaveChangesAsync();
+
+            var sut = new CheckinRepository(context);
+
+            var result = await sut.GetByHabitNamesAsync(["Read", "Run"], fromDate: "2025-01-03");
+
+            result.Select(x => $"{x.HabitId}:{x.CheckinDate}")
+                .Should()
+                .Equal("1:2025-01-03", "2:2025-01-04");
+        }
+    }
+
+    [Fact]
+    public async Task GetByHabitIdsAsync_ShouldApplyUpperBoundDateFilter_WhenOnlyToDateIsProvided()
+    {
+        await using var context = TestDbContextFactory.CreateContext(out var connection);
+        await using (connection)
+        {
+            context.Habits.AddRange(
+                new Habit { Id = 1, Name = "Read" },
+                new Habit { Id = 2, Name = "Run" },
+                new Habit { Id = 3, Name = "Walk" });
+            context.Checkins.AddRange(
+                new Checkin { HabitId = 1, CheckinDate = "2025-01-01" },
+                new Checkin { HabitId = 1, CheckinDate = "2025-01-03" },
+                new Checkin { HabitId = 2, CheckinDate = "2025-01-02" },
+                new Checkin { HabitId = 2, CheckinDate = "2025-01-04" },
+                new Checkin { HabitId = 3, CheckinDate = "2025-01-03" });
+            await context.SaveChangesAsync();
+
+            var sut = new CheckinRepository(context);
+
+            var result = await sut.GetByHabitIdsAsync([2, 1, 2], toDate: "2025-01-03");
+
+            result.Select(x => $"{x.HabitId}:{x.CheckinDate}")
+                .Should()
+                .Equal("1:2025-01-03", "1:2025-01-01", "2:2025-01-02");
+        }
+    }
+
+    [Fact]
     public async Task GetByIdAsync_ShouldReturnCheckin_WhenKeyMatchesExistingCheckin()
     {
         await using var context = TestDbContextFactory.CreateContext(out var connection);
