@@ -4,9 +4,18 @@ public static class MauiProgram
 {
     public static MauiApp CreateMauiApp()
     {
-        return MauiApp.CreateBuilder()
+        StartupTiming.Mark("maui-program-create-maui-app-start");
+
+        var builder = MauiApp.CreateBuilder()
             .ConfigureApp()
-            .ConfigureServices()
-            .Build();
+            .ConfigureServices();
+
+        StartupTiming.Mark("maui-program-builder-configured");
+
+        var app = builder.Build();
+
+        StartupTiming.Mark("maui-program-create-maui-app-completed");
+
+        return app;
     }
 }

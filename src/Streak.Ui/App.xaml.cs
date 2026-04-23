@@ -11,23 +11,33 @@ public partial class App : Application
         ILogger<App> logger,
         IReminderNotificationPermissionCoordinator reminderNotificationPermissionCoordinator)
     {
+        StartupTiming.Mark("app-constructor-start");
+
         _appInitializationService = appInitializationService;
         _logger = logger;
         _reminderNotificationPermissionCoordinator = reminderNotificationPermissionCoordinator;
 
         InitializeComponent();
+
+        StartupTiming.Mark("app-constructor-completed");
     }
 
     protected override Window CreateWindow(IActivationState? activationState)
     {
+        StartupTiming.Mark("app-create-window-start");
+
         var window = new Window(new MainPage()) { Title = "Streak.Ui" };
         window.Created += OnWindowCreated;
+
+        StartupTiming.Mark("app-create-window-completed");
 
         return window;
     }
 
     private async void OnWindowCreated(object? sender, EventArgs e)
     {
+        StartupTiming.Mark("app-window-created-handler-start");
+
         try
         {
             await _appInitializationService.EnsureInitializedAsync();
@@ -41,6 +51,7 @@ public partial class App : Application
         try
         {
             await _reminderNotificationPermissionCoordinator.RequestPermissionIfRemindersEnabledAsync();
+            StartupTiming.Mark("app-window-created-handler-completed");
         }
         catch (Exception exception)
         {

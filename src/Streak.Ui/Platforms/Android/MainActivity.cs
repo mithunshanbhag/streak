@@ -18,13 +18,21 @@ public class MainActivity : MauiAppCompatActivity
 {
     protected override void OnCreate(Bundle? savedInstanceState)
     {
+        StartupTiming.Mark("android-main-activity-on-create-start");
+
         base.OnCreate(savedInstanceState);
+
+        StartupTiming.Mark("android-main-activity-base-on-create-completed");
 
         AndroidBackupNotificationChannelRegistrar.EnsureCreated();
         AndroidReminderNotificationChannelRegistrar.EnsureCreated();
 
+        StartupTiming.Mark("android-main-activity-notification-channels-completed");
+
         // Keep the MAUI content inside Android's safe drawing area so the
         // Blazor app bar and bottom CTA stay clear of system bars.
         WindowCompat.SetDecorFitsSystemWindows(Window!, true);
+
+        StartupTiming.Mark("android-main-activity-on-create-completed");
     }
 }

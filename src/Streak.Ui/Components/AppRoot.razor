@@ -42,12 +42,16 @@ else
 
     private Exception? _startupError;
 
+    private bool _startupTimingLogged;
+
     #endregion
 
     #region Lifecycle Methods
 
     protected override async Task OnInitializedAsync()
     {
+        StartupTiming.Mark("blazor-app-root-on-initialized-start");
+
         var stopwatch = Stopwatch.StartNew();
 
         try
@@ -67,6 +71,16 @@ else
                 "App startup initialization failed before routes were rendered after {ElapsedMilliseconds} ms.",
                 stopwatch.ElapsedMilliseconds);
         }
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (!firstRender || _startupTimingLogged)
+            return;
+
+        _startupTimingLogged = true;
+        StartupTiming.Mark("blazor-app-root-first-render-completed");
+        StartupTiming.LogSnapshot(Logger, "blazor-app-root-first-render");
     }
 
     #endregion

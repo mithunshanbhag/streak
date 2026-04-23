@@ -91,6 +91,8 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        StartupTiming.Mark("home-page-on-initialized-start");
+
         await LoadDataAsync();
     }
 
@@ -152,6 +154,8 @@ else
 
     private async Task LoadDataAsync()
     {
+        StartupTiming.Mark("home-page-load-data-start");
+
         var stopwatch = Stopwatch.StartNew();
 
         _loadingData = true;
@@ -164,6 +168,8 @@ else
                 "Home page data load completed in {ElapsedMilliseconds} ms with {HabitCount} habit check-in card(s).",
                 stopwatch.ElapsedMilliseconds,
                 _habitCheckins.Count);
+
+            StartupTiming.Mark("home-page-load-data-completed");
         }
         catch (Exception exception)
         {
