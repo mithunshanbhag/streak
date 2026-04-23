@@ -8,7 +8,7 @@ Streak is a simple habit-tracking mobile app for Android. It helps users build a
 
 - **Speed over features.** The daily workflow (check in → exit) should take seconds, not minutes.
 - **Minimal navigation.** The landing page is the primary surface; most tasks require zero page clicks.
-- **Simplicity over completeness.** Binary habits (done / not done), a hard cap of 10 habits, and local-only data storage.
+- **Simplicity over completeness.** Binary habits (done / not done), a hard cap of 10 habits, and local-first data with optional backup safety nets.
 
 ## Core Concepts
 
@@ -54,18 +54,23 @@ A streak is the count of **consecutive calendar days** on which a habit was chec
 
 ## Data Storage
 
-- All data is stored **locally on the device**. There is no cloud sync, no user accounts, and no authentication.
+- Live habit data is stored **locally on the device**. Streak does **not** do live cloud sync of the in-use database.
+- Cloud backup is **strictly optional**. The app must remain fully usable offline without any Microsoft account.
+- On **Android** in this iteration, a user may optionally sign in with a **personal Microsoft account** and upload the same `.zip` backup archives into the app's private OneDrive app folder.
 - Users may manually export or share full **data backup archives** (`.zip`) that include the local database plus any uploaded picture-proof files that are still available in the app's current proof storage.
 - After a manual data-backup export succeeds, the app should show a lightweight in-app confirmation and let the user quickly open the parent folder that now contains the backup archive.
 - On **Android**, manual exports, automated backups, and diagnostics exports are organized under `Downloads/Streak` so Streak artifacts stay easy to find without cluttering the top-level Downloads folder.
 - On **Android**, users may also enable nightly automated local backups that save timestamped `.zip` data archives into shared device storage.
+- On **Android**, users may also enable separate nightly **OneDrive** backups that upload the same archive format into OneDrive. Enabling cloud automated backups does **not** implicitly enable local automated backups, and vice versa.
+- OneDrive cloud backup is **backup-only** in this iteration. Local restore remains available from local files, while cloud restore is deferred to a later phase.
+- OneDrive cloud backups use the app-specific folder at `/me/drive/special/approot`, count against the user's OneDrive quota, and leave retention / cleanup management to the user for now.
 - On Android, a successful nightly automated backup should also be able to post a local completion notification, subject to the platform's notification permission.
 - Data will be persisted across app restarts.
 - If a raw `.db` restore recreates check-ins whose proof files are no longer present in current app storage, the restore should keep the check-ins but clear those orphaned proof references so later backups remain healthy.
 
 ### Storage Layout
 
-The app uses four categories of storage:
+The app uses several storage categories:
 
 | Category                 | Android                                                       | Windows                                                       | Purpose                                                                                                                                              |
 | ------------------------ | ------------------------------------------------------------- | ------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -73,6 +78,7 @@ The app uses four categories of storage:
 | Shared proof media       | `Pictures/Streak/CheckinProofs` through Android `MediaStore`  | `Pictures\Streak\CheckinProofs`                               | New user-uploaded check-in proof pictures live outside uninstall-sensitive app storage so they survive app upgrades and uninstalls.                 |
 | Temporary working files  | App-private `FileSystem.Current.CacheDirectory/ExportWorking` | App-private `FileSystem.Current.CacheDirectory/ExportWorking` | Disposable backup, share, restore, and diagnostics-export staging files.                                                                             |
 | User-visible exports     | `Downloads/Streak/...` through Android `MediaStore.Downloads` | User-selected save location through the Windows file picker   | Files the user explicitly exports, shares, or keeps as local backups, including data-backup archives and diagnostics.                                |
+| Optional cloud backups   | OneDrive app folder (`/me/drive/special/approot`)             | Not supported in this iteration                               | User-enabled backup destination for the same `.zip` archives used by local backup. This is backup-only, not live sync.                              |
 | Proof-file resilience    | Raw `.db` restore reconciles missing proof references         | Raw `.db` restore reconciles missing proof references         | Direct database restores keep check-ins but clear proof metadata whose referenced files are unavailable; `.zip` backups preserve and restore proofs. |
 
 Android app-private storage:
@@ -122,6 +128,17 @@ Downloads/
       streak-diagnostics-YYYYMMdd-HHmmss.zip
 ```
 
+Android OneDrive app-folder storage:
+
+```text
+approot/
+  Backups/
+    Manual/
+      streak-data-backup-YYYYMMdd-HHmmss.zip
+    Automated/
+      streak-auto-data-backup-YYYYMMdd-HHmmss.zip
+```
+
 Windows app-private storage:
 
 ```text
@@ -162,7 +179,7 @@ Windows user-visible storage:
   streak-diagnostics-YYYYMMdd-HHmmss.zip
 ```
 
-Windows does not currently support automated backups. Android manual share uses a generated `streak-data-backup-YYYYMMdd-HHmmss.zip` archive and hands it to the native share sheet; it does not create a separate durable export unless the user chooses to save it through another app.
+Windows does not currently support automated backups or OneDrive cloud backup. Android manual share uses a generated `streak-data-backup-YYYYMMdd-HHmmss.zip` archive and hands it to the native share sheet; it does not create a separate durable export unless the user chooses to save it through another app.
 
 ## Notifications and Reminders
 
@@ -214,7 +231,7 @@ Each major surface has its own detailed spec:
 | Check-in Dialogs | Homepage habit toggle     | [checkin-dialogs.md](./checkin-dialogs.md)       | Collect optional note / picture proof before save and confirm removal before undoing a checkin |
 | Habit Details    | `/habits/{habitId}`       | [habit-details-page.md](./habit-details-page.md) | Habit details, trends, edit dialog, and deletion                                               |
 | Quick Add Habit  | `+ New Habit` on Homepage | [create-habit-page.md](./create-habit-page.md)   | Create a new habit in a compact dialog without leaving the homepage                            |
-| Settings         | `/settings`               | [settings-page.md](./settings-page.md)           | Configure reminders and manage automated/manual local backups plus diagnostics export/share    |
+| Settings         | `/settings`               | [settings-page.md](./settings-page.md)           | Configure reminders and manage local backup, optional OneDrive backup, local restore, and diagnostics export/share |
 
 ## Information Architecture Notes
 
@@ -223,7 +240,7 @@ Each major surface has its own detailed spec:
 - The **Homepage** doubles as the habit-list maintenance surface: habits are shown alphabetically and each habit opens its details on the Habit Details page.
 - The Homepage app bar keeps **Settings** plus a right-most **GitHub** repo link instead of a global create icon.
 - The **Habit Details** page contains the heatmap, edit dialog flow, and delete confirmation dialog for a single habit.
-- **Settings** groups reminder preferences plus low-frequency data actions such as **Daily automated backups**, **Download data**, **Share data**, **Upload data**, and diagnostics export/share.
+- **Settings** groups reminder preferences plus low-frequency data actions such as **Daily automated backups**, **OneDrive backup**, **Download data**, **Share data**, **Upload data**, and diagnostics export/share.
 - **Homepage** opens directly into the habit list without instructional header copy, progress summary text, or a habit-count chip.
 - There is no dedicated habit-list routed page separate from **Homepage**.
 - There is no dedicated routed **Create Habit** page in the simplified direction.

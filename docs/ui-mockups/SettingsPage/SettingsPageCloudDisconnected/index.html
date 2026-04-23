@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Streak – Settings Page Cloud Disconnected (Mockup)</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="phone-frame">
+    <header class="app-bar">
+        <div class="app-bar-left">
+            <a class="icon-btn" href="../../Homepage/index.html" title="Back to Homepage">
+                <span class="material-icons">arrow_back</span>
+            </a>
+            <span class="app-bar-title">Settings</span>
+        </div>
+    </header>
+
+    <main class="page-content">
+        <div class="settings-meta-banner" aria-label="App version and build">
+            <span class="material-icons" aria-hidden="true">info</span>
+            <span>Version 1.0 · Build 123</span>
+        </div>
+
+        <section class="settings-card">
+            <div class="section-header-row">
+                <div>
+                    <p class="section-eyebrow">Reminders</p>
+                    <h1 class="section-header">Daily reminder</h1>
+                    <p class="section-description">Only sends a reminder when something is still pending.</p>
+                </div>
+                <span class="section-chip">9:00 PM</span>
+            </div>
+
+            <div class="setting-row">
+                <div>
+                    <div class="setting-label">Reminders enabled</div>
+                    <div class="setting-caption">Turns daily reminders on or off.</div>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="reminderToggle" checked>
+                    <span class="toggle-track"></span>
+                    <span class="toggle-thumb"></span>
+                </label>
+            </div>
+
+            <div class="time-picker-row" id="timePickerRow">
+                <div class="setting-row setting-row--divider">
+                    <div>
+                        <div class="setting-label">Reminder time</div>
+                        <div class="setting-caption">Saved as soon as you change it.</div>
+                    </div>
+                    <label class="time-display">
+                        <input type="time" class="time-input-native" id="timeInput" value="21:00">
+                        <span class="material-icons">schedule</span>
+                        <span class="time-text" id="timeText">9:00 PM</span>
+                    </label>
+                </div>
+            </div>
+        </section>
+
+        <section class="settings-card">
+            <div class="section-header-row">
+                <div>
+                    <p class="section-eyebrow">Data</p>
+                    <div class="subsection-title-row">
+                        <h2 class="section-header section-header--subsection">Daily automated backups</h2>
+                        <button
+                            class="tooltip-trigger hint-icon-btn hint-icon-btn--info"
+                            type="button"
+                            aria-label="Automated backup details"
+                            data-tooltip="Runs nightly at 11:30 PM.">
+                            <span class="material-icons">info</span>
+                        </button>
+                    </div>
+                    <p class="section-description">Create a nightly backup in local storage.</p>
+                </div>
+            </div>
+
+            <div class="setting-row setting-row--action-only">
+                <label class="toggle-switch">
+                    <input type="checkbox" id="autoBackupToggle" checked>
+                    <span class="toggle-track"></span>
+                    <span class="toggle-thumb"></span>
+                </label>
+            </div>
+
+            <div class="subsection-divider"></div>
+
+            <div class="section-header-row section-header-row--sub">
+                <div>
+                    <div class="subsection-title-row">
+                        <h2 class="section-header section-header--subsection">OneDrive backup</h2>
+                        <button
+                            class="tooltip-trigger hint-icon-btn hint-icon-btn--info"
+                            type="button"
+                            aria-label="OneDrive backup details"
+                            data-tooltip="Optional. Signs in with a personal Microsoft account and uploads the same '.zip' archive to your private OneDrive app folder.">
+                            <span class="material-icons">info</span>
+                        </button>
+                    </div>
+                    <p class="section-description">Optional cloud backup using your private OneDrive app folder.</p>
+                </div>
+            </div>
+
+            <div class="cloud-provider-panel cloud-provider-panel--disconnected">
+                <div class="cloud-provider-row">
+                    <div class="cloud-provider-title">
+                        <div class="cloud-provider-icon" aria-hidden="true">
+                            <span class="material-icons">cloud</span>
+                        </div>
+                        <div>
+                            <div class="setting-label">OneDrive</div>
+                            <div class="setting-caption">Not connected</div>
+                        </div>
+                    </div>
+                    <span class="status-chip status-chip--disconnected">Signed out</span>
+                </div>
+
+                <p class="cloud-empty-note">
+                    Sign in with a personal Microsoft account to upload the same
+                    <code>.zip</code> archives to your private OneDrive app folder.
+                </p>
+            </div>
+
+            <div class="cloud-setting-row cloud-setting-row--disabled">
+                <div>
+                    <div class="setting-label">Nightly cloud backup</div>
+                    <div class="setting-caption">Available after you connect OneDrive.</div>
+                </div>
+                <label class="toggle-switch toggle-switch--disabled">
+                    <input type="checkbox" id="cloudBackupToggle" disabled>
+                    <span class="toggle-track"></span>
+                    <span class="toggle-thumb"></span>
+                </label>
+            </div>
+
+            <div class="cloud-action-group">
+                <button class="action-btn action-btn--primary" type="button">
+                    <span class="material-icons">cloud_queue</span>
+                    <span>Connect OneDrive</span>
+                </button>
+            </div>
+
+            <div class="subsection-divider"></div>
+
+            <div class="section-header-row section-header-row--sub">
+                <div>
+                    <div class="subsection-title-row">
+                        <h2 class="section-header section-header--subsection">Local backup</h2>
+                        <button
+                            class="tooltip-trigger hint-icon-btn hint-icon-btn--info"
+                            type="button"
+                            aria-label="Local backup save location info"
+                            data-tooltip="Creates a '.zip' data archive with your local data and uploaded pictures. Android saves to 'Downloads/Streak'. Windows lets you choose where to save.">
+                            <span class="material-icons">info</span>
+                        </button>
+                    </div>
+                    <p class="section-description">Save or share a copy of your local data on this device.</p>
+                </div>
+            </div>
+
+            <div class="setting-row setting-row--action-only">
+                <div class="data-action-group">
+                    <button class="tooltip-trigger data-icon-btn" type="button" aria-label="Download data" data-tooltip="Download data">
+                        <span class="material-icons">download</span>
+                    </button>
+                    <button class="tooltip-trigger data-icon-btn" type="button" aria-label="Share data" data-tooltip="Share data">
+                        <span class="material-icons">share</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="subsection-divider"></div>
+
+            <div class="section-header-row section-header-row--sub">
+                <div>
+                    <div class="subsection-title-row">
+                        <h2 class="section-header section-header--subsection">Diagnostic logs</h2>
+                        <button
+                            class="tooltip-trigger hint-icon-btn hint-icon-btn--info"
+                            type="button"
+                            aria-label="Diagnostic log details"
+                            data-tooltip="Exports recent app logs and basic support metadata. Does not include your full database.">
+                            <span class="material-icons">info</span>
+                        </button>
+                    </div>
+                    <p class="section-description">Export or share a support bundle of recent app logs.</p>
+                </div>
+            </div>
+
+            <div class="setting-row setting-row--action-only">
+                <div class="data-action-group">
+                    <button class="tooltip-trigger data-icon-btn" type="button" aria-label="Export diagnostic logs" data-tooltip="Export logs">
+                        <span class="material-icons">download</span>
+                    </button>
+                    <button class="tooltip-trigger data-icon-btn" type="button" aria-label="Share diagnostic logs" data-tooltip="Share logs">
+                        <span class="material-icons">share</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="subsection-divider"></div>
+
+            <div class="section-header-row section-header-row--sub">
+                <div>
+                    <div class="subsection-title-row">
+                        <h2 class="section-header section-header--subsection">Restore</h2>
+                        <button
+                            class="tooltip-trigger hint-icon-btn hint-icon-btn--warning"
+                            type="button"
+                            aria-label="Restore warning"
+                            data-tooltip="This will replace ALL existing data. This action cannot be undone.">
+                            <span class="material-icons">warning</span>
+                        </button>
+                    </div>
+                    <p class="section-description">Restore from a local .zip backup or a legacy .db file. Existing proof photos stay in place for .db restores.</p>
+                </div>
+            </div>
+
+            <div class="setting-row setting-row--action-only">
+                <button class="tooltip-trigger data-icon-btn" type="button" aria-label="Upload data" data-tooltip="Upload data">
+                    <span class="material-icons">upload</span>
+                </button>
+            </div>
+        </section>
+    </main>
+</div>
+
+<script>
+    const toggle = document.getElementById('reminderToggle');
+    const timePickerRow = document.getElementById('timePickerRow');
+    const timeInput = document.getElementById('timeInput');
+    const timeText = document.getElementById('timeText');
+
+    toggle.addEventListener('change', () => {
+      timePickerRow.classList.toggle('hidden', !toggle.checked);
+    });
+
+    function formatTime(value) {
+      const [hourStr, minStr] = value.split(':');
+      let hour = parseInt(hourStr, 10);
+      const ampm = hour >= 12 ? 'PM' : 'AM';
+      if (hour === 0) hour = 12;
+      else if (hour > 12) hour -= 12;
+      return hour + ':' + minStr + ' ' + ampm;
+    }
+
+    timeInput.addEventListener('change', () => {
+      timeText.textContent = formatTime(timeInput.value);
+    });
+  </script>
+</body>
+</html>

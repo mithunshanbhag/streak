@@ -106,6 +106,8 @@ Use semantic roles rather than one-off hex values.
 - Check-in and undo-check-in dialog titles should use **Page title**.
 - Check-in dialog body copy, warning copy, and empty-preview helper copy should use **Body**.
 - Note-field labels, photo metadata rows, and preview helper text should use **Caption** or **Support** depending on prominence.
+- Connected-provider names and important backup destinations should use **Body strong**.
+- Connected account labels, backup timestamps, and quiet integration metadata should use **Support** or **Caption**.
 - Eyebrows should stay uppercase with light letter spacing; do not use them for large blocks of copy.
 - Avoid mixing 700 weight into ordinary labels unless it is truly a hero or brand moment.
 
@@ -173,6 +175,7 @@ Use semantic roles rather than one-off hex values.
 | Variant            | Treatment                                                                                                                                        |
 | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Primary filled     | `Primary` background, `TextOnPrimary` text, 14sp / 500                                                                                           |
+| Secondary outlined | `Surface` background, `Primary` text/icon, `BorderStrong` outline, 14sp / 500                                                                   |
 | Text button        | Transparent background, `Primary` text, 14sp / 500                                                                                               |
 | Destructive filled | `Danger` background, `TextOnPrimary` text                                                                                                        |
 | Filled icon action | `Primary` background, `TextOnPrimary` icon, compact square/circular hit area, tooltip or accessible label required when no visible text is shown |
@@ -180,6 +183,28 @@ Use semantic roles rather than one-off hex values.
 
 - Icon-only actions must still expose a clear accessible label and a visible tooltip on hover, focus, or press.
 - When a row contains multiple related icon-only actions, keep their size, shape, fill, and icon weight visually matched.
+- Trust-critical Settings flows that involve account connection, cloud destinations, or multi-step authentication should prefer **visible-text buttons** over icon-only circles so touch users do not have to depend on tooltips.
+- Use icon-only maintenance actions primarily for compact, already-labeled local action groups such as local backup, diagnostics export/share, and restore.
+
+### Settings provider and status panels
+
+- Optional connected-service sections such as **OneDrive backup** should use a quiet inset provider panel inside the main card rather than a full alert/banner treatment.
+- The resting provider panel should use:
+  - `SurfaceMuted` or `SurfaceAccent`
+  - a subtle `BorderSubtle` outline
+  - `RadiusSoft` or `RadiusControl`
+  - compact **12–16px** internal padding
+- The top row should include:
+  - the provider label (for example **OneDrive**) using **Body strong**
+  - the current account identity or neutral support copy using **Support**
+  - one compact status chip aligned to the right when space allows
+- Status chips should stay calm and compact:
+  - disconnected / not configured: neutral muted surface + `TextSecondary`
+  - connected: `PrimarySoft` + `PrimaryStrong`
+  - recent-success emphasis may borrow `Success`, but it should stay an accent rather than turning the full panel into a success banner
+- Secondary metadata such as **Last cloud backup**, **Storage location**, or **Nightly cloud backup** should use **Caption** or **Support** styling and read as supportive state rather than primary CTA copy.
+- Primary provider actions such as **Connect OneDrive** or **Back up to OneDrive** should use visible-text filled buttons with a leading icon.
+- Secondary provider actions such as **Disconnect** should use either **Secondary outlined** or **Text button** treatment rather than destructive filled styling unless the action is truly data-destructive.
 
 ### Dialogs
 
@@ -268,7 +293,14 @@ Use semantic roles rather than one-off hex values.
   - Settings: `Settings`
   - GitHub repo: `Icons.Custom.Brands.GitHub`
 - **Homepage create CTA:** `Add` icon paired with `New Habit`.
-- **Settings data actions:** `Download`, `Share`, and `Upload` for backup download, backup share, diagnostics export, diagnostics share, and restore respectively.
+- **Settings local data actions:** `Download`, `Share`, and `Upload` for local backup download, local backup share, diagnostics export, diagnostics share, and restore respectively.
+- **Settings cloud backup actions:**
+  - provider / cloud section anchor: `Cloud`
+  - manual cloud backup: `CloudUpload`
+  - connected / healthy state: `CloudDone`
+  - disconnected / unavailable state: `CloudOff` or `CloudQueue`
+  - disconnect: `LinkOff` or `Logout`
+  - Pair the icon with visible **OneDrive** text rather than relying on an unlabeled brand glyph alone.
 - **Habit detail actions:** `Edit` and `Delete`.
 - **Checkin toggle:** use MudBlazor's `MudCheckBox` pattern with done/not-done icon states.
 - **Check-in dialog proof actions:**

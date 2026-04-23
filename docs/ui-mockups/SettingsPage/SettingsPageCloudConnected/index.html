@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Streak – Settings Page (Mockup)</title>
+    <title>Streak – Settings Page Cloud Connected (Mockup)</title>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
@@ -11,7 +11,7 @@
 <div class="phone-frame">
     <header class="app-bar">
         <div class="app-bar-left">
-            <a class="icon-btn" href="../Homepage/index.html" title="Back to Homepage">
+            <a class="icon-btn" href="../../Homepage/index.html" title="Back to Homepage">
                 <span class="material-icons">arrow_back</span>
             </a>
             <span class="app-bar-title">Settings</span>
@@ -81,7 +81,7 @@
 
             <div class="setting-row setting-row--action-only">
                 <label class="toggle-switch">
-                    <input type="checkbox" id="autoBackupToggle">
+                    <input type="checkbox" id="autoBackupToggle" checked>
                     <span class="toggle-track"></span>
                     <span class="toggle-thumb"></span>
                 </label>
@@ -92,16 +92,83 @@
             <div class="section-header-row section-header-row--sub">
                 <div>
                     <div class="subsection-title-row">
-                        <h2 class="section-header section-header--subsection">Backup</h2>
+                        <h2 class="section-header section-header--subsection">OneDrive backup</h2>
                         <button
                             class="tooltip-trigger hint-icon-btn hint-icon-btn--info"
                             type="button"
-                            aria-label="Backup save location info"
+                            aria-label="OneDrive backup details"
+                            data-tooltip="Optional. Signs in with a personal Microsoft account and uploads the same '.zip' archive to your private OneDrive app folder.">
+                            <span class="material-icons">info</span>
+                        </button>
+                    </div>
+                    <p class="section-description">Optional cloud backup using your private OneDrive app folder.</p>
+                </div>
+            </div>
+
+            <div class="cloud-provider-panel">
+                <div class="cloud-provider-row">
+                    <div class="cloud-provider-title">
+                        <div class="cloud-provider-icon" aria-hidden="true">
+                            <span class="material-icons">cloud</span>
+                        </div>
+                        <div>
+                            <div class="setting-label">OneDrive</div>
+                            <div class="setting-caption">streak-demo@outlook.com</div>
+                        </div>
+                    </div>
+                    <span class="status-chip status-chip--connected">Connected</span>
+                </div>
+
+                <div class="cloud-meta-grid">
+                    <div class="cloud-meta-row">
+                        <span class="cloud-meta-label">Last cloud backup</span>
+                        <span class="cloud-meta-value">Today · 7:12 AM</span>
+                    </div>
+                    <div class="cloud-meta-row">
+                        <span class="cloud-meta-label">Storage location</span>
+                        <span class="cloud-meta-value">OneDrive app folder</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cloud-setting-row">
+                <div>
+                    <div class="setting-label">Nightly cloud backup</div>
+                    <div class="setting-caption">Runs at 11:30 PM and stays separate from local automated backups.</div>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="cloudBackupToggle" checked>
+                    <span class="toggle-track"></span>
+                    <span class="toggle-thumb"></span>
+                </label>
+            </div>
+
+            <div class="cloud-action-group">
+                <button class="action-btn action-btn--primary" type="button">
+                    <span class="material-icons">cloud_upload</span>
+                    <span>Back up to OneDrive</span>
+                </button>
+                <button class="action-btn action-btn--secondary" type="button">
+                    <span class="material-icons">link_off</span>
+                    <span>Disconnect</span>
+                </button>
+            </div>
+
+            <div class="subsection-divider"></div>
+
+            <div class="section-header-row section-header-row--sub">
+                <div>
+                    <div class="subsection-title-row">
+                        <h2 class="section-header section-header--subsection">Local backup</h2>
+                        <button
+                            class="tooltip-trigger hint-icon-btn hint-icon-btn--info"
+                            type="button"
+                            aria-label="Local backup save location info"
                             data-tooltip="Creates a '.zip' data archive with your local data and uploaded pictures. Android saves to 'Downloads/Streak'. Windows lets you choose where to save.">
                             <span class="material-icons">info</span>
                         </button>
                     </div>
-                    <p class="section-description">Save or share a copy of your local data.</p>
+                    <p class="section-description">Save or share a copy of your local data on this device.</p>
                 </div>
             </div>
 
@@ -159,7 +226,7 @@
                             <span class="material-icons">warning</span>
                         </button>
                     </div>
-                    <p class="section-description">Restore from a .zip backup or a legacy .db file. Existing proof photos stay in place for .db restores.</p>
+                    <p class="section-description">Restore from a local .zip backup or a legacy .db file. Existing proof photos stay in place for .db restores.</p>
                 </div>
             </div>
 
