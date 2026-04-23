@@ -5,6 +5,7 @@ public sealed class SettingsTests : TestContext
     public SettingsTests()
     {
         Services.AddMudServices(options => { options.PopoverOptions.CheckForPopoverProvider = false; });
+        Services.AddLogging();
         JSInterop.Mode = JSRuntimeMode.Loose;
     }
 

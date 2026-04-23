@@ -3,6 +3,7 @@
 @inject ICheckinService CheckinService
 @inject IDialogService DialogService
 @inject NavigationManager NavigationManager
+@inject ILogger<HabitDetails> Logger
 
 <PageTitle>@BrowserPageTitle</PageTitle>
 <AppBarTitleScope TitleText="@AppBarTitleText"
@@ -226,6 +227,9 @@ else if (_viewModel is not null)
 
     private async Task LoadDataAsync()
     {
+        var stopwatch = Stopwatch.StartNew();
+        var loadOutcome = "not-found";
+
         _loadingData = true;
         _habitNotFound = false;
         _deleteErrorMessage = null;
@@ -237,35 +241,56 @@ else if (_viewModel is not null)
             if (HabitId <= 0)
             {
                 _habitNotFound = true;
-                return;
+            }
+            else
+            {
+                var habit = await HabitService.GetByIdAsync(HabitId);
+                if (habit is null)
+                {
+                    _habitNotFound = true;
+                }
+                else
+                {
+                    var streakTask = CheckinService.GetCurrentStreakAsync(habit.Name);
+                    var historyTask = CheckinService.GetHistoryAsync(habit.Name);
+
+                    await Task.WhenAll(streakTask, historyTask);
+
+                    var streak = await streakTask;
+
+                    _viewModel = new HabitDetailsSummaryViewModel
+                    {
+                        HabitId = habit.Id,
+                        HabitName = habit.Name,
+                        HabitEmoji = habit.Emoji,
+                        HabitDescription = habit.Description,
+                        Streak = streak
+                    };
+
+                    _historyViewModel = HabitHistoryHeatmapBuilder.Build(
+                        await historyTask,
+                        DateOnly.FromDateTime(DateTime.Now));
+
+                    loadOutcome = "loaded";
+                }
             }
 
-            var habit = await HabitService.GetByIdAsync(HabitId);
-            if (habit is null)
-            {
-                _habitNotFound = true;
-                return;
-            }
+            Logger.LogInformation(
+                "Habit details page data load completed in {ElapsedMilliseconds} ms for habit id {HabitId} with outcome {LoadOutcome} and {HistoryWeekCount} history week(s).",
+                stopwatch.ElapsedMilliseconds,
+                HabitId,
+                loadOutcome,
+                _historyViewModel?.Weeks.Count ?? 0);
+        }
+        catch (Exception exception)
+        {
+            Logger.LogError(
+                exception,
+                "Habit details page data load failed after {ElapsedMilliseconds} ms for habit id {HabitId}.",
+                stopwatch.ElapsedMilliseconds,
+                HabitId);
 
-            var streakTask = CheckinService.GetCurrentStreakAsync(habit.Name);
-            var historyTask = CheckinService.GetHistoryAsync(habit.Name);
-
-            await Task.WhenAll(streakTask, historyTask);
-
-            var streak = await streakTask;
-
-            _viewModel = new HabitDetailsSummaryViewModel
-            {
-                HabitId = habit.Id,
-                HabitName = habit.Name,
-                HabitEmoji = habit.Emoji,
-                HabitDescription = habit.Description,
-                Streak = streak
-            };
-
-            _historyViewModel = HabitHistoryHeatmapBuilder.Build(
-                await historyTask,
-                DateOnly.FromDateTime(DateTime.Now));
+            throw;
         }
         finally
         {

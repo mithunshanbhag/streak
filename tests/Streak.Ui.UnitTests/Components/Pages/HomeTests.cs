@@ -10,6 +10,7 @@ public sealed class HomeTests : TestContext
     public HomeTests()
     {
         Services.AddMudServices(options => { options.PopoverOptions.CheckForPopoverProvider = false; });
+        Services.AddLogging();
         JSInterop.Mode = JSRuntimeMode.Loose;
     }
 

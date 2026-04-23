@@ -48,15 +48,24 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        var stopwatch = Stopwatch.StartNew();
+
         try
         {
             await AppInitializationService.EnsureInitializedAsync();
             _startupReady = true;
+
+            Logger.LogInformation(
+                "App startup gate completed in {ElapsedMilliseconds} ms; routes are ready to render.",
+                stopwatch.ElapsedMilliseconds);
         }
         catch (Exception exception)
         {
             _startupError = exception;
-            Logger.LogError(exception, "App startup initialization failed before routes were rendered.");
+            Logger.LogError(
+                exception,
+                "App startup initialization failed before routes were rendered after {ElapsedMilliseconds} ms.",
+                stopwatch.ElapsedMilliseconds);
         }
     }
 

@@ -3,6 +3,7 @@
 @inject ICheckinProofService CheckinProofService
 @inject IDialogService DialogService
 @inject TimeProvider TimeProvider
+@inject ILogger<Home> Logger
 
 <PageTitle>Streak</PageTitle>
 
@@ -151,11 +152,32 @@ else
 
     private async Task LoadDataAsync()
     {
+        var stopwatch = Stopwatch.StartNew();
+
         _loadingData = true;
 
-        _habitCheckins = await CheckinService.GetHomePageHabitCheckinsAsync();
+        try
+        {
+            _habitCheckins = await CheckinService.GetHomePageHabitCheckinsAsync();
 
-        _loadingData = false;
+            Logger.LogInformation(
+                "Home page data load completed in {ElapsedMilliseconds} ms with {HabitCount} habit check-in card(s).",
+                stopwatch.ElapsedMilliseconds,
+                _habitCheckins.Count);
+        }
+        catch (Exception exception)
+        {
+            Logger.LogError(
+                exception,
+                "Home page data load failed after {ElapsedMilliseconds} ms.",
+                stopwatch.ElapsedMilliseconds);
+
+            throw;
+        }
+        finally
+        {
+            _loadingData = false;
+        }
     }
 
     private async Task<(bool Submitted, CheckinDialogResult? Result)> ShowCheckinNoteDialogAsync(HabitCheckinViewModel viewModel)

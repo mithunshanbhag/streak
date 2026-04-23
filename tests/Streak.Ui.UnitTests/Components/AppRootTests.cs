@@ -9,6 +9,7 @@ public sealed class AppRootTests : TestContext
     public AppRootTests()
     {
         Services.AddMudServices(options => { options.PopoverOptions.CheckForPopoverProvider = false; });
+        Services.AddLogging();
         Services.AddSingleton(Mock.Of<ILogger<AppRoot>>());
         Services.AddSingleton(TimeProvider.System);
         JSInterop.Mode = JSRuntimeMode.Loose;

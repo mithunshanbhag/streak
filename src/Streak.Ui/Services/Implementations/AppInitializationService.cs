@@ -35,11 +35,27 @@ public sealed class AppInitializationService(
 
     private async Task InitializeCoreAsync()
     {
+        var stopwatch = Stopwatch.StartNew();
+
         _logger.LogInformation("Running app startup initialization.");
 
-        await Task.Run(_appStartupWorkService.Execute);
+        try
+        {
+            await Task.Run(_appStartupWorkService.Execute);
 
-        _logger.LogInformation("App startup initialization completed.");
+            _logger.LogInformation(
+                "App startup initialization completed in {ElapsedMilliseconds} ms.",
+                stopwatch.ElapsedMilliseconds);
+        }
+        catch (Exception exception)
+        {
+            _logger.LogError(
+                exception,
+                "App startup initialization failed after {ElapsedMilliseconds} ms.",
+                stopwatch.ElapsedMilliseconds);
+
+            throw;
+        }
     }
 
     #endregion

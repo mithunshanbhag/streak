@@ -13,6 +13,7 @@
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
 @inject NavigationManager NavigationManager
+@inject ILogger<Settings> Logger
 
 <PageTitle>@SettingsPageTitleText</PageTitle>
 <AppBarTitleScope TitleText="@SettingsPageTitleText"/>
@@ -399,13 +400,34 @@
 
     protected override async Task OnInitializedAsync()
     {
-        _appVersionInfo = AppVersionInfoService.GetCurrent();
-        _remindersEnabled = ReminderConfigurationService.GetIsEnabled();
-        _reminderTimeLocal = ReminderConfigurationService.GetTimeLocal().ToTimeSpan();
-        _automatedBackupsSupported = AutomatedBackupConfigurationService.IsSupported;
-        _automatedBackupsEnabled = _automatedBackupsSupported && AutomatedBackupConfigurationService.GetIsEnabled();
+        var stopwatch = Stopwatch.StartNew();
 
-        await RequestReminderNotificationPermissionIfEnabledAsync();
+        try
+        {
+            _appVersionInfo = AppVersionInfoService.GetCurrent();
+            _remindersEnabled = ReminderConfigurationService.GetIsEnabled();
+            _reminderTimeLocal = ReminderConfigurationService.GetTimeLocal().ToTimeSpan();
+            _automatedBackupsSupported = AutomatedBackupConfigurationService.IsSupported;
+            _automatedBackupsEnabled = _automatedBackupsSupported && AutomatedBackupConfigurationService.GetIsEnabled();
+
+            await RequestReminderNotificationPermissionIfEnabledAsync();
+
+            Logger.LogInformation(
+                "Settings page initialization completed in {ElapsedMilliseconds} ms. Reminders enabled: {RemindersEnabled}. Automated backups supported: {AutomatedBackupsSupported}. Automated backups enabled: {AutomatedBackupsEnabled}.",
+                stopwatch.ElapsedMilliseconds,
+                _remindersEnabled,
+                _automatedBackupsSupported,
+                _automatedBackupsEnabled);
+        }
+        catch (Exception exception)
+        {
+            Logger.LogError(
+                exception,
+                "Settings page initialization failed after {ElapsedMilliseconds} ms.",
+                stopwatch.ElapsedMilliseconds);
+
+            throw;
+        }
     }
 
     #endregion
