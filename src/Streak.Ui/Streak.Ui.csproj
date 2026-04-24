@@ -90,7 +90,6 @@
 		<PackageReference Include="FluentValidation" Version="12.1.1" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.5" />
 		<PackageReference Include="Microsoft.Identity.Client" Version="4.83.3" />
-		<PackageReference Include="Microsoft.Identity.Client.Extensions.Msal" Version="4.83.3" />
 		<PackageReference Include="Microsoft.Maui.Controls" Version="10.0.51" />
 		<PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="10.0.51" />
 		<PackageReference Include="MudBlazor" Version="9.3.0" />

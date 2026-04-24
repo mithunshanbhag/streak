@@ -1,5 +1,4 @@
 using Microsoft.Identity.Client;
-using Microsoft.Identity.Client.Extensions.Msal;
 
 namespace Streak.Ui.Platforms.Android.Services;
 
@@ -12,6 +11,7 @@ public sealed class AndroidOneDriveAuthService(
     private readonly ILogger<AndroidOneDriveAuthService> _logger = logger;
 
     private readonly SemaphoreSlim _publicClientInitializationLock = new(1, 1);
+    private readonly Lock _tokenCacheFileLock = new();
 
     private IPublicClientApplication? _publicClientApplication;
 
@@ -129,13 +129,7 @@ public sealed class AndroidOneDriveAuthService(
                 .WithRedirectUri(configuration.RedirectUri)
                 .Build();
 
-            var storageProperties = new StorageCreationPropertiesBuilder(
-                    OneDriveAuthConstants.TokenCacheFileName,
-                    FileSystem.AppDataDirectory)
-                .Build();
-
-            var cacheHelper = await MsalCacheHelper.CreateAsync(storageProperties);
-            cacheHelper.RegisterCache(publicClientApplication.UserTokenCache);
+            RegisterTokenCache(publicClientApplication.UserTokenCache);
 
             _publicClientApplication = publicClientApplication;
             return _publicClientApplication;
@@ -150,6 +144,50 @@ public sealed class AndroidOneDriveAuthService(
     {
         var accounts = await publicClientApplication.GetAccountsAsync();
         return accounts.FirstOrDefault();
+    }
+
+    private void RegisterTokenCache(ITokenCache tokenCache)
+    {
+        var tokenCacheFilePath = Path.Combine(
+            FileSystem.AppDataDirectory,
+            OneDriveAuthConstants.TokenCacheFileName);
+
+        tokenCache.SetBeforeAccess(args =>
+        {
+            lock (_tokenCacheFileLock)
+            {
+                try
+                {
+                    if (!File.Exists(tokenCacheFilePath))
+                        return;
+
+                    args.TokenCache.DeserializeMsalV3(File.ReadAllBytes(tokenCacheFilePath));
+                }
+                catch (Exception exception)
+                {
+                    _logger.LogWarning(exception, "Unable to read OneDrive token cache from {TokenCacheFilePath}.", tokenCacheFilePath);
+                }
+            }
+        });
+
+        tokenCache.SetAfterAccess(args =>
+        {
+            if (!args.HasStateChanged)
+                return;
+
+            lock (_tokenCacheFileLock)
+            {
+                try
+                {
+                    Directory.CreateDirectory(FileSystem.AppDataDirectory);
+                    File.WriteAllBytes(tokenCacheFilePath, args.TokenCache.SerializeMsalV3());
+                }
+                catch (Exception exception)
+                {
+                    _logger.LogWarning(exception, "Unable to persist OneDrive token cache to {TokenCacheFilePath}.", tokenCacheFilePath);
+                }
+            }
+        });
     }
 
     private static bool IsUserCancellation(MsalException exception)
