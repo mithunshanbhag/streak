@@ -1,7 +1,9 @@
 using Android.App;
+using Android.Content;
 using Android.Content.PM;
 using Android.OS;
 using AndroidX.Core.View;
+using Microsoft.Identity.Client;
 
 namespace Streak.Ui.Platforms.Android;
 
@@ -41,5 +43,11 @@ public class MainActivity : MauiAppCompatActivity
     {
         base.OnResume();
         AndroidActivityTracker.SetCurrent(this);
+    }
+
+    protected override void OnActivityResult(int requestCode, Result resultCode, Intent? data)
+    {
+        base.OnActivityResult(requestCode, resultCode, data);
+        AuthenticationContinuationHelper.SetAuthenticationContinuationEventArgs(requestCode, resultCode, data);
     }
 }
