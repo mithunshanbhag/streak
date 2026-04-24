@@ -6,9 +6,9 @@
 
 > A lightweight habit-tracking app designed around one idea: make daily check-ins fast enough that you actually keep coming back.
 
-Streak is an indie-SaaS-style mobile app concept for tracking a small set of daily habits, seeing streak momentum at a glance, and keeping the experience intentionally simple.
+Streak is an indie-SaaS-style mobile app for tracking a small set of daily habits, seeing streak momentum at a glance, and keeping the experience intentionally simple.
 
-![Homepage mockup](docs/readme-assets/homepage.png)
+![Streak app overview](docs/readme-assets/app-overview.png)
 
 ## Current status
 
@@ -61,11 +61,11 @@ Mockup source: [`docs/ui-mockups/HabitDetailsPage/index.html`](docs/ui-mockups/H
 
 ### Settings
 
-Settings now combine a compact daily reminder card with the existing local data tools. Users can keep reminders on or off, change the local reminder time, and manage backup, share, restore, and diagnostics actions without leaving the page.
+Settings bring together reminder preferences, local backup tools, diagnostics export, and optional OneDrive backups without pushing users into a more complex admin flow.
 
 ![Settings screen](docs/readme-assets/settings.png)
 
-Mockup source: [`docs/ui-mockups/SettingsPage/index.html`](docs/ui-mockups/SettingsPage/index.html)
+Mockup source: [`docs/ui-mockups/SettingsPage/SettingsPageCloudConnected/index.html`](docs/ui-mockups/SettingsPage/SettingsPageCloudConnected/index.html)
 
 ## Product direction
 
