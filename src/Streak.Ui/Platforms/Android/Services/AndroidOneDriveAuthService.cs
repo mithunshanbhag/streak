@@ -5,10 +5,12 @@ namespace Streak.Ui.Platforms.Android.Services;
 
 public sealed class AndroidOneDriveAuthService(
     IOneDriveAuthConfigurationProvider configurationProvider,
+    IOneDriveAuthStateStore authStateStore,
     ILogger<AndroidOneDriveAuthService> logger)
     : IOneDriveAuthService
 {
     private readonly IOneDriveAuthConfigurationProvider _configurationProvider = configurationProvider;
+    private readonly IOneDriveAuthStateStore _authStateStore = authStateStore;
     private readonly ILogger<AndroidOneDriveAuthService> _logger = logger;
 
     private readonly SemaphoreSlim _publicClientInitializationLock = new(1, 1);
@@ -49,10 +51,9 @@ public sealed class AndroidOneDriveAuthService(
                 stopwatch.ElapsedMilliseconds,
                 authenticationResult.Account is not null);
 
-            return OneDriveConnectResult.Connected(
-                CreateAuthState(
-                    configuration,
-                    authenticationResult.Account?.Username));
+            _authStateStore.SetLastKnownAccountUsername(authenticationResult.Account?.Username);
+
+            return OneDriveConnectResult.Connected(await GetAuthStateAsync(cancellationToken));
         }
         catch (MsalException exception) when (IsUserCancellation(exception))
         {
@@ -90,6 +91,7 @@ public sealed class AndroidOneDriveAuthService(
         if (!configuration.IsConfigured)
         {
             _logger.LogInformation("OneDrive disconnect skipped because the build is not configured.");
+            _authStateStore.Clear();
             return;
         }
 
@@ -107,6 +109,8 @@ public sealed class AndroidOneDriveAuthService(
                 await publicClientApplication.RemoveAsync(account);
                 removedAccountCount++;
             }
+
+            _authStateStore.Clear();
 
             _logger.LogInformation(
                 "OneDrive disconnect completed in {ElapsedMilliseconds} ms. Account count: {AccountCount}. Removed account count: {RemovedAccountCount}.",
@@ -131,6 +135,7 @@ public sealed class AndroidOneDriveAuthService(
         if (!configuration.IsConfigured)
         {
             _logger.LogInformation("OneDrive auth state loaded as disconnected because the build is not configured.");
+            _authStateStore.Clear();
             return CreateAuthState(configuration, accountUsername: null);
         }
 
@@ -140,15 +145,19 @@ public sealed class AndroidOneDriveAuthService(
 
             var publicClientApplication = await GetPublicClientApplicationAsync(cancellationToken);
             var accounts = await GetAccountsSnapshotAsync(publicClientApplication);
-            var account = accounts.FirstOrDefault();
+            var accountUsername = accounts.FirstOrDefault()?.Username;
+            if (!string.IsNullOrWhiteSpace(accountUsername))
+                _authStateStore.SetLastKnownAccountUsername(accountUsername);
+            else
+                accountUsername = _authStateStore.GetLastKnownAccountUsername();
 
             _logger.LogInformation(
                 "OneDrive auth state loaded in {ElapsedMilliseconds} ms. Account count: {AccountCount}. Connected: {OneDriveConnected}.",
                 stopwatch.ElapsedMilliseconds,
                 accounts.Count,
-                account is not null);
+                !string.IsNullOrWhiteSpace(accountUsername));
 
-            return CreateAuthState(configuration, account?.Username);
+            return CreateAuthState(configuration, accountUsername);
         }
         catch (Exception exception)
         {
@@ -156,7 +165,7 @@ public sealed class AndroidOneDriveAuthService(
                 exception,
                 "Unable to load persisted OneDrive auth state after {ElapsedMilliseconds} ms.",
                 stopwatch.ElapsedMilliseconds);
-            return CreateAuthState(configuration, accountUsername: null);
+            return CreateAuthState(configuration, _authStateStore.GetLastKnownAccountUsername());
         }
     }
 
