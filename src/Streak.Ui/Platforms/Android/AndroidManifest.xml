@@ -8,7 +8,10 @@
 		android:supportsRtl="true">
 		<activity
 			android:name="com.microsoft.identity.client.BrowserTabActivity"
-			android:exported="true">
+			android:configChanges="orientation|screenSize"
+			android:exported="true"
+			android:launchMode="singleTask"
+			android:noHistory="true">
 			<intent-filter>
 				<action android:name="android.intent.action.VIEW" />
 				<category android:name="android.intent.category.DEFAULT" />

@@ -10,6 +10,7 @@ namespace Streak.Ui.Platforms.Android;
 [Activity(
     Theme = "@style/Maui.SplashTheme",
     MainLauncher = true,
+    LaunchMode = LaunchMode.SingleTop,
     ConfigurationChanges = ConfigChanges.ScreenSize
                            | ConfigChanges.Orientation
                            | ConfigChanges.UiMode
@@ -49,5 +50,11 @@ public class MainActivity : MauiAppCompatActivity
     {
         base.OnActivityResult(requestCode, resultCode, data);
         AuthenticationContinuationHelper.SetAuthenticationContinuationEventArgs(requestCode, resultCode, data);
+    }
+
+    protected override void OnNewIntent(Intent? intent)
+    {
+        base.OnNewIntent(intent);
+        AndroidActivityTracker.SetCurrent(this);
     }
 }

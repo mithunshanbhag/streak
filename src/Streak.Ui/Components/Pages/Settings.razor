@@ -12,6 +12,7 @@
 @inject IReminderNotificationPermissionCoordinator ReminderNotificationPermissionCoordinator
 @inject IAppVersionInfoService AppVersionInfoService
 @inject IOneDriveAuthService OneDriveAuthService
+@inject IOneDriveAuthReturnRouteStore OneDriveAuthReturnRouteStore
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
 @inject NavigationManager NavigationManager
@@ -776,13 +777,16 @@
         {
             _oneDriveAuthOperationInProgress = true;
             _operationErrorMessage = null;
+            OneDriveAuthReturnRouteStore.SetPendingReturnRoute(RouteConstants.Settings);
 
             var connectResult = await OneDriveAuthService.ConnectAsync();
             _oneDriveAuthState = connectResult.AuthState;
+            OneDriveAuthReturnRouteStore.ClearPendingReturnRoute();
         }
         catch (Exception)
         {
             _operationErrorMessage = OneDriveConnectFailedText;
+            OneDriveAuthReturnRouteStore.ClearPendingReturnRoute();
             await RefreshOneDriveAuthStateAsync();
         }
         finally

@@ -284,6 +284,7 @@ public sealed class SettingsTests : TestContext
         oneDriveAuthServiceMock
             .Setup(x => x.ConnectAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(OneDriveConnectResult.Connected(CreateConnectedOneDriveAuthState()));
+        var oneDriveAuthReturnRouteStoreMock = new Mock<IOneDriveAuthReturnRouteStore>();
 
         RegisterSettingsServices(
             exportServiceMock,
@@ -291,7 +292,8 @@ public sealed class SettingsTests : TestContext
             shareServiceMock,
             backupConfigurationServiceMock,
             reminderConfigurationServiceMock,
-            oneDriveAuthServiceMock: oneDriveAuthServiceMock);
+            oneDriveAuthServiceMock: oneDriveAuthServiceMock,
+            oneDriveAuthReturnRouteStoreMock: oneDriveAuthReturnRouteStoreMock);
 
         var cut = RenderSettings();
 
@@ -300,6 +302,10 @@ public sealed class SettingsTests : TestContext
         cut.WaitForAssertion(() =>
         {
             oneDriveAuthServiceMock.Verify(x => x.ConnectAsync(It.IsAny<CancellationToken>()), Times.Once);
+            oneDriveAuthReturnRouteStoreMock.Verify(
+                x => x.SetPendingReturnRoute(RouteConstants.Settings),
+                Times.Once);
+            oneDriveAuthReturnRouteStoreMock.Verify(x => x.ClearPendingReturnRoute(), Times.Once);
             cut.Markup.Should().Contain("streak-demo@outlook.com");
             cut.Find("button[aria-label='Disconnect OneDrive']");
         });
@@ -1189,6 +1195,7 @@ public sealed class SettingsTests : TestContext
         Mock<IBackupNotificationPermissionService>? backupNotificationPermissionServiceMock = null,
         Mock<IReminderNotificationPermissionCoordinator>? reminderNotificationPermissionCoordinatorMock = null,
         Mock<IAppVersionInfoService>? appVersionInfoServiceMock = null,
+        Mock<IOneDriveAuthReturnRouteStore>? oneDriveAuthReturnRouteStoreMock = null,
         Mock<ISnackbar>? snackbarMock = null)
     {
         var importFilePickerMock = new Mock<IDatabaseImportFilePicker>();
@@ -1211,6 +1218,7 @@ public sealed class SettingsTests : TestContext
         }
         appVersionInfoServiceMock ??= CreateAppVersionInfoServiceMock();
         oneDriveAuthServiceMock ??= CreateOneDriveAuthServiceMock(CreateDisconnectedOneDriveAuthState());
+        oneDriveAuthReturnRouteStoreMock ??= new Mock<IOneDriveAuthReturnRouteStore>();
         snackbarMock ??= new Mock<ISnackbar>();
         snackbarMock
             .Setup(x => x.Add(
@@ -1232,6 +1240,7 @@ public sealed class SettingsTests : TestContext
         Services.AddSingleton(reminderConfigurationServiceMock.Object);
         Services.AddSingleton(reminderNotificationPermissionCoordinatorMock.Object);
         Services.AddSingleton(oneDriveAuthServiceMock.Object);
+        Services.AddSingleton(oneDriveAuthReturnRouteStoreMock.Object);
         Services.AddSingleton(appVersionInfoServiceMock.Object);
         Services.AddSingleton(snackbarMock.Object);
     }
