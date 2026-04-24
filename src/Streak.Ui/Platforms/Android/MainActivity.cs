@@ -21,6 +21,7 @@ public class MainActivity : MauiAppCompatActivity
         StartupTiming.Mark("android-main-activity-on-create-start");
 
         base.OnCreate(savedInstanceState);
+        AndroidActivityTracker.SetCurrent(this);
 
         StartupTiming.Mark("android-main-activity-base-on-create-completed");
 
@@ -34,5 +35,11 @@ public class MainActivity : MauiAppCompatActivity
         WindowCompat.SetDecorFitsSystemWindows(Window!, true);
 
         StartupTiming.Mark("android-main-activity-on-create-completed");
+    }
+
+    protected override void OnResume()
+    {
+        base.OnResume();
+        AndroidActivityTracker.SetCurrent(this);
     }
 }

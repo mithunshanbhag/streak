@@ -30,8 +30,9 @@ jobs:
         with:
           name: Streak.Ui.UnitTests
           path: ./tests/Streak.Ui.UnitTests/TestResults-${{ github.run_id }}-${{ github.run_attempt }}
-      - name: build streak app (windows)
-        run: dotnet publish ./src/Streak.Ui/Streak.Ui.csproj -f ${{ env.WINDOWS_TARGET_FRAMEWORK }} -c Release -o ./Publish/Streak.Ui --nologo
+      # temporarily disable windows build to ensure android build finishes quickly for testing purposes, will re-enable in future PRs
+      # - name: build streak app (windows)
+      #   run: dotnet publish ./src/Streak.Ui/Streak.Ui.csproj -f ${{ env.WINDOWS_TARGET_FRAMEWORK }} -c Release -o ./Publish/Streak.Ui --nologo
       - name: decode android release keystore
         shell: pwsh
         run: |

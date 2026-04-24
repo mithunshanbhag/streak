@@ -11,6 +11,7 @@
 @inject IBackupNotificationPermissionService BackupNotificationPermissionService
 @inject IReminderNotificationPermissionCoordinator ReminderNotificationPermissionCoordinator
 @inject IAppVersionInfoService AppVersionInfoService
+@inject IOneDriveAuthService OneDriveAuthService
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
 @inject NavigationManager NavigationManager
@@ -207,13 +208,32 @@
                             </MudStack>
 
                             <MudPaper Elevation="0"
-                                      Class="px-2 py-1 rounded-pill"
-                                      Style="@OneDriveStatusChipStyle">
+                                       Class="px-2 py-1 rounded-pill"
+                                       Style="@OneDriveStatusChipStyle">
                                 <MudText Typo="Typo.caption">
                                     @OneDriveStatusChipText
                                 </MudText>
                             </MudPaper>
                         </MudStack>
+
+                        @if (_oneDriveAuthState.IsConnected)
+                        {
+                            <MudStack Spacing="1">
+                                <MudStack Row="true"
+                                          Justify="Justify.SpaceBetween"
+                                          AlignItems="AlignItems.Center"
+                                          Spacing="2">
+                                    <MudText Typo="Typo.caption"
+                                             Class="text-secondary">
+                                        @OneDriveStorageLocationLabelText
+                                    </MudText>
+
+                                    <MudText Typo="Typo.caption">
+                                        @_oneDriveAuthState.StorageLocationDisplayName
+                                    </MudText>
+                                </MudStack>
+                            </MudStack>
+                        }
 
                         <MudText Typo="Typo.body2"
                                  Class="text-secondary">
@@ -240,22 +260,48 @@
                         </MudStack>
 
                         <MudSwitch T="bool"
-                                   Value="@OneDriveCloudBackupEnabledPlaceholder"
-                                   Disabled="@OneDriveBackupControlsDisabled"
-                                   Color="Color.Primary"
-                                   aria-label="@CloudAutomatedBackupsSwitchAriaLabel"/>
+                                    Value="@OneDriveCloudBackupEnabledPlaceholder"
+                                    Disabled="@OneDriveCloudBackupToggleDisabled"
+                                    Color="Color.Primary"
+                                    aria-label="@CloudAutomatedBackupsSwitchAriaLabel"/>
                     </MudStack>
                 </MudPaper>
 
                 <MudPaper Elevation="0"
                           Class="pa-3 rounded-lg">
-                    <MudButton Color="Color.Primary"
-                               Variant="Variant.Filled"
-                               Disabled="@OneDriveBackupControlsDisabled"
-                               StartIcon="@Icons.Material.Filled.CloudQueue"
-                               aria-label="@ConnectOneDriveButtonAriaLabel">
-                        @ConnectOneDriveButtonText
-                    </MudButton>
+                    <MudStack Row="true"
+                              Spacing="2">
+                        @if (_oneDriveAuthState.IsConnected)
+                        {
+                            <MudButton Color="Color.Primary"
+                                       Variant="Variant.Filled"
+                                       Disabled="true"
+                                       StartIcon="@Icons.Material.Filled.CloudUpload"
+                                       aria-label="@BackUpToOneDriveButtonAriaLabel">
+                                @BackUpToOneDriveButtonText
+                            </MudButton>
+
+                            <MudButton Color="Color.Default"
+                                       Variant="Variant.Outlined"
+                                       Disabled="@OneDriveDisconnectButtonDisabled"
+                                       StartIcon="@Icons.Material.Filled.LinkOff"
+                                       OnClick="DisconnectOneDriveAsync"
+                                       aria-label="@DisconnectOneDriveButtonAriaLabel">
+                                @DisconnectOneDriveButtonText
+                            </MudButton>
+                        }
+                        else
+                        {
+                            <MudButton Color="Color.Primary"
+                                       Variant="Variant.Filled"
+                                       Disabled="@OneDriveConnectButtonDisabled"
+                                       StartIcon="@Icons.Material.Filled.CloudQueue"
+                                       OnClick="ConnectOneDriveAsync"
+                                       aria-label="@ConnectOneDriveButtonAriaLabel">
+                                @ConnectOneDriveButtonText
+                            </MudButton>
+                        }
+                    </MudStack>
                 </MudPaper>
 
                 <MudDivider/>
@@ -497,9 +543,11 @@
 
     private bool _automatedBackupSettingsUpdateInProgress;
 
-    private const bool OneDriveCloudBackupEnabledPlaceholder = false;
+    private OneDriveAuthState _oneDriveAuthState = new();
 
-    private const bool OneDriveBackupControlsDisabled = true;
+    private bool _oneDriveAuthOperationInProgress;
+
+    private const bool OneDriveCloudBackupEnabledPlaceholder = false;
 
     private AppVersionInfo? _appVersionInfo;
 
@@ -512,6 +560,7 @@
     private bool ReminderControlsDisabled =>
         _reminderSettingsUpdateInProgress
         || _automatedBackupSettingsUpdateInProgress
+        || _oneDriveAuthOperationInProgress
         || _exportInProgress
         || _diagnosticsExportInProgress
         || _diagnosticsShareInProgress
@@ -528,7 +577,60 @@
         || _shareInProgress
         || _importInProgress
         || _reminderSettingsUpdateInProgress
-        || _automatedBackupSettingsUpdateInProgress;
+        || _automatedBackupSettingsUpdateInProgress
+        || _oneDriveAuthOperationInProgress;
+
+    private bool OneDriveCloudBackupToggleDisabled => true;
+
+    private bool OneDriveConnectButtonDisabled =>
+        DataActionsDisabled
+        || _oneDriveAuthState.IsConnected
+        || !_oneDriveAuthState.IsPlatformSupported
+        || !_oneDriveAuthState.IsConfigured;
+
+    private bool OneDriveDisconnectButtonDisabled =>
+        DataActionsDisabled
+        || !_oneDriveAuthState.IsConnected;
+
+    private string OneDriveProviderStateText => _oneDriveAuthState.IsConnected
+        ? _oneDriveAuthState.AccountUsername ?? OneDriveConnectedStateText
+        : OneDriveNotConnectedStateText;
+
+    private string OneDriveProviderSupportText
+    {
+        get
+        {
+            if (!_oneDriveAuthState.IsPlatformSupported)
+                return OneDrivePlatformUnsupportedSupportText;
+
+            if (!_oneDriveAuthState.IsConfigured)
+                return OneDriveNotConfiguredSupportText;
+
+            return _oneDriveAuthState.IsConnected
+                ? OneDriveConnectedSupportText
+                : OneDriveSignedOutSupportText;
+        }
+    }
+
+    private string OneDriveStatusChipText
+    {
+        get
+        {
+            if (!_oneDriveAuthState.IsPlatformSupported)
+                return OneDriveUnavailableStatusChipText;
+
+            if (!_oneDriveAuthState.IsConfigured)
+                return OneDriveSetupRequiredStatusChipText;
+
+            return _oneDriveAuthState.IsConnected
+                ? OneDriveConnectedStatusChipText
+                : OneDriveSignedOutStatusChipText;
+        }
+    }
+
+    private string CloudAutomatedBackupsDescriptionText => _oneDriveAuthState.IsConnected
+        ? CloudAutomatedBackupsDeferredDescriptionText
+        : CloudAutomatedBackupsSignedOutDescriptionText;
 
     #endregion
 
@@ -545,15 +647,19 @@
             _reminderTimeLocal = ReminderConfigurationService.GetTimeLocal().ToTimeSpan();
             _automatedBackupsSupported = AutomatedBackupConfigurationService.IsSupported;
             _automatedBackupsEnabled = _automatedBackupsSupported && AutomatedBackupConfigurationService.GetIsEnabled();
+            _oneDriveAuthState = await OneDriveAuthService.GetAuthStateAsync();
 
             await RequestReminderNotificationPermissionIfEnabledAsync();
 
             Logger.LogInformation(
-                "Settings page initialization completed in {ElapsedMilliseconds} ms. Reminders enabled: {RemindersEnabled}. Automated backups supported: {AutomatedBackupsSupported}. Automated backups enabled: {AutomatedBackupsEnabled}.",
+                "Settings page initialization completed in {ElapsedMilliseconds} ms. Reminders enabled: {RemindersEnabled}. Automated backups supported: {AutomatedBackupsSupported}. Automated backups enabled: {AutomatedBackupsEnabled}. OneDrive supported: {OneDrivePlatformSupported}. OneDrive configured: {OneDriveConfigured}. OneDrive connected: {OneDriveConnected}.",
                 stopwatch.ElapsedMilliseconds,
                 _remindersEnabled,
                 _automatedBackupsSupported,
-                _automatedBackupsEnabled);
+                _automatedBackupsEnabled,
+                _oneDriveAuthState.IsPlatformSupported,
+                _oneDriveAuthState.IsConfigured,
+                _oneDriveAuthState.IsConnected);
         }
         catch (Exception exception)
         {
@@ -661,6 +767,48 @@
         finally
         {
             _exportInProgress = false;
+        }
+    }
+
+    private async Task ConnectOneDriveAsync()
+    {
+        try
+        {
+            _oneDriveAuthOperationInProgress = true;
+            _operationErrorMessage = null;
+
+            var connectResult = await OneDriveAuthService.ConnectAsync();
+            _oneDriveAuthState = connectResult.AuthState;
+        }
+        catch (Exception)
+        {
+            _operationErrorMessage = OneDriveConnectFailedText;
+            await RefreshOneDriveAuthStateAsync();
+        }
+        finally
+        {
+            _oneDriveAuthOperationInProgress = false;
+        }
+    }
+
+    private async Task DisconnectOneDriveAsync()
+    {
+        try
+        {
+            _oneDriveAuthOperationInProgress = true;
+            _operationErrorMessage = null;
+
+            await OneDriveAuthService.DisconnectAsync();
+            await RefreshOneDriveAuthStateAsync();
+        }
+        catch (Exception)
+        {
+            _operationErrorMessage = OneDriveDisconnectFailedText;
+            await RefreshOneDriveAuthStateAsync();
+        }
+        finally
+        {
+            _oneDriveAuthOperationInProgress = false;
         }
     }
 
@@ -799,6 +947,11 @@
             Snackbar.Add(ReminderNotificationsPermissionText, Severity.Info);
     }
 
+    private async Task RefreshOneDriveAuthStateAsync()
+    {
+        _oneDriveAuthState = await OneDriveAuthService.GetAuthStateAsync();
+    }
+
     #endregion
 
     #region Text, Label Properties
@@ -855,21 +1008,47 @@
 
     private const string OneDriveProviderNameText = "OneDrive";
 
-    private const string OneDriveProviderStateText = "Not connected";
+    private const string OneDriveConnectedStateText = "Connected";
 
-    private const string OneDriveStatusChipText = "Coming soon";
+    private const string OneDriveNotConnectedStateText = "Not connected";
 
-    private const string OneDriveProviderSupportText = "Cloud backup isn't available in this build yet. These controls are shown here as a placeholder for the upcoming OneDrive flow.";
+    private const string OneDriveSignedOutStatusChipText = "Signed out";
+
+    private const string OneDriveConnectedStatusChipText = "Connected";
+
+    private const string OneDriveUnavailableStatusChipText = "Unavailable";
+
+    private const string OneDriveSetupRequiredStatusChipText = "Setup required";
+
+    private const string OneDriveSignedOutSupportText = "Sign in with a personal Microsoft account to upload the same .zip archives to your private OneDrive app folder.";
+
+    private const string OneDriveConnectedSupportText = "You're signed in. Backup upload and nightly cloud backup will be enabled in a later OneDrive update.";
+
+    private const string OneDrivePlatformUnsupportedSupportText = "Cloud backup isn't supported on this platform in the current iteration.";
+
+    private const string OneDriveNotConfiguredSupportText = "OneDrive sign-in isn't configured in this build yet. Set the OneDriveClientId build property to your Azure app registration's client ID.";
+
+    private const string OneDriveStorageLocationLabelText = "Storage location";
 
     private const string CloudAutomatedBackupsLabelText = "Nightly cloud backup";
 
-    private const string CloudAutomatedBackupsDescriptionText = "Will stay separate from local automated backups when available.";
+    private const string CloudAutomatedBackupsSignedOutDescriptionText = "Available after you connect OneDrive.";
+
+    private const string CloudAutomatedBackupsDeferredDescriptionText = "Backup scheduling will light up after the OneDrive backup flow is implemented.";
 
     private const string CloudAutomatedBackupsSwitchAriaLabel = "Nightly cloud backup toggle";
 
     private const string ConnectOneDriveButtonText = "Connect OneDrive";
 
     private const string ConnectOneDriveButtonAriaLabel = "Connect OneDrive";
+
+    private const string BackUpToOneDriveButtonText = "Back up to OneDrive";
+
+    private const string BackUpToOneDriveButtonAriaLabel = "Back up to OneDrive";
+
+    private const string DisconnectOneDriveButtonText = "Disconnect";
+
+    private const string DisconnectOneDriveButtonAriaLabel = "Disconnect OneDrive";
 
     private const string BackupHeaderText = "Local backup";
 
@@ -928,6 +1107,10 @@
     private const string ImportValidationFailedText = "That file is not a valid Streak backup or database. Your current data was not changed.";
 
     private const string ImportFailedText = "Unable to restore your data right now. Please try again.";
+
+    private const string OneDriveConnectFailedText = "Unable to connect OneDrive right now. Please try again.";
+
+    private const string OneDriveDisconnectFailedText = "Unable to disconnect OneDrive right now. Please try again.";
 
     #endregion
 

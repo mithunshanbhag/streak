@@ -30,6 +30,8 @@
 		<!-- Versions -->
 		<ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
 		<ApplicationVersion>1</ApplicationVersion>
+		<OneDriveClientId Condition="'$(OneDriveClientId)' == ''">ab56f670-7156-479b-94f9-de0c71e4be8f</OneDriveClientId>
+		<OneDriveRedirectScheme>msal$(OneDriveClientId)</OneDriveRedirectScheme>
 
 		<!-- To develop, package, and publish an app to the Microsoft Store, see: https://aka.ms/MauiTemplateUnpackaged -->
 		<WindowsPackageType>None</WindowsPackageType>
@@ -43,6 +45,7 @@
 		<TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">
 			10.0.17763.0
 		</TargetPlatformMinVersion>
+		<AndroidManifestPlaceholders Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">$(AndroidManifestPlaceholders);onedriveRedirectScheme=$(OneDriveRedirectScheme)</AndroidManifestPlaceholders>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)' == 'Debug|net10.0-android'">
@@ -53,6 +56,13 @@
 		<RuntimeIdentifiers>android-x64</RuntimeIdentifiers>
 		<EmbedAssembliesIntoApk>true</EmbedAssembliesIntoApk>
 	</PropertyGroup>
+
+	<ItemGroup>
+		<AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+			<_Parameter1>Streak.OneDriveClientId</_Parameter1>
+			<_Parameter2>$(OneDriveClientId)</_Parameter2>
+		</AssemblyAttribute>
+	</ItemGroup>
 
 	<ItemGroup>
 		<!-- App Icon -->
@@ -79,6 +89,8 @@
 	<ItemGroup>
 		<PackageReference Include="FluentValidation" Version="12.1.1" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.5" />
+		<PackageReference Include="Microsoft.Identity.Client" Version="4.83.3" />
+		<PackageReference Include="Microsoft.Identity.Client.Extensions.Msal" Version="4.83.3" />
 		<PackageReference Include="Microsoft.Maui.Controls" Version="10.0.51" />
 		<PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="10.0.51" />
 		<PackageReference Include="MudBlazor" Version="9.3.0" />
