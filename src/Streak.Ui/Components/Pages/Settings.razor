@@ -777,14 +777,22 @@
         {
             _oneDriveAuthOperationInProgress = true;
             _operationErrorMessage = null;
+            Logger.LogInformation("Settings started OneDrive connect flow and persisted the post-auth return route.");
             OneDriveAuthReturnRouteStore.SetPendingReturnRoute(RouteConstants.Settings);
 
             var connectResult = await OneDriveAuthService.ConnectAsync();
             _oneDriveAuthState = connectResult.AuthState;
             OneDriveAuthReturnRouteStore.ClearPendingReturnRoute();
+            Logger.LogInformation(
+                "Settings completed OneDrive connect flow. Status: {OneDriveConnectStatus}. Connected: {OneDriveConnected}.",
+                connectResult.Status,
+                _oneDriveAuthState.IsConnected);
         }
-        catch (Exception)
+        catch (Exception exception)
         {
+            Logger.LogWarning(
+                exception,
+                "Settings OneDrive connect flow failed or was interrupted; clearing the post-auth return route and refreshing auth state.");
             _operationErrorMessage = OneDriveConnectFailedText;
             OneDriveAuthReturnRouteStore.ClearPendingReturnRoute();
             await RefreshOneDriveAuthStateAsync();

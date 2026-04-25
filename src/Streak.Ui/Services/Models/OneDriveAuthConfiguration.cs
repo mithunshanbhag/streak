@@ -11,4 +11,6 @@ public sealed record OneDriveAuthConfiguration
         && !string.Equals(ClientId, OneDriveAuthConstants.UnconfiguredClientId, StringComparison.OrdinalIgnoreCase);
 
     public string RedirectUri => $"msal{ClientId}://{OneDriveAuthConstants.RedirectUriHost}";
+
+    public string RedirectScheme => $"msal{ClientId}";
 }

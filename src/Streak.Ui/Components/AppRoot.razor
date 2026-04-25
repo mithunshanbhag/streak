@@ -94,7 +94,12 @@ else
     {
         var pendingRoute = OneDriveAuthReturnRouteStore.ConsumePendingReturnRoute();
         if (!string.Equals(pendingRoute, RouteConstants.Settings, StringComparison.Ordinal))
+        {
+            Logger.LogDebug(
+                "No Settings route restore needed after startup. OneDrive pending return route present: {PendingReturnRoutePresent}.",
+                !string.IsNullOrWhiteSpace(pendingRoute));
             return;
+        }
 
         Logger.LogInformation("Restoring Settings route after OneDrive auth callback.");
         NavigationManager.NavigateTo(RouteConstants.Settings);

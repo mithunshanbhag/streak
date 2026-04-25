@@ -30,8 +30,10 @@ public sealed class AndroidOneDriveAuthService(
         }
 
         _logger.LogInformation(
-            "OneDrive interactive sign-in starting. Scope count: {ScopeCount}.",
-            configuration.Scopes.Count);
+            "OneDrive interactive sign-in starting. Scope count: {ScopeCount}. Redirect host: {RedirectHost}. Redirect scheme length: {RedirectSchemeLength}.",
+            configuration.Scopes.Count,
+            OneDriveAuthConstants.RedirectUriHost,
+            configuration.RedirectScheme.Length);
 
         var publicClientApplication = await GetPublicClientApplicationAsync(cancellationToken);
         var currentActivity = AndroidActivityTracker.GetRequiredCurrentActivity();
@@ -39,8 +41,9 @@ public sealed class AndroidOneDriveAuthService(
         try
         {
             _logger.LogInformation(
-                "OneDrive interactive sign-in launching browser flow. Parent activity type: {ParentActivityType}.",
-                currentActivity.GetType().Name);
+                "OneDrive interactive sign-in launching browser flow. Parent activity type: {ParentActivityType}. Current activity finishing: {CurrentActivityFinishing}.",
+                currentActivity.GetType().Name,
+                currentActivity.IsFinishing);
 
             var authenticationResult = await publicClientApplication
                 .AcquireTokenInteractive(configuration.Scopes)
@@ -150,17 +153,20 @@ public sealed class AndroidOneDriveAuthService(
             _logger.LogDebug("OneDrive auth state load starting.");
 
             var publicClientApplication = await GetPublicClientApplicationAsync(cancellationToken);
+            _logger.LogDebug("OneDrive auth state account snapshot starting.");
             var accounts = await GetAccountsSnapshotAsync(publicClientApplication);
             var accountUsername = accounts.FirstOrDefault()?.Username;
+            var cachedAccountUsername = _authStateStore.GetLastKnownAccountUsername();
             if (!string.IsNullOrWhiteSpace(accountUsername))
                 _authStateStore.SetLastKnownAccountUsername(accountUsername);
             else
-                accountUsername = _authStateStore.GetLastKnownAccountUsername();
+                accountUsername = cachedAccountUsername;
 
             _logger.LogInformation(
-                "OneDrive auth state loaded in {ElapsedMilliseconds} ms. Account count: {AccountCount}. Connected: {OneDriveConnected}.",
+                "OneDrive auth state loaded in {ElapsedMilliseconds} ms. Account count: {AccountCount}. Cached account fallback present: {CachedAccountFallbackPresent}. Connected: {OneDriveConnected}.",
                 stopwatch.ElapsedMilliseconds,
                 accounts.Count,
+                !string.IsNullOrWhiteSpace(cachedAccountUsername),
                 !string.IsNullOrWhiteSpace(accountUsername));
 
             return CreateAuthState(configuration, accountUsername);
@@ -208,9 +214,10 @@ public sealed class AndroidOneDriveAuthService(
             }
 
             _logger.LogInformation(
-                "OneDrive public client initialization starting. Authority: {Authority}. Redirect host: {RedirectHost}.",
+                "OneDrive public client initialization starting. Authority: {Authority}. Redirect host: {RedirectHost}. Redirect scheme length: {RedirectSchemeLength}.",
                 OneDriveAuthConstants.Authority,
-                OneDriveAuthConstants.RedirectUriHost);
+                OneDriveAuthConstants.RedirectUriHost,
+                configuration.RedirectScheme.Length);
 
             var publicClientApplication = PublicClientApplicationBuilder
                 .Create(configuration.ClientId)
