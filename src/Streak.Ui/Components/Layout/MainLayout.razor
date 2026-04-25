@@ -31,11 +31,10 @@
                 <MudTooltip Text="@GitHubTooltipText"
                             Placement="Placement.Left">
                     <MudIconButton Class="mr-4"
-                                   Href="@UrlConstants.GitHubRepo"
-                                   Target="_blank"
-                                   Icon="@Icons.Custom.Brands.GitHub"
-                                   Color="Color.Inherit"
-                                   aria-label="@GitHubAriaLabel"/>
+                                    Icon="@Icons.Custom.Brands.GitHub"
+                                    Color="Color.Inherit"
+                                    OnClick="OpenGitHubRepositoryAsync"
+                                    aria-label="@GitHubAriaLabel"/>
                 </MudTooltip>
             }
             else
@@ -181,6 +180,11 @@
 
         // @TODO: Check if this line is really needed.
         _ = InvokeAsync(StateHasChanged);
+    }
+
+    private static async Task OpenGitHubRepositoryAsync()
+    {
+        await Browser.Default.OpenAsync(UrlConstants.GitHubRepo, BrowserLaunchMode.External);
     }
 
     #endregion

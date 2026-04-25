@@ -20,6 +20,7 @@ public sealed class SettingsTests : TestContext
         var diagnosticsShareServiceMock = CreateDiagnosticsShareServiceMock(canShare: false);
         var backupConfigurationServiceMock = CreateBackupConfigurationServiceMock(isEnabled: false);
         var reminderConfigurationServiceMock = CreateReminderConfigurationServiceMock(isEnabled: true);
+        var oneDriveAuthServiceMock = CreateOneDriveAuthServiceMock(CreateDisconnectedOneDriveAuthState());
         var appVersionInfoServiceMock = CreateAppVersionInfoServiceMock();
         RegisterSettingsServices(
             exportServiceMock,
@@ -27,6 +28,7 @@ public sealed class SettingsTests : TestContext
             shareServiceMock,
             backupConfigurationServiceMock,
             reminderConfigurationServiceMock,
+            oneDriveAuthServiceMock: oneDriveAuthServiceMock,
             diagnosticsShareServiceMock: diagnosticsShareServiceMock,
             appVersionInfoServiceMock: appVersionInfoServiceMock);
 
@@ -43,9 +45,9 @@ public sealed class SettingsTests : TestContext
         cut.Markup.Should().Contain("OneDrive backup");
         cut.Markup.Should().Contain("Optional cloud backup using your private OneDrive app folder.");
         cut.Find("button[aria-label='OneDrive backup details']");
-        cut.Markup.Should().Contain("Cloud backup isn't available in this build yet.");
+        cut.Markup.Should().Contain("Sign in with a personal Microsoft account to upload the same .zip archives to your private OneDrive app folder.");
         cut.Find("input[aria-label='Nightly cloud backup toggle']").HasAttribute("disabled").Should().BeTrue();
-        cut.Find("button[aria-label='Connect OneDrive']").HasAttribute("disabled").Should().BeTrue();
+        cut.Find("button[aria-label='Connect OneDrive']").HasAttribute("disabled").Should().BeFalse();
         cut.Markup.Should().Contain("Local backup");
         cut.Markup.Should().Contain("Save or share a copy of your local data on this device.");
         cut.Find("button[aria-label='Backup save location information']");
@@ -94,6 +96,37 @@ public sealed class SettingsTests : TestContext
         markup.IndexOf("Version 1.2.0", StringComparison.Ordinal)
             .Should()
             .BeLessThan(markup.IndexOf("Daily reminder", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void Settings_ShouldRenderConnectedOneDriveState_WhenAuthStateIsConnected()
+    {
+        var exportServiceMock = new Mock<IDatabaseExportService>();
+        var diagnosticsExportServiceMock = new Mock<IDiagnosticsExportService>();
+        var shareServiceMock = CreateShareServiceMock(canShare: false);
+        var diagnosticsShareServiceMock = CreateDiagnosticsShareServiceMock(canShare: false);
+        var backupConfigurationServiceMock = CreateBackupConfigurationServiceMock(isEnabled: false);
+        var reminderConfigurationServiceMock = CreateReminderConfigurationServiceMock(isEnabled: true);
+        var oneDriveAuthServiceMock = CreateOneDriveAuthServiceMock(CreateConnectedOneDriveAuthState());
+
+        RegisterSettingsServices(
+            exportServiceMock,
+            diagnosticsExportServiceMock,
+            shareServiceMock,
+            backupConfigurationServiceMock,
+            reminderConfigurationServiceMock,
+            oneDriveAuthServiceMock: oneDriveAuthServiceMock,
+            diagnosticsShareServiceMock: diagnosticsShareServiceMock);
+
+        var cut = RenderSettings();
+
+        cut.Markup.Should().Contain("streak-demo@outlook.com");
+        cut.Markup.Should().Contain("Connected");
+        cut.Markup.Should().Contain("Storage location");
+        cut.Markup.Should().Contain("OneDrive app folder");
+        cut.Find("button[aria-label='Back up to OneDrive']").HasAttribute("disabled").Should().BeTrue();
+        cut.Find("button[aria-label='Disconnect OneDrive']").HasAttribute("disabled").Should().BeFalse();
+        cut.Markup.Should().Contain("You're signed in. Backup upload and nightly cloud backup will be enabled in a later OneDrive update.");
     }
 
     [Fact]
@@ -237,6 +270,79 @@ public sealed class SettingsTests : TestContext
                 && result.SavedFileLocation != null
                 && result.SavedFileLocation.ParentFolderDisplayPath == StreakExportStorageConstants.ManualBackupsDisplayDirectoryPath)),
             Times.Once);
+    }
+
+    [Fact]
+    public async Task Settings_ShouldConnectOneDrive_WhenInteractiveSignInSucceeds()
+    {
+        var exportServiceMock = new Mock<IDatabaseExportService>();
+        var diagnosticsExportServiceMock = new Mock<IDiagnosticsExportService>();
+        var shareServiceMock = CreateShareServiceMock(canShare: false);
+        var backupConfigurationServiceMock = CreateBackupConfigurationServiceMock(isEnabled: false);
+        var reminderConfigurationServiceMock = CreateReminderConfigurationServiceMock(isEnabled: true);
+        var oneDriveAuthServiceMock = CreateOneDriveAuthServiceMock(CreateDisconnectedOneDriveAuthState());
+        oneDriveAuthServiceMock
+            .Setup(x => x.ConnectAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(OneDriveConnectResult.Connected(CreateConnectedOneDriveAuthState()));
+        var oneDriveAuthReturnRouteStoreMock = new Mock<IOneDriveAuthReturnRouteStore>();
+
+        RegisterSettingsServices(
+            exportServiceMock,
+            diagnosticsExportServiceMock,
+            shareServiceMock,
+            backupConfigurationServiceMock,
+            reminderConfigurationServiceMock,
+            oneDriveAuthServiceMock: oneDriveAuthServiceMock,
+            oneDriveAuthReturnRouteStoreMock: oneDriveAuthReturnRouteStoreMock);
+
+        var cut = RenderSettings();
+
+        await cut.Find("button[aria-label='Connect OneDrive']").ClickAsync(new MouseEventArgs());
+
+        cut.WaitForAssertion(() =>
+        {
+            oneDriveAuthServiceMock.Verify(x => x.ConnectAsync(It.IsAny<CancellationToken>()), Times.Once);
+            oneDriveAuthReturnRouteStoreMock.Verify(
+                x => x.SetPendingReturnRoute(RouteConstants.Settings),
+                Times.Once);
+            oneDriveAuthReturnRouteStoreMock.Verify(x => x.ClearPendingReturnRoute(), Times.Once);
+            cut.Markup.Should().Contain("streak-demo@outlook.com");
+            cut.Find("button[aria-label='Disconnect OneDrive']");
+        });
+    }
+
+    [Fact]
+    public async Task Settings_ShouldDisconnectOneDrive_WhenUserChoosesDisconnect()
+    {
+        var exportServiceMock = new Mock<IDatabaseExportService>();
+        var diagnosticsExportServiceMock = new Mock<IDiagnosticsExportService>();
+        var shareServiceMock = CreateShareServiceMock(canShare: false);
+        var backupConfigurationServiceMock = CreateBackupConfigurationServiceMock(isEnabled: false);
+        var reminderConfigurationServiceMock = CreateReminderConfigurationServiceMock(isEnabled: true);
+        var oneDriveAuthServiceMock = CreateOneDriveAuthServiceMock(CreateConnectedOneDriveAuthState());
+        oneDriveAuthServiceMock
+            .SetupSequence(x => x.GetAuthStateAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(CreateConnectedOneDriveAuthState())
+            .ReturnsAsync(CreateDisconnectedOneDriveAuthState());
+
+        RegisterSettingsServices(
+            exportServiceMock,
+            diagnosticsExportServiceMock,
+            shareServiceMock,
+            backupConfigurationServiceMock,
+            reminderConfigurationServiceMock,
+            oneDriveAuthServiceMock: oneDriveAuthServiceMock);
+
+        var cut = RenderSettings();
+
+        await cut.Find("button[aria-label='Disconnect OneDrive']").ClickAsync(new MouseEventArgs());
+
+        cut.WaitForAssertion(() =>
+        {
+            oneDriveAuthServiceMock.Verify(x => x.DisconnectAsync(It.IsAny<CancellationToken>()), Times.Once);
+            cut.Markup.Should().Contain("Not connected");
+            cut.Find("button[aria-label='Connect OneDrive']");
+        });
     }
 
     [Fact]
@@ -619,6 +725,38 @@ public sealed class SettingsTests : TestContext
         cut.WaitForAssertion(() => { cut.Markup.Should().NotContain("Unable to share your diagnostic logs right now. Please try again."); });
     }
 
+    [Fact]
+    public async Task Settings_ShouldNotShowError_WhenOneDriveSignInIsCancelled()
+    {
+        var exportServiceMock = new Mock<IDatabaseExportService>();
+        var diagnosticsExportServiceMock = new Mock<IDiagnosticsExportService>();
+        var shareServiceMock = CreateShareServiceMock(canShare: false);
+        var backupConfigurationServiceMock = CreateBackupConfigurationServiceMock(isEnabled: false);
+        var reminderConfigurationServiceMock = CreateReminderConfigurationServiceMock(isEnabled: true);
+        var oneDriveAuthServiceMock = CreateOneDriveAuthServiceMock(CreateDisconnectedOneDriveAuthState());
+        oneDriveAuthServiceMock
+            .Setup(x => x.ConnectAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(OneDriveConnectResult.Cancelled(CreateDisconnectedOneDriveAuthState()));
+
+        RegisterSettingsServices(
+            exportServiceMock,
+            diagnosticsExportServiceMock,
+            shareServiceMock,
+            backupConfigurationServiceMock,
+            reminderConfigurationServiceMock,
+            oneDriveAuthServiceMock: oneDriveAuthServiceMock);
+
+        var cut = RenderSettings();
+
+        await cut.Find("button[aria-label='Connect OneDrive']").ClickAsync(new MouseEventArgs());
+
+        cut.WaitForAssertion(() =>
+        {
+            cut.Markup.Should().NotContain("Unable to connect OneDrive right now. Please try again.");
+            cut.Markup.Should().Contain("Not connected");
+        });
+    }
+
     #endregion
 
     #region Boundary tests
@@ -692,20 +830,22 @@ public sealed class SettingsTests : TestContext
     }
 
     [Fact]
-    public void Settings_ShouldRenderOneDrivePlaceholderControlsAsDisabled()
+    public void Settings_ShouldDisableConnectButton_WhenOneDriveIsUnsupported()
     {
         var exportServiceMock = new Mock<IDatabaseExportService>();
         var diagnosticsExportServiceMock = new Mock<IDiagnosticsExportService>();
         var shareServiceMock = CreateShareServiceMock(canShare: false);
         var backupConfigurationServiceMock = CreateBackupConfigurationServiceMock(isEnabled: false);
         var reminderConfigurationServiceMock = CreateReminderConfigurationServiceMock(isEnabled: true);
+        var oneDriveAuthServiceMock = CreateOneDriveAuthServiceMock(CreateUnsupportedOneDriveAuthState());
 
         RegisterSettingsServices(
             exportServiceMock,
             diagnosticsExportServiceMock,
             shareServiceMock,
             backupConfigurationServiceMock,
-            reminderConfigurationServiceMock);
+            reminderConfigurationServiceMock,
+            oneDriveAuthServiceMock: oneDriveAuthServiceMock);
 
         var cut = RenderSettings();
         var cloudToggle = cut.Find("input[aria-label='Nightly cloud backup toggle']");
@@ -714,6 +854,32 @@ public sealed class SettingsTests : TestContext
         cloudToggle.HasAttribute("disabled").Should().BeTrue();
         cloudToggle.HasAttribute("checked").Should().BeFalse();
         connectButton.HasAttribute("disabled").Should().BeTrue();
+        cut.Markup.Should().Contain("Cloud backup isn't supported on this platform in the current iteration.");
+    }
+
+    [Fact]
+    public void Settings_ShouldDisableConnectButton_WhenOneDriveAuthIsNotConfigured()
+    {
+        var exportServiceMock = new Mock<IDatabaseExportService>();
+        var diagnosticsExportServiceMock = new Mock<IDiagnosticsExportService>();
+        var shareServiceMock = CreateShareServiceMock(canShare: false);
+        var backupConfigurationServiceMock = CreateBackupConfigurationServiceMock(isEnabled: false);
+        var reminderConfigurationServiceMock = CreateReminderConfigurationServiceMock(isEnabled: true);
+        var oneDriveAuthServiceMock = CreateOneDriveAuthServiceMock(CreateUnconfiguredOneDriveAuthState());
+
+        RegisterSettingsServices(
+            exportServiceMock,
+            diagnosticsExportServiceMock,
+            shareServiceMock,
+            backupConfigurationServiceMock,
+            reminderConfigurationServiceMock,
+            oneDriveAuthServiceMock: oneDriveAuthServiceMock);
+
+        var cut = RenderSettings();
+        var connectButton = cut.Find("button[aria-label='Connect OneDrive']");
+
+        connectButton.HasAttribute("disabled").Should().BeTrue();
+        cut.Markup.Should().Contain("OneDrive sign-in isn't configured in this build yet.");
     }
 
     [Fact]
@@ -961,17 +1127,75 @@ public sealed class SettingsTests : TestContext
         return appVersionInfoServiceMock;
     }
 
+    private static Mock<IOneDriveAuthService> CreateOneDriveAuthServiceMock(OneDriveAuthState authState)
+    {
+        var oneDriveAuthServiceMock = new Mock<IOneDriveAuthService>();
+        oneDriveAuthServiceMock
+            .Setup(x => x.GetAuthStateAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(authState);
+        oneDriveAuthServiceMock
+            .Setup(x => x.ConnectAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(OneDriveConnectResult.Cancelled(authState));
+        oneDriveAuthServiceMock
+            .Setup(x => x.DisconnectAsync(It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        return oneDriveAuthServiceMock;
+    }
+
+    private static OneDriveAuthState CreateConnectedOneDriveAuthState()
+    {
+        return new OneDriveAuthState
+        {
+            IsPlatformSupported = true,
+            IsConfigured = true,
+            IsConnected = true,
+            AccountUsername = "streak-demo@outlook.com"
+        };
+    }
+
+    private static OneDriveAuthState CreateDisconnectedOneDriveAuthState()
+    {
+        return new OneDriveAuthState
+        {
+            IsPlatformSupported = true,
+            IsConfigured = true,
+            IsConnected = false
+        };
+    }
+
+    private static OneDriveAuthState CreateUnsupportedOneDriveAuthState()
+    {
+        return new OneDriveAuthState
+        {
+            IsPlatformSupported = false,
+            IsConfigured = false,
+            IsConnected = false
+        };
+    }
+
+    private static OneDriveAuthState CreateUnconfiguredOneDriveAuthState()
+    {
+        return new OneDriveAuthState
+        {
+            IsPlatformSupported = true,
+            IsConfigured = false,
+            IsConnected = false
+        };
+    }
+
     private void RegisterSettingsServices(
         Mock<IDatabaseExportService> exportServiceMock,
         Mock<IDiagnosticsExportService> diagnosticsExportServiceMock,
         Mock<IDatabaseShareService> shareServiceMock,
         Mock<IAutomatedBackupConfigurationService> backupConfigurationServiceMock,
         Mock<IReminderConfigurationService> reminderConfigurationServiceMock,
+        Mock<IOneDriveAuthService>? oneDriveAuthServiceMock = null,
         Mock<IDiagnosticsShareService>? diagnosticsShareServiceMock = null,
         Mock<IManualBackupCompletionNotifier>? manualBackupCompletionNotifierMock = null,
         Mock<IBackupNotificationPermissionService>? backupNotificationPermissionServiceMock = null,
         Mock<IReminderNotificationPermissionCoordinator>? reminderNotificationPermissionCoordinatorMock = null,
         Mock<IAppVersionInfoService>? appVersionInfoServiceMock = null,
+        Mock<IOneDriveAuthReturnRouteStore>? oneDriveAuthReturnRouteStoreMock = null,
         Mock<ISnackbar>? snackbarMock = null)
     {
         var importFilePickerMock = new Mock<IDatabaseImportFilePicker>();
@@ -993,6 +1217,8 @@ public sealed class SettingsTests : TestContext
                 .ReturnsAsync(true);
         }
         appVersionInfoServiceMock ??= CreateAppVersionInfoServiceMock();
+        oneDriveAuthServiceMock ??= CreateOneDriveAuthServiceMock(CreateDisconnectedOneDriveAuthState());
+        oneDriveAuthReturnRouteStoreMock ??= new Mock<IOneDriveAuthReturnRouteStore>();
         snackbarMock ??= new Mock<ISnackbar>();
         snackbarMock
             .Setup(x => x.Add(
@@ -1013,6 +1239,8 @@ public sealed class SettingsTests : TestContext
         Services.AddSingleton(backupNotificationPermissionServiceMock.Object);
         Services.AddSingleton(reminderConfigurationServiceMock.Object);
         Services.AddSingleton(reminderNotificationPermissionCoordinatorMock.Object);
+        Services.AddSingleton(oneDriveAuthServiceMock.Object);
+        Services.AddSingleton(oneDriveAuthReturnRouteStoreMock.Object);
         Services.AddSingleton(appVersionInfoServiceMock.Object);
         Services.AddSingleton(snackbarMock.Object);
     }

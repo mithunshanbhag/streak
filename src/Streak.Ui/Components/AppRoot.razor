@@ -1,5 +1,7 @@
 @inject IAppInitializationService AppInitializationService
+@inject IOneDriveAuthReturnRouteStore OneDriveAuthReturnRouteStore
 @inject ILogger<AppRoot> Logger
+@inject NavigationManager NavigationManager
 
 @if (_startupError is null)
 {
@@ -58,6 +60,7 @@ else
         {
             await AppInitializationService.EnsureInitializedAsync();
             _startupReady = true;
+            NavigateToPendingOneDriveReturnRoute();
 
             Logger.LogInformation(
                 "App startup gate completed in {ElapsedMilliseconds} ms; routes are ready to render.",
@@ -81,6 +84,25 @@ else
         _startupTimingLogged = true;
         StartupTiming.Mark("blazor-app-root-first-render-completed");
         StartupTiming.LogSnapshot(Logger, "blazor-app-root-first-render");
+    }
+
+    #endregion
+
+    #region Private Helper Methods
+
+    private void NavigateToPendingOneDriveReturnRoute()
+    {
+        var pendingRoute = OneDriveAuthReturnRouteStore.ConsumePendingReturnRoute();
+        if (!string.Equals(pendingRoute, RouteConstants.Settings, StringComparison.Ordinal))
+        {
+            Logger.LogDebug(
+                "No Settings route restore needed after startup. OneDrive pending return route present: {PendingReturnRoutePresent}.",
+                !string.IsNullOrWhiteSpace(pendingRoute));
+            return;
+        }
+
+        Logger.LogInformation("Restoring Settings route after OneDrive auth callback.");
+        NavigationManager.NavigateTo(RouteConstants.Settings);
     }
 
     #endregion
