@@ -34,7 +34,7 @@ public sealed class OneDriveBrowserTabActivity : BrowserTabActivity
             lifecycleEvent,
             intent?.Action ?? "(none)",
             intent?.Data is not null,
-            intent?.Data?.Scheme ?? "(none)",
+            AndroidLoggerResolver.GetSafeDataScheme(intent?.Data?.Scheme),
             intent?.Data?.Host ?? "(none)");
     }
 }

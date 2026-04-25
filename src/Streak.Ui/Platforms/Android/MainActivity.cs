@@ -71,7 +71,7 @@ public class MainActivity : MauiAppCompatActivity
             lifecycleEvent,
             intent?.Action ?? "(none)",
             intent?.Data is not null,
-            intent?.Data?.Scheme ?? "(none)",
+            AndroidLoggerResolver.GetSafeDataScheme(intent?.Data?.Scheme),
             intent?.Data?.Host ?? "(none)");
     }
 
@@ -83,7 +83,7 @@ public class MainActivity : MauiAppCompatActivity
             requestCode,
             resultCode,
             data?.Data is not null,
-            data?.Data?.Scheme ?? "(none)",
+            AndroidLoggerResolver.GetSafeDataScheme(data?.Data?.Scheme),
             data?.Data?.Host ?? "(none)");
     }
 }
