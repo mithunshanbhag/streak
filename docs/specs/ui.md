@@ -198,22 +198,19 @@ Use semantic roles rather than one-off hex values.
   - compact **12–16px** internal padding
 - If provider identity, status, metadata, toggle, and actions are all shown together, prefer **one compact panel or flat stack** rather than separate bordered panels for each sub-part.
 - The top row should include:
+  - one semantic provider status icon on the leading side
   - the provider label (for example **OneDrive**) using **Body strong**
   - the current account identity or neutral support copy using **Support**
-  - one compact status chip aligned to the right when space allows
-- Use one semantic cloud status icon to reinforce the provider state without adding extra prose:
+- Use one semantic cloud status icon to reinforce the provider state:
   - connected / healthy: `CloudDone`
   - disconnected / signed out: `CloudOff`
   - automated / syncing affordance: `CloudSync`
-- Status chips should stay calm and compact:
-  - disconnected / not configured: neutral muted surface + `TextSecondary`
-  - connected: `PrimarySoft` + `PrimaryStrong`
-  - recent-success emphasis may borrow `Success`, but it should stay an accent rather than turning the full panel into a success banner
+- The leading provider status icon should expose the state through a tooltip and accessible label such as **Connected** or **Not connected**.
+- Avoid pairing that leading status icon with a second trailing chip or duplicate icon+label treatment that repeats the same state.
 - Cloud status icons may carry a slightly stronger semantic color than the surrounding copy:
   - connected: `Primary` or `Success`
   - disconnected: `TextSecondary` or a subtle `Danger` treatment
   - syncing / automated state: `Primary`
-- Use icon color to reinforce the state, not replace the label; keep a short text label such as **Connected** or **Not connected** beside the icon.
 - Secondary metadata such as **Last backup**, destination details, or backup schedule should use **Caption** or **Support** styling and read as supportive state rather than primary CTA copy.
 - Prefer collapsing quiet metadata into **one muted line** when that keeps the panel easier to scan; split into multiple rows only when clarity would suffer.
 - When local and cloud backup areas both surface recency, prefer the same quiet **Last backup** treatment so one subsection does not feel more instrumented than the other.

@@ -270,33 +270,6 @@ body {
   font-size: 22px;
 }
 
-.status-chip {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 28px;
-  padding: 0 10px;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 500;
-  white-space: nowrap;
-  gap: 6px;
-}
-
-.status-chip--connected {
-  background: rgba(76, 175, 80, 0.12);
-  color: var(--color-success);
-}
-
-.status-chip .material-icons {
-  font-size: 16px;
-}
-
-.status-chip--disconnected {
-  background: rgba(211, 47, 47, 0.08);
-  color: var(--color-danger);
-}
-
 .cloud-inline-row {
   display: flex;
   align-items: center;
@@ -527,6 +500,10 @@ body {
   padding: 0 12px;
 }
 
+.tooltip-trigger {
+  position: relative;
+}
+
 .tooltip-trigger::after {
   content: attr(data-tooltip);
   position: absolute;
@@ -547,6 +524,17 @@ body {
   pointer-events: none;
   transition: opacity 0.18s ease, transform 0.18s ease;
   z-index: 2;
+}
+
+.cloud-provider-icon.tooltip-trigger {
+  cursor: help;
+}
+
+.cloud-provider-icon.tooltip-trigger::after {
+  width: auto;
+  min-width: 96px;
+  white-space: nowrap;
+  text-align: center;
 }
 
 .tooltip-trigger::before {
