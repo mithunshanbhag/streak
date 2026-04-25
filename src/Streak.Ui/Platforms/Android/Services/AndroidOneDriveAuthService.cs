@@ -17,6 +17,8 @@ public sealed class AndroidOneDriveAuthService(
 
     private IPublicClientApplication? _publicClientApplication;
 
+    public event EventHandler<OneDriveAuthState>? AuthStateChanged;
+
     public async Task<OneDriveConnectResult> ConnectAsync(CancellationToken cancellationToken = default)
     {
         var stopwatch = Stopwatch.StartNew();
@@ -52,8 +54,10 @@ public sealed class AndroidOneDriveAuthService(
                 authenticationResult.Account is not null);
 
             _authStateStore.SetLastKnownAccountUsername(authenticationResult.Account?.Username);
+            var authState = await GetAuthStateAsync(cancellationToken);
+            NotifyAuthStateChanged(authState);
 
-            return OneDriveConnectResult.Connected(await GetAuthStateAsync(cancellationToken));
+            return OneDriveConnectResult.Connected(authState);
         }
         catch (MsalException exception) when (IsUserCancellation(exception))
         {
@@ -92,6 +96,7 @@ public sealed class AndroidOneDriveAuthService(
         {
             _logger.LogInformation("OneDrive disconnect skipped because the build is not configured.");
             _authStateStore.Clear();
+            NotifyAuthStateChanged(CreateAuthState(configuration, accountUsername: null));
             return;
         }
 
@@ -111,6 +116,7 @@ public sealed class AndroidOneDriveAuthService(
             }
 
             _authStateStore.Clear();
+            NotifyAuthStateChanged(CreateAuthState(configuration, accountUsername: null));
 
             _logger.LogInformation(
                 "OneDrive disconnect completed in {ElapsedMilliseconds} ms. Account count: {AccountCount}. Removed account count: {RemovedAccountCount}.",
@@ -233,6 +239,11 @@ public sealed class AndroidOneDriveAuthService(
     {
         return string.Equals(exception.ErrorCode, MsalError.AuthenticationCanceledError, StringComparison.Ordinal)
                || string.Equals(exception.ErrorCode, "access_denied", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private void NotifyAuthStateChanged(OneDriveAuthState authState)
+    {
+        AuthStateChanged?.Invoke(this, authState);
     }
 
     #endregion

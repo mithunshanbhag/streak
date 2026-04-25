@@ -22,6 +22,8 @@ public static class MauiAppBuilderExtensions
 
             // mudblazor
             builder.Services.AddMudServices();
+            builder.Services.AddAuthorizationCore();
+            builder.Services.AddCascadingAuthenticationState();
 
             // validators
             foreach (var validatorAssembly in new[] { Assembly.GetExecutingAssembly(), typeof(StreakDbContext).Assembly }.Distinct())
@@ -46,6 +48,9 @@ public static class MauiAppBuilderExtensions
             builder.Services.AddSingleton<IOneDriveAuthConfigurationProvider, OneDriveAuthConfigurationProvider>();
             builder.Services.AddSingleton<IOneDriveAuthReturnRouteStore, OneDriveAuthReturnRouteStore>();
             builder.Services.AddSingleton<IOneDriveAuthStateStore, OneDriveAuthStateStore>();
+            builder.Services.AddScoped<StreakAuthenticationStateProvider>();
+            builder.Services.AddScoped<AuthenticationStateProvider>(services =>
+                services.GetRequiredService<StreakAuthenticationStateProvider>());
             builder.Services.AddTransient<IHabitService, HabitService>();
             builder.Services.AddTransient<ICheckinService, CheckinService>();
             builder.Services.AddSingleton<IAppStoragePathService, AppStoragePathService>();

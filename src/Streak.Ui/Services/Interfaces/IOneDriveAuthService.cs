@@ -3,6 +3,11 @@ namespace Streak.Ui.Services.Interfaces;
 public interface IOneDriveAuthService
 {
     /// <summary>
+    ///     Raised when the current OneDrive authentication state changes.
+    /// </summary>
+    event EventHandler<OneDriveAuthState>? AuthStateChanged;
+
+    /// <summary>
     ///     Gets the current OneDrive authentication state for the current platform and build.
     /// </summary>
     /// <param name="cancellationToken">A cancellation token.</param>

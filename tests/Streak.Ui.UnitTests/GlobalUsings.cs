@@ -1,5 +1,6 @@
 global using Bunit;
 global using FluentAssertions;
+global using Microsoft.AspNetCore.Components.Authorization;
 global using Microsoft.AspNetCore.Components.Web;
 global using Microsoft.Maui.ApplicationModel;
 global using Microsoft.Maui.ApplicationModel.DataTransfer;

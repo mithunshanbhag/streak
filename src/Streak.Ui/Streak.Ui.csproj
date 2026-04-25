@@ -30,7 +30,7 @@
 		<!-- Versions -->
 		<ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
 		<ApplicationVersion>1</ApplicationVersion>
-		<OneDriveClientId Condition="'$(OneDriveClientId)' == ''">ab56f670-7156-479b-94f9-de0c71e4be8f</OneDriveClientId>
+		<OneDriveClientId Condition="'$(OneDriveClientId)' == ''">00000000-0000-0000-0000-000000000000</OneDriveClientId>
 		<OneDriveRedirectScheme>msal$(OneDriveClientId)</OneDriveRedirectScheme>
 
 		<!-- To develop, package, and publish an app to the Microsoft Store, see: https://aka.ms/MauiTemplateUnpackaged -->
@@ -88,6 +88,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="FluentValidation" Version="12.1.1" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="10.0.5" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.5" />
 		<PackageReference Include="Microsoft.Identity.Client" Version="4.83.3" />
 		<PackageReference Include="Microsoft.Maui.Controls" Version="10.0.51" />
