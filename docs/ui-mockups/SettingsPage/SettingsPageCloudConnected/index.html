@@ -139,43 +139,76 @@
             </div>
 
             <div class="cloud-provider-panel">
-                <div class="cloud-provider-row">
+                <div class="section-header-row section-header-row--sub">
+                    <div>
+                        <h3 class="section-header section-header--subsection">OneDrive connection</h3>
+                        <p class="section-description">Connected and ready to upload backups to your private app folder.</p>
+                    </div>
+                </div>
+
+                <div class="setting-row cloud-provider-row">
                     <div class="cloud-provider-title">
-                        <div
+                        <button
                             class="cloud-provider-icon cloud-provider-icon--connected tooltip-trigger"
-                            role="img"
-                            aria-label="OneDrive connected"
-                            data-tooltip="Connected"
-                            tabindex="0">
+                            type="button"
+                            aria-label="Connected. Disconnect OneDrive"
+                            data-tooltip="Connected. Tap to disconnect OneDrive.">
                             <span class="material-icons">cloud_done</span>
-                        </div>
+                        </button>
                         <div>
                             <div class="setting-label">OneDrive</div>
                             <div class="setting-caption setting-caption--tight">streak-demo@outlook.com</div>
-                            <p class="section-meta section-meta--tight">Last backup Today · 7:12 AM</p>
+                            <p class="section-meta section-meta--tight">Connected • Tap the green cloud icon to disconnect.</p>
                         </div>
                     </div>
                 </div>
 
-                <div class="cloud-action-row">
-                    <button class="action-btn action-btn--primary" type="button">
-                        <span class="material-icons">cloud_upload</span>
-                        <span>Back up to OneDrive</span>
-                    </button>
-                    <button class="action-btn action-btn--secondary" type="button">
-                        <span class="material-icons">cloud_off</span>
-                        <span>Disconnect</span>
-                    </button>
+                <div class="subsection-divider"></div>
+
+                <div class="section-header-row section-header-row--sub">
+                    <div>
+                        <div class="subsection-title-row">
+                            <h3 class="section-header section-header--subsection">Manual cloud backup</h3>
+                            <button
+                                class="tooltip-trigger hint-icon-btn hint-icon-btn--info"
+                                type="button"
+                                aria-label="Manual cloud backup details"
+                                data-tooltip="Uploads the same '.zip' data archive to your private OneDrive app folder.">
+                                <span class="material-icons">info</span>
+                            </button>
+                        </div>
+                        <p class="section-description">Upload a fresh backup archive to your private OneDrive app folder.</p>
+                        <p class="section-meta">Last backup Today · 7:12 AM</p>
+                    </div>
                 </div>
 
-                <div class="cloud-inline-row">
-                    <div class="cloud-setting-label">
-                        <span class="material-icons cloud-setting-icon cloud-setting-icon--active" aria-hidden="true">cloud_sync</span>
-                        <div>
-                            <div class="setting-label">Daily automated OneDrive backup</div>
-                            <div class="setting-caption setting-caption--tight">11:30 PM each day</div>
-                        </div>
+                <div class="setting-row setting-row--action-only">
+                    <div class="data-action-group">
+                        <button class="tooltip-trigger data-icon-btn" type="button" aria-label="Back up to OneDrive" data-tooltip="Back up to OneDrive">
+                            <span class="material-icons">backup</span>
+                        </button>
                     </div>
+                </div>
+
+                <div class="subsection-divider"></div>
+
+                <div class="section-header-row section-header-row--sub">
+                    <div>
+                        <div class="subsection-title-row">
+                            <h3 class="section-header section-header--subsection">Daily automated cloud backup</h3>
+                            <button
+                                class="tooltip-trigger hint-icon-btn hint-icon-btn--info"
+                                type="button"
+                                aria-label="Automated cloud backup details"
+                                data-tooltip="Android only. Runs nightly at 11:30 PM when enabled and uploads the backup archive to OneDrive.">
+                                <span class="material-icons">info</span>
+                            </button>
+                        </div>
+                        <p class="section-description">Upload a nightly backup to OneDrive automatically.</p>
+                    </div>
+                </div>
+
+                <div class="setting-row setting-row--action-only">
                     <label class="toggle-switch">
                         <input type="checkbox" id="cloudBackupToggle" checked>
                         <span class="toggle-track"></span>

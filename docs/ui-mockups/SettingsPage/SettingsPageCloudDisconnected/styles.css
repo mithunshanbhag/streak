@@ -232,19 +232,23 @@ body {
   display: flex;
   align-items: center;
   gap: 12px;
+  flex: 1;
   min-width: 0;
 }
 
 .cloud-provider-icon {
   width: 36px;
   height: 36px;
+  border: none;
   border-radius: 10px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   background: var(--color-surface);
   color: var(--color-primary);
+  cursor: pointer;
   flex-shrink: 0;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .cloud-provider-icon--connected {
@@ -261,22 +265,15 @@ body {
   font-size: 22px;
 }
 
-.cloud-action-row {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 12px;
+.cloud-provider-icon:hover,
+.cloud-provider-icon:focus-visible {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(31, 31, 31, 0.12);
 }
 
-.cloud-action-row .action-btn {
-  width: auto;
-  min-height: 42px;
-  padding: 0 12px;
-}
-
-.cloud-action-row--single {
-  margin-top: 12px;
+.cloud-provider-icon:focus-visible {
+  outline: 2px solid #D1C4E9;
+  outline-offset: 2px;
 }
 
 .cloud-inline-row {
@@ -306,57 +303,6 @@ body {
   color: var(--color-primary);
 }
 
-.action-btn {
-  min-height: 44px;
-  border-radius: var(--radius-control);
-  border: 1px solid transparent;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 0 14px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
-}
-
-.action-btn .material-icons {
-  font-size: 20px;
-}
-
-.action-btn:hover,
-.action-btn:focus-visible {
-  transform: translateY(-1px);
-}
-
-.action-btn:focus-visible {
-  outline: 2px solid #D1C4E9;
-  outline-offset: 2px;
-}
-
-.action-btn--primary {
-  background: var(--color-primary);
-  color: var(--color-text-on-primary);
-  box-shadow: 0 3px 8px rgba(98, 0, 238, 0.24);
-}
-
-.action-btn--primary:hover,
-.action-btn--primary:focus-visible {
-  box-shadow: 0 5px 12px rgba(98, 0, 238, 0.28);
-}
-
-.action-btn--secondary {
-  background: var(--color-surface);
-  color: var(--color-text-secondary);
-  border-color: var(--color-border-strong);
-  box-shadow: none;
-}
-
-.action-btn--secondary:hover,
-.action-btn--secondary:focus-visible {
-  background: #F3F4F6;
-}
 
 .toggle-switch {
   position: relative;

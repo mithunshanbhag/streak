@@ -61,9 +61,11 @@ The page contains five vertically stacked sections presented as clean cards:
 | Section header                    | Text                        | **"Cloud backup"**                                                                                                                                                                                                                                                              |
 | Section info icon                 | Glyph + tooltip             | Small info icon beside **Cloud backup**. Hover/focus/press shows: *"Optional. Signs in with a personal Microsoft account and uploads the same '.zip' archive to your private OneDrive app folder."*                                                                        |
 | Section description               | Caption                     | *"Optional OneDrive backup using your private app folder."*                                                                                                                                                                                                                    |
-| OneDrive provider panel           | Inset status panel          | Quiet inset panel showing the provider name (**OneDrive**), the connected account or neutral support copy, and one leading semantic cloud status icon. The icon exposes a tooltip such as **Connected** or **Not connected** instead of repeating the state in a trailing chip. |
-| OneDrive status metadata          | Support / caption rows      | Shows quiet metadata such as **Last backup** when connected. Keep destination details subtle and avoid a dedicated always-visible storage-location row when it adds no new information.                                                                                       |
-| OneDrive action row               | Compact visible-text actions| Uses visible-text actions that stay visually aligned with the page's other compact controls. The primary action is **Connect OneDrive** when signed out or **Back up to OneDrive** when connected. A low-emphasis inline **Disconnect** action appears only when connected. |
+| OneDrive connection subsection    | Subsection                  | First subsection in the connected cloud area. Shows the provider name (**OneDrive**), connected account, current connection state, and the leading semantic cloud status icon button.                                                                                       |
+| OneDrive status button            | `MudIconButton`             | The leading cloud icon is interactive. Signed out: red `CloudOff` with tooltip / accessible text such as **"Not connected. Connect OneDrive"** and tapping it starts OAuth. Connected: green `CloudDone` with tooltip / accessible text such as **"Connected. Disconnect OneDrive"** and tapping it starts the disconnect flow. |
+| Manual cloud backup subsection    | Subsection                  | Second subsection in the connected cloud area. Mirrors the local **Manual backup** subsection with a title, short description, quiet **Last backup** metadata, and a right-aligned filled icon button.                                                                      |
+| OneDrive manual backup action     | `MudIconButton`             | Visible only when connected. Uses `Backup` or `CloudUpload` and the same filled icon-button treatment as the page's other action buttons. Tooltip text is **"Back up to OneDrive"**.                                                                                       |
+| Automated cloud backup subsection | Subsection                  | Third subsection in the connected cloud area. Mirrors the local **Daily automated backups** subsection with a title, short description, info tooltip, and trailing toggle row.                                                                                             |
 | OneDrive automated toggle         | `MudSwitch`                 | ON = daily automated OneDrive backup enabled, OFF = disabled. Default: **OFF**. This toggle is separate from the local automated-backups toggle and is shown only after OneDrive is connected.                                                                              |
 
 ### Restore Section
@@ -88,6 +90,7 @@ The page contains five vertically stacked sections presented as clean cards:
 - Each card should be title-led and should not show a separate small uppercase category eyebrow above the main title.
 - The Local backup card groups daily automated local backup and manual local backup with one calm internal divider.
 - The Cloud backup card groups provider state, manual OneDrive backup, and daily automated OneDrive backup inside one quiet provider area.
+- In the connected state, that cloud provider area should read as three stacked subsections: **OneDrive connection**, **Manual cloud backup**, and **Daily automated cloud backup**.
 - The provider state should be expressed once through the leading semantic icon and its tooltip; avoid a second trailing status chip that repeats the same connected / disconnected state.
 - Local backup and Cloud backup should both expose the same kind of quiet **Last backup** metadata line when recent backup history is available so recency cues do not appear cloud-only.
 - Restore and Diagnostic logs should use the same standalone card rhythm and spacing as sibling maintenance cards rather than reading like rows inside a larger container.
@@ -96,7 +99,10 @@ The page contains five vertically stacked sections presented as clean cards:
 - The tooltip trigger icons should be visually subtle but clearly interactive, with the warning icon using a caution color treatment.
 - Do not show the backup/help text, button labels, or restore warning as always-visible inline callouts inside the card body.
 - **Download data**, **Share data**, **Export logs**, **Share logs**, and **Upload data** should all use the same filled icon-button treatment so they read as one cohesive action family.
-- Trust-critical OneDrive actions should keep their visible text labels even when the local maintenance actions remain icon-only, but they should still follow the same compact action rhythm as the rest of the Settings controls rather than becoming hero-style full-width blocks.
+- The OneDrive provider icon should be reused as the connect / disconnect button, so the card should not render extra visible-text **Connect OneDrive** or **Disconnect** buttons beneath the provider row.
+- The manual OneDrive backup trigger should use the same compact filled icon-button treatment as the rest of the Settings action controls, with a backup-oriented icon and tooltip text such as **Back up to OneDrive**.
+- The **Manual cloud backup** subsection should visually match the local **Manual backup** subsection: one internal heading row, one short description, quiet **Last backup** metadata, then the compact action row.
+- The **Daily automated cloud backup** subsection should visually match the local **Daily automated backups** subsection: one internal heading row, one short description, optional info tooltip, then the trailing toggle row.
 
 ## Local Automated Backup Behavior
 
@@ -150,9 +156,10 @@ The page contains five vertically stacked sections presented as clean cards:
         streak-auto-data-backup-YYYYMMdd-HHmmss.zip
   ```
 
-- Tapping **Connect OneDrive** starts the sign-in / consent flow.
+- Tapping the disconnected red cloud icon starts the Microsoft sign-in / consent flow.
 - When connected, the Cloud backup card shows the connected account plus quiet status metadata such as the last successful backup.
-- Tapping **Back up to OneDrive** uploads a fresh backup archive to `approot/Backups/Manual/`.
+- Tapping the connected green cloud icon starts the disconnect flow.
+- Tapping the manual OneDrive backup icon uploads a fresh backup archive to `approot/Backups/Manual/`.
 - The app should keep **local backup** and **OneDrive backup** clearly separate. Manual OneDrive backup does not replace **Download data** or **Share data**.
 - The **Daily automated OneDrive backup** toggle is independent from the local **Daily automated backups** toggle:
   - enabling daily automated OneDrive backup does not enable local automated backups
@@ -168,7 +175,7 @@ The page contains five vertically stacked sections presented as clean cards:
 | Platform | Expected behavior                                                                                                                                                                                                 |
 | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Windows  | Cloud backup is unavailable. The Cloud backup card should explain that OneDrive backup is not supported on this platform in the current iteration.                                                               |
-| Android  | The user can connect a personal Microsoft account, manually upload the current backup archive to OneDrive, and optionally enable daily automated OneDrive backup using the same fixed 11:30 PM local schedule. |
+| Android  | The user can tap the disconnected / connected cloud status icon to connect or disconnect a personal Microsoft account, manually upload the current backup archive through a compact OneDrive backup icon button, and optionally enable daily automated OneDrive backup using the same fixed 11:30 PM local schedule. |
 
 ## Local Export Behavior
 
@@ -351,8 +358,9 @@ The page contains five vertically stacked sections presented as clean cards:
 | App is uninstalled                             | Previously created automated backup files remain in `Downloads/Streak/Backups/Automated` because they are outside uninstall-sensitive app storage.                                                                    |
 | User has no habits but exports                 | Export is still allowed so the user can back up reminder settings, automated backup settings, or an empty database state.                                                                                             |
 | User has no habits but shares                  | Share is still allowed so the user can manually hand off reminder settings, automated backup settings, or an empty database state.                                                                                    |
-| User is signed out and taps **Back up to OneDrive** | Start the Microsoft sign-in / consent flow first. If sign-in succeeds, continue with the upload.                                                                                                                     |
+| User taps the disconnected cloud icon             | Start the Microsoft sign-in / consent flow. If sign-in succeeds, refresh the Cloud backup card into the connected state.                                                                                             |
 | User cancels OneDrive sign-in                  | Keep the user on Settings and treat the action as cancelled rather than failed.                                                                                                                                        |
+| User taps the connected cloud icon                | Start the disconnect flow, clear the local OneDrive auth state if disconnect succeeds, and hide connected-only cloud controls.                                                                                       |
 | Daily automated OneDrive backup is ON while local automated backups are OFF | Only the OneDrive upload runs on the nightly schedule.                                                                                                                           |
 | Local automated backups are ON while daily automated OneDrive backup is OFF | Only the local backup file is created on the nightly schedule.                                                                                                                     |
 | Cloud backup upload succeeds                   | The uploaded archive appears in the app's OneDrive app folder and the Cloud backup card updates the latest cloud-backup status.                                                                                       |

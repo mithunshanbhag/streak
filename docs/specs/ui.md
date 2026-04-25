@@ -184,9 +184,12 @@ Use semantic roles rather than one-off hex values.
 
 - Icon-only actions must still expose a clear accessible label and a visible tooltip on hover, focus, or press.
 - When a row contains multiple related icon-only actions, keep their size, shape, fill, and icon weight visually matched.
-- Trust-critical Settings flows that involve account connection, cloud destinations, or multi-step authentication should prefer **visible-text buttons** over icon-only circles so touch users do not have to depend on tooltips.
-- Use icon-only maintenance actions primarily for compact, already-labeled local action groups such as local backup, diagnostics export/share, and restore.
-- OneDrive / cloud-provider actions should prefer **icon-leading visible-text buttons** that reuse the cloud icon family (`Cloud`, `CloudUpload`, `CloudOff`, `CloudSync`) rather than unlabeled cloud icon-only actions.
+- Visible-text buttons are still preferred when an action would otherwise appear without nearby context, but compact icon-only controls are acceptable on already-labeled Settings rows when the surrounding provider text makes the action obvious.
+- Use icon-only maintenance actions primarily for compact, already-labeled local action groups such as local backup, diagnostics export/share, restore, and manual cloud backup.
+- On the Settings **Cloud backup** provider row, the leading semantic cloud icon may double as the connect / disconnect button:
+  - disconnected `CloudOff` in a subtle danger treatment launches the OneDrive OAuth flow
+  - connected `CloudDone` in a success/healthy treatment starts the disconnect flow
+- Manual OneDrive backup should use the same filled icon-only action treatment as the rest of the Settings maintenance controls, using `Backup` or `CloudUpload` with tooltip / accessible text such as **Back up to OneDrive**.
 
 ### Settings page cards
 
@@ -196,6 +199,10 @@ Use semantic roles rather than one-off hex values.
 - Related controls inside a card may use one subtle divider, but that divider should organize a single card's content rather than imply that multiple separate sections still belong to one parent card.
 - The **Local backup** card may group **Daily automated backups** and **Manual backup** with one quiet divider and **Body strong** internal headings.
 - The **Cloud backup** card should keep provider identity, manual backup actions, and the daily automated OneDrive backup toggle visually grouped so the user reads them as one connected cloud-backup area.
+- In the connected state, the **Cloud backup** card should usually read as **three stacked subsections** separated by quiet dividers:
+  - provider / connection status
+  - manual cloud backup
+  - daily automated cloud backup
 - **Restore** and **Diagnostic logs** should remain standalone cards with the same spacing and action rhythm as the other Settings cards instead of reading like rows inside a larger data container.
 - When local and cloud backup cards both surface recency, prefer the same quiet **Last backup** treatment so one card does not feel more instrumented than the other.
 
@@ -207,7 +214,7 @@ Use semantic roles rather than one-off hex values.
   - a subtle `BorderSubtle` outline when a distinct inset surface helps scanning
   - `RadiusControl` or `RadiusSoft`
   - compact **12–16px** internal padding
-- If provider identity, status, metadata, toggle, and actions are all shown together, prefer **one compact panel or flat stack** rather than separate bordered panels for each sub-part.
+- If provider identity, status, metadata, toggle, and actions are all shown together, prefer **one compact panel with internal subsection dividers** rather than detached nested cards for each sub-part.
 - The top row should include:
   - one semantic provider status icon on the leading side
   - the provider label (for example **OneDrive**) using **Body strong**
@@ -227,9 +234,12 @@ Use semantic roles rather than one-off hex values.
 - When local and cloud backup areas both surface recency, prefer the same quiet **Last backup** treatment so one card does not feel more instrumented than the other.
 - Static explanatory details that are already obvious from the section context or tooltip do not need their own always-visible metadata row.
 - Connected-state toggles such as **Daily automated OneDrive backup** should usually appear as a simple inline setting row inside the same provider area, not as a separate highlighted panel or sibling card.
-- Disconnected states should show the status plus the primary **Connect** action and should avoid rendering disabled secondary controls that are not yet actionable.
-- Primary provider actions such as **Connect OneDrive** or **Back up to OneDrive** should use visible-text buttons with a leading cloud icon, but they should stay compact and visually aligned with the page's other Settings controls rather than becoming hero-style full-width blocks unless truly necessary.
-- Secondary provider actions such as **Disconnect** should default to a low-emphasis compact button or text button with `CloudOff`, and should sit in the same compact action row or near the provider header rather than appearing as an isolated orphan action below the main CTA.
+- Disconnected states should show the tappable disconnected status icon plus provider identity, and should avoid rendering disabled secondary controls that are not yet actionable.
+- The leading cloud status icon should be an actual button, not decorative chrome. Its tooltip and accessible label should combine both state and action, for example **Not connected. Connect OneDrive** or **Connected. Disconnect OneDrive**.
+- When connected, the manual cloud backup trigger should appear as a separate filled icon-only button aligned with the page's other Settings action buttons rather than as a large text CTA row.
+- Do not render extra visible-text **Connect OneDrive** or **Disconnect** buttons when the provider row already uses the leading cloud icon as that interaction.
+- In the connected state, the manual cloud backup subsection should mirror the **Local backup > Manual backup** rhythm: internal heading, one short description, quiet **Last backup** metadata, then a right-aligned action row.
+- In the connected state, the automated cloud backup subsection should mirror the **Local backup > Daily automated backups** rhythm: internal heading, short description, optional tooltip, then a trailing toggle row without extra hero treatment.
 
 ### Dialogs
 
@@ -320,15 +330,11 @@ Use semantic roles rather than one-off hex values.
 - **Homepage create CTA:** `Add` icon paired with `New Habit`.
 - **Settings local data actions:** `Download`, `Share`, and `Upload` for local backup download, local backup share, diagnostics export, diagnostics share, and restore respectively.
 - **Settings cloud backup actions:**
-  - provider / neutral cloud anchor: `Cloud`
-  - manual cloud backup action: `CloudUpload`
-  - connected / healthy state: `CloudDone`
-  - disconnected / signed-out state: `CloudOff`
+  - provider status / connect-disconnect button: `CloudDone` when connected, `CloudOff` when disconnected
+  - manual cloud backup action: `Backup` or `CloudUpload`
   - daily automated / sync affordance: `CloudSync`
   - optional cloud retrieval / future restore reference: `CloudDownload`
-  - connect action: `Cloud`
-  - disconnect action: `CloudOff`
-  - Pair the icon with visible **OneDrive** text or action text rather than relying on an unlabeled brand glyph alone.
+  - The adjacent provider row should still name **OneDrive** and show account or support copy so the icon buttons are not floating without context.
   - Use semantic color with restraint: connected icons may use `Primary` or `Success`; disconnected icons may use `TextSecondary` or subtle `Danger`; upload/sync actions generally use `Primary`.
 - **Habit detail actions:** `Edit` and `Delete`.
 - **Checkin toggle:** use MudBlazor's `MudCheckBox` pattern with done/not-done icon states.
