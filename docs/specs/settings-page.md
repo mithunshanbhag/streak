@@ -48,12 +48,13 @@ The page contains two vertically stacked sections presented as clean cards:
 | OneDrive backup info icon           | Glyph + tooltip            | Small info icon beside **OneDrive backup**. Hover/focus/press shows: *"Optional. Signs in with a personal Microsoft account and uploads the same '.zip' archive to your private OneDrive app folder."*                                                                                |
 | OneDrive backup description         | Caption                    | *"Optional cloud backup using your private OneDrive app folder."*                                                                                                                                                                                                                       |
 | OneDrive provider panel             | Inset status panel         | Quiet inset panel showing the provider name (**OneDrive**), the connected account or neutral support copy, and a compact status chip such as **Connected** or **Not connected**.                                                                                                       |
-| OneDrive status metadata            | Support / caption rows     | Shows quiet metadata such as **Last cloud backup** and **Storage location** when connected.                                                                                                                                                                                             |
-| Cloud automated toggle              | `MudSwitch`                | ON = nightly cloud backups enabled, OFF = disabled. Default: **OFF**. This toggle is separate from the local automated-backups toggle.                                                                                                                                                  |
-| OneDrive action row                 | Visible-text button group  | Uses visible-text buttons rather than icon-only actions. The primary action is **Connect OneDrive** when signed out or **Back up to OneDrive** when connected. A secondary **Disconnect** action appears only when connected.                                                         |
+| OneDrive status metadata            | Support / caption rows     | Shows quiet metadata such as **Last backup** when connected. Keep destination details subtle and avoid a dedicated always-visible storage-location row when it adds no new information.                                                                                                  |
+| OneDrive automated toggle           | `MudSwitch`                | ON = daily automated OneDrive backup enabled, OFF = disabled. Default: **OFF**. This toggle is separate from the local automated-backups toggle.                                                                                                                                         |
+| OneDrive action row                 | Compact visible-text actions | Uses visible-text actions that stay visually aligned with the page's other compact controls. The primary action is **Connect OneDrive** when signed out or **Back up to OneDrive** when connected. A low-emphasis inline **Disconnect** action appears only when connected.          |
 | Local backup header                 | Text                       | **"Local backup"**                                                                                                                                                                                                                                                                       |
 | Local backup info icon              | Glyph + tooltip            | Small info icon beside **Local backup**. Hover/focus/press shows: *"Creates a '.zip' data archive with your local data and uploaded pictures. Android saves to 'Downloads/Streak'. Windows lets you choose where to save."*                                                           |
 | Local backup description            | Caption                    | *"Save or share a copy of your local data on this device."*                                                                                                                                                                                                                             |
+| Local backup status metadata        | Support / caption rows     | Shows quiet metadata such as **Last backup** so local backup recency is surfaced with the same calm treatment as cloud backup recency.                                                                                                                                                    |
 | Local backup action cluster         | `MudIconButton` group      | Two filled icon-only buttons shown side-by-side: download and share. Tooltips provide the visible labels **"Download data"** and **"Share data"**.                                                                                                                                      |
 | Diagnostic logs header              | Text                       | **"Diagnostic logs"**                                                                                                                                                                                                                                                                   |
 | Diagnostic logs info icon           | Glyph + tooltip            | Small info icon beside **Diagnostic logs**. Hover/focus/press shows: *"Exports recent app logs and basic support metadata. Does not include your full database."*                                                                                                                       |
@@ -67,14 +68,15 @@ The page contains two vertically stacked sections presented as clean cards:
 - Daily automated backups, OneDrive backup, Local backup, Diagnostic logs, and Restore should read as five vertically stacked subsections within the same card.
 - The automated backups subsection should use the same quiet structure as the other Settings maintenance subsections: heading, subtle tooltip icon, one short description line, then a single trailing control row.
 - OneDrive backup should visually sit between automated local backups and local backup so the user can understand the difference between local scheduling, cloud backup, and manual local export.
-- OneDrive backup should use a quiet inset provider/status panel plus visible-text actions rather than relying on icon-only controls for sign-in, backup, or disconnect.
+- OneDrive backup should use a quiet inset provider/status panel plus compact visible-text actions rather than relying on icon-only controls for sign-in, backup, or disconnect.
+- OneDrive and Local backup should both expose the same kind of quiet **Last backup** metadata line when recent backup history is available so recency cues do not appear cloud-only.
 - Local backup, Diagnostic logs, and Restore should use the same subsection layout and spacing so they read as sibling manual actions within the same card.
 - The local backup action cluster should place **Share data** immediately next to **Download data** with the same size, shape, fill, and icon-button styling.
 - The diagnostics action cluster should place **Share logs** immediately next to **Export logs** with the same size, shape, fill, and icon-button styling.
 - The tooltip trigger icons should be visually subtle but clearly interactive, with the warning icon using a caution color treatment.
 - Do not show the backup/help text, button labels, or restore warning as always-visible inline callouts inside the card body.
 - **Download data**, **Share data**, **Export logs**, **Share logs**, and **Upload data** should all use the same filled icon-button treatment so they read as one cohesive action family.
-- Trust-critical OneDrive actions should keep their visible text labels even when the local maintenance actions remain icon-only.
+- Trust-critical OneDrive actions should keep their visible text labels even when the local maintenance actions remain icon-only, but they should still follow the same compact action rhythm as the rest of the Settings controls rather than becoming hero-style full-width blocks.
 
 ## Daily Automated Backup Behavior
 
@@ -115,8 +117,8 @@ The page contains two vertically stacked sections presented as clean cards:
 - The user signs in with a **personal Microsoft account**.
 - OneDrive backup uses the app-specific OneDrive folder at **`/me/drive/special/approot`**.
 - The app uploads the **same `.zip` data-backup archive format** used by local backup:
-  - manual cloud backup uses `streak-data-backup-YYYYMMdd-HHmmss.zip`
-  - nightly cloud backup uses `streak-auto-data-backup-YYYYMMdd-HHmmss.zip`
+  - manual OneDrive backup uses `streak-data-backup-YYYYMMdd-HHmmss.zip`
+  - daily automated OneDrive backup uses `streak-auto-data-backup-YYYYMMdd-HHmmss.zip`
 - The remote folder structure should mirror the local naming pattern:
 
   ```text
@@ -129,14 +131,14 @@ The page contains two vertically stacked sections presented as clean cards:
   ```
 
 - Tapping **Connect OneDrive** starts the sign-in / consent flow.
-- When connected, the subsection shows the connected account plus quiet status metadata such as the last successful cloud backup and the storage location.
+- When connected, the subsection shows the connected account plus quiet status metadata such as the last successful backup.
 - Tapping **Back up to OneDrive** uploads a fresh backup archive to `approot/Backups/Manual/`.
 - The app should keep **local backup** and **OneDrive backup** clearly separate. Manual OneDrive backup does not replace **Download data** or **Share data**.
-- The **Nightly cloud backup** toggle is independent from the local **Daily automated backups** toggle:
-  - enabling nightly cloud backup does not enable local automated backups
-  - enabling local automated backups does not enable nightly cloud backup
-- While enabled, nightly cloud backup should follow the same fixed **11:30 PM local device time** schedule as other nightly backup automation.
-- Cloud backup failures should not block local-only app usage. If a nightly cloud backup fails, the app should try again on the **next scheduled run** rather than performing same-day retry loops.
+- The **Daily automated OneDrive backup** toggle is independent from the local **Daily automated backups** toggle:
+  - enabling daily automated OneDrive backup does not enable local automated backups
+  - enabling local automated backups does not enable daily automated OneDrive backup
+- While enabled, daily automated OneDrive backup should follow the same fixed **11:30 PM local device time** schedule as other daily backup automation.
+- Cloud backup failures should not block local-only app usage. If a daily automated OneDrive backup fails, the app should try again on the **next scheduled run** rather than performing same-day retry loops.
 - The OneDrive app folder counts against the user's own OneDrive quota.
 - Retention, cleanup, and quota-management remain outside the app for this iteration.
 - **Cloud restore is not part of this iteration.** Restore remains a local-file-based action on the Settings page.
@@ -146,7 +148,7 @@ The page contains two vertically stacked sections presented as clean cards:
 | Platform | Expected behavior                                                                                                                                                                                                 |
 | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Windows  | OneDrive backup is unavailable. The OneDrive backup subsection should explain that cloud backup is not supported on this platform in the current iteration.                                                     |
-| Android  | The user can connect a personal Microsoft account, manually upload the current backup archive to OneDrive, and optionally enable nightly cloud backup using the same fixed 11:30 PM local schedule.            |
+| Android  | The user can connect a personal Microsoft account, manually upload the current backup archive to OneDrive, and optionally enable daily automated OneDrive backup using the same fixed 11:30 PM local schedule. |
 
 ## Local Export Behavior
 
@@ -292,7 +294,7 @@ The page contains two vertically stacked sections presented as clean cards:
 | Reminder time             | 9:00 PM (local device time) |
 | Local automated backups enabled | OFF                  |
 | OneDrive connected        | Signed out                  |
-| Nightly cloud backup enabled | OFF                      |
+| Daily automated OneDrive backup enabled | OFF          |
 
 ## Persistence
 
@@ -302,13 +304,13 @@ The page contains two vertically stacked sections presented as clean cards:
 - Local automated backups are stored outside the live app database location in a fixed shared/common directory that survives uninstall:
   - On **Android**, in **Downloads/Streak/Backups/Automated**.
   - On **Windows**, automated backups are not available.
-- The nightly cloud-backup preference is saved immediately when changed and should persist independently from the local automated-backup preference.
+- The daily automated OneDrive backup preference is saved immediately when changed and should persist independently from the local automated-backup preference.
 - OneDrive auth state should persist separately from the backup archive itself. Restoring a local backup does not automatically reconnect OneDrive.
 - Local export creates a backup on demand; it is not auto-saved in the background.
 - Diagnostic export creates a diagnostics bundle on demand; it is not auto-saved or regenerated continuously in the background.
 - Diagnostic share creates a diagnostics bundle on demand and immediately hands it to the operating system's share flow; it is not auto-saved or repeated in the background.
 - Local share creates a backup archive on demand and immediately hands it to the operating system's share flow; it is not auto-saved or repeated in the background.
-- OneDrive manual backup creates a backup archive on demand and uploads it immediately; it is not repeated in the background unless nightly cloud backup is enabled.
+- OneDrive manual backup creates a backup archive on demand and uploads it immediately; it is not repeated in the background unless daily automated OneDrive backup is enabled.
 - Restore replaces the live database on demand after user confirmation. When the selected file is a `.zip` archive, it also reloads picture-proof files from that archive. When the selected file is a `.db` backup, the current uploaded picture-proof files remain untouched, but any restored proof references without matching files are cleared during reconciliation.
 - Exported backup archives are stored outside the live app database location:
   - On **Windows**, wherever the user selects in the file-save dialog.
@@ -331,10 +333,10 @@ The page contains two vertically stacked sections presented as clean cards:
 | User has no habits but shares                  | Share is still allowed so the user can manually hand off reminder settings, automated backup settings, or an empty database state.                                                                                    |
 | User is signed out and taps **Back up to OneDrive** | Start the Microsoft sign-in / consent flow first. If sign-in succeeds, continue with the upload.                                                                                                                     |
 | User cancels OneDrive sign-in                  | Keep the user on Settings and treat the action as cancelled rather than failed.                                                                                                                                        |
-| Nightly cloud backup is ON while local automated backups are OFF | Only the OneDrive upload runs on the nightly schedule.                                                                                                                                    |
-| Local automated backups are ON while nightly cloud backup is OFF | Only the local backup file is created on the nightly schedule.                                                                                                                              |
+| Daily automated OneDrive backup is ON while local automated backups are OFF | Only the OneDrive upload runs on the nightly schedule.                                                                                                                           |
+| Local automated backups are ON while daily automated OneDrive backup is OFF | Only the local backup file is created on the nightly schedule.                                                                                                                     |
 | Cloud backup upload succeeds                   | The uploaded archive appears in the app's OneDrive app folder and the Settings subsection updates the latest cloud-backup status.                                                                                      |
-| Cloud backup fails because the network is unavailable | Keep the user on Settings for manual backup, surface a clear error message, and retry nightly cloud backup on the next scheduled run instead of same-day retry loops.                                              |
+| Cloud backup fails because the network is unavailable | Keep the user on Settings for manual backup, surface a clear error message, and retry daily automated OneDrive backup on the next scheduled run instead of same-day retry loops.                                 |
 | Cloud backup fails because OneDrive quota is full | Keep the user on Settings, surface a clear error message, and leave cleanup / space recovery to the user outside the app.                                                                                            |
 | User disconnects OneDrive                      | Clear the app's local auth state and disable connected cloud actions, but do not delete already uploaded OneDrive backup files automatically.                                                                          |
 | User disables reminders                        | No notifications are scheduled. The time picker is hidden.                                                                                                                                                            |

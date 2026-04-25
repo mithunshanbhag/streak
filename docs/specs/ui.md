@@ -108,6 +108,7 @@ Use semantic roles rather than one-off hex values.
 - Note-field labels, photo metadata rows, and preview helper text should use **Caption** or **Support** depending on prominence.
 - Connected-provider names and important backup destinations should use **Body strong**.
 - Connected account labels, backup timestamps, and quiet integration metadata should use **Support** or **Caption**.
+- Settings maintenance subsection titles inside the Settings **Data** card should typically use **Body strong** rather than repeating the full **Section title** scale for every subsection.
 - Eyebrows should stay uppercase with light letter spacing; do not use them for large blocks of copy.
 - Avoid mixing 700 weight into ordinary labels unless it is truly a hero or brand moment.
 
@@ -185,26 +186,42 @@ Use semantic roles rather than one-off hex values.
 - When a row contains multiple related icon-only actions, keep their size, shape, fill, and icon weight visually matched.
 - Trust-critical Settings flows that involve account connection, cloud destinations, or multi-step authentication should prefer **visible-text buttons** over icon-only circles so touch users do not have to depend on tooltips.
 - Use icon-only maintenance actions primarily for compact, already-labeled local action groups such as local backup, diagnostics export/share, and restore.
+- OneDrive / cloud-provider actions should prefer **icon-leading visible-text buttons** that reuse the cloud icon family (`Cloud`, `CloudUpload`, `CloudOff`, `CloudSync`) rather than unlabeled cloud icon-only actions.
 
 ### Settings provider and status panels
 
-- Optional connected-service sections such as **OneDrive backup** should use a quiet inset provider panel inside the main card rather than a full alert/banner treatment.
-- The resting provider panel should use:
-  - `SurfaceMuted` or `SurfaceAccent`
-  - a subtle `BorderSubtle` outline
-  - `RadiusSoft` or `RadiusControl`
+- Optional connected-service sections such as **OneDrive backup** should use one quiet provider area inside the main card rather than stacking multiple emphasized nested boxes.
+- The default resting provider area should prefer:
+  - `SurfaceMuted`
+  - a subtle `BorderSubtle` outline when a distinct inset surface helps scanning
+  - `RadiusControl` or `RadiusSoft`
   - compact **12–16px** internal padding
+- If provider identity, status, metadata, toggle, and actions are all shown together, prefer **one compact panel or flat stack** rather than separate bordered panels for each sub-part.
 - The top row should include:
   - the provider label (for example **OneDrive**) using **Body strong**
   - the current account identity or neutral support copy using **Support**
   - one compact status chip aligned to the right when space allows
+- Use one semantic cloud status icon to reinforce the provider state without adding extra prose:
+  - connected / healthy: `CloudDone`
+  - disconnected / signed out: `CloudOff`
+  - automated / syncing affordance: `CloudSync`
 - Status chips should stay calm and compact:
   - disconnected / not configured: neutral muted surface + `TextSecondary`
   - connected: `PrimarySoft` + `PrimaryStrong`
   - recent-success emphasis may borrow `Success`, but it should stay an accent rather than turning the full panel into a success banner
-- Secondary metadata such as **Last cloud backup**, **Storage location**, or **Nightly cloud backup** should use **Caption** or **Support** styling and read as supportive state rather than primary CTA copy.
-- Primary provider actions such as **Connect OneDrive** or **Back up to OneDrive** should use visible-text filled buttons with a leading icon.
-- Secondary provider actions such as **Disconnect** should use either **Secondary outlined** or **Text button** treatment rather than destructive filled styling unless the action is truly data-destructive.
+- Cloud status icons may carry a slightly stronger semantic color than the surrounding copy:
+  - connected: `Primary` or `Success`
+  - disconnected: `TextSecondary` or a subtle `Danger` treatment
+  - syncing / automated state: `Primary`
+- Use icon color to reinforce the state, not replace the label; keep a short text label such as **Connected** or **Not connected** beside the icon.
+- Secondary metadata such as **Last backup**, destination details, or backup schedule should use **Caption** or **Support** styling and read as supportive state rather than primary CTA copy.
+- Prefer collapsing quiet metadata into **one muted line** when that keeps the panel easier to scan; split into multiple rows only when clarity would suffer.
+- When local and cloud backup areas both surface recency, prefer the same quiet **Last backup** treatment so one subsection does not feel more instrumented than the other.
+- Static explanatory details that are already obvious from the section context or tooltip do not need their own always-visible metadata row.
+- Connected-state toggles such as **Daily automated OneDrive backup** should usually appear as a simple inline setting row inside the same provider area, not as a separate highlighted panel.
+- Disconnected states should show the status plus the primary **Connect** action and should avoid rendering disabled secondary controls that are not yet actionable.
+- Primary provider actions such as **Connect OneDrive** or **Back up to OneDrive** should use visible-text buttons with a leading cloud icon, but they should stay compact and visually aligned with the page's other Settings controls rather than becoming hero-style full-width blocks unless truly necessary.
+- Secondary provider actions such as **Disconnect** should default to a low-emphasis compact button or text button with `CloudOff`, and should sit in the same compact action row or near the provider header rather than appearing as an isolated orphan action below the main CTA.
 
 ### Dialogs
 
@@ -295,12 +312,16 @@ Use semantic roles rather than one-off hex values.
 - **Homepage create CTA:** `Add` icon paired with `New Habit`.
 - **Settings local data actions:** `Download`, `Share`, and `Upload` for local backup download, local backup share, diagnostics export, diagnostics share, and restore respectively.
 - **Settings cloud backup actions:**
-  - provider / cloud section anchor: `Cloud`
-  - manual cloud backup: `CloudUpload`
+  - provider / neutral cloud anchor: `Cloud`
+  - manual cloud backup action: `CloudUpload`
   - connected / healthy state: `CloudDone`
-  - disconnected / unavailable state: `CloudOff` or `CloudQueue`
-  - disconnect: `LinkOff` or `Logout`
-  - Pair the icon with visible **OneDrive** text rather than relying on an unlabeled brand glyph alone.
+  - disconnected / signed-out state: `CloudOff`
+  - daily automated / sync affordance: `CloudSync`
+  - optional cloud retrieval / future restore reference: `CloudDownload`
+  - connect action: `Cloud`
+  - disconnect action: `CloudOff`
+  - Pair the icon with visible **OneDrive** text or action text rather than relying on an unlabeled brand glyph alone.
+  - Use semantic color with restraint: connected icons may use `Primary` or `Success`; disconnected icons may use `TextSecondary` or subtle `Danger`; upload/sync actions generally use `Primary`.
 - **Habit detail actions:** `Edit` and `Delete`.
 - **Checkin toggle:** use MudBlazor's `MudCheckBox` pattern with done/not-done icon states.
 - **Check-in dialog proof actions:**

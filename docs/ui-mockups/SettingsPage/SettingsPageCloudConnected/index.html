@@ -24,15 +24,14 @@
             <span>Version 1.0 · Build 123</span>
         </div>
 
-        <section class="settings-card">
-            <div class="section-header-row">
-                <div>
-                    <p class="section-eyebrow">Reminders</p>
-                    <h1 class="section-header">Daily reminder</h1>
-                    <p class="section-description">Only sends a reminder when something is still pending.</p>
-                </div>
-                <span class="section-chip">9:00 PM</span>
-            </div>
+         <section class="settings-card">
+             <div class="section-header-row">
+                 <div>
+                     <p class="section-eyebrow">Reminders</p>
+                     <h1 class="section-header">Daily reminder</h1>
+                     <p class="section-description">Only sends a reminder when something is still pending.</p>
+                 </div>
+             </div>
 
             <div class="setting-row">
                 <div>
@@ -89,70 +88,66 @@
 
             <div class="subsection-divider"></div>
 
-            <div class="section-header-row section-header-row--sub">
-                <div>
-                    <div class="subsection-title-row">
-                        <h2 class="section-header section-header--subsection">OneDrive backup</h2>
+             <div class="section-header-row section-header-row--sub">
+                 <div>
+                     <div class="subsection-title-row">
+                         <h2 class="section-header section-header--subsection">OneDrive backup</h2>
                         <button
                             class="tooltip-trigger hint-icon-btn hint-icon-btn--info"
                             type="button"
                             aria-label="OneDrive backup details"
                             data-tooltip="Optional. Signs in with a personal Microsoft account and uploads the same '.zip' archive to your private OneDrive app folder.">
                             <span class="material-icons">info</span>
-                        </button>
-                    </div>
-                    <p class="section-description">Optional cloud backup using your private OneDrive app folder.</p>
-                </div>
-            </div>
+                         </button>
+                     </div>
+                     <p class="section-description">Optional cloud backup using your private OneDrive app folder.</p>
+                     <p class="section-meta">Last backup Today · 7:12 AM</p>
+                 </div>
+             </div>
 
-            <div class="cloud-provider-panel">
-                <div class="cloud-provider-row">
-                    <div class="cloud-provider-title">
-                        <div class="cloud-provider-icon" aria-hidden="true">
-                            <span class="material-icons">cloud</span>
+              <div class="cloud-provider-panel">
+                  <div class="cloud-provider-row">
+                     <div class="cloud-provider-title">
+                         <div class="cloud-provider-icon cloud-provider-icon--connected" aria-hidden="true">
+                             <span class="material-icons">cloud_done</span>
                         </div>
                         <div>
-                            <div class="setting-label">OneDrive</div>
-                            <div class="setting-caption">streak-demo@outlook.com</div>
-                        </div>
-                    </div>
-                    <span class="status-chip status-chip--connected">Connected</span>
-                </div>
+                             <div class="setting-label">OneDrive</div>
+                             <div class="setting-caption setting-caption--tight">streak-demo@outlook.com</div>
+                         </div>
+                       </div>
+                      <span class="status-chip status-chip--connected">
+                          <span class="material-icons" aria-hidden="true">cloud_done</span>
+                          <span>Connected</span>
+                      </span>
+                  </div>
 
-                <div class="cloud-meta-grid">
-                    <div class="cloud-meta-row">
-                        <span class="cloud-meta-label">Last cloud backup</span>
-                        <span class="cloud-meta-value">Today · 7:12 AM</span>
-                    </div>
-                    <div class="cloud-meta-row">
-                        <span class="cloud-meta-label">Storage location</span>
-                        <span class="cloud-meta-value">OneDrive app folder</span>
-                    </div>
-                </div>
-            </div>
+                  <div class="cloud-action-row">
+                      <button class="action-btn action-btn--primary" type="button">
+                          <span class="material-icons">cloud_upload</span>
+                          <span>Back up to OneDrive</span>
+                      </button>
+                      <button class="action-btn action-btn--secondary" type="button">
+                          <span class="material-icons">cloud_off</span>
+                          <span>Disconnect</span>
+                      </button>
+                  </div>
 
-            <div class="cloud-setting-row">
-                <div>
-                    <div class="setting-label">Nightly cloud backup</div>
-                    <div class="setting-caption">Runs at 11:30 PM and stays separate from local automated backups.</div>
-                </div>
-                <label class="toggle-switch">
-                    <input type="checkbox" id="cloudBackupToggle" checked>
-                    <span class="toggle-track"></span>
-                    <span class="toggle-thumb"></span>
-                </label>
-            </div>
-
-            <div class="cloud-action-group">
-                <button class="action-btn action-btn--primary" type="button">
-                    <span class="material-icons">cloud_upload</span>
-                    <span>Back up to OneDrive</span>
-                </button>
-                <button class="action-btn action-btn--secondary" type="button">
-                    <span class="material-icons">link_off</span>
-                    <span>Disconnect</span>
-                </button>
-            </div>
+                  <div class="cloud-inline-row">
+                      <div class="cloud-setting-label">
+                          <span class="material-icons cloud-setting-icon cloud-setting-icon--active" aria-hidden="true">cloud_sync</span>
+                          <div>
+                              <div class="setting-label">Daily automated OneDrive backup</div>
+                              <div class="setting-caption setting-caption--tight">11:30 PM each day</div>
+                          </div>
+                      </div>
+                      <label class="toggle-switch">
+                          <input type="checkbox" id="cloudBackupToggle" checked>
+                          <span class="toggle-track"></span>
+                          <span class="toggle-thumb"></span>
+                     </label>
+                 </div>
+              </div>
 
             <div class="subsection-divider"></div>
 
@@ -167,10 +162,11 @@
                             data-tooltip="Creates a '.zip' data archive with your local data and uploaded pictures. Android saves to 'Downloads/Streak'. Windows lets you choose where to save.">
                             <span class="material-icons">info</span>
                         </button>
-                    </div>
-                    <p class="section-description">Save or share a copy of your local data on this device.</p>
-                </div>
-            </div>
+                     </div>
+                     <p class="section-description">Save or share a copy of your local data on this device.</p>
+                     <p class="section-meta">Last backup Today · 7:05 AM</p>
+                 </div>
+             </div>
 
             <div class="setting-row setting-row--action-only">
                 <div class="data-action-group">
@@ -225,10 +221,10 @@
                             data-tooltip="This will replace ALL existing data. This action cannot be undone.">
                             <span class="material-icons">warning</span>
                         </button>
-                    </div>
-                    <p class="section-description">Restore from a local .zip backup or a legacy .db file. Existing proof photos stay in place for .db restores.</p>
-                </div>
-            </div>
+                     </div>
+                     <p class="section-description">Restore from a local .zip backup or a legacy .db file.</p>
+                 </div>
+             </div>
 
             <div class="setting-row setting-row--action-only">
                 <button class="tooltip-trigger data-icon-btn" type="button" aria-label="Upload data" data-tooltip="Upload data">
