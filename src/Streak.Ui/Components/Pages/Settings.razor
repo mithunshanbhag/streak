@@ -256,17 +256,34 @@
                           Class="pa-3 rounded-lg"
                           Style="@OneDriveProviderPanelStyle">
                     <MudStack Spacing="2">
+                        @if (_oneDriveAuthState.IsConnected)
+                        {
+                            <MudStack Spacing="1">
+                                <MudText Typo="Typo.body1">
+                                    @OneDriveConnectionHeaderText
+                                </MudText>
+
+                                <MudText Typo="Typo.caption"
+                                         Class="text-secondary">
+                                    @OneDriveConnectionDescriptionText
+                                </MudText>
+                            </MudStack>
+                        }
+
                         <MudStack Row="true"
                                   AlignItems="AlignItems.Center"
                                   Spacing="2">
-                            <MudTooltip Text="@OneDriveProviderStatusText"
+                            <MudTooltip Text="@OneDriveProviderButtonTooltipText"
                                         Placement="Placement.Top">
-                                <span class="d-inline-flex"
-                                      tabindex="0"
-                                      role="img"
-                                      aria-label="@OneDriveProviderStatusText">
-                                    <MudIcon Icon="@OneDriveProviderStatusIcon"
-                                             Color="@OneDriveProviderStatusIconColor"/>
+                                <span class="d-inline-flex">
+                                    <MudButton Color="@OneDriveProviderStatusIconColor"
+                                               Variant="Variant.Filled"
+                                               Disabled="@OneDriveProviderButtonDisabled"
+                                               Style="@DataActionButtonStyle"
+                                               OnClick="HandleOneDriveProviderButtonClickAsync"
+                                               aria-label="@OneDriveProviderButtonAriaLabel">
+                                        <MudIcon Icon="@OneDriveProviderStatusIcon"/>
+                                    </MudButton>
                                 </span>
                             </MudTooltip>
 
@@ -279,82 +296,93 @@
                                          Class="text-secondary">
                                     @OneDriveProviderStateText
                                 </MudText>
+
+                                <MudText Typo="Typo.caption"
+                                         Class="text-secondary">
+                                    @OneDriveProviderSupportText
+                                </MudText>
                             </MudStack>
                         </MudStack>
 
-                        @if (_oneDriveAuthState.IsConnected && !string.IsNullOrWhiteSpace(_oneDriveAuthState.StorageLocationDisplayName))
-                        {
-                            <MudText Typo="Typo.caption"
-                                     Class="text-secondary">
-                                @string.Format(OneDriveStorageLocationTextFormat, _oneDriveAuthState.StorageLocationDisplayName)
-                            </MudText>
-                        }
-
-                        <MudText Typo="Typo.body2"
-                                 Class="text-secondary">
-                            @OneDriveProviderSupportText
-                        </MudText>
-                    </MudStack>
-                </MudPaper>
-
-                <MudPaper Elevation="0"
-                          Class="pa-3 rounded-lg">
-                    <MudStack Row="true"
-                              Justify="Justify.SpaceBetween"
-                              AlignItems="AlignItems.Center"
-                              Spacing="3">
-                        <MudStack Spacing="1">
-                            <MudText Typo="Typo.body1">
-                                @CloudAutomatedBackupsLabelText
-                            </MudText>
-
-                            <MudText Typo="Typo.caption"
-                                     Class="text-secondary">
-                                @CloudAutomatedBackupsDescriptionText
-                            </MudText>
-                        </MudStack>
-
-                        <MudSwitch T="bool"
-                                    Value="@OneDriveCloudBackupEnabledPlaceholder"
-                                    Disabled="@OneDriveCloudBackupToggleDisabled"
-                                    Color="Color.Primary"
-                                    aria-label="@CloudAutomatedBackupsSwitchAriaLabel"/>
-                    </MudStack>
-                </MudPaper>
-
-                <MudPaper Elevation="0"
-                          Class="pa-3 rounded-lg">
-                    <MudStack Row="true"
-                              Spacing="2">
                         @if (_oneDriveAuthState.IsConnected)
                         {
-                            <MudButton Color="Color.Primary"
-                                       Variant="Variant.Filled"
-                                       Disabled="true"
-                                       StartIcon="@Icons.Material.Filled.CloudUpload"
-                                       aria-label="@BackUpToOneDriveButtonAriaLabel">
-                                @BackUpToOneDriveButtonText
-                            </MudButton>
+                            <MudDivider/>
 
-                            <MudButton Color="Color.Default"
-                                       Variant="Variant.Outlined"
-                                       Disabled="@OneDriveDisconnectButtonDisabled"
-                                       StartIcon="@Icons.Material.Filled.LinkOff"
-                                       OnClick="DisconnectOneDriveAsync"
-                                       aria-label="@DisconnectOneDriveButtonAriaLabel">
-                                @DisconnectOneDriveButtonText
-                            </MudButton>
-                        }
-                        else
-                        {
-                            <MudButton Color="Color.Primary"
-                                       Variant="Variant.Filled"
-                                       Disabled="@OneDriveConnectButtonDisabled"
-                                       StartIcon="@Icons.Material.Filled.CloudQueue"
-                                       OnClick="ConnectOneDriveAsync"
-                                       aria-label="@ConnectOneDriveButtonAriaLabel">
-                                @ConnectOneDriveButtonText
-                            </MudButton>
+                            <MudStack Spacing="1">
+                                <MudStack Row="true"
+                                          Spacing="1"
+                                          AlignItems="AlignItems.Center">
+                                    <MudText Typo="Typo.body1">
+                                        @CloudManualBackupHeaderText
+                                    </MudText>
+
+                                    <MudTooltip Text="@CloudManualBackupTooltipText"
+                                                Placement="Placement.Top">
+                                        <MudIconButton Icon="@Icons.Material.Filled.Info"
+                                                       Color="Color.Default"
+                                                       Size="Size.Small"
+                                                       aria-label="@CloudManualBackupTooltipAriaLabel"/>
+                                    </MudTooltip>
+                                </MudStack>
+
+                                <MudText Typo="Typo.caption"
+                                         Class="text-secondary">
+                                    @CloudManualBackupDescriptionText
+                                </MudText>
+                            </MudStack>
+
+                            <MudStack Row="true"
+                                      Justify="Justify.FlexEnd"
+                                      AlignItems="AlignItems.Center">
+                                <MudTooltip Text="@BackUpToOneDriveButtonTooltipText"
+                                            Placement="Placement.Top">
+                                    <span class="d-inline-flex">
+                                        <MudButton Color="Color.Primary"
+                                                   Variant="Variant.Filled"
+                                                   Disabled="@OneDriveManualBackupButtonDisabled"
+                                                   aria-label="@BackUpToOneDriveButtonAriaLabel"
+                                                   Style="@DataActionButtonStyle">
+                                            <MudIcon Icon="@Icons.Material.Filled.Backup"/>
+                                        </MudButton>
+                                    </span>
+                                </MudTooltip>
+                            </MudStack>
+
+                            <MudDivider/>
+
+                            <MudStack Spacing="1">
+                                <MudStack Row="true"
+                                          Spacing="1"
+                                          AlignItems="AlignItems.Center">
+                                    <MudText Typo="Typo.body1">
+                                        @CloudAutomatedBackupsHeaderText
+                                    </MudText>
+
+                                    <MudTooltip Text="@CloudAutomatedBackupsTooltipText"
+                                                Placement="Placement.Top">
+                                        <MudIconButton Icon="@Icons.Material.Filled.Info"
+                                                       Color="Color.Default"
+                                                       Size="Size.Small"
+                                                       aria-label="@CloudAutomatedBackupsTooltipAriaLabel"/>
+                                    </MudTooltip>
+                                </MudStack>
+
+                                <MudText Typo="Typo.caption"
+                                         Class="text-secondary">
+                                    @CloudAutomatedBackupsDescriptionText
+                                </MudText>
+                            </MudStack>
+
+                            <MudStack Row="true"
+                                      Justify="Justify.FlexEnd"
+                                      AlignItems="AlignItems.Center"
+                                      Spacing="0">
+                                <MudSwitch T="bool"
+                                           Value="@OneDriveCloudBackupEnabledPlaceholder"
+                                           Disabled="@OneDriveCloudBackupToggleDisabled"
+                                           Color="Color.Primary"
+                                           aria-label="@CloudAutomatedBackupsSwitchAriaLabel"/>
+                            </MudStack>
                         }
                     </MudStack>
                 </MudPaper>
@@ -565,15 +593,12 @@
 
     private bool OneDriveCloudBackupToggleDisabled => true;
 
-    private bool OneDriveConnectButtonDisabled =>
+    private bool OneDriveManualBackupButtonDisabled => true;
+
+    private bool OneDriveProviderButtonDisabled =>
         DataActionsDisabled
-        || _oneDriveAuthState.IsConnected
         || !_oneDriveAuthState.IsPlatformSupported
         || !_oneDriveAuthState.IsConfigured;
-
-    private bool OneDriveDisconnectButtonDisabled =>
-        DataActionsDisabled
-        || !_oneDriveAuthState.IsConnected;
 
     private string OneDriveProviderStateText => _oneDriveAuthState.IsConnected
         ? _oneDriveAuthState.AccountUsername ?? OneDriveConnectedStateText
@@ -595,7 +620,7 @@
         }
     }
 
-    private string OneDriveProviderStatusText
+    private string OneDriveProviderButtonAriaLabel
     {
         get
         {
@@ -606,10 +631,12 @@
                 return OneDriveSetupRequiredStatusText;
 
             return _oneDriveAuthState.IsConnected
-                ? OneDriveConnectedStateText
-                : OneDriveNotConnectedStateText;
+                ? OneDriveDisconnectButtonAriaLabel
+                : OneDriveConnectButtonAriaLabel;
         }
     }
+
+    private string OneDriveProviderButtonTooltipText => OneDriveProviderButtonAriaLabel;
 
     private string OneDriveProviderStatusIcon => _oneDriveAuthState.IsConnected
         ? Icons.Material.Filled.CloudDone
@@ -618,10 +645,6 @@
     private Color OneDriveProviderStatusIconColor => _oneDriveAuthState.IsConnected
         ? Color.Success
         : Color.Error;
-
-    private string CloudAutomatedBackupsDescriptionText => _oneDriveAuthState.IsConnected
-        ? CloudAutomatedBackupsDeferredDescriptionText
-        : CloudAutomatedBackupsSignedOutDescriptionText;
 
     #endregion
 
@@ -810,6 +833,13 @@
         {
             _oneDriveAuthOperationInProgress = false;
         }
+    }
+
+    private Task HandleOneDriveProviderButtonClickAsync()
+    {
+        return _oneDriveAuthState.IsConnected
+            ? DisconnectOneDriveAsync()
+            : ConnectOneDriveAsync();
     }
 
     private async Task ExportDiagnosticsAsync()
@@ -1008,51 +1038,57 @@
 
     private const string OneDriveConnectedStateText = "Connected";
 
-    private const string OneDriveNotConnectedStateText = "Not connected";
-
     private const string OneDriveUnavailableStatusText = "Unavailable";
 
     private const string OneDriveSetupRequiredStatusText = "Setup required";
 
     private const string OneDrivePersonalMicrosoftAccountText = "Personal Microsoft account";
 
-    private const string OneDriveSignedOutSupportText = "Sign in with a personal Microsoft account to upload the same .zip archives to your private OneDrive app folder.";
+    private const string OneDriveConnectionHeaderText = "OneDrive connection";
 
-    private const string OneDriveConnectedSupportText = "You're signed in. Backup upload and nightly cloud backup will be enabled in a later OneDrive update.";
+    private const string OneDriveConnectionDescriptionText = "Connected and ready to upload backups to your private app folder.";
+
+    private const string OneDriveSignedOutSupportText = "Tap the red cloud icon to connect.";
+
+    private const string OneDriveConnectedSupportText = "Connected. Tap the green cloud icon to disconnect.";
 
     private const string OneDrivePlatformUnsupportedSupportText = "Cloud backup isn't supported on this platform in the current iteration.";
 
     private const string OneDriveNotConfiguredSupportText = "OneDrive sign-in isn't configured in this build yet. Set the OneDriveClientId build property to your Azure app registration's client ID.";
 
-    private const string OneDriveStorageLocationTextFormat = "Storage location: {0}";
-
     private const string CloudBackupHeaderText = "Cloud backup";
 
-    private const string CloudBackupDescriptionText = "Optional OneDrive backups using your private app folder.";
+    private const string CloudBackupDescriptionText = "Optional OneDrive backup using your private app folder.";
 
     private const string CloudBackupTooltipText = "Optional. Signs in with a personal Microsoft account and uploads the same '.zip' archive to your private OneDrive app folder.";
 
     private const string CloudBackupTooltipAriaLabel = "Cloud backup details";
 
-    private const string CloudAutomatedBackupsLabelText = "Daily automated OneDrive backup";
+    private const string CloudManualBackupHeaderText = "Manual cloud backup";
 
-    private const string CloudAutomatedBackupsSignedOutDescriptionText = "Available after you connect OneDrive.";
+    private const string CloudManualBackupDescriptionText = "Upload a fresh backup archive to your private OneDrive app folder.";
 
-    private const string CloudAutomatedBackupsDeferredDescriptionText = "Backup scheduling will light up after the OneDrive backup flow is implemented.";
+    private const string CloudManualBackupTooltipText = "Uploads the same '.zip' data archive to your private OneDrive app folder.";
 
-    private const string CloudAutomatedBackupsSwitchAriaLabel = "Daily automated OneDrive backup toggle";
+    private const string CloudManualBackupTooltipAriaLabel = "Manual cloud backup details";
 
-    private const string ConnectOneDriveButtonText = "Connect OneDrive";
+    private const string CloudAutomatedBackupsHeaderText = "Daily automated cloud backup";
 
-    private const string ConnectOneDriveButtonAriaLabel = "Connect OneDrive";
+    private const string CloudAutomatedBackupsDescriptionText = "Upload a nightly backup to OneDrive automatically.";
 
-    private const string BackUpToOneDriveButtonText = "Back up to OneDrive";
+    private const string CloudAutomatedBackupsTooltipText = "Android only. Runs nightly at 11:30 PM when enabled and uploads the backup archive to OneDrive.";
+
+    private const string CloudAutomatedBackupsTooltipAriaLabel = "Automated cloud backup details";
+
+    private const string CloudAutomatedBackupsSwitchAriaLabel = "Daily automated cloud backup toggle";
+
+    private const string OneDriveConnectButtonAriaLabel = "Not connected. Connect OneDrive";
+
+    private const string BackUpToOneDriveButtonTooltipText = "Back up to OneDrive";
 
     private const string BackUpToOneDriveButtonAriaLabel = "Back up to OneDrive";
 
-    private const string DisconnectOneDriveButtonText = "Disconnect";
-
-    private const string DisconnectOneDriveButtonAriaLabel = "Disconnect OneDrive";
+    private const string OneDriveDisconnectButtonAriaLabel = "Connected. Disconnect OneDrive";
 
     private const string ExportButtonTooltipText = "Download data";
 

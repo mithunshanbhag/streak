@@ -46,13 +46,15 @@ public sealed class SettingsTests : TestContext
         cut.Find("input[aria-label='Daily automated backups toggle']").HasAttribute("disabled").Should().BeFalse();
         markup.Should().Contain("Manual backup");
         markup.Should().Contain("Cloud backup");
-        markup.Should().Contain("Optional OneDrive backups using your private app folder.");
+        markup.Should().Contain("Optional OneDrive backup using your private app folder.");
         cut.Find("button[aria-label='Cloud backup details']");
-        cut.Find("[role='img'][aria-label='Not connected']");
+        cut.Find("button[aria-label='Not connected. Connect OneDrive']").HasAttribute("disabled").Should().BeFalse();
         markup.Should().Contain("Personal Microsoft account");
-        markup.Should().Contain("Sign in with a personal Microsoft account to upload the same .zip archives to your private OneDrive app folder.");
-        cut.Find("input[aria-label='Daily automated OneDrive backup toggle']").HasAttribute("disabled").Should().BeTrue();
-        cut.Find("button[aria-label='Connect OneDrive']").HasAttribute("disabled").Should().BeFalse();
+        markup.Should().Contain("Tap the red cloud icon to connect.");
+        cut.FindAll("input[aria-label='Daily automated cloud backup toggle']").Should().BeEmpty();
+        cut.FindAll("button[aria-label='Back up to OneDrive']").Should().BeEmpty();
+        markup.Should().NotContain("Manual cloud backup");
+        markup.Should().NotContain("Daily automated cloud backup");
         markup.Should().Contain("Save or share a copy of your local data on this device.");
         cut.Find("button[aria-label='Manual backup save location info']");
         cut.Find("button[aria-label='Download data']");
@@ -127,12 +129,18 @@ public sealed class SettingsTests : TestContext
         var cut = RenderSettings();
 
         cut.Markup.Should().Contain("streak-demo@outlook.com");
-        cut.Find("[role='img'][aria-label='Connected']");
-        cut.Markup.Should().Contain("Storage location");
-        cut.Markup.Should().Contain("OneDrive app folder");
+        cut.Find("button[aria-label='Connected. Disconnect OneDrive']").HasAttribute("disabled").Should().BeFalse();
+        cut.Markup.Should().Contain("OneDrive connection");
+        cut.Markup.Should().Contain("Connected and ready to upload backups to your private app folder.");
+        cut.Markup.Should().Contain("Manual cloud backup");
+        cut.Find("button[aria-label='Manual cloud backup details']");
+        cut.Markup.Should().Contain("Upload a fresh backup archive to your private OneDrive app folder.");
         cut.Find("button[aria-label='Back up to OneDrive']").HasAttribute("disabled").Should().BeTrue();
-        cut.Find("button[aria-label='Disconnect OneDrive']").HasAttribute("disabled").Should().BeFalse();
-        cut.Markup.Should().Contain("You're signed in. Backup upload and nightly cloud backup will be enabled in a later OneDrive update.");
+        cut.Markup.Should().Contain("Daily automated cloud backup");
+        cut.Find("button[aria-label='Automated cloud backup details']");
+        cut.Find("input[aria-label='Daily automated cloud backup toggle']").HasAttribute("disabled").Should().BeTrue();
+        cut.Markup.Should().Contain("Connected. Tap the green cloud icon to disconnect.");
+        cut.Markup.Should().NotContain("Storage location");
     }
 
     [Fact]
@@ -303,7 +311,7 @@ public sealed class SettingsTests : TestContext
 
         var cut = RenderSettings();
 
-        await cut.Find("button[aria-label='Connect OneDrive']").ClickAsync(new MouseEventArgs());
+        await cut.Find("button[aria-label='Not connected. Connect OneDrive']").ClickAsync(new MouseEventArgs());
 
         cut.WaitForAssertion(() =>
         {
@@ -313,7 +321,7 @@ public sealed class SettingsTests : TestContext
                 Times.Once);
             oneDriveAuthReturnRouteStoreMock.Verify(x => x.ClearPendingReturnRoute(), Times.Once);
             cut.Markup.Should().Contain("streak-demo@outlook.com");
-            cut.Find("button[aria-label='Disconnect OneDrive']");
+            cut.Find("button[aria-label='Connected. Disconnect OneDrive']");
         });
     }
 
@@ -341,14 +349,14 @@ public sealed class SettingsTests : TestContext
 
         var cut = RenderSettings();
 
-        await cut.Find("button[aria-label='Disconnect OneDrive']").ClickAsync(new MouseEventArgs());
+        await cut.Find("button[aria-label='Connected. Disconnect OneDrive']").ClickAsync(new MouseEventArgs());
 
         cut.WaitForAssertion(() =>
         {
             oneDriveAuthServiceMock.Verify(x => x.DisconnectAsync(It.IsAny<CancellationToken>()), Times.Once);
-            cut.Find("[role='img'][aria-label='Not connected']");
+            cut.Find("button[aria-label='Not connected. Connect OneDrive']");
             cut.Markup.Should().Contain("Personal Microsoft account");
-            cut.Find("button[aria-label='Connect OneDrive']");
+            cut.FindAll("button[aria-label='Back up to OneDrive']").Should().BeEmpty();
         });
     }
 
@@ -755,12 +763,12 @@ public sealed class SettingsTests : TestContext
 
         var cut = RenderSettings();
 
-        await cut.Find("button[aria-label='Connect OneDrive']").ClickAsync(new MouseEventArgs());
+        await cut.Find("button[aria-label='Not connected. Connect OneDrive']").ClickAsync(new MouseEventArgs());
 
         cut.WaitForAssertion(() =>
         {
             cut.Markup.Should().NotContain("Unable to connect OneDrive right now. Please try again.");
-            cut.Find("[role='img'][aria-label='Not connected']");
+            cut.Find("button[aria-label='Not connected. Connect OneDrive']");
             cut.Markup.Should().Contain("Personal Microsoft account");
         });
     }
@@ -856,11 +864,9 @@ public sealed class SettingsTests : TestContext
             oneDriveAuthServiceMock: oneDriveAuthServiceMock);
 
         var cut = RenderSettings();
-        var cloudToggle = cut.Find("input[aria-label='Daily automated OneDrive backup toggle']");
-        var connectButton = cut.Find("button[aria-label='Connect OneDrive']");
+        var connectButton = cut.Find("button[aria-label='Unavailable']");
 
-        cloudToggle.HasAttribute("disabled").Should().BeTrue();
-        cloudToggle.HasAttribute("checked").Should().BeFalse();
+        cut.FindAll("input[aria-label='Daily automated cloud backup toggle']").Should().BeEmpty();
         connectButton.HasAttribute("disabled").Should().BeTrue();
         cut.Markup.Should().Contain("Cloud backup isn't supported on this platform in the current iteration.");
     }
@@ -884,7 +890,7 @@ public sealed class SettingsTests : TestContext
             oneDriveAuthServiceMock: oneDriveAuthServiceMock);
 
         var cut = RenderSettings();
-        var connectButton = cut.Find("button[aria-label='Connect OneDrive']");
+        var connectButton = cut.Find("button[aria-label='Setup required']");
 
         connectButton.HasAttribute("disabled").Should().BeTrue();
         cut.Markup.Should().Contain("OneDrive sign-in isn't configured in this build yet.");
