@@ -2,7 +2,7 @@ namespace Streak.Ui.Services.Implementations;
 
 public sealed class DatabaseShareService(
     IAppStoragePathService appStoragePathService,
-    ICheckinProofFileStore checkinProofFileStore,
+    IBackupArchiveFactory backupArchiveFactory,
     IShare share,
     ILogger<DatabaseShareService> logger)
     : IDatabaseShareService
@@ -10,7 +10,7 @@ public sealed class DatabaseShareService(
     private const string DataBackupMimeType = "application/zip";
 
     private readonly IAppStoragePathService _appStoragePathService = appStoragePathService;
-    private readonly ICheckinProofFileStore _checkinProofFileStore = checkinProofFileStore;
+    private readonly IBackupArchiveFactory _backupArchiveFactory = backupArchiveFactory;
     private readonly IShare _share = share;
     private readonly ILogger<DatabaseShareService> _logger = logger;
 
@@ -18,41 +18,28 @@ public sealed class DatabaseShareService(
 
     public async Task ShareDatabaseAsync(CancellationToken cancellationToken = default)
     {
-        var sourceDatabasePath = _appStoragePathService.DatabasePath;
-        if (!File.Exists(sourceDatabasePath))
-            throw new FileNotFoundException("The local Streak database could not be found.", sourceDatabasePath);
-
-        var exportDirectoryPath = _appStoragePathService.ExportDirectoryPath;
-        DataBackupArchiveUtility.DeleteCachedBackups(exportDirectoryPath);
-
-        var backupFilePath = DataBackupArchiveUtility.CreateBackupFilePath(exportDirectoryPath);
+        DataBackupArchiveUtility.DeleteCachedBackups(_appStoragePathService.ExportDirectoryPath);
+        var backupArchive = await _backupArchiveFactory.CreateManualBackupAsync(cancellationToken);
 
         try
         {
-            var unavailableReferencedProofPaths = await DataBackupArchiveUtility.CreateBackupAsync(
-                sourceDatabasePath,
-                _checkinProofFileStore,
-                backupFilePath,
-                cancellationToken);
-
-            if (unavailableReferencedProofPaths.Count > 0)
+            if (backupArchive.UnavailableReferencedProofPaths.Count > 0)
             {
                 _logger.LogWarning(
-                    "Database share skipped {UnavailableProofFileCount} unavailable picture proof reference(s) for {DatabasePath}: {@UnavailableProofPaths}",
-                    unavailableReferencedProofPaths.Count,
-                    sourceDatabasePath,
-                    unavailableReferencedProofPaths);
+                    "Database share skipped {UnavailableProofFileCount} unavailable picture proof reference(s): {@UnavailableProofPaths}",
+                    backupArchive.UnavailableReferencedProofPaths.Count,
+                    backupArchive.UnavailableReferencedProofPaths);
             }
 
             await _share.RequestAsync(new ShareFileRequest
             {
                 Title = "Share data",
-                File = new ShareFile(backupFilePath, DataBackupMimeType)
+                File = new ShareFile(backupArchive.WorkingFilePath, DataBackupMimeType)
             });
         }
         catch (Exception exception)
         {
-            _logger.LogError(exception, "Database share failed for {DatabasePath}.", sourceDatabasePath);
+            _logger.LogError(exception, "Database share failed.");
             throw;
         }
     }

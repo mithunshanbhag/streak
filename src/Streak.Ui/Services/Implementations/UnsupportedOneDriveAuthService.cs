@@ -9,6 +9,11 @@ public sealed class UnsupportedOneDriveAuthService : IOneDriveAuthService
         throw new NotSupportedException("OneDrive sign-in is not supported on this platform.");
     }
 
+    public Task<string> GetAccessTokenAsync(CancellationToken cancellationToken = default)
+    {
+        throw new NotSupportedException("OneDrive sign-in is not supported on this platform.");
+    }
+
     public Task DisconnectAsync(CancellationToken cancellationToken = default)
     {
         AuthStateChanged?.Invoke(this, CreateUnsupportedAuthState());

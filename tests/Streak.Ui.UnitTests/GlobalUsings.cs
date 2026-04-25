@@ -12,6 +12,7 @@ global using Microsoft.Extensions.Logging;
 global using Moq;
 global using MudBlazor;
 global using MudBlazor.Services;
+global using Streak.Ui.Exceptions;
 global using Streak.Ui.Constants;
 global using Streak.Ui.Models.Storage;
 global using Streak.Ui.Models.ViewModels;

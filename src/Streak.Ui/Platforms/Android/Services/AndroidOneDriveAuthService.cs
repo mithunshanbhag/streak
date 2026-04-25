@@ -181,6 +181,58 @@ public sealed class AndroidOneDriveAuthService(
         }
     }
 
+    public async Task<string> GetAccessTokenAsync(CancellationToken cancellationToken = default)
+    {
+        var stopwatch = Stopwatch.StartNew();
+        var configuration = _configurationProvider.GetConfiguration();
+        if (!configuration.IsConfigured)
+        {
+            _logger.LogWarning("OneDrive access token acquisition skipped because the build is not configured.");
+            throw new InvalidOperationException("OneDrive sign-in is not configured for this build.");
+        }
+
+        try
+        {
+            var publicClientApplication = await GetPublicClientApplicationAsync(cancellationToken);
+            var account = (await GetAccountsSnapshotAsync(publicClientApplication)).FirstOrDefault();
+            if (account is null)
+            {
+                _logger.LogInformation(
+                    "OneDrive silent token acquisition requires reconnect because no signed-in account was found after {ElapsedMilliseconds} ms.",
+                    stopwatch.ElapsedMilliseconds);
+                throw new OneDriveAuthenticationRequiredException("OneDrive needs you to reconnect before backing up again.");
+            }
+
+            var authenticationResult = await publicClientApplication
+                .AcquireTokenSilent(configuration.Scopes, account)
+                .ExecuteAsync(cancellationToken);
+
+            _logger.LogInformation(
+                "OneDrive silent token acquisition completed in {ElapsedMilliseconds} ms.",
+                stopwatch.ElapsedMilliseconds);
+
+            return authenticationResult.AccessToken;
+        }
+        catch (MsalUiRequiredException exception)
+        {
+            _logger.LogInformation(
+                exception,
+                "OneDrive silent token acquisition requires reconnect after {ElapsedMilliseconds} ms. MSAL error code: {MsalErrorCode}.",
+                stopwatch.ElapsedMilliseconds,
+                exception.ErrorCode);
+            throw new OneDriveAuthenticationRequiredException("OneDrive needs you to reconnect before backing up again.", exception);
+        }
+        catch (MsalException exception)
+        {
+            _logger.LogWarning(
+                exception,
+                "OneDrive silent token acquisition failed after {ElapsedMilliseconds} ms. MSAL error code: {MsalErrorCode}.",
+                stopwatch.ElapsedMilliseconds,
+                exception.ErrorCode);
+            throw;
+        }
+    }
+
     #region Private Helper Methods
 
     private static OneDriveAuthState CreateAuthState(OneDriveAuthConfiguration configuration, string? accountUsername)

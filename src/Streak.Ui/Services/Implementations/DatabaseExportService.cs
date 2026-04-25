@@ -1,54 +1,50 @@
 namespace Streak.Ui.Services.Implementations;
 
 public sealed class DatabaseExportService(
-    IAppStoragePathService appStoragePathService,
-    ICheckinProofFileStore checkinProofFileStore,
+    IBackupArchiveFactory backupArchiveFactory,
     IDatabaseExportFileSaver databaseExportFileSaver,
+    IManualBackupStatusStore manualBackupStatusStore,
+    TimeProvider timeProvider,
     ILogger<DatabaseExportService> logger)
     : IDatabaseExportService
 {
-    private readonly IAppStoragePathService _appStoragePathService = appStoragePathService;
-    private readonly ICheckinProofFileStore _checkinProofFileStore = checkinProofFileStore;
+    private readonly IBackupArchiveFactory _backupArchiveFactory = backupArchiveFactory;
     private readonly IDatabaseExportFileSaver _databaseExportFileSaver = databaseExportFileSaver;
+    private readonly IManualBackupStatusStore _manualBackupStatusStore = manualBackupStatusStore;
+    private readonly TimeProvider _timeProvider = timeProvider;
     private readonly ILogger<DatabaseExportService> _logger = logger;
 
     public async Task<DatabaseExportResult> ExportDatabaseAsync(CancellationToken cancellationToken = default)
     {
-        var sourceDatabasePath = _appStoragePathService.DatabasePath;
-        if (!File.Exists(sourceDatabasePath))
-            throw new FileNotFoundException("The local Streak database could not be found.", sourceDatabasePath);
-
-        var backupFilePath = DataBackupArchiveUtility.CreateBackupFilePath(_appStoragePathService.ExportDirectoryPath);
+        using var backupArchive = await _backupArchiveFactory.CreateManualBackupAsync(cancellationToken);
 
         try
         {
-            var unavailableReferencedProofPaths = await DataBackupArchiveUtility.CreateBackupAsync(
-                sourceDatabasePath,
-                _checkinProofFileStore,
-                backupFilePath,
-                cancellationToken);
-
-            if (unavailableReferencedProofPaths.Count > 0)
+            if (backupArchive.UnavailableReferencedProofPaths.Count > 0)
             {
                 _logger.LogWarning(
-                    "Database export skipped {UnavailableProofFileCount} unavailable picture proof reference(s) for {DatabasePath}: {@UnavailableProofPaths}",
-                    unavailableReferencedProofPaths.Count,
-                    sourceDatabasePath,
-                    unavailableReferencedProofPaths);
+                    "Database export skipped {UnavailableProofFileCount} unavailable picture proof reference(s): {@UnavailableProofPaths}",
+                    backupArchive.UnavailableReferencedProofPaths.Count,
+                    backupArchive.UnavailableReferencedProofPaths);
             }
 
-            return await _databaseExportFileSaver.SaveBackupAsync(
-                backupFilePath,
+            var exportResult = await _databaseExportFileSaver.SaveBackupAsync(
+                backupArchive.WorkingFilePath,
                 cancellationToken);
+
+            if (exportResult.Status == DatabaseExportStatus.Saved)
+            {
+                _manualBackupStatusStore.SetLastSuccessfulBackupUtc(
+                    ManualBackupLocation.Local,
+                    _timeProvider.GetUtcNow());
+            }
+
+            return exportResult;
         }
         catch (Exception exception)
         {
-            _logger.LogError(exception, "Database export failed for {DatabasePath}.", sourceDatabasePath);
+            _logger.LogError(exception, "Database export failed.");
             throw;
-        }
-        finally
-        {
-            DataBackupArchiveUtility.DeleteBackupIfExists(backupFilePath);
         }
     }
 }

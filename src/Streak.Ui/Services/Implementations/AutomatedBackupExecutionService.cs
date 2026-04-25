@@ -1,54 +1,37 @@
 namespace Streak.Ui.Services.Implementations;
 
 public sealed class AutomatedBackupExecutionService(
-    IAppStoragePathService appStoragePathService,
-    ICheckinProofFileStore checkinProofFileStore,
+    IBackupArchiveFactory backupArchiveFactory,
     IAutomatedBackupFileSaver automatedBackupFileSaver,
     ILogger<AutomatedBackupExecutionService> logger)
     : IAutomatedBackupExecutionService
 {
-    private readonly IAppStoragePathService _appStoragePathService = appStoragePathService;
-    private readonly ICheckinProofFileStore _checkinProofFileStore = checkinProofFileStore;
+    private readonly IBackupArchiveFactory _backupArchiveFactory = backupArchiveFactory;
     private readonly IAutomatedBackupFileSaver _automatedBackupFileSaver = automatedBackupFileSaver;
     private readonly ILogger<AutomatedBackupExecutionService> _logger = logger;
 
     public async Task<SavedFileLocation> ExecuteAutomatedBackupAsync(CancellationToken cancellationToken = default)
     {
-        var sourceDatabasePath = _appStoragePathService.DatabasePath;
-        if (!File.Exists(sourceDatabasePath))
-            throw new FileNotFoundException("The local Streak database could not be found.", sourceDatabasePath);
-
-        var workingBackupPath = DataBackupArchiveUtility.CreateAutomatedBackupFilePath(_appStoragePathService.ExportDirectoryPath);
+        using var backupArchive = await _backupArchiveFactory.CreateAutomatedBackupAsync(cancellationToken);
 
         try
         {
-            var unavailableReferencedProofPaths = await DataBackupArchiveUtility.CreateBackupAsync(
-                sourceDatabasePath,
-                _checkinProofFileStore,
-                workingBackupPath,
-                cancellationToken);
-
-            if (unavailableReferencedProofPaths.Count > 0)
+            if (backupArchive.UnavailableReferencedProofPaths.Count > 0)
             {
                 _logger.LogWarning(
-                    "Automated backup skipped {UnavailableProofFileCount} unavailable picture proof reference(s) for {DatabasePath}: {@UnavailableProofPaths}",
-                    unavailableReferencedProofPaths.Count,
-                    sourceDatabasePath,
-                    unavailableReferencedProofPaths);
+                    "Automated backup skipped {UnavailableProofFileCount} unavailable picture proof reference(s): {@UnavailableProofPaths}",
+                    backupArchive.UnavailableReferencedProofPaths.Count,
+                    backupArchive.UnavailableReferencedProofPaths);
             }
 
             return await _automatedBackupFileSaver.SaveBackupAsync(
-                workingBackupPath,
+                backupArchive.WorkingFilePath,
                 cancellationToken);
         }
         catch (Exception exception)
         {
-            _logger.LogError(exception, "Automated backup execution failed for {DatabasePath}.", sourceDatabasePath);
+            _logger.LogError(exception, "Automated backup execution failed.");
             throw;
-        }
-        finally
-        {
-            DataBackupArchiveUtility.DeleteBackupIfExists(workingBackupPath);
         }
     }
 }

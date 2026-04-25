@@ -125,6 +125,11 @@ public sealed class StreakAuthenticationStateProviderTests
             return Task.FromResult(_authState);
         }
 
+        public Task<string> GetAccessTokenAsync(CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult("test-access-token");
+        }
+
         public void SetAuthState(OneDriveAuthState authState)
         {
             _authState = authState;

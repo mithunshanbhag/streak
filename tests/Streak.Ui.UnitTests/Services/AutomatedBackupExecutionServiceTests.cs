@@ -198,10 +198,12 @@ public sealed class AutomatedBackupExecutionServiceTests
         appStoragePathServiceMock.SetupGet(x => x.ExportDirectoryPath).Returns(exportDirectoryPath);
 
         var loggerMock = new Mock<ILogger<AutomatedBackupExecutionService>>();
+        var backupArchiveFactory = new BackupArchiveFactory(
+            appStoragePathServiceMock.Object,
+            new FileSystemCheckinProofFileStore(appStoragePathServiceMock.Object));
 
         return new AutomatedBackupExecutionService(
-            appStoragePathServiceMock.Object,
-            new FileSystemCheckinProofFileStore(appStoragePathServiceMock.Object),
+            backupArchiveFactory,
             backupFileSaver,
             loggerMock.Object);
     }

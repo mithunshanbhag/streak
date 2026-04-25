@@ -8,11 +8,14 @@
 @inject IDatabaseImportFilePicker DatabaseImportFilePicker
 @inject IDatabaseImportService DatabaseImportService
 @inject IManualBackupCompletionNotifier ManualBackupCompletionNotifier
+@inject IManualBackupStatusStore ManualBackupStatusStore
+@inject IManualCloudBackupService ManualCloudBackupService
 @inject IBackupNotificationPermissionService BackupNotificationPermissionService
 @inject IReminderNotificationPermissionCoordinator ReminderNotificationPermissionCoordinator
 @inject IAppVersionInfoService AppVersionInfoService
 @inject IOneDriveAuthService OneDriveAuthService
 @inject IOneDriveAuthReturnRouteStore OneDriveAuthReturnRouteStore
+@inject TimeProvider TimeProvider
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
 @inject NavigationManager NavigationManager
@@ -170,6 +173,14 @@
                              Class="text-secondary">
                         @ManualBackupDescriptionText
                     </MudText>
+
+                    @if (!string.IsNullOrWhiteSpace(LocalManualBackupMetadataText))
+                    {
+                        <MudText Typo="Typo.caption"
+                                 Class="text-secondary">
+                            @LocalManualBackupMetadataText
+                        </MudText>
+                    }
                 </MudStack>
 
                 <MudPaper Elevation="0"
@@ -329,6 +340,14 @@
                                          Class="text-secondary">
                                     @CloudManualBackupDescriptionText
                                 </MudText>
+
+                                @if (!string.IsNullOrWhiteSpace(CloudManualBackupMetadataText))
+                                {
+                                    <MudText Typo="Typo.caption"
+                                             Class="text-secondary">
+                                        @CloudManualBackupMetadataText
+                                    </MudText>
+                                }
                             </MudStack>
 
                             <MudStack Row="true"
@@ -341,8 +360,18 @@
                                                    Variant="Variant.Filled"
                                                    Disabled="@OneDriveManualBackupButtonDisabled"
                                                    aria-label="@BackUpToOneDriveButtonAriaLabel"
-                                                   Style="@DataActionButtonStyle">
-                                            <MudIcon Icon="@Icons.Material.Filled.Backup"/>
+                                                   Style="@DataActionButtonStyle"
+                                                   OnClick="UploadManualCloudBackupAsync">
+                                            @if (_oneDriveManualBackupInProgress)
+                                            {
+                                                <MudProgressCircular Indeterminate="true"
+                                                                     Color="Color.Inherit"
+                                                                     Size="Size.Small"/>
+                                            }
+                                            else
+                                            {
+                                                <MudIcon Icon="@Icons.Material.Filled.Backup"/>
+                                            }
                                         </MudButton>
                                     </span>
                                 </MudTooltip>
@@ -542,6 +571,8 @@
 
     private bool _diagnosticsShareInProgress;
 
+    private bool _oneDriveManualBackupInProgress;
+
     private bool _remindersEnabled;
 
     private TimeSpan? _reminderTimeLocal;
@@ -562,6 +593,10 @@
 
     private AppVersionInfo? _appVersionInfo;
 
+    private DateTimeOffset? _lastSuccessfulLocalManualBackupUtc;
+
+    private DateTimeOffset? _lastSuccessfulCloudManualBackupUtc;
+
     private string? _operationErrorMessage;
 
     private string? SettingsMetadataBannerText => _appVersionInfo is null
@@ -576,7 +611,8 @@
         || _diagnosticsExportInProgress
         || _diagnosticsShareInProgress
         || _shareInProgress
-        || _importInProgress;
+        || _importInProgress
+        || _oneDriveManualBackupInProgress;
 
     private bool AutomatedBackupsToggleDisabled =>
         !_automatedBackupsSupported || ReminderControlsDisabled;
@@ -587,13 +623,15 @@
         || _diagnosticsShareInProgress
         || _shareInProgress
         || _importInProgress
+        || _oneDriveManualBackupInProgress
         || _reminderSettingsUpdateInProgress
         || _automatedBackupSettingsUpdateInProgress
         || _oneDriveAuthOperationInProgress;
 
     private bool OneDriveCloudBackupToggleDisabled => true;
 
-    private bool OneDriveManualBackupButtonDisabled => true;
+    private bool OneDriveManualBackupButtonDisabled =>
+        DataActionsDisabled || !_oneDriveAuthState.IsConnected;
 
     private bool OneDriveProviderButtonDisabled =>
         DataActionsDisabled
@@ -646,6 +684,10 @@
         ? Color.Success
         : Color.Error;
 
+    private string? LocalManualBackupMetadataText => FormatLastBackupMetadataText(_lastSuccessfulLocalManualBackupUtc);
+
+    private string? CloudManualBackupMetadataText => FormatLastBackupMetadataText(_lastSuccessfulCloudManualBackupUtc);
+
     #endregion
 
     #region Lifecycle Methods
@@ -662,6 +704,7 @@
             _automatedBackupsSupported = AutomatedBackupConfigurationService.IsSupported;
             _automatedBackupsEnabled = _automatedBackupsSupported && AutomatedBackupConfigurationService.GetIsEnabled();
             _oneDriveAuthState = await OneDriveAuthService.GetAuthStateAsync();
+            RefreshManualBackupStatusMetadata();
 
             await RequestReminderNotificationPermissionIfEnabledAsync();
 
@@ -771,6 +814,7 @@
                 return;
 
             ManualBackupCompletionNotifier.NotifyCompleted(exportResult);
+            RefreshManualBackupStatusMetadata();
         }
         catch (Exception)
         {
@@ -840,6 +884,34 @@
         return _oneDriveAuthState.IsConnected
             ? DisconnectOneDriveAsync()
             : ConnectOneDriveAsync();
+    }
+
+    private async Task UploadManualCloudBackupAsync()
+    {
+        try
+        {
+            _oneDriveManualBackupInProgress = true;
+            _operationErrorMessage = null;
+
+            await ManualCloudBackupService.UploadManualBackupAsync();
+            RefreshManualBackupStatusMetadata();
+            Snackbar.Add(OneDriveManualBackupCompletedText, Severity.Success);
+        }
+        catch (OneDriveBackupException exception)
+        {
+            if (exception.FailureKind == OneDriveBackupFailureKind.AuthRequired)
+                await RefreshOneDriveAuthStateAsync();
+
+            _operationErrorMessage = GetOneDriveManualBackupFailureText(exception.FailureKind);
+        }
+        catch (Exception)
+        {
+            _operationErrorMessage = OneDriveManualBackupFailedText;
+        }
+        finally
+        {
+            _oneDriveManualBackupInProgress = false;
+        }
     }
 
     private async Task ExportDiagnosticsAsync()
@@ -982,6 +1054,38 @@
         _oneDriveAuthState = await OneDriveAuthService.GetAuthStateAsync();
     }
 
+    private void RefreshManualBackupStatusMetadata()
+    {
+        _lastSuccessfulLocalManualBackupUtc = ManualBackupStatusStore.GetLastSuccessfulBackupUtc(ManualBackupLocation.Local);
+        _lastSuccessfulCloudManualBackupUtc = ManualBackupStatusStore.GetLastSuccessfulBackupUtc(ManualBackupLocation.Cloud);
+    }
+
+    private string? FormatLastBackupMetadataText(DateTimeOffset? completedAtUtc)
+    {
+        if (!completedAtUtc.HasValue)
+            return null;
+
+        var localCompletedAt = TimeZoneInfo.ConvertTime(completedAtUtc.Value, TimeProvider.LocalTimeZone);
+        var localNow = TimeZoneInfo.ConvertTime(TimeProvider.GetUtcNow(), TimeProvider.LocalTimeZone);
+        var dayLabel = localCompletedAt.Date == localNow.Date
+            ? TodayLabelText
+            : localCompletedAt.ToString("MMM d, yyyy", CultureInfo.InvariantCulture);
+        var timeLabel = localCompletedAt.ToString("h:mm tt", CultureInfo.InvariantCulture);
+
+        return $"{LastBackupLabelText} {dayLabel} {BuildSeparatorText} {timeLabel}";
+    }
+
+    private static string GetOneDriveManualBackupFailureText(OneDriveBackupFailureKind failureKind)
+    {
+        return failureKind switch
+        {
+            OneDriveBackupFailureKind.AuthRequired => OneDriveManualBackupReconnectRequiredText,
+            OneDriveBackupFailureKind.NetworkUnavailable => OneDriveManualBackupNetworkFailedText,
+            OneDriveBackupFailureKind.QuotaExceeded => OneDriveManualBackupQuotaExceededText,
+            _ => OneDriveManualBackupFailedText
+        };
+    }
+
     #endregion
 
     #region Text, Label Properties
@@ -1033,6 +1137,10 @@
     private const string ManualBackupTooltipText = "Creates a '.zip' data archive with your local data and uploaded pictures. Android saves to 'Downloads/Streak'. Windows lets you choose where to save.";
 
     private const string ManualBackupTooltipAriaLabel = "Manual backup save location info";
+
+    private const string LastBackupLabelText = "Last backup";
+
+    private const string TodayLabelText = "Today";
 
     private const string OneDriveProviderNameText = "OneDrive";
 
@@ -1087,6 +1195,8 @@
     private const string BackUpToOneDriveButtonTooltipText = "Back up to OneDrive";
 
     private const string BackUpToOneDriveButtonAriaLabel = "Back up to OneDrive";
+
+    private const string OneDriveManualBackupCompletedText = "Backup uploaded to your private OneDrive app folder.";
 
     private const string OneDriveDisconnectButtonAriaLabel = "Connected. Disconnect OneDrive";
 
@@ -1143,6 +1253,14 @@
     private const string OneDriveConnectFailedText = "Unable to connect OneDrive right now. Please try again.";
 
     private const string OneDriveDisconnectFailedText = "Unable to disconnect OneDrive right now. Please try again.";
+
+    private const string OneDriveManualBackupFailedText = "Unable to back up to OneDrive right now. Please try again.";
+
+    private const string OneDriveManualBackupReconnectRequiredText = "OneDrive needs you to reconnect before uploading. Disconnect and connect again, then retry.";
+
+    private const string OneDriveManualBackupNetworkFailedText = "Unable to reach OneDrive right now. Check your connection and try again.";
+
+    private const string OneDriveManualBackupQuotaExceededText = "Your OneDrive storage is full. Free up space in OneDrive and try again.";
 
     #endregion
 

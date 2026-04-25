@@ -29,6 +29,22 @@ public interface IOneDriveAuthService
     Task<OneDriveConnectResult> ConnectAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
+    ///     Silently acquires an access token for the currently connected OneDrive account.
+    /// </summary>
+    /// <param name="cancellationToken">A cancellation token.</param>
+    /// <returns>The access token for Microsoft Graph.</returns>
+    /// <exception cref="OneDriveAuthenticationRequiredException">
+    ///     Thrown when the current user must reconnect OneDrive before a token can be acquired.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    ///     Thrown when OneDrive sign-in is not configured for the current build.
+    /// </exception>
+    /// <exception cref="NotSupportedException">
+    ///     Thrown when OneDrive sign-in is not supported on the current platform.
+    /// </exception>
+    Task<string> GetAccessTokenAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
     ///     Clears the app's local OneDrive sign-in state for the current user.
     /// </summary>
     /// <param name="cancellationToken">A cancellation token.</param>

@@ -182,6 +182,8 @@ public sealed class AppRootTests : TestContext
         Services.AddSingleton(Mock.Of<IDatabaseImportFilePicker>());
         Services.AddSingleton(Mock.Of<IDatabaseImportService>());
         Services.AddSingleton(Mock.Of<IManualBackupCompletionNotifier>());
+        Services.AddSingleton(Mock.Of<IManualBackupStatusStore>());
+        Services.AddSingleton(Mock.Of<IManualCloudBackupService>());
         Services.AddSingleton(backupNotificationPermissionServiceMock.Object);
         Services.AddSingleton(reminderNotificationPermissionCoordinatorMock.Object);
         Services.AddSingleton(appVersionInfoServiceMock.Object);

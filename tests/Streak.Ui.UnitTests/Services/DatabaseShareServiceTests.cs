@@ -222,7 +222,9 @@ public sealed class DatabaseShareServiceTests
 
         return new DatabaseShareService(
             appStoragePathServiceMock.Object,
-            new FileSystemCheckinProofFileStore(appStoragePathServiceMock.Object),
+            new BackupArchiveFactory(
+                appStoragePathServiceMock.Object,
+                new FileSystemCheckinProofFileStore(appStoragePathServiceMock.Object)),
             share,
             loggerMock.Object);
     }

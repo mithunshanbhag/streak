@@ -16,7 +16,7 @@ Streak is currently in **active development**.
 
 - Product specs are finalized under [`docs/specs`](docs/specs).
 - Interactive HTML mockups are available under [`docs/ui-mockups`](docs/ui-mockups).
-- Core UI screens are implemented: Homepage, Habit Details, Quick Add Habit dialog, Edit Habit dialog, Delete Habit dialog, and a compact Settings page with daily reminder preferences plus local data utilities.
+- Core UI screens are implemented: Homepage, Habit Details, Quick Add Habit dialog, Edit Habit dialog, Delete Habit dialog, and a compact Settings page with daily reminder preferences, local data utilities, and manual OneDrive backup.
 - Local SQLite persistence is wired up with habits and checkins.
 - Unit test coverage exists for core services and view models under [`tests/`](tests/).
 

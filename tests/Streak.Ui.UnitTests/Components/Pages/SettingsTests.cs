@@ -135,12 +135,52 @@ public sealed class SettingsTests : TestContext
         cut.Markup.Should().Contain("Manual cloud backup");
         cut.Find("button[aria-label='Manual cloud backup details']");
         cut.Markup.Should().Contain("Upload a fresh backup archive to your private OneDrive app folder.");
-        cut.Find("button[aria-label='Back up to OneDrive']").HasAttribute("disabled").Should().BeTrue();
+        cut.Find("button[aria-label='Back up to OneDrive']").HasAttribute("disabled").Should().BeFalse();
         cut.Markup.Should().Contain("Daily automated cloud backup");
         cut.Find("button[aria-label='Automated cloud backup details']");
         cut.Find("input[aria-label='Daily automated cloud backup toggle']").HasAttribute("disabled").Should().BeTrue();
         cut.Markup.Should().Contain("Connected. Tap the green cloud icon to disconnect.");
         cut.Markup.Should().NotContain("Storage location");
+        cut.Markup.Should().NotContain("Last backup");
+    }
+
+    [Fact]
+    public void Settings_ShouldRenderManualBackupRecencyMetadata_WhenStoredStatusesExist()
+    {
+        var exportServiceMock = new Mock<IDatabaseExportService>();
+        var diagnosticsExportServiceMock = new Mock<IDiagnosticsExportService>();
+        var shareServiceMock = CreateShareServiceMock(canShare: false);
+        var diagnosticsShareServiceMock = CreateDiagnosticsShareServiceMock(canShare: false);
+        var backupConfigurationServiceMock = CreateBackupConfigurationServiceMock(isEnabled: false);
+        var reminderConfigurationServiceMock = CreateReminderConfigurationServiceMock(isEnabled: true);
+        var oneDriveAuthServiceMock = CreateOneDriveAuthServiceMock(CreateConnectedOneDriveAuthState());
+        var localBackupCompletedAt = new DateTimeOffset(2026, 04, 26, 07, 05, 00, TimeSpan.Zero);
+        var cloudBackupCompletedAt = new DateTimeOffset(2026, 04, 25, 22, 12, 00, TimeSpan.Zero);
+        var manualBackupStatusStoreMock = CreateManualBackupStatusStoreMock(
+            location => location switch
+            {
+                ManualBackupLocation.Local => localBackupCompletedAt,
+                ManualBackupLocation.Cloud => cloudBackupCompletedAt,
+                _ => null
+            });
+
+        RegisterSettingsServices(
+            exportServiceMock,
+            diagnosticsExportServiceMock,
+            shareServiceMock,
+            backupConfigurationServiceMock,
+            reminderConfigurationServiceMock,
+            oneDriveAuthServiceMock: oneDriveAuthServiceMock,
+            diagnosticsShareServiceMock: diagnosticsShareServiceMock,
+            manualBackupStatusStoreMock: manualBackupStatusStoreMock,
+            timeProvider: new FixedTimeProvider(
+                new DateTimeOffset(2026, 04, 26, 08, 00, 00, TimeSpan.Zero),
+                TimeZoneInfo.Utc));
+
+        var cut = RenderSettings();
+
+        cut.Markup.Should().Contain("Last backup Today · 7:05 AM");
+        cut.Markup.Should().Contain("Last backup Apr 25, 2026 · 10:12 PM");
     }
 
     [Fact]
@@ -412,6 +452,121 @@ public sealed class SettingsTests : TestContext
             cut.Find("button[aria-label='Share diagnostic logs']").HasAttribute("disabled").Should().BeFalse();
             cut.Find("button[aria-label='Share data']").HasAttribute("disabled").Should().BeFalse();
             cut.Find("button[aria-label='Upload data']").HasAttribute("disabled").Should().BeFalse();
+        });
+    }
+
+    [Fact]
+    public async Task Settings_ShouldUploadManualCloudBackupAndRefreshCloudRecencyMetadata()
+    {
+        DateTimeOffset? localBackupCompletedAt = null;
+        DateTimeOffset? cloudBackupCompletedAt = null;
+
+        var exportServiceMock = new Mock<IDatabaseExportService>();
+        var diagnosticsExportServiceMock = new Mock<IDiagnosticsExportService>();
+        var shareServiceMock = CreateShareServiceMock(canShare: false);
+        var backupConfigurationServiceMock = CreateBackupConfigurationServiceMock(isEnabled: false);
+        var reminderConfigurationServiceMock = CreateReminderConfigurationServiceMock(isEnabled: true);
+        var oneDriveAuthServiceMock = CreateOneDriveAuthServiceMock(CreateConnectedOneDriveAuthState());
+        var manualCloudBackupServiceMock = CreateManualCloudBackupServiceMock();
+        manualCloudBackupServiceMock
+            .Setup(x => x.UploadManualBackupAsync(It.IsAny<CancellationToken>()))
+            .Returns(() =>
+            {
+                cloudBackupCompletedAt = new DateTimeOffset(2026, 04, 26, 07, 12, 00, TimeSpan.Zero);
+                return Task.CompletedTask;
+            });
+        var manualBackupStatusStoreMock = CreateManualBackupStatusStoreMock(
+            location => location switch
+            {
+                ManualBackupLocation.Local => localBackupCompletedAt,
+                ManualBackupLocation.Cloud => cloudBackupCompletedAt,
+                _ => null
+            });
+
+        RegisterSettingsServices(
+            exportServiceMock,
+            diagnosticsExportServiceMock,
+            shareServiceMock,
+            backupConfigurationServiceMock,
+            reminderConfigurationServiceMock,
+            oneDriveAuthServiceMock: oneDriveAuthServiceMock,
+            manualCloudBackupServiceMock: manualCloudBackupServiceMock,
+            manualBackupStatusStoreMock: manualBackupStatusStoreMock,
+            timeProvider: new FixedTimeProvider(
+                new DateTimeOffset(2026, 04, 26, 08, 00, 00, TimeSpan.Zero),
+                TimeZoneInfo.Utc));
+
+        var cut = RenderSettings();
+
+        await cut.Find("button[aria-label='Back up to OneDrive']").ClickAsync(new MouseEventArgs());
+
+        cut.WaitForAssertion(() =>
+        {
+            manualCloudBackupServiceMock.Verify(x => x.UploadManualBackupAsync(It.IsAny<CancellationToken>()), Times.Once);
+            cut.Markup.Should().Contain("Last backup Today · 7:12 AM");
+        });
+    }
+
+    [Fact]
+    public async Task Settings_ShouldDisableDataActionsWhileManualCloudBackupIsInProgress()
+    {
+        var cloudBackupStarted = new TaskCompletionSource();
+        var allowCloudBackupToFinish = new TaskCompletionSource();
+
+        var exportServiceMock = new Mock<IDatabaseExportService>();
+        var diagnosticsExportServiceMock = new Mock<IDiagnosticsExportService>();
+        var shareServiceMock = CreateShareServiceMock(canShare: true);
+        var diagnosticsShareServiceMock = CreateDiagnosticsShareServiceMock(canShare: true);
+        var backupConfigurationServiceMock = CreateBackupConfigurationServiceMock(isEnabled: false);
+        var reminderConfigurationServiceMock = CreateReminderConfigurationServiceMock(isEnabled: true);
+        var oneDriveAuthServiceMock = CreateOneDriveAuthServiceMock(CreateConnectedOneDriveAuthState());
+        var manualCloudBackupServiceMock = CreateManualCloudBackupServiceMock();
+        manualCloudBackupServiceMock
+            .Setup(x => x.UploadManualBackupAsync(It.IsAny<CancellationToken>()))
+            .Returns(async () =>
+            {
+                cloudBackupStarted.TrySetResult();
+                await allowCloudBackupToFinish.Task;
+            });
+
+        RegisterSettingsServices(
+            exportServiceMock,
+            diagnosticsExportServiceMock,
+            shareServiceMock,
+            backupConfigurationServiceMock,
+            reminderConfigurationServiceMock,
+            oneDriveAuthServiceMock: oneDriveAuthServiceMock,
+            diagnosticsShareServiceMock: diagnosticsShareServiceMock,
+            manualCloudBackupServiceMock: manualCloudBackupServiceMock);
+
+        var cut = RenderSettings();
+
+        cut.Find("button[aria-label='Back up to OneDrive']").Click();
+        await cloudBackupStarted.Task;
+
+        cut.WaitForAssertion(() =>
+        {
+            cut.Find("button[aria-label='Download data']").HasAttribute("disabled").Should().BeTrue();
+            cut.Find("button[aria-label='Share data']").HasAttribute("disabled").Should().BeTrue();
+            cut.Find("button[aria-label='Export diagnostic logs']").HasAttribute("disabled").Should().BeTrue();
+            cut.Find("button[aria-label='Share diagnostic logs']").HasAttribute("disabled").Should().BeTrue();
+            cut.Find("button[aria-label='Upload data']").HasAttribute("disabled").Should().BeTrue();
+            cut.Find("button[aria-label='Back up to OneDrive']").HasAttribute("disabled").Should().BeTrue();
+            cut.Find("button[aria-label='Connected. Disconnect OneDrive']").HasAttribute("disabled").Should().BeTrue();
+            cut.Markup.Should().Contain("mud-progress-circular");
+        });
+
+        allowCloudBackupToFinish.TrySetResult();
+
+        cut.WaitForAssertion(() =>
+        {
+            cut.Find("button[aria-label='Download data']").HasAttribute("disabled").Should().BeFalse();
+            cut.Find("button[aria-label='Share data']").HasAttribute("disabled").Should().BeFalse();
+            cut.Find("button[aria-label='Export diagnostic logs']").HasAttribute("disabled").Should().BeFalse();
+            cut.Find("button[aria-label='Share diagnostic logs']").HasAttribute("disabled").Should().BeFalse();
+            cut.Find("button[aria-label='Upload data']").HasAttribute("disabled").Should().BeFalse();
+            cut.Find("button[aria-label='Back up to OneDrive']").HasAttribute("disabled").Should().BeFalse();
+            cut.Find("button[aria-label='Connected. Disconnect OneDrive']").HasAttribute("disabled").Should().BeFalse();
         });
     }
 
@@ -770,6 +925,46 @@ public sealed class SettingsTests : TestContext
             cut.Markup.Should().NotContain("Unable to connect OneDrive right now. Please try again.");
             cut.Find("button[aria-label='Not connected. Connect OneDrive']");
             cut.Markup.Should().Contain("Personal Microsoft account");
+        });
+    }
+
+    [Fact]
+    public async Task Settings_ShouldShowSpecificError_WhenManualCloudBackupRequiresReconnect()
+    {
+        var exportServiceMock = new Mock<IDatabaseExportService>();
+        var diagnosticsExportServiceMock = new Mock<IDiagnosticsExportService>();
+        var shareServiceMock = CreateShareServiceMock(canShare: false);
+        var backupConfigurationServiceMock = CreateBackupConfigurationServiceMock(isEnabled: false);
+        var reminderConfigurationServiceMock = CreateReminderConfigurationServiceMock(isEnabled: true);
+        var oneDriveAuthServiceMock = CreateOneDriveAuthServiceMock(CreateConnectedOneDriveAuthState());
+        oneDriveAuthServiceMock
+            .SetupSequence(x => x.GetAuthStateAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(CreateConnectedOneDriveAuthState())
+            .ReturnsAsync(CreateConnectedOneDriveAuthState());
+
+        var manualCloudBackupServiceMock = CreateManualCloudBackupServiceMock();
+        manualCloudBackupServiceMock
+            .Setup(x => x.UploadManualBackupAsync(It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new OneDriveBackupException(
+                OneDriveBackupFailureKind.AuthRequired,
+                "Reconnect required."));
+
+        RegisterSettingsServices(
+            exportServiceMock,
+            diagnosticsExportServiceMock,
+            shareServiceMock,
+            backupConfigurationServiceMock,
+            reminderConfigurationServiceMock,
+            oneDriveAuthServiceMock: oneDriveAuthServiceMock,
+            manualCloudBackupServiceMock: manualCloudBackupServiceMock);
+
+        var cut = RenderSettings();
+
+        await cut.Find("button[aria-label='Back up to OneDrive']").ClickAsync(new MouseEventArgs());
+
+        cut.WaitForAssertion(() =>
+        {
+            cut.Markup.Should().Contain("OneDrive needs you to reconnect before uploading. Disconnect and connect again, then retry.");
         });
     }
 
@@ -1148,12 +1343,39 @@ public sealed class SettingsTests : TestContext
             .Setup(x => x.GetAuthStateAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(authState);
         oneDriveAuthServiceMock
+            .Setup(x => x.GetAccessTokenAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync("test-access-token");
+        oneDriveAuthServiceMock
             .Setup(x => x.ConnectAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(OneDriveConnectResult.Cancelled(authState));
         oneDriveAuthServiceMock
             .Setup(x => x.DisconnectAsync(It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
         return oneDriveAuthServiceMock;
+    }
+
+    private static Mock<IManualCloudBackupService> CreateManualCloudBackupServiceMock()
+    {
+        var manualCloudBackupServiceMock = new Mock<IManualCloudBackupService>();
+        manualCloudBackupServiceMock
+            .Setup(x => x.UploadManualBackupAsync(It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        return manualCloudBackupServiceMock;
+    }
+
+    private static Mock<IManualBackupStatusStore> CreateManualBackupStatusStoreMock(
+        Func<ManualBackupLocation, DateTimeOffset?>? getLastSuccessfulBackupUtc = null,
+        Action<ManualBackupLocation, DateTimeOffset>? setLastSuccessfulBackupUtc = null)
+    {
+        var manualBackupStatusStoreMock = new Mock<IManualBackupStatusStore>();
+        manualBackupStatusStoreMock
+            .Setup(x => x.GetLastSuccessfulBackupUtc(It.IsAny<ManualBackupLocation>()))
+            .Returns<ManualBackupLocation>(location => getLastSuccessfulBackupUtc?.Invoke(location));
+        manualBackupStatusStoreMock
+            .Setup(x => x.SetLastSuccessfulBackupUtc(It.IsAny<ManualBackupLocation>(), It.IsAny<DateTimeOffset>()))
+            .Callback<ManualBackupLocation, DateTimeOffset>((location, timestamp) =>
+                setLastSuccessfulBackupUtc?.Invoke(location, timestamp));
+        return manualBackupStatusStoreMock;
     }
 
     private static OneDriveAuthState CreateConnectedOneDriveAuthState()
@@ -1204,17 +1426,22 @@ public sealed class SettingsTests : TestContext
         Mock<IAutomatedBackupConfigurationService> backupConfigurationServiceMock,
         Mock<IReminderConfigurationService> reminderConfigurationServiceMock,
         Mock<IOneDriveAuthService>? oneDriveAuthServiceMock = null,
+        Mock<IManualCloudBackupService>? manualCloudBackupServiceMock = null,
+        Mock<IManualBackupStatusStore>? manualBackupStatusStoreMock = null,
         Mock<IDiagnosticsShareService>? diagnosticsShareServiceMock = null,
         Mock<IManualBackupCompletionNotifier>? manualBackupCompletionNotifierMock = null,
         Mock<IBackupNotificationPermissionService>? backupNotificationPermissionServiceMock = null,
         Mock<IReminderNotificationPermissionCoordinator>? reminderNotificationPermissionCoordinatorMock = null,
         Mock<IAppVersionInfoService>? appVersionInfoServiceMock = null,
         Mock<IOneDriveAuthReturnRouteStore>? oneDriveAuthReturnRouteStoreMock = null,
-        Mock<ISnackbar>? snackbarMock = null)
+        Mock<ISnackbar>? snackbarMock = null,
+        TimeProvider? timeProvider = null)
     {
         var importFilePickerMock = new Mock<IDatabaseImportFilePicker>();
         var importServiceMock = new Mock<IDatabaseImportService>();
         manualBackupCompletionNotifierMock ??= new Mock<IManualBackupCompletionNotifier>();
+        manualCloudBackupServiceMock ??= CreateManualCloudBackupServiceMock();
+        manualBackupStatusStoreMock ??= CreateManualBackupStatusStoreMock();
         diagnosticsShareServiceMock ??= CreateDiagnosticsShareServiceMock(canShare: false);
         if (backupNotificationPermissionServiceMock is null)
         {
@@ -1234,6 +1461,7 @@ public sealed class SettingsTests : TestContext
         oneDriveAuthServiceMock ??= CreateOneDriveAuthServiceMock(CreateDisconnectedOneDriveAuthState());
         oneDriveAuthReturnRouteStoreMock ??= new Mock<IOneDriveAuthReturnRouteStore>();
         snackbarMock ??= new Mock<ISnackbar>();
+        timeProvider ??= TimeProvider.System;
         snackbarMock
             .Setup(x => x.Add(
                 It.IsAny<string>(),
@@ -1250,6 +1478,8 @@ public sealed class SettingsTests : TestContext
         Services.AddSingleton(importFilePickerMock.Object);
         Services.AddSingleton(importServiceMock.Object);
         Services.AddSingleton(manualBackupCompletionNotifierMock.Object);
+        Services.AddSingleton(manualCloudBackupServiceMock.Object);
+        Services.AddSingleton(manualBackupStatusStoreMock.Object);
         Services.AddSingleton(backupNotificationPermissionServiceMock.Object);
         Services.AddSingleton(reminderConfigurationServiceMock.Object);
         Services.AddSingleton(reminderNotificationPermissionCoordinatorMock.Object);
@@ -1257,6 +1487,7 @@ public sealed class SettingsTests : TestContext
         Services.AddSingleton(oneDriveAuthReturnRouteStoreMock.Object);
         Services.AddSingleton(appVersionInfoServiceMock.Object);
         Services.AddSingleton(snackbarMock.Object);
+        Services.AddSingleton(timeProvider);
     }
 
     private static DatabaseExportResult CreateSavedExportResult()
@@ -1271,6 +1502,16 @@ public sealed class SettingsTests : TestContext
     private IRenderedComponent<Settings> RenderSettings()
     {
         return RenderComponent<Settings>();
+    }
+
+    private sealed class FixedTimeProvider(DateTimeOffset utcNow, TimeZoneInfo localTimeZone) : TimeProvider
+    {
+        public override DateTimeOffset GetUtcNow()
+        {
+            return utcNow.ToUniversalTime();
+        }
+
+        public override TimeZoneInfo LocalTimeZone => localTimeZone;
     }
 
     #endregion

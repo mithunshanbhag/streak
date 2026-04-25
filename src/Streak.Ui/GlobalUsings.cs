@@ -7,6 +7,7 @@ global using System.Reflection;
 global using System.Security.Claims;
 global using System.Text;
 global using FluentValidation;
+global using Streak.Ui.Exceptions;
 global using Microsoft.AspNetCore.Components.Authorization;
 global using Microsoft.Data.Sqlite;
 global using Microsoft.EntityFrameworkCore;

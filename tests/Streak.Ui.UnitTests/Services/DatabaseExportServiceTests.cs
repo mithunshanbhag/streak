@@ -17,6 +17,7 @@ public sealed class DatabaseExportServiceTests
         SeedDatabase(sourceDatabasePath, proofRelativePath);
 
         var fileSaverMock = new Mock<IDatabaseExportFileSaver>();
+        var manualBackupStatusStoreMock = new Mock<IManualBackupStatusStore>();
         string? savedBackupPath = null;
         string? inspectedBackupPath = null;
 
@@ -39,7 +40,8 @@ public sealed class DatabaseExportServiceTests
             sourceDatabasePath,
             proofDirectory.Path,
             exportDirectory.Path,
-            fileSaverMock.Object);
+            fileSaverMock.Object,
+            manualBackupStatusStoreMock.Object);
 
         var exportResult = await sut.ExportDatabaseAsync();
 
@@ -82,6 +84,11 @@ public sealed class DatabaseExportServiceTests
         fileSaverMock.Verify(
             x => x.SaveBackupAsync(savedBackupPath!, It.IsAny<CancellationToken>()),
             Times.Once);
+        manualBackupStatusStoreMock.Verify(
+            x => x.SetLastSuccessfulBackupUtc(
+                ManualBackupLocation.Local,
+                It.IsAny<DateTimeOffset>()),
+            Times.Once);
 
         Directory.GetFiles(exportDirectory.Path, "streak-data-backup-*.zip").Should().BeEmpty();
     }
@@ -99,6 +106,7 @@ public sealed class DatabaseExportServiceTests
         SeedDatabase(sourceDatabasePath, missingProofRelativePath);
 
         var fileSaverMock = new Mock<IDatabaseExportFileSaver>();
+        var manualBackupStatusStoreMock = new Mock<IManualBackupStatusStore>();
         string? inspectedBackupPath = null;
 
         fileSaverMock
@@ -119,7 +127,8 @@ public sealed class DatabaseExportServiceTests
             sourceDatabasePath,
             proofDirectory.Path,
             exportDirectory.Path,
-            fileSaverMock.Object);
+            fileSaverMock.Object,
+            manualBackupStatusStoreMock.Object);
 
         var exportResult = await sut.ExportDatabaseAsync();
 
@@ -138,12 +147,14 @@ public sealed class DatabaseExportServiceTests
         using var exportDirectory = new TemporaryDirectory();
 
         var fileSaverMock = new Mock<IDatabaseExportFileSaver>();
+        var manualBackupStatusStoreMock = new Mock<IManualBackupStatusStore>();
 
         var sut = CreateSut(
             Path.Combine(exportDirectory.Path, "missing.db"),
             exportDirectory.Path,
             exportDirectory.Path,
-            fileSaverMock.Object);
+            fileSaverMock.Object,
+            manualBackupStatusStoreMock.Object);
 
         var act = () => sut.ExportDatabaseAsync();
 
@@ -165,6 +176,7 @@ public sealed class DatabaseExportServiceTests
         SeedDatabase(sourceDatabasePath);
 
         var fileSaverMock = new Mock<IDatabaseExportFileSaver>();
+        var manualBackupStatusStoreMock = new Mock<IManualBackupStatusStore>();
         fileSaverMock
             .Setup(x => x.SaveBackupAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(DatabaseExportResult.Cancelled);
@@ -173,12 +185,16 @@ public sealed class DatabaseExportServiceTests
             sourceDatabasePath,
             proofDirectory.Path,
             exportDirectory.Path,
-            fileSaverMock.Object);
+            fileSaverMock.Object,
+            manualBackupStatusStoreMock.Object);
 
         var exportResult = await sut.ExportDatabaseAsync();
 
         exportResult.Status.Should().Be(DatabaseExportStatus.Cancelled);
         Directory.GetFiles(exportDirectory.Path).Should().BeEmpty();
+        manualBackupStatusStoreMock.Verify(
+            x => x.SetLastSuccessfulBackupUtc(It.IsAny<ManualBackupLocation>(), It.IsAny<DateTimeOffset>()),
+            Times.Never);
     }
 
     [Fact]
@@ -192,6 +208,7 @@ public sealed class DatabaseExportServiceTests
         SeedDatabase(sourceDatabasePath);
 
         var fileSaverMock = new Mock<IDatabaseExportFileSaver>();
+        var manualBackupStatusStoreMock = new Mock<IManualBackupStatusStore>();
         fileSaverMock
             .Setup(x => x.SaveBackupAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new InvalidOperationException("Share failed."));
@@ -200,7 +217,8 @@ public sealed class DatabaseExportServiceTests
             sourceDatabasePath,
             proofDirectory.Path,
             exportDirectory.Path,
-            fileSaverMock.Object);
+            fileSaverMock.Object,
+            manualBackupStatusStoreMock.Object);
 
         var act = () => sut.ExportDatabaseAsync();
 
@@ -214,7 +232,8 @@ public sealed class DatabaseExportServiceTests
         string sourceDatabasePath,
         string checkinProofsDirectoryPath,
         string exportDirectoryPath,
-        IDatabaseExportFileSaver fileSaver)
+        IDatabaseExportFileSaver fileSaver,
+        IManualBackupStatusStore manualBackupStatusStore)
     {
         var appStoragePathServiceMock = new Mock<IAppStoragePathService>();
         appStoragePathServiceMock.SetupGet(x => x.DatabasePath).Returns(sourceDatabasePath);
@@ -222,11 +241,15 @@ public sealed class DatabaseExportServiceTests
         appStoragePathServiceMock.SetupGet(x => x.ExportDirectoryPath).Returns(exportDirectoryPath);
 
         var loggerMock = new Mock<ILogger<DatabaseExportService>>();
+        var backupArchiveFactory = new BackupArchiveFactory(
+            appStoragePathServiceMock.Object,
+            new FileSystemCheckinProofFileStore(appStoragePathServiceMock.Object));
 
         return new DatabaseExportService(
-            appStoragePathServiceMock.Object,
-            new FileSystemCheckinProofFileStore(appStoragePathServiceMock.Object),
+            backupArchiveFactory,
             fileSaver,
+            manualBackupStatusStore,
+            TimeProvider.System,
             loggerMock.Object);
     }
 
