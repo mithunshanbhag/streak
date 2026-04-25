@@ -187,34 +187,29 @@
                           Style="@OneDriveProviderPanelStyle">
                     <MudStack Spacing="2">
                         <MudStack Row="true"
-                                  Justify="Justify.SpaceBetween"
                                   AlignItems="AlignItems.Center"
                                   Spacing="2">
-                            <MudStack Row="true"
-                                      Spacing="1"
-                                      AlignItems="AlignItems.Center">
-                                <MudIcon Icon="@Icons.Material.Filled.Cloud"
-                                         Color="Color.Primary"/>
+                            <MudTooltip Text="@OneDriveProviderStatusText"
+                                        Placement="Placement.Top">
+                                <span class="d-inline-flex"
+                                      tabindex="0"
+                                      role="img"
+                                      aria-label="@OneDriveProviderStatusText">
+                                    <MudIcon Icon="@OneDriveProviderStatusIcon"
+                                             Color="@OneDriveProviderStatusIconColor"/>
+                                </span>
+                            </MudTooltip>
 
-                                <MudStack Spacing="0">
-                                    <MudText Typo="Typo.body1">
-                                        @OneDriveProviderNameText
-                                    </MudText>
-
-                                    <MudText Typo="Typo.caption"
-                                             Class="text-secondary">
-                                        @OneDriveProviderStateText
-                                    </MudText>
-                                </MudStack>
-                            </MudStack>
-
-                            <MudPaper Elevation="0"
-                                       Class="px-2 py-1 rounded-pill"
-                                       Style="@OneDriveStatusChipStyle">
-                                <MudText Typo="Typo.caption">
-                                    @OneDriveStatusChipText
+                            <MudStack Spacing="0">
+                                <MudText Typo="Typo.body1">
+                                    @OneDriveProviderNameText
                                 </MudText>
-                            </MudPaper>
+
+                                <MudText Typo="Typo.caption"
+                                         Class="text-secondary">
+                                    @OneDriveProviderStateText
+                                </MudText>
+                            </MudStack>
                         </MudStack>
 
                         @if (_oneDriveAuthState.IsConnected)
@@ -595,7 +590,7 @@
 
     private string OneDriveProviderStateText => _oneDriveAuthState.IsConnected
         ? _oneDriveAuthState.AccountUsername ?? OneDriveConnectedStateText
-        : OneDriveNotConnectedStateText;
+        : OneDrivePersonalMicrosoftAccountText;
 
     private string OneDriveProviderSupportText
     {
@@ -613,21 +608,29 @@
         }
     }
 
-    private string OneDriveStatusChipText
+    private string OneDriveProviderStatusText
     {
         get
         {
             if (!_oneDriveAuthState.IsPlatformSupported)
-                return OneDriveUnavailableStatusChipText;
+                return OneDriveUnavailableStatusText;
 
             if (!_oneDriveAuthState.IsConfigured)
-                return OneDriveSetupRequiredStatusChipText;
+                return OneDriveSetupRequiredStatusText;
 
             return _oneDriveAuthState.IsConnected
-                ? OneDriveConnectedStatusChipText
-                : OneDriveSignedOutStatusChipText;
+                ? OneDriveConnectedStateText
+                : OneDriveNotConnectedStateText;
         }
     }
+
+    private string OneDriveProviderStatusIcon => _oneDriveAuthState.IsConnected
+        ? Icons.Material.Filled.CloudDone
+        : Icons.Material.Filled.CloudOff;
+
+    private Color OneDriveProviderStatusIconColor => _oneDriveAuthState.IsConnected
+        ? Color.Success
+        : Color.Error;
 
     private string CloudAutomatedBackupsDescriptionText => _oneDriveAuthState.IsConnected
         ? CloudAutomatedBackupsDeferredDescriptionText
@@ -682,8 +685,6 @@
     private const string SettingsMetadataBannerStyle = "align-self: center; background-color: var(--mud-palette-primary-hover); color: var(--mud-palette-primary);";
 
     private const string OneDriveProviderPanelStyle = "border: 1px solid var(--mud-palette-lines-default); background-color: var(--mud-palette-background-grey);";
-
-    private const string OneDriveStatusChipStyle = "background-color: var(--mud-palette-surface); color: var(--mud-palette-text-secondary); border: 1px solid var(--mud-palette-lines-default);";
 
     #endregion
 
@@ -1024,13 +1025,11 @@
 
     private const string OneDriveNotConnectedStateText = "Not connected";
 
-    private const string OneDriveSignedOutStatusChipText = "Signed out";
+    private const string OneDriveUnavailableStatusText = "Unavailable";
 
-    private const string OneDriveConnectedStatusChipText = "Connected";
+    private const string OneDriveSetupRequiredStatusText = "Setup required";
 
-    private const string OneDriveUnavailableStatusChipText = "Unavailable";
-
-    private const string OneDriveSetupRequiredStatusChipText = "Setup required";
+    private const string OneDrivePersonalMicrosoftAccountText = "Personal Microsoft account";
 
     private const string OneDriveSignedOutSupportText = "Sign in with a personal Microsoft account to upload the same .zip archives to your private OneDrive app folder.";
 

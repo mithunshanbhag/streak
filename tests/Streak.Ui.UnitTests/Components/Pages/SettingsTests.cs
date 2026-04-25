@@ -45,6 +45,8 @@ public sealed class SettingsTests : TestContext
         cut.Markup.Should().Contain("OneDrive backup");
         cut.Markup.Should().Contain("Optional cloud backup using your private OneDrive app folder.");
         cut.Find("button[aria-label='OneDrive backup details']");
+        cut.Find("[role='img'][aria-label='Not connected']");
+        cut.Markup.Should().Contain("Personal Microsoft account");
         cut.Markup.Should().Contain("Sign in with a personal Microsoft account to upload the same .zip archives to your private OneDrive app folder.");
         cut.Find("input[aria-label='Nightly cloud backup toggle']").HasAttribute("disabled").Should().BeTrue();
         cut.Find("button[aria-label='Connect OneDrive']").HasAttribute("disabled").Should().BeFalse();
@@ -121,7 +123,7 @@ public sealed class SettingsTests : TestContext
         var cut = RenderSettings();
 
         cut.Markup.Should().Contain("streak-demo@outlook.com");
-        cut.Markup.Should().Contain("Connected");
+        cut.Find("[role='img'][aria-label='Connected']");
         cut.Markup.Should().Contain("Storage location");
         cut.Markup.Should().Contain("OneDrive app folder");
         cut.Find("button[aria-label='Back up to OneDrive']").HasAttribute("disabled").Should().BeTrue();
@@ -340,7 +342,8 @@ public sealed class SettingsTests : TestContext
         cut.WaitForAssertion(() =>
         {
             oneDriveAuthServiceMock.Verify(x => x.DisconnectAsync(It.IsAny<CancellationToken>()), Times.Once);
-            cut.Markup.Should().Contain("Not connected");
+            cut.Find("[role='img'][aria-label='Not connected']");
+            cut.Markup.Should().Contain("Personal Microsoft account");
             cut.Find("button[aria-label='Connect OneDrive']");
         });
     }
@@ -753,7 +756,8 @@ public sealed class SettingsTests : TestContext
         cut.WaitForAssertion(() =>
         {
             cut.Markup.Should().NotContain("Unable to connect OneDrive right now. Please try again.");
-            cut.Markup.Should().Contain("Not connected");
+            cut.Find("[role='img'][aria-label='Not connected']");
+            cut.Markup.Should().Contain("Personal Microsoft account");
         });
     }
 
