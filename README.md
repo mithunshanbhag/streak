@@ -31,9 +31,7 @@ The goal is not to build the biggest habit app. The goal is to build a habit app
 
 If the product direction holds, the primary workflow should feel like: open app, scan progress, tap what you completed, move on with your day.
 
-## Mockup gallery
-
-These screenshots were captured from the current HTML mockups in `docs\ui-mockups`.
+## Gallery
 
 ### Homepage
 
