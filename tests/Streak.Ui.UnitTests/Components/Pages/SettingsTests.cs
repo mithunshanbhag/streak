@@ -12,7 +12,7 @@ public sealed class SettingsTests : TestContext
     #region Positive tests
 
     [Fact]
-    public void Settings_ShouldRenderReminderAndDataCards()
+    public void Settings_ShouldRenderSettingsCards_InUpdatedOrder()
     {
         var exportServiceMock = new Mock<IDatabaseExportService>();
         var diagnosticsExportServiceMock = new Mock<IDiagnosticsExportService>();
@@ -33,40 +33,44 @@ public sealed class SettingsTests : TestContext
             appVersionInfoServiceMock: appVersionInfoServiceMock);
 
         var cut = RenderSettings();
+        var markup = cut.Markup;
 
-        cut.Markup.Should().Contain("Daily reminder");
-        cut.Markup.Should().Contain("You'll be reminded only if there are habits you haven't checked in yet.");
+        markup.Should().Contain("Daily reminder");
+        markup.Should().Contain("You'll be reminded only if there are habits you haven't checked in yet.");
         cut.Find("input[aria-label='Daily reminder toggle']").HasAttribute("checked").Should().BeTrue();
-        cut.Markup.Should().Contain("Reminder time");
-        cut.Markup.Should().Contain("Daily automated backups");
-        cut.Markup.Should().Contain("Create a nightly backup in local storage.");
+        markup.Should().Contain("Reminder time");
+        markup.Should().Contain("Local backup");
+        markup.Should().Contain("Daily automated backups");
+        markup.Should().Contain("Create a nightly backup in local storage.");
         cut.Find("button[aria-label='Automated backup details']");
         cut.Find("input[aria-label='Daily automated backups toggle']").HasAttribute("disabled").Should().BeFalse();
-        cut.Markup.Should().Contain("OneDrive backup");
-        cut.Markup.Should().Contain("Optional cloud backup using your private OneDrive app folder.");
-        cut.Find("button[aria-label='OneDrive backup details']");
+        markup.Should().Contain("Manual backup");
+        markup.Should().Contain("Cloud backup");
+        markup.Should().Contain("Optional OneDrive backups using your private app folder.");
+        cut.Find("button[aria-label='Cloud backup details']");
         cut.Find("[role='img'][aria-label='Not connected']");
-        cut.Markup.Should().Contain("Personal Microsoft account");
-        cut.Markup.Should().Contain("Sign in with a personal Microsoft account to upload the same .zip archives to your private OneDrive app folder.");
-        cut.Find("input[aria-label='Nightly cloud backup toggle']").HasAttribute("disabled").Should().BeTrue();
+        markup.Should().Contain("Personal Microsoft account");
+        markup.Should().Contain("Sign in with a personal Microsoft account to upload the same .zip archives to your private OneDrive app folder.");
+        cut.Find("input[aria-label='Daily automated OneDrive backup toggle']").HasAttribute("disabled").Should().BeTrue();
         cut.Find("button[aria-label='Connect OneDrive']").HasAttribute("disabled").Should().BeFalse();
-        cut.Markup.Should().Contain("Local backup");
-        cut.Markup.Should().Contain("Save or share a copy of your local data on this device.");
-        cut.Find("button[aria-label='Backup save location information']");
+        markup.Should().Contain("Save or share a copy of your local data on this device.");
+        cut.Find("button[aria-label='Manual backup save location info']");
         cut.Find("button[aria-label='Download data']");
         cut.Find("button[aria-label='Share data']").HasAttribute("disabled").Should().BeTrue();
-        cut.Markup.Should().Contain("Diagnostic logs");
-        cut.Markup.Should().Contain("Export or share a support bundle of recent app logs.");
+        markup.Should().Contain("Restore");
+        markup.Should().Contain("Diagnostic logs");
+        markup.Should().Contain("Export or share a support bundle of recent app logs.");
         cut.Find("button[aria-label='Diagnostic log details']");
         cut.Find("button[aria-label='Export diagnostic logs']");
         cut.Find("button[aria-label='Share diagnostic logs']").HasAttribute("disabled").Should().BeTrue();
-        cut.Markup.Should().Contain("Restore");
-        cut.Markup.Should().Contain("Restore from a local .zip backup or a legacy .db file. Existing proof photos stay in place for .db restores.");
+        markup.Should().Contain("Restore from a local .zip backup or a legacy .db file. Existing proof photos stay in place for .db restores.");
         cut.Find("button[aria-label='Restore warning']");
         cut.Find("button[aria-label='Upload data']");
-        cut.Markup.Should().NotContain("Automated backups enabled");
-        cut.Markup.Should().NotContain("Turns the nightly backup on or off.");
-        cut.Markup.Should().NotContain("Create a manual backup of your local Streak data");
+        markup.Should().NotContain(">Data<");
+        markup.IndexOf("Daily reminder", StringComparison.Ordinal).Should().BeLessThan(markup.IndexOf("Local backup", StringComparison.Ordinal));
+        markup.IndexOf("Local backup", StringComparison.Ordinal).Should().BeLessThan(markup.IndexOf("Cloud backup", StringComparison.Ordinal));
+        markup.IndexOf("Cloud backup", StringComparison.Ordinal).Should().BeLessThan(markup.IndexOf("Restore", StringComparison.Ordinal));
+        markup.IndexOf("Restore", StringComparison.Ordinal).Should().BeLessThan(markup.IndexOf("Diagnostic logs", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -852,7 +856,7 @@ public sealed class SettingsTests : TestContext
             oneDriveAuthServiceMock: oneDriveAuthServiceMock);
 
         var cut = RenderSettings();
-        var cloudToggle = cut.Find("input[aria-label='Nightly cloud backup toggle']");
+        var cloudToggle = cut.Find("input[aria-label='Daily automated OneDrive backup toggle']");
         var connectButton = cut.Find("button[aria-label='Connect OneDrive']");
 
         cloudToggle.HasAttribute("disabled").Should().BeTrue();

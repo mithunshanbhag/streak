@@ -53,16 +53,9 @@
         <MudPaper Elevation="1"
                   Class="pa-4 rounded-lg">
             <MudStack Spacing="3">
-                <MudStack Spacing="1">
-                    <MudText Typo="Typo.caption"
-                             Class="text-secondary">
-                        @ReminderSectionEyebrowText
-                    </MudText>
-
-                    <MudText Typo="Typo.h6">
-                        @ReminderHeaderText
-                    </MudText>
-                </MudStack>
+                <MudText Typo="Typo.h6">
+                    @ReminderHeaderText
+                </MudText>
 
                 <MudPaper Elevation="0"
                           Class="pa-3 rounded-lg">
@@ -112,12 +105,9 @@
         <MudPaper Elevation="1"
                   Class="pa-4 rounded-lg">
             <MudStack Spacing="3">
-                <MudStack Spacing="1">
-                    <MudText Typo="Typo.caption"
-                             Class="text-secondary">
-                        @SectionEyebrowText
-                    </MudText>
-                </MudStack>
+                <MudText Typo="Typo.h6">
+                    @LocalBackupHeaderText
+                </MudText>
 
                 <MudStack Spacing="1">
                     <MudStack Row="true"
@@ -164,21 +154,101 @@
                               Spacing="1"
                               AlignItems="AlignItems.Center">
                         <MudText Typo="Typo.h6">
-                            @OneDriveBackupHeaderText
+                            @ManualBackupHeaderText
                         </MudText>
 
-                        <MudTooltip Text="@OneDriveBackupTooltipText"
+                        <MudTooltip Text="@ManualBackupTooltipText"
                                     Placement="Placement.Top">
                             <MudIconButton Icon="@Icons.Material.Filled.Info"
                                            Color="Color.Default"
                                            Size="Size.Small"
-                                           aria-label="@OneDriveBackupTooltipAriaLabel"/>
+                                           aria-label="@ManualBackupTooltipAriaLabel"/>
                         </MudTooltip>
                     </MudStack>
 
                     <MudText Typo="Typo.body2"
                              Class="text-secondary">
-                        @OneDriveBackupDescriptionText
+                        @ManualBackupDescriptionText
+                    </MudText>
+                </MudStack>
+
+                <MudPaper Elevation="0"
+                          Class="pa-3 rounded-lg">
+                    <MudStack Row="true"
+                              Justify="Justify.FlexEnd"
+                              AlignItems="AlignItems.Center"
+                              Spacing="3">
+                        <MudTooltip Text="@ExportButtonTooltipText"
+                                    Placement="Placement.Top">
+                            <MudButton Color="Color.Primary"
+                                       Variant="Variant.Filled"
+                                       Disabled="@DataActionsDisabled"
+                                       aria-label="@ExportButtonAriaLabel"
+                                       Style="@DataActionButtonStyle"
+                                       OnClick="ExportDatabaseAsync">
+                                @if (_exportInProgress)
+                                {
+                                    <MudProgressCircular Indeterminate="true"
+                                                         Color="Color.Inherit"
+                                                         Size="Size.Small"/>
+                                }
+                                else
+                                {
+                                    <MudIcon Icon="@Icons.Material.Filled.Download"/>
+                                }
+                            </MudButton>
+                        </MudTooltip>
+
+                        <MudTooltip Text="@ShareButtonTooltipText"
+                                    Placement="Placement.Top">
+                            <span class="d-inline-flex">
+                                <MudButton Color="Color.Primary"
+                                           Variant="Variant.Filled"
+                                           Disabled="@(!DatabaseShareService.CanShare || DataActionsDisabled)"
+                                           aria-label="@ShareButtonAriaLabel"
+                                           Style="@DataActionButtonStyle"
+                                           OnClick="ShareDatabaseAsync">
+                                    @if (_shareInProgress)
+                                    {
+                                        <MudProgressCircular Indeterminate="true"
+                                                             Color="Color.Inherit"
+                                                             Size="Size.Small"/>
+                                    }
+                                    else
+                                    {
+                                        <MudIcon Icon="@Icons.Material.Filled.Share"/>
+                                    }
+                                </MudButton>
+                            </span>
+                        </MudTooltip>
+                    </MudStack>
+                </MudPaper>
+            </MudStack>
+        </MudPaper>
+
+        <MudPaper Elevation="1"
+                  Class="pa-4 rounded-lg">
+            <MudStack Spacing="3">
+                <MudStack Spacing="1">
+                    <MudStack Row="true"
+                              Spacing="1"
+                              AlignItems="AlignItems.Center">
+                        <MudText Typo="Typo.h6">
+                            @CloudBackupHeaderText
+                        </MudText>
+
+                        <MudTooltip Text="@CloudBackupTooltipText"
+                                    Placement="Placement.Top">
+                            <MudIconButton Icon="@Icons.Material.Filled.Info"
+                                           Color="Color.Default"
+                                           Size="Size.Small"
+                                           aria-label="@CloudBackupTooltipAriaLabel"/>
+                        </MudTooltip>
+                    </MudStack>
+
+                    <MudText Typo="Typo.body2"
+                             Class="text-secondary">
+                        @CloudBackupDescriptionText
                     </MudText>
                 </MudStack>
 
@@ -212,23 +282,12 @@
                             </MudStack>
                         </MudStack>
 
-                        @if (_oneDriveAuthState.IsConnected)
+                        @if (_oneDriveAuthState.IsConnected && !string.IsNullOrWhiteSpace(_oneDriveAuthState.StorageLocationDisplayName))
                         {
-                            <MudStack Spacing="1">
-                                <MudStack Row="true"
-                                          Justify="Justify.SpaceBetween"
-                                          AlignItems="AlignItems.Center"
-                                          Spacing="2">
-                                    <MudText Typo="Typo.caption"
-                                             Class="text-secondary">
-                                        @OneDriveStorageLocationLabelText
-                                    </MudText>
-
-                                    <MudText Typo="Typo.caption">
-                                        @_oneDriveAuthState.StorageLocationDisplayName
-                                    </MudText>
-                                </MudStack>
-                            </MudStack>
+                            <MudText Typo="Typo.caption"
+                                     Class="text-secondary">
+                                @string.Format(OneDriveStorageLocationTextFormat, _oneDriveAuthState.StorageLocationDisplayName)
+                            </MudText>
                         }
 
                         <MudText Typo="Typo.body2"
@@ -299,29 +358,32 @@
                         }
                     </MudStack>
                 </MudPaper>
+            </MudStack>
+        </MudPaper>
 
-                <MudDivider/>
-
+        <MudPaper Elevation="1"
+                  Class="pa-4 rounded-lg">
+            <MudStack Spacing="3">
                 <MudStack Spacing="1">
                     <MudStack Row="true"
                               Spacing="1"
                               AlignItems="AlignItems.Center">
                         <MudText Typo="Typo.h6">
-                            @BackupHeaderText
+                            @RestoreHeaderText
                         </MudText>
 
-                        <MudTooltip Text="@SupportNoteText"
+                        <MudTooltip Text="@RestoreWarningText"
                                     Placement="Placement.Top">
-                            <MudIconButton Icon="@Icons.Material.Filled.Info"
-                                           Color="Color.Default"
+                            <MudIconButton Icon="@Icons.Material.Filled.Warning"
+                                           Color="Color.Warning"
                                            Size="Size.Small"
-                                           aria-label="@SupportTooltipAriaLabel"/>
+                                           aria-label="@RestoreTooltipAriaLabel"/>
                         </MudTooltip>
                     </MudStack>
 
                     <MudText Typo="Typo.body2"
                              Class="text-secondary">
-                        @BackupDescriptionText
+                        @RestoreDescriptionText
                     </MudText>
                 </MudStack>
 
@@ -329,17 +391,16 @@
                           Class="pa-3 rounded-lg">
                     <MudStack Row="true"
                               Justify="Justify.FlexEnd"
-                              AlignItems="AlignItems.Center"
-                              Spacing="3">
-                        <MudTooltip Text="@ExportButtonTooltipText"
-                                    Placement="Placement.Top">
+                              AlignItems="AlignItems.Center">
+                        <MudTooltip Text="@ImportButtonTooltipText"
+                                     Placement="Placement.Top">
                             <MudButton Color="Color.Primary"
                                        Variant="Variant.Filled"
                                        Disabled="@DataActionsDisabled"
-                                       aria-label="@ExportButtonAriaLabel"
+                                       aria-label="@ImportButtonAriaLabel"
                                        Style="@DataActionButtonStyle"
-                                       OnClick="ExportDatabaseAsync">
-                                @if (_exportInProgress)
+                                       OnClick="ImportDatabaseAsync">
+                                @if (_importInProgress)
                                 {
                                     <MudProgressCircular Indeterminate="true"
                                                          Color="Color.Inherit"
@@ -347,38 +408,18 @@
                                 }
                                 else
                                 {
-                                    <MudIcon Icon="@Icons.Material.Filled.Download"/>
+                                    <MudIcon Icon="@Icons.Material.Filled.Upload"/>
                                 }
                             </MudButton>
                         </MudTooltip>
-
-                        <MudTooltip Text="@ShareButtonTooltipText"
-                                    Placement="Placement.Top">
-                            <span class="d-inline-flex">
-                                <MudButton Color="Color.Primary"
-                                           Variant="Variant.Filled"
-                                           Disabled="@(!DatabaseShareService.CanShare || DataActionsDisabled)"
-                                           aria-label="@ShareButtonAriaLabel"
-                                           Style="@DataActionButtonStyle"
-                                           OnClick="ShareDatabaseAsync">
-                                    @if (_shareInProgress)
-                                    {
-                                        <MudProgressCircular Indeterminate="true"
-                                                             Color="Color.Inherit"
-                                                             Size="Size.Small"/>
-                                    }
-                                    else
-                                    {
-                                        <MudIcon Icon="@Icons.Material.Filled.Share"/>
-                                    }
-                                </MudButton>
-                            </span>
-                        </MudTooltip>
                     </MudStack>
                 </MudPaper>
+            </MudStack>
+        </MudPaper>
 
-                <MudDivider/>
-
+        <MudPaper Elevation="1"
+                  Class="pa-4 rounded-lg">
+            <MudStack Spacing="3">
                 <MudStack Spacing="1">
                     <MudStack Row="true"
                               Spacing="1"
@@ -405,9 +446,9 @@
                 <MudPaper Elevation="0"
                           Class="pa-3 rounded-lg">
                     <MudStack Row="true"
-                               Justify="Justify.FlexEnd"
-                               AlignItems="AlignItems.Center"
-                               Spacing="3">
+                              Justify="Justify.FlexEnd"
+                              AlignItems="AlignItems.Center"
+                              Spacing="3">
                         <MudTooltip Text="@DiagnosticsExportButtonTooltipText"
                                      Placement="Placement.Top">
                             <MudButton Color="Color.Primary"
@@ -453,60 +494,6 @@
                         </MudTooltip>
                     </MudStack>
                 </MudPaper>
-
-                <MudDivider/>
-
-                <MudStack Spacing="1">
-                    <MudStack Row="true"
-                              Spacing="1"
-                              AlignItems="AlignItems.Center">
-                        <MudText Typo="Typo.h6">
-                            @RestoreHeaderText
-                        </MudText>
-
-                        <MudTooltip Text="@RestoreWarningText"
-                                    Placement="Placement.Top">
-                            <MudIconButton Icon="@Icons.Material.Filled.Warning"
-                                           Color="Color.Warning"
-                                           Size="Size.Small"
-                                           aria-label="@RestoreTooltipAriaLabel"/>
-                        </MudTooltip>
-                    </MudStack>
-
-                    <MudText Typo="Typo.body2"
-                             Class="text-secondary">
-                        @RestoreDescriptionText
-                    </MudText>
-                </MudStack>
-
-                <MudPaper Elevation="0"
-                          Class="pa-3 rounded-lg">
-                    <MudStack Row="true"
-                              Justify="Justify.FlexEnd"
-                              AlignItems="AlignItems.Center">
-                        <MudTooltip Text="@ImportButtonTooltipText"
-                                    Placement="Placement.Top">
-                            <MudButton Color="Color.Primary"
-                                       Variant="Variant.Filled"
-                                       Disabled="@DataActionsDisabled"
-                                       aria-label="@ImportButtonAriaLabel"
-                                       Style="@DataActionButtonStyle"
-                                       OnClick="ImportDatabaseAsync">
-                                @if (_importInProgress)
-                                {
-                                    <MudProgressCircular Indeterminate="true"
-                                                         Color="Color.Inherit"
-                                                         Size="Size.Small"/>
-                                }
-                                else
-                                {
-                                    <MudIcon Icon="@Icons.Material.Filled.Upload"/>
-                                }
-                            </MudButton>
-                        </MudTooltip>
-                    </MudStack>
-                </MudPaper>
-
             </MudStack>
         </MudPaper>
     </MudStack>
@@ -979,8 +966,6 @@
 
     private const string BuildSeparatorText = "·";
 
-    private const string ReminderSectionEyebrowText = "Reminders";
-
     private const string ReminderHeaderText = "Daily reminder";
 
     private const string ReminderToggleLabelText = "Reminders enabled";
@@ -995,7 +980,7 @@
 
     private const string ReminderNotificationsPermissionText = "Android reminder notifications are off. Daily reminders will stay hidden until you allow notifications.";
 
-    private const string SectionEyebrowText = "Data";
+    private const string LocalBackupHeaderText = "Local backup";
 
     private const string AutomatedBackupsHeaderText = "Daily automated backups";
 
@@ -1011,13 +996,13 @@
 
     private const string AutomatedBackupNotificationsPermissionText = "Android backup notifications are off. Nightly backups will still run, but completion notifications stay hidden until you allow notifications.";
 
-    private const string OneDriveBackupHeaderText = "OneDrive backup";
+    private const string ManualBackupHeaderText = "Manual backup";
 
-    private const string OneDriveBackupDescriptionText = "Optional cloud backup using your private OneDrive app folder.";
+    private const string ManualBackupDescriptionText = "Save or share a copy of your local data on this device.";
 
-    private const string OneDriveBackupTooltipText = "Optional. Signs in with a personal Microsoft account and uploads the same '.zip' archive to your private OneDrive app folder.";
+    private const string ManualBackupTooltipText = "Creates a '.zip' data archive with your local data and uploaded pictures. Android saves to 'Downloads/Streak'. Windows lets you choose where to save.";
 
-    private const string OneDriveBackupTooltipAriaLabel = "OneDrive backup details";
+    private const string ManualBackupTooltipAriaLabel = "Manual backup save location info";
 
     private const string OneDriveProviderNameText = "OneDrive";
 
@@ -1039,15 +1024,23 @@
 
     private const string OneDriveNotConfiguredSupportText = "OneDrive sign-in isn't configured in this build yet. Set the OneDriveClientId build property to your Azure app registration's client ID.";
 
-    private const string OneDriveStorageLocationLabelText = "Storage location";
+    private const string OneDriveStorageLocationTextFormat = "Storage location: {0}";
 
-    private const string CloudAutomatedBackupsLabelText = "Nightly cloud backup";
+    private const string CloudBackupHeaderText = "Cloud backup";
+
+    private const string CloudBackupDescriptionText = "Optional OneDrive backups using your private app folder.";
+
+    private const string CloudBackupTooltipText = "Optional. Signs in with a personal Microsoft account and uploads the same '.zip' archive to your private OneDrive app folder.";
+
+    private const string CloudBackupTooltipAriaLabel = "Cloud backup details";
+
+    private const string CloudAutomatedBackupsLabelText = "Daily automated OneDrive backup";
 
     private const string CloudAutomatedBackupsSignedOutDescriptionText = "Available after you connect OneDrive.";
 
     private const string CloudAutomatedBackupsDeferredDescriptionText = "Backup scheduling will light up after the OneDrive backup flow is implemented.";
 
-    private const string CloudAutomatedBackupsSwitchAriaLabel = "Nightly cloud backup toggle";
+    private const string CloudAutomatedBackupsSwitchAriaLabel = "Daily automated OneDrive backup toggle";
 
     private const string ConnectOneDriveButtonText = "Connect OneDrive";
 
@@ -1061,10 +1054,6 @@
 
     private const string DisconnectOneDriveButtonAriaLabel = "Disconnect OneDrive";
 
-    private const string BackupHeaderText = "Local backup";
-
-    private const string BackupDescriptionText = "Save or share a copy of your local data on this device.";
-
     private const string ExportButtonTooltipText = "Download data";
 
     private const string ExportButtonAriaLabel = "Download data";
@@ -1072,10 +1061,6 @@
     private const string ShareButtonTooltipText = "Share data";
 
     private const string ShareButtonAriaLabel = "Share data";
-
-    private const string SupportNoteText = "Creates a '.zip' data archive with your local data and uploaded pictures. Android saves to 'Downloads/Streak'. Windows lets you choose where to save.";
-
-    private const string SupportTooltipAriaLabel = "Backup save location information";
 
     private const string DiagnosticsHeaderText = "Diagnostic logs";
 

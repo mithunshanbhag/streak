@@ -9,7 +9,6 @@
   --color-surface: #FFFFFF;
   --color-surface-subtle: #FAFAFA;
   --color-surface-muted: #F9FAFB;
-  --color-surface-accent: #F6F1FF;
   --color-primary: #6200EE;
   --color-primary-soft: #EDE7F6;
   --color-primary-strong: #4527A0;
@@ -26,12 +25,11 @@
   --shadow-card: 0 2px 6px rgba(0, 0, 0, 0.08);
   --radius-frame: 24px;
   --radius-card: 16px;
-  --radius-soft: 14px;
   --radius-control: 12px;
 }
 
 body {
-    font-family: Roboto, system-ui, "Segoe UI", Arial, sans-serif;
+  font-family: Roboto, system-ui, "Segoe UI", Arial, sans-serif;
   background: var(--color-canvas);
   display: flex;
   justify-content: center;
@@ -138,16 +136,12 @@ body {
   margin-bottom: 18px;
 }
 
-.section-eyebrow {
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.4px;
-  text-transform: uppercase;
-  color: var(--color-text-muted);
+.section-header-row--sub {
+  margin-bottom: 12px;
 }
 
 .section-header {
-  margin-top: 4px;
+  margin-top: 0;
   font-size: 20px;
   font-weight: 500;
   color: var(--color-text-primary);
@@ -167,6 +161,10 @@ body {
   color: var(--color-text-secondary);
 }
 
+.setting-caption--tight {
+  margin-top: 4px;
+}
+
 .section-meta {
   margin-top: 8px;
   font-size: 12px;
@@ -174,26 +172,8 @@ body {
   color: var(--color-text-secondary);
 }
 
-.section-chip {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 64px;
-  padding: 6px 12px;
-  border-radius: 999px;
-  background: var(--color-primary-soft);
-  color: var(--color-primary);
-  font-size: 12px;
-  font-weight: 500;
-}
-
-.section-chip--neutral {
-  background: var(--color-surface-muted);
-  color: var(--color-text-secondary);
-}
-
-.setting-caption--tight {
-  margin-top: 4px;
+.section-meta--tight {
+  margin-top: 6px;
 }
 
 .subsection-title-row {
@@ -211,16 +191,27 @@ body {
   justify-content: flex-end;
 }
 
-.data-action-group {
-  display: inline-flex;
-  align-items: center;
-  gap: 12px;
+.setting-row--divider {
+  border-top: 1px solid var(--color-border-subtle);
+  padding-top: 14px;
 }
 
 .setting-label {
   font-size: 15px;
   font-weight: 500;
   color: var(--color-text-primary);
+}
+
+.data-action-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.subsection-divider {
+  height: 1px;
+  background: var(--color-border-subtle);
+  margin: 18px 0;
 }
 
 .cloud-provider-panel {
@@ -268,6 +259,24 @@ body {
 
 .cloud-provider-icon .material-icons {
   font-size: 22px;
+}
+
+.cloud-action-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.cloud-action-row .action-btn {
+  width: auto;
+  min-height: 42px;
+  padding: 0 12px;
+}
+
+.cloud-action-row--single {
+  margin-top: 12px;
 }
 
 .cloud-inline-row {
@@ -347,11 +356,6 @@ body {
 .action-btn--secondary:hover,
 .action-btn--secondary:focus-visible {
   background: #F3F4F6;
-}
-
-.setting-row--divider {
-  border-top: 1px solid var(--color-border-subtle);
-  padding-top: 14px;
 }
 
 .toggle-switch {
@@ -470,36 +474,6 @@ body {
   font-size: 20px;
 }
 
-.tooltip-trigger.data-icon-btn::after {
-  width: auto;
-  white-space: nowrap;
-  text-align: center;
-}
-
-.subsection-divider {
-  height: 1px;
-  background: var(--color-border-subtle);
-  margin: 18px 0;
-}
-
-.section-header-row--sub {
-  margin-bottom: 12px;
-}
-
-.cloud-action-row {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 12px;
-}
-
-.cloud-action-row .action-btn {
-  width: auto;
-  min-height: 42px;
-  padding: 0 12px;
-}
-
 .tooltip-trigger {
   position: relative;
 }
@@ -524,17 +498,6 @@ body {
   pointer-events: none;
   transition: opacity 0.18s ease, transform 0.18s ease;
   z-index: 2;
-}
-
-.cloud-provider-icon.tooltip-trigger {
-  cursor: help;
-}
-
-.cloud-provider-icon.tooltip-trigger::after {
-  width: auto;
-  min-width: 96px;
-  white-space: nowrap;
-  text-align: center;
 }
 
 .tooltip-trigger::before {
@@ -563,6 +526,23 @@ body {
 .tooltip-trigger:hover::before,
 .tooltip-trigger:focus-visible::before {
   transform: translateX(-50%) rotate(45deg) translateY(0);
+}
+
+.tooltip-trigger.data-icon-btn::after {
+  width: auto;
+  white-space: nowrap;
+  text-align: center;
+}
+
+.cloud-provider-icon.tooltip-trigger {
+  cursor: help;
+}
+
+.cloud-provider-icon.tooltip-trigger::after {
+  width: auto;
+  min-width: 96px;
+  white-space: nowrap;
+  text-align: center;
 }
 
 .hint-icon-btn {

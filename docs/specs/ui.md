@@ -108,7 +108,7 @@ Use semantic roles rather than one-off hex values.
 - Note-field labels, photo metadata rows, and preview helper text should use **Caption** or **Support** depending on prominence.
 - Connected-provider names and important backup destinations should use **Body strong**.
 - Connected account labels, backup timestamps, and quiet integration metadata should use **Support** or **Caption**.
-- Settings maintenance subsection titles inside the Settings **Data** card should typically use **Body strong** rather than repeating the full **Section title** scale for every subsection.
+- Settings card titles should use **Section title** and should lead each card directly without a separate small uppercase eyebrow above them. Smaller internal group titles inside cards such as **Daily automated backups** and **Manual backup** should use **Body strong** rather than repeating the full **Section title** scale for every nested row.
 - Eyebrows should stay uppercase with light letter spacing; do not use them for large blocks of copy.
 - Avoid mixing 700 weight into ordinary labels unless it is truly a hero or brand moment.
 
@@ -188,9 +188,20 @@ Use semantic roles rather than one-off hex values.
 - Use icon-only maintenance actions primarily for compact, already-labeled local action groups such as local backup, diagnostics export/share, and restore.
 - OneDrive / cloud-provider actions should prefer **icon-leading visible-text buttons** that reuse the cloud icon family (`Cloud`, `CloudUpload`, `CloudOff`, `CloudSync`) rather than unlabeled cloud icon-only actions.
 
+### Settings page cards
+
+- The Settings page should stack **Daily reminder**, **Local backup**, **Cloud backup**, **Restore**, and **Diagnostic logs** as distinct cards rather than merging low-frequency actions into one large maintenance card.
+- Each Settings card should have one primary title at the normal **Section title** scale.
+- Settings cards should not use extra uppercase category eyebrows such as **Reminders**, **Backups**, **Maintenance**, or **Support** above the card title; the title itself should carry the hierarchy.
+- Related controls inside a card may use one subtle divider, but that divider should organize a single card's content rather than imply that multiple separate sections still belong to one parent card.
+- The **Local backup** card may group **Daily automated backups** and **Manual backup** with one quiet divider and **Body strong** internal headings.
+- The **Cloud backup** card should keep provider identity, manual backup actions, and the daily automated OneDrive backup toggle visually grouped so the user reads them as one connected cloud-backup area.
+- **Restore** and **Diagnostic logs** should remain standalone cards with the same spacing and action rhythm as the other Settings cards instead of reading like rows inside a larger data container.
+- When local and cloud backup cards both surface recency, prefer the same quiet **Last backup** treatment so one card does not feel more instrumented than the other.
+
 ### Settings provider and status panels
 
-- Optional connected-service sections such as **OneDrive backup** should use one quiet provider area inside the main card rather than stacking multiple emphasized nested boxes.
+- Optional connected-service sections such as **OneDrive backup** should use one quiet provider area inside the **Cloud backup** card rather than stacking multiple emphasized nested boxes.
 - The default resting provider area should prefer:
   - `SurfaceMuted`
   - a subtle `BorderSubtle` outline when a distinct inset surface helps scanning
@@ -213,9 +224,9 @@ Use semantic roles rather than one-off hex values.
   - syncing / automated state: `Primary`
 - Secondary metadata such as **Last backup**, destination details, or backup schedule should use **Caption** or **Support** styling and read as supportive state rather than primary CTA copy.
 - Prefer collapsing quiet metadata into **one muted line** when that keeps the panel easier to scan; split into multiple rows only when clarity would suffer.
-- When local and cloud backup areas both surface recency, prefer the same quiet **Last backup** treatment so one subsection does not feel more instrumented than the other.
+- When local and cloud backup areas both surface recency, prefer the same quiet **Last backup** treatment so one card does not feel more instrumented than the other.
 - Static explanatory details that are already obvious from the section context or tooltip do not need their own always-visible metadata row.
-- Connected-state toggles such as **Daily automated OneDrive backup** should usually appear as a simple inline setting row inside the same provider area, not as a separate highlighted panel.
+- Connected-state toggles such as **Daily automated OneDrive backup** should usually appear as a simple inline setting row inside the same provider area, not as a separate highlighted panel or sibling card.
 - Disconnected states should show the status plus the primary **Connect** action and should avoid rendering disabled secondary controls that are not yet actionable.
 - Primary provider actions such as **Connect OneDrive** or **Back up to OneDrive** should use visible-text buttons with a leading cloud icon, but they should stay compact and visually aligned with the page's other Settings controls rather than becoming hero-style full-width blocks unless truly necessary.
 - Secondary provider actions such as **Disconnect** should default to a low-emphasis compact button or text button with `CloudOff`, and should sit in the same compact action row or near the provider header rather than appearing as an isolated orphan action below the main CTA.

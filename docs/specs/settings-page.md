@@ -2,21 +2,24 @@
 
 > **Route**: `/settings`
 
-The settings page lets users configure **daily reminders** and access low-frequency **data management** actions such as daily automated backups, optional OneDrive backup, downloading, sharing, and restoring full data-backup archives, plus exporting or sharing diagnostic logs. Users access it from the **⚙** icon in the app bar.
+The settings page lets users configure **daily reminders** and access low-frequency backup, restore, and diagnostics actions through a set of distinct cards. These cards cover daily automated local backups, optional cloud backup through OneDrive, downloading or sharing full data-backup archives, restoring backups, and exporting or sharing diagnostic logs. Users access the page from the **⚙** icon in the app bar.
 
 ## Navigation
 
 - Accessible from the **⚙** icon in the Homepage app bar.
 - A **back arrow** in the app bar returns the user to the [Homepage](./homepage.md).
 - Secondary-screen chrome stays focused: show **Back** + `Settings` only.
-- Daily automated backups, OneDrive backup, local backup download/share, diagnostic export/share, and restore remain inside the page content rather than becoming dedicated app-bar icons.
+- Local backup, cloud backup, restore, and diagnostic export/share actions remain inside the page content rather than becoming dedicated app-bar icons.
 
 ## Layout
 
-The page contains two vertically stacked sections presented as clean cards:
+The page contains five vertically stacked sections presented as clean cards:
 
 1. **Daily Reminder**
-2. **Data**
+2. **Local Backup**
+3. **Cloud Backup**
+4. **Restore**
+5. **Diagnostic Logs**
 
 - At the top of the page content, above the cards, show one centered non-interactive metadata banner using the same visual treatment as the Homepage date banner.
 - The banner text should read: **Version {display version} · Build {build number}**.
@@ -34,44 +37,60 @@ The page contains two vertically stacked sections presented as clean cards:
 | Reminder time picker  | `MudTimePicker` | Allows the user to select the time of day for the reminder. Visible only when the toggle is ON. Default: **9:00 PM** (local device time).    |
 | Helper text           | Caption         | *"You'll be reminded only if there are habits you haven't checked in yet."*                                                                  |
 
-### Data Section
+### Local Backup Section
 
-| Element                             | Type                       | Details                                                                                                                                                                                                                                                                                 |
-| ----------------------------------- | -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Section eyebrow                     | Text                       | **"Data"**                                                                                                                                                                                                                                                                              |
-| Automated backups header            | Text                       | **"Daily automated backups"**                                                                                                                                                                                                                                                           |
-| Automated backups info icon         | Glyph + tooltip            | Small info icon beside **Daily automated backups**. Hover/focus/press shows: *"Android only. Runs nightly at 11:30 PM when enabled."*                                                                                                                                                   |
-| Automated backups description       | Caption                    | *"Create a nightly backup in local storage."*                                                                                                                                                                                                                                           |
-| Local automated toggle              | `MudSwitch`                | ON = daily local automated backups enabled, OFF = disabled. Default: **OFF**. The switch sits on its own trailing action row with no extra inline label or helper copy. The control is disabled on Windows because this feature is Android-only in this iteration.                 |
-| Dividers                            | Visual                     | Simple horizontal rules separate **Daily automated backups**, **OneDrive backup**, **Local backup**, **Diagnostic logs**, and **Restore** so the five subsections read as one stacked group.                                                                                           |
-| OneDrive backup header              | Text                       | **"OneDrive backup"**                                                                                                                                                                                                                                                                    |
-| OneDrive backup info icon           | Glyph + tooltip            | Small info icon beside **OneDrive backup**. Hover/focus/press shows: *"Optional. Signs in with a personal Microsoft account and uploads the same '.zip' archive to your private OneDrive app folder."*                                                                                |
-| OneDrive backup description         | Caption                    | *"Optional cloud backup using your private OneDrive app folder."*                                                                                                                                                                                                                       |
-| OneDrive provider panel             | Inset status panel         | Quiet inset panel showing the provider name (**OneDrive**), the connected account or neutral support copy, and one leading semantic cloud status icon. The icon exposes a tooltip such as **Connected** or **Not connected** instead of repeating the state in a trailing chip.      |
-| OneDrive status metadata            | Support / caption rows     | Shows quiet metadata such as **Last backup** when connected. Keep destination details subtle and avoid a dedicated always-visible storage-location row when it adds no new information.                                                                                                  |
-| OneDrive automated toggle           | `MudSwitch`                | ON = daily automated OneDrive backup enabled, OFF = disabled. Default: **OFF**. This toggle is separate from the local automated-backups toggle.                                                                                                                                         |
-| OneDrive action row                 | Compact visible-text actions | Uses visible-text actions that stay visually aligned with the page's other compact controls. The primary action is **Connect OneDrive** when signed out or **Back up to OneDrive** when connected. A low-emphasis inline **Disconnect** action appears only when connected.          |
-| Local backup header                 | Text                       | **"Local backup"**                                                                                                                                                                                                                                                                       |
-| Local backup info icon              | Glyph + tooltip            | Small info icon beside **Local backup**. Hover/focus/press shows: *"Creates a '.zip' data archive with your local data and uploaded pictures. Android saves to 'Downloads/Streak'. Windows lets you choose where to save."*                                                           |
-| Local backup description            | Caption                    | *"Save or share a copy of your local data on this device."*                                                                                                                                                                                                                             |
-| Local backup status metadata        | Support / caption rows     | Shows quiet metadata such as **Last backup** so local backup recency is surfaced with the same calm treatment as cloud backup recency.                                                                                                                                                    |
-| Local backup action cluster         | `MudIconButton` group      | Two filled icon-only buttons shown side-by-side: download and share. Tooltips provide the visible labels **"Download data"** and **"Share data"**.                                                                                                                                      |
-| Diagnostic logs header              | Text                       | **"Diagnostic logs"**                                                                                                                                                                                                                                                                   |
-| Diagnostic logs info icon           | Glyph + tooltip            | Small info icon beside **Diagnostic logs**. Hover/focus/press shows: *"Exports recent app logs and basic support metadata. Does not include your full database."*                                                                                                                       |
-| Diagnostic logs description         | Caption                    | *"Export or share a support bundle of recent app logs."*                                                                                                                                                                                                                                |
-| Diagnostic action cluster           | `MudIconButton` group      | Two filled icon-only buttons shown side-by-side: download and share. Tooltips provide the visible labels **"Export logs"** and **"Share logs"**. Export uses the platform save flow. Share opens the native share flow when supported.                                                   |
-| Restore header                      | Text                       | **"Restore"**                                                                                                                                                                                                                                                                           |
-| Restore warning icon                | Glyph + tooltip            | Small warning icon beside **Restore**. Hover/focus/press shows: *"This will replace ALL existing data. This action cannot be undone."*                                                                                                                                                  |
-| Restore description                 | Caption                    | *"Restore from a local `.zip` backup or a legacy `.db` file."*                                                                                                                                                                                                                          |
-| Restore action                      | `MudIconButton`            | Filled icon-only button with an upload icon. Tooltip text is **"Upload data"**. Opens a file picker to select either a `.zip` data-backup archive or a legacy `.db` database backup.                                                                                                    |
+| Element                           | Type                  | Details                                                                                                                                                                                                                   |
+| --------------------------------- | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Section header                    | Text                  | **"Local backup"**                                                                                                                                                                                                        |
+| Section description               | Caption               | *"Create nightly local backups or manually save and share a copy of your data."*                                                                                                                                         |
+| Automated backups header          | Text                  | **"Daily automated backups"**                                                                                                                                                                                             |
+| Automated backups info icon       | Glyph + tooltip       | Small info icon beside **Daily automated backups**. Hover/focus/press shows: *"Android only. Runs nightly at 11:30 PM when enabled."*                                                                                   |
+| Automated backups description     | Caption               | *"Create a nightly backup in local storage."*                                                                                                                                                                             |
+| Local automated toggle            | `MudSwitch`           | ON = daily local automated backups enabled, OFF = disabled. Default: **OFF**. The switch sits on its own trailing action row with no extra inline label or helper copy. The control is disabled on Windows in this iteration. |
+| Internal divider                  | Visual                | One simple horizontal rule separates the automated local-backup controls from the manual local-backup controls inside the card.                                                                                          |
+| Manual backup header              | Text                  | **"Manual backup"**                                                                                                                                                                                                       |
+| Manual backup info icon           | Glyph + tooltip       | Small info icon beside **Manual backup**. Hover/focus/press shows: *"Creates a '.zip' data archive with your local data and uploaded pictures. Android saves to 'Downloads/Streak'. Windows lets you choose where to save."* |
+| Manual backup description         | Caption               | *"Save or share a copy of your local data on this device."*                                                                                                                                                               |
+| Manual backup status metadata     | Support / caption rows | Shows quiet metadata such as **Last backup** so local backup recency is surfaced with the same calm treatment as cloud backup recency.                                                                                  |
+| Manual backup action cluster      | `MudIconButton` group | Two filled icon-only buttons shown side-by-side: download and share. Tooltips provide the visible labels **"Download data"** and **"Share data"**.                                                                      |
 
-- Daily automated backups, OneDrive backup, Local backup, Diagnostic logs, and Restore should read as five vertically stacked subsections within the same card.
-- The automated backups subsection should use the same quiet structure as the other Settings maintenance subsections: heading, subtle tooltip icon, one short description line, then a single trailing control row.
-- OneDrive backup should visually sit between automated local backups and local backup so the user can understand the difference between local scheduling, cloud backup, and manual local export.
-- OneDrive backup should use a quiet inset provider/status panel plus compact visible-text actions rather than relying on icon-only controls for sign-in, backup, or disconnect.
+### Cloud Backup Section
+
+| Element                           | Type                        | Details                                                                                                                                                                                                                                                                         |
+| --------------------------------- | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Section header                    | Text                        | **"Cloud backup"**                                                                                                                                                                                                                                                              |
+| Section info icon                 | Glyph + tooltip             | Small info icon beside **Cloud backup**. Hover/focus/press shows: *"Optional. Signs in with a personal Microsoft account and uploads the same '.zip' archive to your private OneDrive app folder."*                                                                        |
+| Section description               | Caption                     | *"Optional OneDrive backup using your private app folder."*                                                                                                                                                                                                                    |
+| OneDrive provider panel           | Inset status panel          | Quiet inset panel showing the provider name (**OneDrive**), the connected account or neutral support copy, and one leading semantic cloud status icon. The icon exposes a tooltip such as **Connected** or **Not connected** instead of repeating the state in a trailing chip. |
+| OneDrive status metadata          | Support / caption rows      | Shows quiet metadata such as **Last backup** when connected. Keep destination details subtle and avoid a dedicated always-visible storage-location row when it adds no new information.                                                                                       |
+| OneDrive action row               | Compact visible-text actions| Uses visible-text actions that stay visually aligned with the page's other compact controls. The primary action is **Connect OneDrive** when signed out or **Back up to OneDrive** when connected. A low-emphasis inline **Disconnect** action appears only when connected. |
+| OneDrive automated toggle         | `MudSwitch`                 | ON = daily automated OneDrive backup enabled, OFF = disabled. Default: **OFF**. This toggle is separate from the local automated-backups toggle and is shown only after OneDrive is connected.                                                                              |
+
+### Restore Section
+
+| Element              | Type            | Details                                                                                                                                                                          |
+| -------------------- | --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Section header       | Text            | **"Restore"**                                                                                                                                                                    |
+| Restore warning icon | Glyph + tooltip | Small warning icon beside **Restore**. Hover/focus/press shows: *"This will replace ALL existing data. This action cannot be undone."*                                         |
+| Restore description  | Caption         | *"Restore from a local `.zip` backup or a legacy `.db` file."*                                                                                                                   |
+| Restore action       | `MudIconButton` | Filled icon-only button with an upload icon. Tooltip text is **"Upload data"**. Opens a file picker to select either a `.zip` data-backup archive or a legacy `.db` backup. |
+
+### Diagnostic Logs Section
+
+| Element                    | Type                  | Details                                                                                                                                                                              |
+| -------------------------- | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Section header             | Text                  | **"Diagnostic logs"**                                                                                                                                                                |
+| Diagnostic logs info icon  | Glyph + tooltip       | Small info icon beside **Diagnostic logs**. Hover/focus/press shows: *"Exports recent app logs and basic support metadata. Does not include your full database."*                 |
+| Diagnostic logs description | Caption               | *"Export or share a support bundle of recent app logs."*                                                                                                                            |
+| Diagnostic action cluster  | `MudIconButton` group | Two filled icon-only buttons shown side-by-side: download and share. Tooltips provide the visible labels **"Export logs"** and **"Share logs"**. Export uses the platform save flow. Share opens the native share flow when supported. |
+
+- These five cards should read as distinct vertical sections, not as one shared **Data** card.
+- Each card should be title-led and should not show a separate small uppercase category eyebrow above the main title.
+- The Local backup card groups daily automated local backup and manual local backup with one calm internal divider.
+- The Cloud backup card groups provider state, manual OneDrive backup, and daily automated OneDrive backup inside one quiet provider area.
 - The provider state should be expressed once through the leading semantic icon and its tooltip; avoid a second trailing status chip that repeats the same connected / disconnected state.
-- OneDrive and Local backup should both expose the same kind of quiet **Last backup** metadata line when recent backup history is available so recency cues do not appear cloud-only.
-- Local backup, Diagnostic logs, and Restore should use the same subsection layout and spacing so they read as sibling manual actions within the same card.
+- Local backup and Cloud backup should both expose the same kind of quiet **Last backup** metadata line when recent backup history is available so recency cues do not appear cloud-only.
+- Restore and Diagnostic logs should use the same standalone card rhythm and spacing as sibling maintenance cards rather than reading like rows inside a larger container.
 - The local backup action cluster should place **Share data** immediately next to **Download data** with the same size, shape, fill, and icon-button styling.
 - The diagnostics action cluster should place **Share logs** immediately next to **Export logs** with the same size, shape, fill, and icon-button styling.
 - The tooltip trigger icons should be visually subtle but clearly interactive, with the warning icon using a caution color treatment.
@@ -79,7 +98,7 @@ The page contains two vertically stacked sections presented as clean cards:
 - **Download data**, **Share data**, **Export logs**, **Share logs**, and **Upload data** should all use the same filled icon-button treatment so they read as one cohesive action family.
 - Trust-critical OneDrive actions should keep their visible text labels even when the local maintenance actions remain icon-only, but they should still follow the same compact action rhythm as the rest of the Settings controls rather than becoming hero-style full-width blocks.
 
-## Daily Automated Backup Behavior
+## Local Automated Backup Behavior
 
 - Tapping the **Daily automated backups** toggle to ON enables a once-per-day automated backup schedule.
 - While enabled, the app creates an automated backup at **precisely 11:30 PM local device time** every day.
@@ -111,10 +130,10 @@ The page contains two vertically stacked sections presented as clean cards:
 | Windows  | Automated backups are unavailable. The toggle remains disabled, and the app does not schedule or run nightly automated backups.                                                                                                                                                                                            |
 | Android  | The toggle is enabled. Turning it ON schedules the nightly 11:30 PM local alarm, each run saves a timestamped `.zip` data-backup archive into `Downloads/Streak/Backups/Automated` without prompting the user, and successful runs can post a completion notification that attempts to open the backup folder when tapped. |
 
-## OneDrive Backup Behavior
+## Cloud Backup Behavior
 
-- OneDrive backup is **optional** and **backup-only**. It does **not** create live cloud sync of the in-use database.
-- OneDrive backup is **Android-only** in this iteration.
+- Cloud backup is **optional** and **backup-only**. It currently uses **OneDrive** and does **not** create live cloud sync of the in-use database.
+- Cloud backup is **Android-only** in this iteration.
 - The user signs in with a **personal Microsoft account**.
 - OneDrive backup uses the app-specific OneDrive folder at **`/me/drive/special/approot`**.
 - The app uploads the **same `.zip` data-backup archive format** used by local backup:
@@ -132,7 +151,7 @@ The page contains two vertically stacked sections presented as clean cards:
   ```
 
 - Tapping **Connect OneDrive** starts the sign-in / consent flow.
-- When connected, the subsection shows the connected account plus quiet status metadata such as the last successful backup.
+- When connected, the Cloud backup card shows the connected account plus quiet status metadata such as the last successful backup.
 - Tapping **Back up to OneDrive** uploads a fresh backup archive to `approot/Backups/Manual/`.
 - The app should keep **local backup** and **OneDrive backup** clearly separate. Manual OneDrive backup does not replace **Download data** or **Share data**.
 - The **Daily automated OneDrive backup** toggle is independent from the local **Daily automated backups** toggle:
@@ -144,11 +163,11 @@ The page contains two vertically stacked sections presented as clean cards:
 - Retention, cleanup, and quota-management remain outside the app for this iteration.
 - **Cloud restore is not part of this iteration.** Restore remains a local-file-based action on the Settings page.
 
-### Platform-specific OneDrive Backup UX
+### Platform-specific Cloud Backup UX
 
 | Platform | Expected behavior                                                                                                                                                                                                 |
 | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Windows  | OneDrive backup is unavailable. The OneDrive backup subsection should explain that cloud backup is not supported on this platform in the current iteration.                                                     |
+| Windows  | Cloud backup is unavailable. The Cloud backup card should explain that OneDrive backup is not supported on this platform in the current iteration.                                                               |
 | Android  | The user can connect a personal Microsoft account, manually upload the current backup archive to OneDrive, and optionally enable daily automated OneDrive backup using the same fixed 11:30 PM local schedule. |
 
 ## Local Export Behavior
@@ -336,7 +355,7 @@ The page contains two vertically stacked sections presented as clean cards:
 | User cancels OneDrive sign-in                  | Keep the user on Settings and treat the action as cancelled rather than failed.                                                                                                                                        |
 | Daily automated OneDrive backup is ON while local automated backups are OFF | Only the OneDrive upload runs on the nightly schedule.                                                                                                                           |
 | Local automated backups are ON while daily automated OneDrive backup is OFF | Only the local backup file is created on the nightly schedule.                                                                                                                     |
-| Cloud backup upload succeeds                   | The uploaded archive appears in the app's OneDrive app folder and the Settings subsection updates the latest cloud-backup status.                                                                                      |
+| Cloud backup upload succeeds                   | The uploaded archive appears in the app's OneDrive app folder and the Cloud backup card updates the latest cloud-backup status.                                                                                       |
 | Cloud backup fails because the network is unavailable | Keep the user on Settings for manual backup, surface a clear error message, and retry daily automated OneDrive backup on the next scheduled run instead of same-day retry loops.                                 |
 | Cloud backup fails because OneDrive quota is full | Keep the user on Settings, surface a clear error message, and leave cleanup / space recovery to the user outside the app.                                                                                            |
 | User disconnects OneDrive                      | Clear the app's local auth state and disable connected cloud actions, but do not delete already uploaded OneDrive backup files automatically.                                                                          |
