@@ -15,11 +15,11 @@ The settings page lets users configure **daily reminders** and access low-freque
 
 The page contains five vertically stacked sections presented as clean cards:
 
-1. **Daily Reminder**
-2. **Local Backup**
-3. **Cloud Backup**
-4. **Restore**
-5. **Diagnostic Logs**
+1. 🔔 **Daily Reminder**
+2. 💾 **Local Backup**
+3. ☁️ **Cloud Backup**
+4. 🔄 **Restore**
+5. 🩺 **Diagnostic Logs**
 
 - At the top of the page content, above the cards, show one centered non-interactive metadata banner using the same visual treatment as the Homepage date banner.
 - The banner text should read: **Version {display version} · Build {build number}**.
@@ -32,7 +32,7 @@ The page contains five vertically stacked sections presented as clean cards:
 
 | Element               | Type            | Details                                                                                                                                      |
 | --------------------- | --------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| Section header        | Text            | **"Daily Reminder"**                                                                                                                         |
+| Section header        | Text            | **"🔔 Daily Reminder"**                                                                                                                         |
 | Enable/disable toggle | `MudSwitch`     | ON = reminders enabled, OFF = reminders disabled. Default: **OFF**. Enabling reminders requests Android notification permission when needed. |
 | Reminder time picker  | `MudTimePicker` | Allows the user to select the time of day for the reminder. Visible only when the toggle is ON. Default: **9:00 PM** (local device time).    |
 | Helper text           | Caption         | *"You'll be reminded only if there are habits you haven't checked in yet."*                                                                  |
@@ -41,7 +41,7 @@ The page contains five vertically stacked sections presented as clean cards:
 
 | Element                           | Type                  | Details                                                                                                                                                                                                                   |
 | --------------------------------- | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Section header                    | Text                  | **"Local backup"**                                                                                                                                                                                                        |
+| Section header                    | Text                  | **"💾 Local backup"**                                                                                                                                                                                                        |
 | Section description               | Caption               | *"Create nightly local backups or manually save and share a copy of your data."*                                                                                                                                         |
 | Automated backups header          | Text                  | **"Daily automated backups"**                                                                                                                                                                                             |
 | Automated backups info icon       | Glyph + tooltip       | Small info icon beside **Daily automated backups**. Hover/focus/press shows: *"Android only. Runs nightly at 11:30 PM when enabled."*                                                                                   |
@@ -58,7 +58,7 @@ The page contains five vertically stacked sections presented as clean cards:
 
 | Element                           | Type                        | Details                                                                                                                                                                                                                                                                         |
 | --------------------------------- | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Section header                    | Text                        | **"Cloud backup"**                                                                                                                                                                                                                                                              |
+| Section header                    | Text                        | **"☁️ Cloud backup"**                                                                                                                                                                                                                                                              |
 | Section info icon                 | Glyph + tooltip             | Small info icon beside **Cloud backup**. Hover/focus/press shows: *"Optional. Signs in with a personal Microsoft account and uploads the same '.zip' archive to your private OneDrive app folder."*                                                                        |
 | Section description               | Caption                     | *"Optional OneDrive backup using your private app folder."*                                                                                                                                                                                                                    |
 | OneDrive connection subsection    | Subsection                  | First subsection in the connected cloud area. Shows the provider name (**OneDrive**), connected account, current connection state, and the leading semantic cloud status icon button.                                                                                       |
@@ -72,7 +72,7 @@ The page contains five vertically stacked sections presented as clean cards:
 
 | Element              | Type            | Details                                                                                                                                                                          |
 | -------------------- | --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Section header       | Text            | **"Restore"**                                                                                                                                                                    |
+| Section header       | Text            | **"🔄 Restore"**                                                                                                                                                                    |
 | Restore warning icon | Glyph + tooltip | Small warning icon beside **Restore**. Hover/focus/press shows: *"This will replace ALL existing data. This action cannot be undone."*                                         |
 | Restore description  | Caption         | *"Restore from a local `.zip` backup or a legacy `.db` file."*                                                                                                                   |
 | Restore action       | `MudIconButton` | Filled icon-only button with an upload icon. Tooltip text is **"Upload data"**. Opens a file picker to select either a `.zip` data-backup archive or a legacy `.db` backup. |
@@ -81,7 +81,7 @@ The page contains five vertically stacked sections presented as clean cards:
 
 | Element                    | Type                  | Details                                                                                                                                                                              |
 | -------------------------- | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Section header             | Text                  | **"Diagnostic logs"**                                                                                                                                                                |
+| Section header             | Text                  | **"🩺 Diagnostic logs"**                                                                                                                                                                |
 | Diagnostic logs info icon  | Glyph + tooltip       | Small info icon beside **Diagnostic logs**. Hover/focus/press shows: *"Exports recent app logs and basic support metadata. Does not include your full database."*                 |
 | Diagnostic logs description | Caption               | *"Export or share a support bundle of recent app logs."*                                                                                                                            |
 | Diagnostic action cluster  | `MudIconButton` group | Two filled icon-only buttons shown side-by-side: download and share. Tooltips provide the visible labels **"Export logs"** and **"Share logs"**. Export uses the platform save flow. Share opens the native share flow when supported. |
