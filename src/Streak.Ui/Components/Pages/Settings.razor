@@ -1080,6 +1080,7 @@
         return failureKind switch
         {
             OneDriveBackupFailureKind.AuthRequired => OneDriveManualBackupReconnectRequiredText,
+            OneDriveBackupFailureKind.AccessDenied => OneDriveManualBackupAccessDeniedText,
             OneDriveBackupFailureKind.NetworkUnavailable => OneDriveManualBackupNetworkFailedText,
             OneDriveBackupFailureKind.QuotaExceeded => OneDriveManualBackupQuotaExceededText,
             _ => OneDriveManualBackupFailedText
@@ -1257,6 +1258,8 @@
     private const string OneDriveManualBackupFailedText = "Unable to back up to OneDrive right now. Please try again.";
 
     private const string OneDriveManualBackupReconnectRequiredText = "OneDrive needs you to reconnect before uploading. Disconnect and connect again, then retry.";
+
+    private const string OneDriveManualBackupAccessDeniedText = "OneDrive did not grant access to the app folder. Disconnect and connect OneDrive again, then retry.";
 
     private const string OneDriveManualBackupNetworkFailedText = "Unable to reach OneDrive right now. Check your connection and try again.";
 

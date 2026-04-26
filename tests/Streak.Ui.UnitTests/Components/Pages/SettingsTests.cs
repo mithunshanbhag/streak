@@ -968,6 +968,42 @@ public sealed class SettingsTests : TestContext
         });
     }
 
+    [Fact]
+    public async Task Settings_ShouldShowSpecificError_WhenManualCloudBackupAccessIsDenied()
+    {
+        var exportServiceMock = new Mock<IDatabaseExportService>();
+        var diagnosticsExportServiceMock = new Mock<IDiagnosticsExportService>();
+        var shareServiceMock = CreateShareServiceMock(canShare: false);
+        var backupConfigurationServiceMock = CreateBackupConfigurationServiceMock(isEnabled: false);
+        var reminderConfigurationServiceMock = CreateReminderConfigurationServiceMock(isEnabled: true);
+        var oneDriveAuthServiceMock = CreateOneDriveAuthServiceMock(CreateConnectedOneDriveAuthState());
+
+        var manualCloudBackupServiceMock = CreateManualCloudBackupServiceMock();
+        manualCloudBackupServiceMock
+            .Setup(x => x.UploadManualBackupAsync(It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new OneDriveBackupException(
+                OneDriveBackupFailureKind.AccessDenied,
+                "Access denied."));
+
+        RegisterSettingsServices(
+            exportServiceMock,
+            diagnosticsExportServiceMock,
+            shareServiceMock,
+            backupConfigurationServiceMock,
+            reminderConfigurationServiceMock,
+            oneDriveAuthServiceMock: oneDriveAuthServiceMock,
+            manualCloudBackupServiceMock: manualCloudBackupServiceMock);
+
+        var cut = RenderSettings();
+
+        await cut.Find("button[aria-label='Back up to OneDrive']").ClickAsync(new MouseEventArgs());
+
+        cut.WaitForAssertion(() =>
+        {
+            cut.Markup.Should().Contain("OneDrive did not grant access to the app folder. Disconnect and connect OneDrive again, then retry.");
+        });
+    }
+
     #endregion
 
     #region Boundary tests

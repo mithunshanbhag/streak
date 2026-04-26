@@ -16,6 +16,7 @@ public static class OneDriveAuthConstants
 
     public static readonly string[] DefaultScopes =
     [
+        "Files.ReadWrite",
         "Files.ReadWrite.AppFolder",
         "User.Read",
         "offline_access"

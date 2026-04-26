@@ -5,5 +5,6 @@ public enum OneDriveBackupFailureKind
     AuthRequired = 1,
     NetworkUnavailable = 2,
     QuotaExceeded = 3,
-    Unknown = 4
+    AccessDenied = 4,
+    Unknown = 5
 }

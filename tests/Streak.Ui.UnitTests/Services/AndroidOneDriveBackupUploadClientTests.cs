@@ -17,6 +17,7 @@ public sealed class AndroidOneDriveBackupUploadClientTests
         await File.WriteAllTextAsync(archivePath, "backup");
 
         var handler = new SequenceHttpMessageHandler([
+            _ => CreateJsonResponse(HttpStatusCode.OK, "{}"),
             _ => CreateJsonResponse(HttpStatusCode.Created, "{}"),
             _ => CreateJsonResponse(HttpStatusCode.Created, "{}"),
             _ => CreateJsonResponse(HttpStatusCode.Created, "{}")
@@ -34,13 +35,15 @@ public sealed class AndroidOneDriveBackupUploadClientTests
 
         await sut.UploadManualBackupAsync(archivePath, Path.GetFileName(archivePath));
 
-        handler.Requests.Should().HaveCount(3);
-        handler.Requests[0].Method.Should().Be(HttpMethod.Post);
-        handler.Requests[0].RequestUri!.ToString().Should().Be("https://graph.microsoft.com/v1.0/me/drive/special/approot/children");
+        handler.Requests.Should().HaveCount(4);
+        handler.Requests[0].Method.Should().Be(HttpMethod.Get);
+        handler.Requests[0].RequestUri!.ToString().Should().Be("https://graph.microsoft.com/v1.0/me/drive/special/approot");
         handler.Requests[1].Method.Should().Be(HttpMethod.Post);
-        handler.Requests[1].RequestUri!.ToString().Should().Be("https://graph.microsoft.com/v1.0/me/drive/special/approot:/Backups:/children");
-        handler.Requests[2].Method.Should().Be(HttpMethod.Put);
-        handler.Requests[2].RequestUri!.ToString().Should().Be($"https://graph.microsoft.com/v1.0/me/drive/special/approot:/Backups/Manual/{Path.GetFileName(archivePath)}:/content");
+        handler.Requests[1].RequestUri!.ToString().Should().Be("https://graph.microsoft.com/v1.0/me/drive/special/approot/children");
+        handler.Requests[2].Method.Should().Be(HttpMethod.Post);
+        handler.Requests[2].RequestUri!.ToString().Should().Be("https://graph.microsoft.com/v1.0/me/drive/special/approot:/Backups:/children");
+        handler.Requests[3].Method.Should().Be(HttpMethod.Put);
+        handler.Requests[3].RequestUri!.ToString().Should().Be($"https://graph.microsoft.com/v1.0/me/drive/special/approot:/Backups/Manual/{Path.GetFileName(archivePath)}:/content");
         handler.Requests.Should().OnlyContain(request =>
             request.Headers.Authorization != null
             && request.Headers.Authorization.Scheme == "Bearer"
@@ -60,6 +63,7 @@ public sealed class AndroidOneDriveBackupUploadClientTests
         await File.WriteAllTextAsync(archivePath, "backup");
 
         var handler = new SequenceHttpMessageHandler([
+            _ => CreateJsonResponse(HttpStatusCode.OK, "{}"),
             _ => CreateJsonResponse(HttpStatusCode.Created, "{}"),
             _ => CreateJsonResponse(HttpStatusCode.Created, "{}"),
             _ => CreateJsonResponse(HttpStatusCode.InsufficientStorage, "{\"error\":{\"code\":\"quotaLimitReached\",\"message\":\"Quota full.\"}}")
@@ -78,6 +82,33 @@ public sealed class AndroidOneDriveBackupUploadClientTests
 
         await act.Should().ThrowAsync<OneDriveBackupException>()
             .Where(exception => exception.FailureKind == OneDriveBackupFailureKind.QuotaExceeded);
+    }
+
+    [Fact]
+    public async Task UploadManualBackupAsync_ShouldThrowAccessDenied_WhenGraphDeniesAppFolderAccess()
+    {
+        using var temporaryDirectory = new TemporaryDirectory();
+
+        var archivePath = Path.Combine(temporaryDirectory.Path, "streak-data-backup-20260426-040350.zip");
+        await File.WriteAllTextAsync(archivePath, "backup");
+
+        var handler = new SequenceHttpMessageHandler([
+            _ => CreateJsonResponse(HttpStatusCode.Forbidden, "{\"error\":{\"code\":\"accessDenied\",\"message\":\"Access denied.\"}}")
+        ]);
+        using var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://graph.microsoft.com/v1.0/")
+        };
+
+        var sut = new OneDriveBackupUploadClient(
+            httpClient,
+            CreateOneDriveAuthServiceMock("test-access-token").Object,
+            new Mock<ILogger<OneDriveBackupUploadClient>>().Object);
+
+        Func<Task> act = () => sut.UploadManualBackupAsync(archivePath, Path.GetFileName(archivePath));
+
+        await act.Should().ThrowAsync<OneDriveBackupException>()
+            .Where(exception => exception.FailureKind == OneDriveBackupFailureKind.AccessDenied);
     }
 
     [Fact]
