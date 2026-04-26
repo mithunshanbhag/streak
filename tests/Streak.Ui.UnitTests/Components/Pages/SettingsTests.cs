@@ -40,6 +40,7 @@ public sealed class SettingsTests : TestContext
         cut.Find("input[aria-label='Daily reminder toggle']").HasAttribute("checked").Should().BeTrue();
         markup.Should().Contain("Reminder time");
         markup.Should().Contain("💾 Local backup");
+        markup.Should().Contain("Create nightly local backups or manually save and share a copy of your data.");
         markup.Should().Contain("Daily automated backups");
         markup.Should().Contain("Create a nightly backup in local storage.");
         cut.Find("button[aria-label='Automated backup details']");
@@ -65,7 +66,7 @@ public sealed class SettingsTests : TestContext
         cut.Find("button[aria-label='Diagnostic log details']");
         cut.Find("button[aria-label='Export diagnostic logs']");
         cut.Find("button[aria-label='Share diagnostic logs']").HasAttribute("disabled").Should().BeTrue();
-        markup.Should().Contain("Restore from a local .zip backup or a legacy .db file. Existing proof photos stay in place for .db restores.");
+        markup.Should().Contain("Restore from a local .zip backup or a legacy .db file.");
         cut.Find("button[aria-label='Restore warning']");
         cut.Find("button[aria-label='Upload data']");
         markup.Should().NotContain(">Data<");

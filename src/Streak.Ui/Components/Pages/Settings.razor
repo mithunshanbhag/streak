@@ -55,100 +55,108 @@
 
         <MudPaper Elevation="1"
                   Class="pa-4 rounded-lg">
-            <MudStack Spacing="3">
-                <MudText Typo="Typo.h6">
-                    @ReminderHeaderText
-                </MudText>
+            <MudStack Spacing="2">
+                <MudStack Spacing="1">
+                    <MudText Typo="Typo.h6">
+                        @ReminderHeaderText
+                    </MudText>
 
-                <MudPaper Elevation="0"
-                          Class="pa-3 rounded-lg">
-                    <MudStack Row="true"
-                              Justify="Justify.SpaceBetween"
-                              AlignItems="AlignItems.Center"
-                              Spacing="3">
-                        <MudText Typo="Typo.body1">
-                            @ReminderToggleLabelText
-                        </MudText>
+                    <MudText Typo="Typo.caption"
+                             Class="text-secondary">
+                        @ReminderHelperText
+                    </MudText>
+                </MudStack>
 
-                        <MudSwitch T="bool"
-                                   Value="@_remindersEnabled"
-                                   ValueChanged="ReminderEnabledChangedAsync"
-                                   Disabled="@ReminderControlsDisabled"
-                                   Color="Color.Primary"
-                                   aria-label="@ReminderSwitchAriaLabel"/>
-                    </MudStack>
-                </MudPaper>
+                <MudStack Row="true"
+                          Justify="Justify.SpaceBetween"
+                          AlignItems="AlignItems.Center"
+                          Spacing="3"
+                          Style="@SettingRowStyle">
+                    <MudText Typo="Typo.body1">
+                        @ReminderToggleLabelText
+                    </MudText>
+
+                    <MudSwitch T="bool"
+                               Value="@_remindersEnabled"
+                               ValueChanged="ReminderEnabledChangedAsync"
+                               Disabled="@ReminderControlsDisabled"
+                               Color="Color.Primary"
+                               aria-label="@ReminderSwitchAriaLabel"/>
+                </MudStack>
 
                 @if (_remindersEnabled)
                 {
-                    <MudPaper Elevation="0"
-                              Class="pa-3 rounded-lg">
-                        <MudStack Spacing="2">
-                            <MudText Typo="Typo.body2">
-                                @ReminderTimeLabelText
-                            </MudText>
+                    <MudDivider/>
 
-                            <MudTimePicker Time="@_reminderTimeLocal"
-                                           TimeChanged="ReminderTimeChangedAsync"
-                                           Label="@ReminderTimeLabelText"
-                                           AmPm="true"
-                                           Variant="Variant.Outlined"
-                                           Disabled="@ReminderControlsDisabled" />
-                        </MudStack>
-                    </MudPaper>
+                    <MudStack Row="true"
+                              Justify="Justify.SpaceBetween"
+                              AlignItems="AlignItems.Center"
+                              Spacing="3"
+                              Style="@SettingRowStyle">
+                        <MudText Typo="Typo.body1">
+                            @ReminderTimeLabelText
+                        </MudText>
+
+                        <MudTimePicker Time="@_reminderTimeLocal"
+                                       TimeChanged="ReminderTimeChangedAsync"
+                                       AmPm="true"
+                                       Variant="Variant.Outlined"
+                                       Disabled="@ReminderControlsDisabled"
+                                       Style="@ReminderTimePickerStyle"/>
+                    </MudStack>
                 }
-
-                <MudText Typo="Typo.caption"
-                         Class="text-secondary">
-                    @ReminderHelperText
-                </MudText>
             </MudStack>
         </MudPaper>
 
         <MudPaper Elevation="1"
                   Class="pa-4 rounded-lg">
-            <MudStack Spacing="3">
-                <MudText Typo="Typo.h6">
-                    @LocalBackupHeaderText
-                </MudText>
+            <MudStack Spacing="2">
+                <MudStack Spacing="1">
+                    <MudText Typo="Typo.h6">
+                        @LocalBackupHeaderText
+                    </MudText>
+
+                    <MudText Typo="Typo.caption"
+                             Class="text-secondary">
+                        @LocalBackupDescriptionText
+                    </MudText>
+                </MudStack>
 
                 <MudStack Spacing="1">
                     <MudStack Row="true"
                               Spacing="1"
                               AlignItems="AlignItems.Center">
-                        <MudText Typo="Typo.h6">
+                        <MudText Typo="Typo.body1">
                             @AutomatedBackupsHeaderText
                         </MudText>
 
                         <MudTooltip Text="@AutomatedBackupsTooltipText"
                                     Placement="Placement.Top">
                             <MudIconButton Icon="@Icons.Material.Filled.Info"
-                                            Color="Color.Default"
-                                            Size="Size.Small"
-                                            aria-label="@AutomatedBackupsTooltipAriaLabel"/>
+                                           Color="Color.Default"
+                                           Size="Size.Small"
+                                           aria-label="@AutomatedBackupsTooltipAriaLabel"/>
                         </MudTooltip>
                     </MudStack>
 
-                    <MudText Typo="Typo.body2"
+                    <MudText Typo="Typo.caption"
                              Class="text-secondary">
                         @AutomatedBackupsDescriptionText
                     </MudText>
                 </MudStack>
 
-                <MudPaper Elevation="0"
-                          Class="pa-3 rounded-lg">
-                    <MudStack Row="true"
-                              Justify="Justify.FlexEnd"
-                              AlignItems="AlignItems.Center"
-                              Spacing="0">
-                        <MudSwitch T="bool"
-                                   Value="@_automatedBackupsEnabled"
-                                   ValueChanged="AutomatedBackupsEnabledChangedAsync"
-                                   Disabled="@AutomatedBackupsToggleDisabled"
-                                   Color="Color.Primary"
-                                   aria-label="@AutomatedBackupsSwitchAriaLabel"/>
-                    </MudStack>
-                </MudPaper>
+                <MudStack Row="true"
+                          Justify="Justify.FlexEnd"
+                          AlignItems="AlignItems.Center"
+                          Spacing="0"
+                          Style="@SettingRowStyle">
+                    <MudSwitch T="bool"
+                               Value="@_automatedBackupsEnabled"
+                               ValueChanged="AutomatedBackupsEnabledChangedAsync"
+                               Disabled="@AutomatedBackupsToggleDisabled"
+                               Color="Color.Primary"
+                               aria-label="@AutomatedBackupsSwitchAriaLabel"/>
+                </MudStack>
 
                 <MudDivider/>
 
@@ -156,7 +164,7 @@
                     <MudStack Row="true"
                               Spacing="1"
                               AlignItems="AlignItems.Center">
-                        <MudText Typo="Typo.h6">
+                        <MudText Typo="Typo.body1">
                             @ManualBackupHeaderText
                         </MudText>
 
@@ -169,7 +177,7 @@
                         </MudTooltip>
                     </MudStack>
 
-                    <MudText Typo="Typo.body2"
+                    <MudText Typo="Typo.caption"
                              Class="text-secondary">
                         @ManualBackupDescriptionText
                     </MudText>
@@ -183,21 +191,42 @@
                     }
                 </MudStack>
 
-                <MudPaper Elevation="0"
-                          Class="pa-3 rounded-lg">
-                    <MudStack Row="true"
-                              Justify="Justify.FlexEnd"
-                              AlignItems="AlignItems.Center"
-                              Spacing="3">
-                        <MudTooltip Text="@ExportButtonTooltipText"
-                                    Placement="Placement.Top">
+                <MudStack Row="true"
+                          Justify="Justify.FlexEnd"
+                          AlignItems="AlignItems.Center"
+                          Spacing="3"
+                          Style="@SettingRowStyle">
+                    <MudTooltip Text="@ExportButtonTooltipText"
+                                Placement="Placement.Top">
+                        <MudButton Color="Color.Primary"
+                                   Variant="Variant.Filled"
+                                   Disabled="@DataActionsDisabled"
+                                   aria-label="@ExportButtonAriaLabel"
+                                   Style="@DataActionButtonStyle"
+                                   OnClick="ExportDatabaseAsync">
+                            @if (_exportInProgress)
+                            {
+                                <MudProgressCircular Indeterminate="true"
+                                                     Color="Color.Inherit"
+                                                     Size="Size.Small"/>
+                            }
+                            else
+                            {
+                                <MudIcon Icon="@Icons.Material.Filled.Download"/>
+                            }
+                        </MudButton>
+                    </MudTooltip>
+
+                    <MudTooltip Text="@ShareButtonTooltipText"
+                                Placement="Placement.Top">
+                        <span class="d-inline-flex">
                             <MudButton Color="Color.Primary"
                                        Variant="Variant.Filled"
-                                       Disabled="@DataActionsDisabled"
-                                       aria-label="@ExportButtonAriaLabel"
+                                       Disabled="@(!DatabaseShareService.CanShare || DataActionsDisabled)"
+                                       aria-label="@ShareButtonAriaLabel"
                                        Style="@DataActionButtonStyle"
-                                       OnClick="ExportDatabaseAsync">
-                                @if (_exportInProgress)
+                                       OnClick="ShareDatabaseAsync">
+                                @if (_shareInProgress)
                                 {
                                     <MudProgressCircular Indeterminate="true"
                                                          Color="Color.Inherit"
@@ -205,41 +234,18 @@
                                 }
                                 else
                                 {
-                                    <MudIcon Icon="@Icons.Material.Filled.Download"/>
+                                    <MudIcon Icon="@Icons.Material.Filled.Share"/>
                                 }
                             </MudButton>
-                        </MudTooltip>
-
-                        <MudTooltip Text="@ShareButtonTooltipText"
-                                    Placement="Placement.Top">
-                            <span class="d-inline-flex">
-                                <MudButton Color="Color.Primary"
-                                           Variant="Variant.Filled"
-                                           Disabled="@(!DatabaseShareService.CanShare || DataActionsDisabled)"
-                                           aria-label="@ShareButtonAriaLabel"
-                                           Style="@DataActionButtonStyle"
-                                           OnClick="ShareDatabaseAsync">
-                                    @if (_shareInProgress)
-                                    {
-                                        <MudProgressCircular Indeterminate="true"
-                                                             Color="Color.Inherit"
-                                                             Size="Size.Small"/>
-                                    }
-                                    else
-                                    {
-                                        <MudIcon Icon="@Icons.Material.Filled.Share"/>
-                                    }
-                                </MudButton>
-                            </span>
-                        </MudTooltip>
-                    </MudStack>
-                </MudPaper>
+                        </span>
+                    </MudTooltip>
+                </MudStack>
             </MudStack>
         </MudPaper>
 
         <MudPaper Elevation="1"
                   Class="pa-4 rounded-lg">
-            <MudStack Spacing="3">
+            <MudStack Spacing="2">
                 <MudStack Spacing="1">
                     <MudStack Row="true"
                               Spacing="1"
@@ -257,14 +263,14 @@
                         </MudTooltip>
                     </MudStack>
 
-                    <MudText Typo="Typo.body2"
+                    <MudText Typo="Typo.caption"
                              Class="text-secondary">
                         @CloudBackupDescriptionText
                     </MudText>
                 </MudStack>
 
                 <MudPaper Elevation="0"
-                          Class="pa-3 rounded-lg"
+                          Class="rounded-lg"
                           Style="@OneDriveProviderPanelStyle">
                     <MudStack Spacing="2">
                         @if (_oneDriveAuthState.IsConnected)
@@ -283,18 +289,16 @@
 
                         <MudStack Row="true"
                                   AlignItems="AlignItems.Center"
-                                  Spacing="2">
+                                  Spacing="2"
+                                  Style="@SettingRowStyle">
                             <MudTooltip Text="@OneDriveProviderButtonTooltipText"
-                                        Placement="Placement.Top">
+                                         Placement="Placement.Top">
                                 <span class="d-inline-flex">
-                                    <MudButton Color="@OneDriveProviderStatusIconColor"
-                                               Variant="Variant.Filled"
-                                               Disabled="@OneDriveProviderButtonDisabled"
-                                               Style="@DataActionButtonStyle"
-                                               OnClick="HandleOneDriveProviderButtonClickAsync"
-                                               aria-label="@OneDriveProviderButtonAriaLabel">
-                                        <MudIcon Icon="@OneDriveProviderStatusIcon"/>
-                                    </MudButton>
+                                    <MudIconButton Icon="@OneDriveProviderStatusIcon"
+                                                   Disabled="@OneDriveProviderButtonDisabled"
+                                                   Style="@OneDriveProviderButtonStyle"
+                                                   OnClick="HandleOneDriveProviderButtonClickAsync"
+                                                   aria-label="@OneDriveProviderButtonAriaLabel"/>
                                 </span>
                             </MudTooltip>
 
@@ -352,7 +356,8 @@
 
                             <MudStack Row="true"
                                       Justify="Justify.FlexEnd"
-                                      AlignItems="AlignItems.Center">
+                                      AlignItems="AlignItems.Center"
+                                      Style="@SettingRowStyle">
                                 <MudTooltip Text="@BackUpToOneDriveButtonTooltipText"
                                             Placement="Placement.Top">
                                     <span class="d-inline-flex">
@@ -405,7 +410,8 @@
                             <MudStack Row="true"
                                       Justify="Justify.FlexEnd"
                                       AlignItems="AlignItems.Center"
-                                      Spacing="0">
+                                      Spacing="0"
+                                      Style="@SettingRowStyle">
                                 <MudSwitch T="bool"
                                            Value="@_oneDriveCloudBackupEnabled"
                                            ValueChanged="OneDriveCloudBackupEnabledChangedAsync"
@@ -421,7 +427,7 @@
 
         <MudPaper Elevation="1"
                   Class="pa-4 rounded-lg">
-            <MudStack Spacing="3">
+            <MudStack Spacing="2">
                 <MudStack Spacing="1">
                     <MudStack Row="true"
                               Spacing="1"
@@ -439,45 +445,43 @@
                         </MudTooltip>
                     </MudStack>
 
-                    <MudText Typo="Typo.body2"
+                    <MudText Typo="Typo.caption"
                              Class="text-secondary">
                         @RestoreDescriptionText
                     </MudText>
                 </MudStack>
 
-                <MudPaper Elevation="0"
-                          Class="pa-3 rounded-lg">
-                    <MudStack Row="true"
-                              Justify="Justify.FlexEnd"
-                              AlignItems="AlignItems.Center">
-                        <MudTooltip Text="@ImportButtonTooltipText"
-                                     Placement="Placement.Top">
-                            <MudButton Color="Color.Primary"
-                                       Variant="Variant.Filled"
-                                       Disabled="@DataActionsDisabled"
-                                       aria-label="@ImportButtonAriaLabel"
-                                       Style="@DataActionButtonStyle"
-                                       OnClick="ImportDatabaseAsync">
-                                @if (_importInProgress)
-                                {
-                                    <MudProgressCircular Indeterminate="true"
-                                                         Color="Color.Inherit"
-                                                         Size="Size.Small"/>
-                                }
-                                else
-                                {
-                                    <MudIcon Icon="@Icons.Material.Filled.Upload"/>
-                                }
-                            </MudButton>
-                        </MudTooltip>
-                    </MudStack>
-                </MudPaper>
+                <MudStack Row="true"
+                          Justify="Justify.FlexEnd"
+                          AlignItems="AlignItems.Center"
+                          Style="@SettingRowStyle">
+                    <MudTooltip Text="@ImportButtonTooltipText"
+                                 Placement="Placement.Top">
+                        <MudButton Color="Color.Primary"
+                                   Variant="Variant.Filled"
+                                   Disabled="@DataActionsDisabled"
+                                   aria-label="@ImportButtonAriaLabel"
+                                   Style="@DataActionButtonStyle"
+                                   OnClick="ImportDatabaseAsync">
+                            @if (_importInProgress)
+                            {
+                                <MudProgressCircular Indeterminate="true"
+                                                     Color="Color.Inherit"
+                                                     Size="Size.Small"/>
+                            }
+                            else
+                            {
+                                <MudIcon Icon="@Icons.Material.Filled.Upload"/>
+                            }
+                        </MudButton>
+                    </MudTooltip>
+                </MudStack>
             </MudStack>
         </MudPaper>
 
         <MudPaper Elevation="1"
                   Class="pa-4 rounded-lg">
-            <MudStack Spacing="3">
+            <MudStack Spacing="2">
                 <MudStack Spacing="1">
                     <MudStack Row="true"
                               Spacing="1"
@@ -495,27 +499,48 @@
                         </MudTooltip>
                     </MudStack>
 
-                    <MudText Typo="Typo.body2"
+                    <MudText Typo="Typo.caption"
                              Class="text-secondary">
                         @DiagnosticsDescriptionText
                     </MudText>
                 </MudStack>
 
-                <MudPaper Elevation="0"
-                          Class="pa-3 rounded-lg">
-                    <MudStack Row="true"
-                              Justify="Justify.FlexEnd"
-                              AlignItems="AlignItems.Center"
-                              Spacing="3">
-                        <MudTooltip Text="@DiagnosticsExportButtonTooltipText"
-                                     Placement="Placement.Top">
+                <MudStack Row="true"
+                          Justify="Justify.FlexEnd"
+                          AlignItems="AlignItems.Center"
+                          Spacing="3"
+                          Style="@SettingRowStyle">
+                    <MudTooltip Text="@DiagnosticsExportButtonTooltipText"
+                                 Placement="Placement.Top">
+                        <MudButton Color="Color.Primary"
+                                   Variant="Variant.Filled"
+                                   Disabled="@DataActionsDisabled"
+                                   aria-label="@DiagnosticsExportButtonAriaLabel"
+                                   Style="@DataActionButtonStyle"
+                                   OnClick="ExportDiagnosticsAsync">
+                            @if (_diagnosticsExportInProgress)
+                            {
+                                <MudProgressCircular Indeterminate="true"
+                                                     Color="Color.Inherit"
+                                                     Size="Size.Small"/>
+                            }
+                            else
+                            {
+                                <MudIcon Icon="@Icons.Material.Filled.Download"/>
+                            }
+                        </MudButton>
+                    </MudTooltip>
+
+                    <MudTooltip Text="@DiagnosticsShareButtonTooltipText"
+                                Placement="Placement.Top">
+                        <span class="d-inline-flex">
                             <MudButton Color="Color.Primary"
                                        Variant="Variant.Filled"
-                                       Disabled="@DataActionsDisabled"
-                                       aria-label="@DiagnosticsExportButtonAriaLabel"
+                                       Disabled="@(!DiagnosticsShareService.CanShare || DataActionsDisabled)"
+                                       aria-label="@DiagnosticsShareButtonAriaLabel"
                                        Style="@DataActionButtonStyle"
-                                       OnClick="ExportDiagnosticsAsync">
-                                @if (_diagnosticsExportInProgress)
+                                       OnClick="ShareDiagnosticsAsync">
+                                @if (_diagnosticsShareInProgress)
                                 {
                                     <MudProgressCircular Indeterminate="true"
                                                          Color="Color.Inherit"
@@ -523,35 +548,12 @@
                                 }
                                 else
                                 {
-                                    <MudIcon Icon="@Icons.Material.Filled.Download"/>
+                                    <MudIcon Icon="@Icons.Material.Filled.Share"/>
                                 }
                             </MudButton>
-                        </MudTooltip>
-
-                        <MudTooltip Text="@DiagnosticsShareButtonTooltipText"
-                                    Placement="Placement.Top">
-                            <span class="d-inline-flex">
-                                <MudButton Color="Color.Primary"
-                                           Variant="Variant.Filled"
-                                           Disabled="@(!DiagnosticsShareService.CanShare || DataActionsDisabled)"
-                                           aria-label="@DiagnosticsShareButtonAriaLabel"
-                                           Style="@DataActionButtonStyle"
-                                           OnClick="ShareDiagnosticsAsync">
-                                    @if (_diagnosticsShareInProgress)
-                                    {
-                                        <MudProgressCircular Indeterminate="true"
-                                                             Color="Color.Inherit"
-                                                             Size="Size.Small"/>
-                                    }
-                                    else
-                                    {
-                                        <MudIcon Icon="@Icons.Material.Filled.Share"/>
-                                    }
-                                </MudButton>
-                            </span>
-                        </MudTooltip>
-                    </MudStack>
-                </MudPaper>
+                        </span>
+                    </MudTooltip>
+                </MudStack>
             </MudStack>
         </MudPaper>
     </MudStack>
@@ -688,10 +690,6 @@
         ? Icons.Material.Filled.CloudDone
         : Icons.Material.Filled.CloudOff;
 
-    private Color OneDriveProviderStatusIconColor => _oneDriveAuthState.IsConnected
-        ? Color.Success
-        : Color.Error;
-
     private string? LocalManualBackupMetadataText => FormatLastBackupMetadataText(_lastSuccessfulLocalManualBackupUtc);
 
     private string? CloudManualBackupMetadataText => FormatLastBackupMetadataText(_lastSuccessfulCloudManualBackupUtc);
@@ -743,11 +741,19 @@
 
     #region CSS Style Properties
 
-    private const string DataActionButtonStyle = "width: 42px; min-width: 42px; height: 42px; border-radius: 999px; padding: 0;";
+    private const string DataActionButtonStyle = "width: 42px; min-width: 42px; height: 42px; border-radius: 999px; padding: 0; box-shadow: 0 3px 8px rgba(98, 0, 238, 0.24);";
 
-    private const string SettingsMetadataBannerStyle = "align-self: center; background-color: var(--mud-palette-primary-hover); color: var(--mud-palette-primary);";
+    private const string SettingRowStyle = "min-height: 56px; padding: 4px 0;";
 
-    private const string OneDriveProviderPanelStyle = "border: 1px solid var(--mud-palette-lines-default); background-color: var(--mud-palette-background-grey);";
+    private const string ReminderTimePickerStyle = "min-width: 136px;";
+
+    private const string SettingsMetadataBannerStyle = "align-self: center; background-color: #EDE7F6; color: #4527A0;";
+
+    private const string OneDriveProviderPanelStyle = "padding: 12px 14px; border-radius: 12px; border: 1px solid #E0E0E0; background-color: #F9FAFB;";
+
+    private string OneDriveProviderButtonStyle => _oneDriveAuthState.IsConnected
+        ? "width: 36px; height: 36px; padding: 0; border-radius: 10px; background-color: #EDE7F6; color: #4CAF50;"
+        : "width: 36px; height: 36px; padding: 0; border-radius: 10px; background-color: rgba(211, 47, 47, 0.08); color: #D32F2F;";
 
     #endregion
 
@@ -1153,6 +1159,8 @@
 
     private const string LocalBackupHeaderText = "💾 Local backup";
 
+    private const string LocalBackupDescriptionText = "Create nightly local backups or manually save and share a copy of your data.";
+
     private const string AutomatedBackupsHeaderText = "Daily automated backups";
 
     private const string AutomatedBackupsDescriptionText = "Create a nightly backup in local storage.";
@@ -1265,7 +1273,7 @@
 
     private const string RestoreHeaderText = "↩️ Restore";
 
-    private const string RestoreDescriptionText = "Restore from a local .zip backup or a legacy .db file. Existing proof photos stay in place for .db restores.";
+    private const string RestoreDescriptionText = "Restore from a local .zip backup or a legacy .db file.";
 
     private const string ImportButtonTooltipText = "Upload data";
 
