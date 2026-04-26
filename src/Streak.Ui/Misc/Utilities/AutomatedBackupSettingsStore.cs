@@ -4,6 +4,33 @@ public static class AutomatedBackupSettingsStore
 {
     public static bool GetIsEnabled(string databasePath)
     {
+        return GetFlagValue(databasePath, AutomatedBackupConstants.LocalEnabledColumnName);
+    }
+
+    public static bool GetIsCloudEnabled(string databasePath)
+    {
+        return GetFlagValue(databasePath, AutomatedBackupConstants.CloudEnabledColumnName);
+    }
+
+    public static bool GetHasAnyEnabled(string databasePath)
+    {
+        return GetIsEnabled(databasePath) || GetIsCloudEnabled(databasePath);
+    }
+
+    public static void SetIsEnabled(string databasePath, bool isEnabled)
+    {
+        SetFlagValue(databasePath, AutomatedBackupConstants.LocalEnabledColumnName, isEnabled);
+    }
+
+    public static void SetIsCloudEnabled(string databasePath, bool isEnabled)
+    {
+        SetFlagValue(databasePath, AutomatedBackupConstants.CloudEnabledColumnName, isEnabled);
+    }
+
+    #region Private Helper Methods
+
+    private static bool GetFlagValue(string databasePath, string columnName)
+    {
         ArgumentException.ThrowIfNullOrWhiteSpace(databasePath);
 
         if (!File.Exists(databasePath))
@@ -16,7 +43,7 @@ public static class AutomatedBackupSettingsStore
         using var command = connection.CreateCommand();
         command.CommandText =
             $"""
-             SELECT IsEnabled
+             SELECT {columnName}
              FROM {AutomatedBackupConstants.SettingsTableName}
              WHERE Id = $id
              LIMIT 1;
@@ -30,7 +57,7 @@ public static class AutomatedBackupSettingsStore
         return Convert.ToInt32(result, CultureInfo.InvariantCulture) == 1;
     }
 
-    public static void SetIsEnabled(string databasePath, bool isEnabled)
+    private static void SetFlagValue(string databasePath, string columnName, bool isEnabled)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(databasePath);
 
@@ -44,16 +71,14 @@ public static class AutomatedBackupSettingsStore
         using var command = connection.CreateCommand();
         command.CommandText =
             $"""
-             INSERT INTO {AutomatedBackupConstants.SettingsTableName} (Id, IsEnabled)
+             INSERT INTO {AutomatedBackupConstants.SettingsTableName} (Id, {columnName})
              VALUES ($id, $isEnabled)
-             ON CONFLICT(Id) DO UPDATE SET IsEnabled = excluded.IsEnabled;
+             ON CONFLICT(Id) DO UPDATE SET {columnName} = excluded.{columnName};
              """;
         command.Parameters.AddWithValue("$id", AutomatedBackupConstants.SettingsRowId);
         command.Parameters.AddWithValue("$isEnabled", isEnabled ? 1 : 0);
         command.ExecuteNonQuery();
     }
-
-    #region Private Helper Methods
 
     private static SqliteConnection OpenConnection(string databasePath, SqliteOpenMode mode)
     {

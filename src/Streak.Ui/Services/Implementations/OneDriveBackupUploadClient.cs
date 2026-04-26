@@ -24,12 +24,47 @@ public sealed class OneDriveBackupUploadClient(
         string destinationFileName,
         CancellationToken cancellationToken = default)
     {
+        await UploadBackupAsync(
+            localFilePath,
+            destinationFileName,
+            StreakExportStorageConstants.ManualBackupsDirectoryName,
+            "Manual",
+            "EnsureOneDriveManualBackupsFolder",
+            "UploadManualBackupArchive",
+            cancellationToken);
+    }
+
+    public async Task UploadAutomatedBackupAsync(
+        string localFilePath,
+        string destinationFileName,
+        CancellationToken cancellationToken = default)
+    {
+        await UploadBackupAsync(
+            localFilePath,
+            destinationFileName,
+            StreakExportStorageConstants.AutomatedBackupsDirectoryName,
+            "Automated",
+            "EnsureOneDriveAutomatedBackupsFolder",
+            "UploadAutomatedBackupArchive",
+            cancellationToken);
+    }
+
+    private async Task UploadBackupAsync(
+        string localFilePath,
+        string destinationFileName,
+        string targetDirectoryName,
+        string backupKindLabel,
+        string ensureFolderOperationName,
+        string uploadOperationName,
+        CancellationToken cancellationToken)
+    {
         if (!File.Exists(localFilePath))
             throw new FileNotFoundException("The local backup archive could not be found.", localFilePath);
 
         var fileInfo = new FileInfo(localFilePath);
         _logger.LogInformation(
-            "Manual OneDrive backup upload starting. File name: {FileName}. File size bytes: {FileSizeBytes}. Target folder: {TargetFolder}.",
+            "{BackupKind} OneDrive backup upload starting. File name: {FileName}. File size bytes: {FileSizeBytes}. Target folder: {TargetFolder}.",
+            backupKindLabel,
             destinationFileName,
             fileInfo.Length,
             OneDriveAuthConstants.StorageLocationDisplayName);
@@ -48,13 +83,20 @@ public sealed class OneDriveBackupUploadClient(
             await EnsureFolderExistsAsync(
                 accessToken,
                 parentPath: StreakExportStorageConstants.BackupsDirectoryName,
-                folderName: StreakExportStorageConstants.ManualBackupsDirectoryName,
-                operationName: "EnsureOneDriveManualBackupsFolder",
+                folderName: targetDirectoryName,
+                operationName: ensureFolderOperationName,
                 cancellationToken);
-            await UploadFileAsync(accessToken, localFilePath, destinationFileName, cancellationToken);
+            await UploadFileAsync(
+                accessToken,
+                localFilePath,
+                destinationFileName,
+                targetDirectoryName,
+                uploadOperationName,
+                cancellationToken);
 
             _logger.LogInformation(
-                "Manual OneDrive backup upload completed. File name: {FileName}. File size bytes: {FileSizeBytes}. Target folder: {TargetFolder}.",
+                "{BackupKind} OneDrive backup upload completed. File name: {FileName}. File size bytes: {FileSizeBytes}. Target folder: {TargetFolder}.",
+                backupKindLabel,
                 destinationFileName,
                 fileInfo.Length,
                 OneDriveAuthConstants.StorageLocationDisplayName);
@@ -146,14 +188,15 @@ public sealed class OneDriveBackupUploadClient(
         string accessToken,
         string localFilePath,
         string destinationFileName,
+        string targetDirectoryName,
+        string operationName,
         CancellationToken cancellationToken)
     {
-        const string operationName = "UploadManualBackupArchive";
         await using var fileStream = File.OpenRead(localFilePath);
 
         using var request = CreateAuthorizedRequest(
             HttpMethod.Put,
-            BuildUploadEndpoint(destinationFileName),
+            BuildUploadEndpoint(targetDirectoryName, destinationFileName),
             accessToken);
         request.Content = new StreamContent(fileStream);
         request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/zip");
@@ -281,13 +324,13 @@ public sealed class OneDriveBackupUploadClient(
             GetHeaderValue(response, "request-id"));
     }
 
-    private static string BuildUploadEndpoint(string destinationFileName)
+    private static string BuildUploadEndpoint(string targetDirectoryName, string destinationFileName)
     {
         var remotePath = string.Join(
             '/',
             [
                 StreakExportStorageConstants.BackupsDirectoryName,
-                StreakExportStorageConstants.ManualBackupsDirectoryName,
+                targetDirectoryName,
                 destinationFileName
             ]);
 

@@ -38,6 +38,32 @@ public sealed class AutomatedBackupConfigurationServiceTests
     }
 
     [Fact]
+    public void GetIsCloudEnabled_ShouldReturnPersistedValue()
+    {
+        using var databaseDirectory = new TemporaryDirectory();
+        var databasePath = Path.Combine(databaseDirectory.Path, "settings.db");
+        CreateDatabase(databasePath, isEnabled: false, isCloudEnabled: true);
+
+        var schedulerMock = new Mock<IAutomatedBackupScheduler>();
+        var sut = CreateSut(databasePath, schedulerMock.Object);
+
+        sut.GetIsCloudEnabled().Should().BeTrue();
+    }
+
+    [Fact]
+    public void GetHasAnyEnabled_ShouldReturnTrue_WhenCloudBackupIsEnabled()
+    {
+        using var databaseDirectory = new TemporaryDirectory();
+        var databasePath = Path.Combine(databaseDirectory.Path, "settings.db");
+        CreateDatabase(databasePath, isEnabled: false, isCloudEnabled: true);
+
+        var schedulerMock = new Mock<IAutomatedBackupScheduler>();
+        var sut = CreateSut(databasePath, schedulerMock.Object);
+
+        sut.GetHasAnyEnabled().Should().BeTrue();
+    }
+
+    [Fact]
     public void IsSupported_ShouldMirrorSchedulerSupport()
     {
         using var databaseDirectory = new TemporaryDirectory();
@@ -68,11 +94,27 @@ public sealed class AutomatedBackupConfigurationServiceTests
     }
 
     [Fact]
-    public void SynchronizeScheduler_ShouldApplyPersistedValue()
+    public void SetIsCloudEnabled_ShouldPersistEnabledValueAndSynchronizeScheduler()
     {
         using var databaseDirectory = new TemporaryDirectory();
         var databasePath = Path.Combine(databaseDirectory.Path, "settings.db");
-        CreateDatabase(databasePath, isEnabled: true);
+        CreateDatabase(databasePath, isEnabled: false, isCloudEnabled: false);
+
+        var schedulerMock = new Mock<IAutomatedBackupScheduler>();
+        var sut = CreateSut(databasePath, schedulerMock.Object);
+
+        sut.SetIsCloudEnabled(true);
+
+        AutomatedBackupSettingsStore.GetIsCloudEnabled(databasePath).Should().BeTrue();
+        schedulerMock.Verify(x => x.Synchronize(true), Times.Once);
+    }
+
+    [Fact]
+    public void SynchronizeScheduler_ShouldApplyCombinedPersistedValue()
+    {
+        using var databaseDirectory = new TemporaryDirectory();
+        var databasePath = Path.Combine(databaseDirectory.Path, "settings.db");
+        CreateDatabase(databasePath, isEnabled: false, isCloudEnabled: true);
 
         var schedulerMock = new Mock<IAutomatedBackupScheduler>();
         var sut = CreateSut(databasePath, schedulerMock.Object);
@@ -110,6 +152,30 @@ public sealed class AutomatedBackupConfigurationServiceTests
         schedulerMock.Verify(x => x.Synchronize(false), Times.Once);
     }
 
+    [Fact]
+    public void SetIsCloudEnabled_ShouldRestorePreviousValue_WhenSchedulerSynchronizationFails()
+    {
+        using var databaseDirectory = new TemporaryDirectory();
+        var databasePath = Path.Combine(databaseDirectory.Path, "settings.db");
+        CreateDatabase(databasePath, isEnabled: false, isCloudEnabled: false);
+
+        var schedulerMock = new Mock<IAutomatedBackupScheduler>();
+        schedulerMock
+            .SetupSequence(x => x.Synchronize(It.IsAny<bool>()))
+            .Throws(new InvalidOperationException("Scheduling failed."))
+            .Pass();
+
+        var sut = CreateSut(databasePath, schedulerMock.Object);
+
+        var act = () => sut.SetIsCloudEnabled(true);
+
+        act.Should().Throw<InvalidOperationException>()
+            .WithMessage("Scheduling failed.");
+        AutomatedBackupSettingsStore.GetIsCloudEnabled(databasePath).Should().BeFalse();
+        schedulerMock.Verify(x => x.Synchronize(true), Times.Once);
+        schedulerMock.Verify(x => x.Synchronize(false), Times.Once);
+    }
+
     #endregion
 
     #region Private Helper Methods
@@ -126,7 +192,7 @@ public sealed class AutomatedBackupConfigurationServiceTests
             automatedBackupScheduler);
     }
 
-    private static void CreateDatabase(string databasePath, bool isEnabled)
+    private static void CreateDatabase(string databasePath, bool isEnabled, bool isCloudEnabled = false)
     {
         Directory.CreateDirectory(Path.GetDirectoryName(databasePath)!);
 
@@ -136,11 +202,12 @@ public sealed class AutomatedBackupConfigurationServiceTests
             $"""
              CREATE TABLE {AutomatedBackupConstants.SettingsTableName} (
                  Id INTEGER NOT NULL PRIMARY KEY,
-                 IsEnabled INTEGER NOT NULL DEFAULT 0
+                 {AutomatedBackupConstants.LocalEnabledColumnName} INTEGER NOT NULL DEFAULT 0,
+                 {AutomatedBackupConstants.CloudEnabledColumnName} INTEGER NOT NULL DEFAULT 0
              ) STRICT;
 
-             INSERT INTO {AutomatedBackupConstants.SettingsTableName} (Id, IsEnabled)
-             VALUES ({AutomatedBackupConstants.SettingsRowId}, {(isEnabled ? 1 : 0)});
+             INSERT INTO {AutomatedBackupConstants.SettingsTableName} (Id, {AutomatedBackupConstants.LocalEnabledColumnName}, {AutomatedBackupConstants.CloudEnabledColumnName})
+             VALUES ({AutomatedBackupConstants.SettingsRowId}, {(isEnabled ? 1 : 0)}, {(isCloudEnabled ? 1 : 0)});
              """;
         command.ExecuteNonQuery();
     }

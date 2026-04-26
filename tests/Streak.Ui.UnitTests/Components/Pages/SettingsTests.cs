@@ -138,7 +138,8 @@ public sealed class SettingsTests : TestContext
         cut.Find("button[aria-label='Back up to OneDrive']").HasAttribute("disabled").Should().BeFalse();
         cut.Markup.Should().Contain("Daily automated cloud backup");
         cut.Find("button[aria-label='Automated cloud backup details']");
-        cut.Find("input[aria-label='Daily automated cloud backup toggle']").HasAttribute("disabled").Should().BeTrue();
+        cut.Find("input[aria-label='Daily automated cloud backup toggle']").HasAttribute("disabled").Should().BeFalse();
+        cut.Find("input[aria-label='Daily automated cloud backup toggle']").HasAttribute("checked").Should().BeFalse();
         cut.Markup.Should().Contain("Connected. Tap the green cloud icon to disconnect.");
         cut.Markup.Should().NotContain("Storage location");
         cut.Markup.Should().NotContain("Last backup");
@@ -1174,6 +1175,31 @@ public sealed class SettingsTests : TestContext
     }
 
     [Fact]
+    public void Settings_ShouldPersistAutomatedCloudBackupToggle_WhenUserChangesIt()
+    {
+        var exportServiceMock = new Mock<IDatabaseExportService>();
+        var diagnosticsExportServiceMock = new Mock<IDiagnosticsExportService>();
+        var shareServiceMock = CreateShareServiceMock(canShare: false);
+        var backupConfigurationServiceMock = CreateBackupConfigurationServiceMock(isEnabled: false, isCloudEnabled: false);
+        var reminderConfigurationServiceMock = CreateReminderConfigurationServiceMock(isEnabled: true);
+        var oneDriveAuthServiceMock = CreateOneDriveAuthServiceMock(CreateConnectedOneDriveAuthState());
+
+        RegisterSettingsServices(
+            exportServiceMock,
+            diagnosticsExportServiceMock,
+            shareServiceMock,
+            backupConfigurationServiceMock,
+            reminderConfigurationServiceMock,
+            oneDriveAuthServiceMock: oneDriveAuthServiceMock);
+
+        var cut = RenderSettings();
+
+        cut.Find("input[aria-label='Daily automated cloud backup toggle']").Change(true);
+
+        backupConfigurationServiceMock.Verify(x => x.SetIsCloudEnabled(true), Times.Once);
+    }
+
+    [Fact]
     public void Settings_ShouldShowSnackbar_WhenReminderNotificationPermissionIsDenied()
     {
         var exportServiceMock = new Mock<IDatabaseExportService>();
@@ -1337,11 +1363,14 @@ public sealed class SettingsTests : TestContext
 
     private static Mock<IAutomatedBackupConfigurationService> CreateBackupConfigurationServiceMock(
         bool isEnabled,
+        bool isCloudEnabled = false,
         bool isSupported = true)
     {
         var backupConfigurationServiceMock = new Mock<IAutomatedBackupConfigurationService>();
         backupConfigurationServiceMock.SetupGet(x => x.IsSupported).Returns(isSupported);
         backupConfigurationServiceMock.Setup(x => x.GetIsEnabled()).Returns(isEnabled);
+        backupConfigurationServiceMock.Setup(x => x.GetIsCloudEnabled()).Returns(isCloudEnabled);
+        backupConfigurationServiceMock.Setup(x => x.GetHasAnyEnabled()).Returns(isEnabled || isCloudEnabled);
         return backupConfigurationServiceMock;
     }
 

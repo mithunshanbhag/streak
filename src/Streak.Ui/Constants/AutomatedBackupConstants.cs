@@ -14,5 +14,9 @@ public static class AutomatedBackupConstants
 
     public const string SettingsTableName = "AutomatedBackupSettings";
 
+    public const string LocalEnabledColumnName = "IsEnabled";
+
+    public const string CloudEnabledColumnName = "IsCloudEnabled";
+
     public const string SharedAndroidDirectoryName = StreakExportStorageConstants.AndroidRootDirectoryName;
 }

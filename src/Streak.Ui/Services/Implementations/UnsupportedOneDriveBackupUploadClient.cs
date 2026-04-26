@@ -9,4 +9,12 @@ public sealed class UnsupportedOneDriveBackupUploadClient : IOneDriveBackupUploa
     {
         throw new NotSupportedException("OneDrive backup upload is not supported on this platform.");
     }
+
+    public Task UploadAutomatedBackupAsync(
+        string localFilePath,
+        string destinationFileName,
+        CancellationToken cancellationToken = default)
+    {
+        throw new NotSupportedException("OneDrive backup upload is not supported on this platform.");
+    }
 }

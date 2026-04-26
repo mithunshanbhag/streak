@@ -29,6 +29,8 @@ public sealed class SqliteDatabaseSchemaUpgrader(ILogger<SqliteDatabaseSchemaUpg
         var hasCheckinProofImageSizeBytesColumn = ColumnExists(connection, "Checkins", "ProofImageSizeBytes");
         var hasCheckinProofImageModifiedOnColumn = ColumnExists(connection, "Checkins", "ProofImageModifiedOn");
         var hasAutomatedBackupSettingsTable = TableExists(connection, AutomatedBackupConstants.SettingsTableName);
+        var hasAutomatedBackupCloudEnabledColumn = hasAutomatedBackupSettingsTable
+                                                   && ColumnExists(connection, AutomatedBackupConstants.SettingsTableName, AutomatedBackupConstants.CloudEnabledColumnName);
         var hasAutomatedBackupSettingsRow = hasAutomatedBackupSettingsTable
                                              && RowExists(connection, AutomatedBackupConstants.SettingsTableName, AutomatedBackupConstants.SettingsRowId);
         var hasReminderSettingsTable = TableExists(connection, ReminderConstants.SettingsTableName);
@@ -44,6 +46,7 @@ public sealed class SqliteDatabaseSchemaUpgrader(ILogger<SqliteDatabaseSchemaUpg
             hasCheckinProofImageSizeBytesColumn &&
             hasCheckinProofImageModifiedOnColumn &&
             hasAutomatedBackupSettingsTable &&
+            hasAutomatedBackupCloudEnabledColumn &&
             hasAutomatedBackupSettingsRow &&
             hasReminderSettingsTable &&
             hasReminderTimeLocalColumn &&
@@ -147,10 +150,23 @@ public sealed class SqliteDatabaseSchemaUpgrader(ILogger<SqliteDatabaseSchemaUpg
                 $"""
                  CREATE TABLE IF NOT EXISTS {AutomatedBackupConstants.SettingsTableName} (
                      Id INTEGER NOT NULL,
-                     IsEnabled INTEGER NOT NULL DEFAULT 0,
+                     {AutomatedBackupConstants.LocalEnabledColumnName} INTEGER NOT NULL DEFAULT 0,
+                     {AutomatedBackupConstants.CloudEnabledColumnName} INTEGER NOT NULL DEFAULT 0,
                      CONSTRAINT PK_{AutomatedBackupConstants.SettingsTableName} PRIMARY KEY (Id),
-                     CONSTRAINT CK_{AutomatedBackupConstants.SettingsTableName}_IsEnabled CHECK (IsEnabled IN (0, 1))
+                     CONSTRAINT CK_{AutomatedBackupConstants.SettingsTableName}_{AutomatedBackupConstants.LocalEnabledColumnName} CHECK ({AutomatedBackupConstants.LocalEnabledColumnName} IN (0, 1)),
+                     CONSTRAINT CK_{AutomatedBackupConstants.SettingsTableName}_{AutomatedBackupConstants.CloudEnabledColumnName} CHECK ({AutomatedBackupConstants.CloudEnabledColumnName} IN (0, 1))
                  ) STRICT;
+                 """;
+            command.ExecuteNonQuery();
+        }
+
+        if (hasAutomatedBackupSettingsTable && !hasAutomatedBackupCloudEnabledColumn)
+        {
+            command.CommandText =
+                $"""
+                 ALTER TABLE {AutomatedBackupConstants.SettingsTableName}
+                 ADD COLUMN {AutomatedBackupConstants.CloudEnabledColumnName} INTEGER NOT NULL DEFAULT 0
+                 CHECK ({AutomatedBackupConstants.CloudEnabledColumnName} IN (0, 1));
                  """;
             command.ExecuteNonQuery();
         }
@@ -159,9 +175,20 @@ public sealed class SqliteDatabaseSchemaUpgrader(ILogger<SqliteDatabaseSchemaUpg
         {
             command.CommandText =
                 $"""
-                 INSERT INTO {AutomatedBackupConstants.SettingsTableName} (Id, IsEnabled)
-                 VALUES ({AutomatedBackupConstants.SettingsRowId}, 0)
+                 INSERT INTO {AutomatedBackupConstants.SettingsTableName} (Id, {AutomatedBackupConstants.LocalEnabledColumnName}, {AutomatedBackupConstants.CloudEnabledColumnName})
+                 VALUES ({AutomatedBackupConstants.SettingsRowId}, 0, 0)
                  ON CONFLICT(Id) DO NOTHING;
+                 """;
+            command.ExecuteNonQuery();
+        }
+
+        if (hasAutomatedBackupSettingsTable || !hasAutomatedBackupSettingsRow)
+        {
+            command.CommandText =
+                $"""
+                 UPDATE {AutomatedBackupConstants.SettingsTableName}
+                 SET {AutomatedBackupConstants.CloudEnabledColumnName} = 0
+                 WHERE {AutomatedBackupConstants.CloudEnabledColumnName} IS NULL;
                  """;
             command.ExecuteNonQuery();
         }

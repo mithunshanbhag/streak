@@ -63,6 +63,7 @@ public static class MauiAppBuilderExtensions
             builder.Services.AddSingleton<IReminderNotificationPermissionCoordinator, ReminderNotificationPermissionCoordinator>();
             builder.Services.AddTransient<IManualBackupCompletionNotifier, ManualBackupCompletionNotifier>();
             builder.Services.AddTransient<IManualCloudBackupService, UnsupportedManualCloudBackupService>();
+            builder.Services.AddTransient<IAutomatedCloudBackupService, UnsupportedAutomatedCloudBackupService>();
             builder.Services.AddTransient<IDatabaseImportService, DatabaseImportService>();
             builder.Services.AddTransient<IDatabaseExportService, DatabaseExportService>();
             builder.Services.AddTransient<IDiagnosticsExportService, DiagnosticsExportService>();
@@ -95,11 +96,13 @@ public static class MauiAppBuilderExtensions
             builder.Services.AddTransient<IDiagnosticsExportFileSaver, AndroidDiagnosticsExportFileSaver>();
             builder.Services.AddTransient<IAutomatedBackupFileSaver, AndroidAutomatedBackupFileSaver>();
             builder.Services.AddTransient<IAutomatedBackupExecutionService, AutomatedBackupExecutionService>();
+            builder.Services.AddTransient<IAutomatedBackupRunService, AutomatedBackupRunService>();
             builder.Services.AddSingleton<IShare>(_ => Share.Default);
             builder.Services.AddSingleton<IAutomatedBackupScheduler, AndroidAutomatedBackupScheduler>();
             builder.Services.AddSingleton<IReminderScheduler, AndroidReminderScheduler>();
             builder.Services.AddSingleton<IOneDriveAuthService, Streak.Ui.Platforms.Android.Services.AndroidOneDriveAuthService>();
             builder.Services.AddTransient<IManualCloudBackupService, ManualCloudBackupService>();
+            builder.Services.AddTransient<IAutomatedCloudBackupService, AutomatedCloudBackupService>();
             builder.Services.AddHttpClient<IOneDriveBackupUploadClient, OneDriveBackupUploadClient>(
                 client =>
                 {
@@ -117,6 +120,7 @@ public static class MauiAppBuilderExtensions
             builder.Services.AddSingleton<IReminderNotifier, NoOpReminderNotifier>();
             builder.Services.AddSingleton<IReminderNotificationPermissionService, NoOpReminderNotificationPermissionService>();
             builder.Services.AddSingleton<IOneDriveAuthService, UnsupportedOneDriveAuthService>();
+            builder.Services.AddTransient<IAutomatedCloudBackupService, UnsupportedAutomatedCloudBackupService>();
             builder.Services.AddTransient<IOneDriveBackupUploadClient, UnsupportedOneDriveBackupUploadClient>();
             builder.Services.AddTransient<IDiagnosticsExportFileSaver, WindowsDiagnosticsExportFileSaver>();
             builder.Services.AddTransient<ICheckinProofMediaPickerService, UnsupportedCheckinProofMediaPickerService>();

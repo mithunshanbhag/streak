@@ -67,7 +67,7 @@ public sealed class SqliteDatabaseSchemaUpgraderTests
         checkinReader.IsDBNull(5).Should().BeTrue();
         checkinReader.IsDBNull(6).Should().BeTrue();
 
-        GetAutomatedBackupSetting(databasePath).Should().BeFalse();
+        GetAutomatedBackupSettings(databasePath).Should().Be((false, false));
         GetReminderSettings(databasePath).Should().Be(new ReminderSettings(false, new TimeOnly(21, 0)));
     }
 
@@ -111,11 +111,11 @@ public sealed class SqliteDatabaseSchemaUpgraderTests
         proofImageModifiedOnColumns.Should().ContainSingle();
         GetTableColumns(databasePath, AutomatedBackupConstants.SettingsTableName)
             .Should()
-            .Contain(["Id", "IsEnabled"]);
+            .Contain(["Id", AutomatedBackupConstants.LocalEnabledColumnName, AutomatedBackupConstants.CloudEnabledColumnName]);
         GetTableColumns(databasePath, ReminderConstants.SettingsTableName)
             .Should()
             .Contain(["Id", "IsEnabled", "TimeLocal"]);
-        GetAutomatedBackupSetting(databasePath).Should().BeFalse();
+        GetAutomatedBackupSettings(databasePath).Should().Be((false, false));
         GetReminderSettings(databasePath).Should().Be(new ReminderSettings(false, new TimeOnly(21, 0)));
     }
 
@@ -209,10 +209,10 @@ public sealed class SqliteDatabaseSchemaUpgraderTests
 
             CREATE TABLE {AutomatedBackupConstants.SettingsTableName} (
                 Id INTEGER NOT NULL PRIMARY KEY,
-                IsEnabled INTEGER NOT NULL DEFAULT 0
+                {AutomatedBackupConstants.LocalEnabledColumnName} INTEGER NOT NULL DEFAULT 0
             );
 
-            INSERT INTO {AutomatedBackupConstants.SettingsTableName} (Id, IsEnabled)
+            INSERT INTO {AutomatedBackupConstants.SettingsTableName} (Id, {AutomatedBackupConstants.LocalEnabledColumnName})
             VALUES ({AutomatedBackupConstants.SettingsRowId}, 0);
 
             INSERT INTO Habits (Id, Name, Emoji, Description)
@@ -250,19 +250,21 @@ public sealed class SqliteDatabaseSchemaUpgraderTests
         return columnNames;
     }
 
-    private static bool GetAutomatedBackupSetting(string databasePath)
+    private static (bool LocalEnabled, bool CloudEnabled) GetAutomatedBackupSettings(string databasePath)
     {
         using var connection = OpenConnection(databasePath);
         using var command = connection.CreateCommand();
         command.CommandText =
             $"""
-             SELECT IsEnabled
+             SELECT {AutomatedBackupConstants.LocalEnabledColumnName}, {AutomatedBackupConstants.CloudEnabledColumnName}
              FROM {AutomatedBackupConstants.SettingsTableName}
              WHERE Id = {AutomatedBackupConstants.SettingsRowId};
              """;
 
-        var result = command.ExecuteScalar();
-        return Convert.ToInt32(result, CultureInfo.InvariantCulture) == 1;
+        using var reader = command.ExecuteReader();
+        reader.Read().Should().BeTrue();
+
+        return (reader.GetInt64(0) == 1, reader.GetInt64(1) == 1);
     }
 
     private static ReminderSettings GetReminderSettings(string databasePath)

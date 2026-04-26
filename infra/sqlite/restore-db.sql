@@ -40,12 +40,14 @@ CREATE TABLE IF NOT EXISTS Checkins (
 CREATE TABLE IF NOT EXISTS AutomatedBackupSettings (
     Id INTEGER NOT NULL,
     IsEnabled INTEGER NOT NULL DEFAULT 0,
+    IsCloudEnabled INTEGER NOT NULL DEFAULT 0,
     CONSTRAINT PK_AutomatedBackupSettings PRIMARY KEY (Id),
-    CONSTRAINT CK_AutomatedBackupSettings_IsEnabled CHECK (IsEnabled IN (0, 1))
+    CONSTRAINT CK_AutomatedBackupSettings_IsEnabled CHECK (IsEnabled IN (0, 1)),
+    CONSTRAINT CK_AutomatedBackupSettings_IsCloudEnabled CHECK (IsCloudEnabled IN (0, 1))
 ) STRICT;
 
-INSERT INTO AutomatedBackupSettings (Id, IsEnabled)
-VALUES (1, 0)
+INSERT INTO AutomatedBackupSettings (Id, IsEnabled, IsCloudEnabled)
+VALUES (1, 0, 0)
 ON CONFLICT(Id) DO NOTHING;
 
 CREATE TABLE IF NOT EXISTS ReminderSettings (

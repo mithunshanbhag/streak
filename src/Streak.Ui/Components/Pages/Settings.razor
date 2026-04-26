@@ -407,7 +407,8 @@
                                       AlignItems="AlignItems.Center"
                                       Spacing="0">
                                 <MudSwitch T="bool"
-                                           Value="@OneDriveCloudBackupEnabledPlaceholder"
+                                           Value="@_oneDriveCloudBackupEnabled"
+                                           ValueChanged="OneDriveCloudBackupEnabledChangedAsync"
                                            Disabled="@OneDriveCloudBackupToggleDisabled"
                                            Color="Color.Primary"
                                            aria-label="@CloudAutomatedBackupsSwitchAriaLabel"/>
@@ -585,11 +586,13 @@
 
     private bool _automatedBackupSettingsUpdateInProgress;
 
+    private bool _oneDriveCloudBackupEnabled;
+
+    private bool _oneDriveCloudBackupSettingsUpdateInProgress;
+
     private OneDriveAuthState _oneDriveAuthState = new();
 
     private bool _oneDriveAuthOperationInProgress;
-
-    private const bool OneDriveCloudBackupEnabledPlaceholder = false;
 
     private AppVersionInfo? _appVersionInfo;
 
@@ -606,6 +609,7 @@
     private bool ReminderControlsDisabled =>
         _reminderSettingsUpdateInProgress
         || _automatedBackupSettingsUpdateInProgress
+        || _oneDriveCloudBackupSettingsUpdateInProgress
         || _oneDriveAuthOperationInProgress
         || _exportInProgress
         || _diagnosticsExportInProgress
@@ -626,9 +630,13 @@
         || _oneDriveManualBackupInProgress
         || _reminderSettingsUpdateInProgress
         || _automatedBackupSettingsUpdateInProgress
+        || _oneDriveCloudBackupSettingsUpdateInProgress
         || _oneDriveAuthOperationInProgress;
 
-    private bool OneDriveCloudBackupToggleDisabled => true;
+    private bool OneDriveCloudBackupToggleDisabled =>
+        !_automatedBackupsSupported
+        || !_oneDriveAuthState.IsConnected
+        || DataActionsDisabled;
 
     private bool OneDriveManualBackupButtonDisabled =>
         DataActionsDisabled || !_oneDriveAuthState.IsConnected;
@@ -703,17 +711,19 @@
             _reminderTimeLocal = ReminderConfigurationService.GetTimeLocal().ToTimeSpan();
             _automatedBackupsSupported = AutomatedBackupConfigurationService.IsSupported;
             _automatedBackupsEnabled = _automatedBackupsSupported && AutomatedBackupConfigurationService.GetIsEnabled();
+            _oneDriveCloudBackupEnabled = _automatedBackupsSupported && AutomatedBackupConfigurationService.GetIsCloudEnabled();
             _oneDriveAuthState = await OneDriveAuthService.GetAuthStateAsync();
             RefreshManualBackupStatusMetadata();
 
             await RequestReminderNotificationPermissionIfEnabledAsync();
 
             Logger.LogInformation(
-                "Settings page initialization completed in {ElapsedMilliseconds} ms. Reminders enabled: {RemindersEnabled}. Automated backups supported: {AutomatedBackupsSupported}. Automated backups enabled: {AutomatedBackupsEnabled}. OneDrive supported: {OneDrivePlatformSupported}. OneDrive configured: {OneDriveConfigured}. OneDrive connected: {OneDriveConnected}.",
+                "Settings page initialization completed in {ElapsedMilliseconds} ms. Reminders enabled: {RemindersEnabled}. Automated backups supported: {AutomatedBackupsSupported}. Automated local backups enabled: {AutomatedBackupsEnabled}. Automated cloud backups enabled: {AutomatedCloudBackupsEnabled}. OneDrive supported: {OneDrivePlatformSupported}. OneDrive configured: {OneDriveConfigured}. OneDrive connected: {OneDriveConnected}.",
                 stopwatch.ElapsedMilliseconds,
                 _remindersEnabled,
                 _automatedBackupsSupported,
                 _automatedBackupsEnabled,
+                _oneDriveCloudBackupEnabled,
                 _oneDriveAuthState.IsPlatformSupported,
                 _oneDriveAuthState.IsConfigured,
                 _oneDriveAuthState.IsConnected);
@@ -799,6 +809,11 @@
         {
             _automatedBackupSettingsUpdateInProgress = false;
         }
+    }
+
+    private Task OneDriveCloudBackupEnabledChangedAsync(bool isEnabled)
+    {
+        return OneDriveCloudBackupEnabledChangedInternalAsync(isEnabled);
     }
 
     private async Task ExportDatabaseAsync()
@@ -1054,6 +1069,27 @@
         _oneDriveAuthState = await OneDriveAuthService.GetAuthStateAsync();
     }
 
+    private async Task OneDriveCloudBackupEnabledChangedInternalAsync(bool isEnabled)
+    {
+        try
+        {
+            _oneDriveCloudBackupSettingsUpdateInProgress = true;
+            _operationErrorMessage = null;
+            AutomatedBackupConfigurationService.SetIsCloudEnabled(isEnabled);
+            _oneDriveCloudBackupEnabled = isEnabled;
+        }
+        catch (Exception)
+        {
+            _operationErrorMessage = OneDriveCloudAutomatedBackupUpdateFailedText;
+            _oneDriveCloudBackupEnabled = _automatedBackupsSupported && AutomatedBackupConfigurationService.GetIsCloudEnabled();
+        }
+        finally
+        {
+            _oneDriveCloudBackupSettingsUpdateInProgress = false;
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
     private void RefreshManualBackupStatusMetadata()
     {
         _lastSuccessfulLocalManualBackupUtc = ManualBackupStatusStore.GetLastSuccessfulBackupUtc(ManualBackupLocation.Local);
@@ -1190,6 +1226,8 @@
     private const string CloudAutomatedBackupsTooltipAriaLabel = "Automated cloud backup details";
 
     private const string CloudAutomatedBackupsSwitchAriaLabel = "Daily automated cloud backup toggle";
+
+    private const string OneDriveCloudAutomatedBackupUpdateFailedText = "Unable to update daily automated OneDrive backup right now. Please try again.";
 
     private const string OneDriveConnectButtonAriaLabel = "Not connected. Connect OneDrive";
 

@@ -20,11 +20,11 @@ public sealed class AutomatedBackupScheduleReceiver : BroadcastReceiver
             throw new ArgumentNullException(nameof(context));
 
         var services = AndroidServiceProviderAccessor.GetRequiredServiceProvider();
+        var automatedBackupConfigurationService = services.GetRequiredService<IAutomatedBackupConfigurationService>();
         var logger = services.GetRequiredService<ILogger<AutomatedBackupScheduleReceiver>>();
-        var appStoragePathService = services.GetRequiredService<IAppStoragePathService>();
         var timeProvider = services.GetRequiredService<TimeProvider>();
 
-        var isEnabled = AutomatedBackupSettingsStore.GetIsEnabled(appStoragePathService.DatabasePath);
+        var isEnabled = automatedBackupConfigurationService.GetHasAnyEnabled();
         var nextRunUtc = AndroidAutomatedBackupAlarmRegistrar.Synchronize(context, timeProvider, isEnabled);
         var action = intent?.Action ?? "unknown";
 
