@@ -35,17 +35,17 @@ public sealed class SettingsTests : TestContext
         var cut = RenderSettings();
         var markup = cut.Markup;
 
-        markup.Should().Contain("Daily reminder");
+        markup.Should().Contain("🔔 Daily reminder");
         markup.Should().Contain("You'll be reminded only if there are habits you haven't checked in yet.");
         cut.Find("input[aria-label='Daily reminder toggle']").HasAttribute("checked").Should().BeTrue();
         markup.Should().Contain("Reminder time");
-        markup.Should().Contain("Local backup");
+        markup.Should().Contain("💾 Local backup");
         markup.Should().Contain("Daily automated backups");
         markup.Should().Contain("Create a nightly backup in local storage.");
         cut.Find("button[aria-label='Automated backup details']");
         cut.Find("input[aria-label='Daily automated backups toggle']").HasAttribute("disabled").Should().BeFalse();
         markup.Should().Contain("Manual backup");
-        markup.Should().Contain("Cloud backup");
+        markup.Should().Contain("☁️ Cloud backup");
         markup.Should().Contain("Optional OneDrive backup using your private app folder.");
         cut.Find("button[aria-label='Cloud backup details']");
         cut.Find("button[aria-label='Not connected. Connect OneDrive']").HasAttribute("disabled").Should().BeFalse();
@@ -59,8 +59,8 @@ public sealed class SettingsTests : TestContext
         cut.Find("button[aria-label='Manual backup save location info']");
         cut.Find("button[aria-label='Download data']");
         cut.Find("button[aria-label='Share data']").HasAttribute("disabled").Should().BeTrue();
-        markup.Should().Contain("Restore");
-        markup.Should().Contain("Diagnostic logs");
+        markup.Should().Contain("🔄 Restore");
+        markup.Should().Contain("🩺 Diagnostic logs");
         markup.Should().Contain("Export or share a support bundle of recent app logs.");
         cut.Find("button[aria-label='Diagnostic log details']");
         cut.Find("button[aria-label='Export diagnostic logs']");
@@ -69,10 +69,10 @@ public sealed class SettingsTests : TestContext
         cut.Find("button[aria-label='Restore warning']");
         cut.Find("button[aria-label='Upload data']");
         markup.Should().NotContain(">Data<");
-        markup.IndexOf("Daily reminder", StringComparison.Ordinal).Should().BeLessThan(markup.IndexOf("Local backup", StringComparison.Ordinal));
-        markup.IndexOf("Local backup", StringComparison.Ordinal).Should().BeLessThan(markup.IndexOf("Cloud backup", StringComparison.Ordinal));
-        markup.IndexOf("Cloud backup", StringComparison.Ordinal).Should().BeLessThan(markup.IndexOf("Restore", StringComparison.Ordinal));
-        markup.IndexOf("Restore", StringComparison.Ordinal).Should().BeLessThan(markup.IndexOf("Diagnostic logs", StringComparison.Ordinal));
+        markup.IndexOf("🔔 Daily reminder", StringComparison.Ordinal).Should().BeLessThan(markup.IndexOf("💾 Local backup", StringComparison.Ordinal));
+        markup.IndexOf("💾 Local backup", StringComparison.Ordinal).Should().BeLessThan(markup.IndexOf("☁️ Cloud backup", StringComparison.Ordinal));
+        markup.IndexOf("☁️ Cloud backup", StringComparison.Ordinal).Should().BeLessThan(markup.IndexOf("🔄 Restore", StringComparison.Ordinal));
+        markup.IndexOf("🔄 Restore", StringComparison.Ordinal).Should().BeLessThan(markup.IndexOf("🩺 Diagnostic logs", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -103,7 +103,7 @@ public sealed class SettingsTests : TestContext
         markup.Should().NotContain("mud-chip");
         markup.IndexOf("Version 1.2.0", StringComparison.Ordinal)
             .Should()
-            .BeLessThan(markup.IndexOf("Daily reminder", StringComparison.Ordinal));
+            .BeLessThan(markup.IndexOf("🔔 Daily reminder", StringComparison.Ordinal));
     }
 
     [Fact]
