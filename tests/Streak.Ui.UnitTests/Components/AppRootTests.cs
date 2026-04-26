@@ -2,7 +2,6 @@ namespace Streak.Ui.UnitTests.Components;
 
 using Microsoft.AspNetCore.Components;
 using Streak.Ui.Models.ViewModels;
-using Streak.Ui.Services.Interfaces;
 using Streak.Ui.Services.Models;
 using Streak.Ui.Components;
 
@@ -13,7 +12,6 @@ public sealed class AppRootTests : TestContext
         Services.AddMudServices(options => { options.PopoverOptions.CheckForPopoverProvider = false; });
         Services.AddLogging();
         Services.AddSingleton(Mock.Of<ILogger<AppRoot>>());
-        Services.AddSingleton(Mock.Of<IExternalUrlLauncher>());
         Services.AddSingleton(CreateOneDriveAuthReturnRouteStoreMock().Object);
         Services.AddSingleton(TimeProvider.System);
         JSInterop.Mode = JSRuntimeMode.Loose;

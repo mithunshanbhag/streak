@@ -45,7 +45,6 @@ public static class MauiAppBuilderExtensions
             builder.Services.AddSingleton<IAppInfo>(_ => AppInfo.Current);
             builder.Services.AddSingleton<IPreferences>(_ => Preferences.Default);
             builder.Services.AddSingleton<IAppVersionInfoService, AppVersionInfoService>();
-            builder.Services.AddSingleton<IExternalUrlLauncher, ExternalUrlLauncher>();
             builder.Services.AddSingleton<IOneDriveAuthConfigurationProvider, OneDriveAuthConfigurationProvider>();
             builder.Services.AddSingleton<IOneDriveAuthReturnRouteStore, OneDriveAuthReturnRouteStore>();
             builder.Services.AddSingleton<IOneDriveAuthStateStore, OneDriveAuthStateStore>();

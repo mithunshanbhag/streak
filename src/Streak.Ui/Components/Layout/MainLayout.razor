@@ -1,10 +1,6 @@
 ﻿@inherits LayoutComponentBase
 @implements IDisposable
 @inject NavigationManager NavigationManager
-@inject IExternalUrlLauncher ExternalUrlLauncher
-@inject ISnackbar Snackbar
-@inject ILogger<MainLayout> Logger
-
 <MudThemeProvider Theme="@AppTheme"/>
 <MudPopoverProvider/>
 <MudDialogProvider/>
@@ -34,9 +30,9 @@
                 <MudTooltip Text="@GitHubTooltipText"
                             Placement="Placement.Left">
                     <MudIconButton Class="mr-4"
+                                    Href="@UrlConstants.GitHubRepo"
                                     Icon="@Icons.Custom.Brands.GitHub"
                                     Color="Color.Inherit"
-                                    OnClick="OpenGitHubRepositoryAsync"
                                     aria-label="@GitHubAriaLabel"/>
                 </MudTooltip>
             }
@@ -185,19 +181,6 @@
         _ = InvokeAsync(StateHasChanged);
     }
 
-    private async Task OpenGitHubRepositoryAsync()
-    {
-        try
-        {
-            await ExternalUrlLauncher.OpenAsync(UrlConstants.GitHubRepo);
-        }
-        catch (Exception exception)
-        {
-            Logger.LogWarning(exception, "Unable to open GitHub repository URL.");
-            Snackbar.Add(GitHubOpenFailedText, Severity.Error);
-        }
-    }
-
     #endregion
 
     #region Private Helper Methods
@@ -243,8 +226,6 @@
     private const string GitHubTooltipText = "View source code";
 
     private const string GitHubAriaLabel = "View source code on GitHub";
-
-    private const string GitHubOpenFailedText = "Unable to open GitHub right now.";
 
     private const string BackTooltipText = "Back to habits";
 

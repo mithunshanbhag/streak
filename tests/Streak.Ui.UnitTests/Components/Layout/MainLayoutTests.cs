@@ -3,7 +3,6 @@ namespace Streak.Ui.UnitTests.Components.Layout;
 using Microsoft.AspNetCore.Components;
 using Streak.Ui.Constants;
 using Streak.Ui.Models.Storage;
-using Streak.Ui.Services.Interfaces;
 using Streak.Ui.Models.ViewModels;
 using Streak.Ui.Components;
 using Streak.Ui.Components.Layout;
@@ -13,7 +12,6 @@ public sealed class MainLayoutTests : TestContext
     public MainLayoutTests()
     {
         Services.AddMudServices(options => { options.PopoverOptions.CheckForPopoverProvider = false; });
-        Services.AddSingleton(Mock.Of<IExternalUrlLauncher>());
         JSInterop.Mode = JSRuntimeMode.Loose;
     }
 
@@ -46,17 +44,15 @@ public sealed class MainLayoutTests : TestContext
     }
 
     [Fact]
-    public void MainLayout_ShouldOpenGitHubRepository_WhenGitHubButtonIsClicked()
+    public void MainLayout_ShouldRenderGitHubRepositoryHref_OnHomeRoute()
     {
-        var externalUrlLauncherMock = ReplaceExternalUrlLauncher();
         var cut = RenderMainLayoutWithTitle("Settings");
 
         Services.GetRequiredService<NavigationManager>().NavigateTo(RouteConstants.Home);
-        cut.Find("[aria-label='View source code on GitHub']").Click();
-
-        externalUrlLauncherMock.Verify(
-            x => x.OpenAsync(UrlConstants.GitHubRepo, It.IsAny<CancellationToken>()),
-            Times.Once);
+        cut.Find("[aria-label='View source code on GitHub']")
+            .GetAttribute("href")
+            .Should()
+            .Be(UrlConstants.GitHubRepo);
     }
 
     #endregion
@@ -93,32 +89,9 @@ public sealed class MainLayoutTests : TestContext
         });
     }
 
-    [Fact]
-    public void MainLayout_ShouldNotThrow_WhenGitHubRepositoryCannotBeOpened()
-    {
-        var externalUrlLauncherMock = ReplaceExternalUrlLauncher();
-        externalUrlLauncherMock
-            .Setup(x => x.OpenAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ThrowsAsync(new InvalidOperationException("No browser available."));
-
-        var cut = RenderMainLayoutWithTitle("Settings");
-        Services.GetRequiredService<NavigationManager>().NavigateTo(RouteConstants.Home);
-
-        var act = () => cut.Find("[aria-label='View source code on GitHub']").Click();
-
-        act.Should().NotThrow();
-    }
-
     #endregion
 
     #region Private Helper Methods
-
-    private Mock<IExternalUrlLauncher> ReplaceExternalUrlLauncher()
-    {
-        var externalUrlLauncherMock = new Mock<IExternalUrlLauncher>();
-        Services.AddSingleton(externalUrlLauncherMock.Object);
-        return externalUrlLauncherMock;
-    }
 
     private void RegisterHomeServices()
     {
