@@ -13,6 +13,7 @@ public sealed class MainLayoutTests : TestContext
     public MainLayoutTests()
     {
         Services.AddMudServices(options => { options.PopoverOptions.CheckForPopoverProvider = false; });
+        Services.AddSingleton(Mock.Of<IExternalUrlLauncher>());
         JSInterop.Mode = JSRuntimeMode.Loose;
     }
 
@@ -42,6 +43,20 @@ public sealed class MainLayoutTests : TestContext
         var cut = RenderRoutes();
 
         cut.WaitForAssertion(() => { cut.Find("[aria-label='Scroll to top of page']"); });
+    }
+
+    [Fact]
+    public void MainLayout_ShouldOpenGitHubRepository_WhenGitHubButtonIsClicked()
+    {
+        var externalUrlLauncherMock = ReplaceExternalUrlLauncher();
+        var cut = RenderMainLayoutWithTitle("Settings");
+
+        Services.GetRequiredService<NavigationManager>().NavigateTo(RouteConstants.Home);
+        cut.Find("[aria-label='View source code on GitHub']").Click();
+
+        externalUrlLauncherMock.Verify(
+            x => x.OpenAsync(UrlConstants.GitHubRepo, It.IsAny<CancellationToken>()),
+            Times.Once);
     }
 
     #endregion
@@ -78,9 +93,32 @@ public sealed class MainLayoutTests : TestContext
         });
     }
 
+    [Fact]
+    public void MainLayout_ShouldNotThrow_WhenGitHubRepositoryCannotBeOpened()
+    {
+        var externalUrlLauncherMock = ReplaceExternalUrlLauncher();
+        externalUrlLauncherMock
+            .Setup(x => x.OpenAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new InvalidOperationException("No browser available."));
+
+        var cut = RenderMainLayoutWithTitle("Settings");
+        Services.GetRequiredService<NavigationManager>().NavigateTo(RouteConstants.Home);
+
+        var act = () => cut.Find("[aria-label='View source code on GitHub']").Click();
+
+        act.Should().NotThrow();
+    }
+
     #endregion
 
     #region Private Helper Methods
+
+    private Mock<IExternalUrlLauncher> ReplaceExternalUrlLauncher()
+    {
+        var externalUrlLauncherMock = new Mock<IExternalUrlLauncher>();
+        Services.AddSingleton(externalUrlLauncherMock.Object);
+        return externalUrlLauncherMock;
+    }
 
     private void RegisterHomeServices()
     {

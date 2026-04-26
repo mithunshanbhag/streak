@@ -1,6 +1,9 @@
 ﻿@inherits LayoutComponentBase
 @implements IDisposable
 @inject NavigationManager NavigationManager
+@inject IExternalUrlLauncher ExternalUrlLauncher
+@inject ISnackbar Snackbar
+@inject ILogger<MainLayout> Logger
 
 <MudThemeProvider Theme="@AppTheme"/>
 <MudPopoverProvider/>
@@ -182,9 +185,17 @@
         _ = InvokeAsync(StateHasChanged);
     }
 
-    private static async Task OpenGitHubRepositoryAsync()
+    private async Task OpenGitHubRepositoryAsync()
     {
-        await Browser.Default.OpenAsync(UrlConstants.GitHubRepo, BrowserLaunchMode.External);
+        try
+        {
+            await ExternalUrlLauncher.OpenAsync(UrlConstants.GitHubRepo);
+        }
+        catch (Exception exception)
+        {
+            Logger.LogWarning(exception, "Unable to open GitHub repository URL.");
+            Snackbar.Add(GitHubOpenFailedText, Severity.Error);
+        }
     }
 
     #endregion
@@ -232,6 +243,8 @@
     private const string GitHubTooltipText = "View source code";
 
     private const string GitHubAriaLabel = "View source code on GitHub";
+
+    private const string GitHubOpenFailedText = "Unable to open GitHub right now.";
 
     private const string BackTooltipText = "Back to habits";
 

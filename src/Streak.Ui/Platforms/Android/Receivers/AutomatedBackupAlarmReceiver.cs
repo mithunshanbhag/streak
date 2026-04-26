@@ -1,5 +1,6 @@
 using Android.App;
 using Android.Content;
+using Android.OS;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Streak.Ui.Platforms.Android;
@@ -12,31 +13,21 @@ public sealed class AutomatedBackupAlarmReceiver : BroadcastReceiver
         if (context is null)
             throw new ArgumentNullException(nameof(context));
 
-        var pendingResult = GoAsync();
+        var logger = AndroidLoggerResolver.GetLogger<AutomatedBackupAlarmReceiver>();
+        logger?.LogInformation("Nightly automated backup alarm received; starting foreground backup service.");
 
-        _ = Task.Run(async () =>
-        {
-            try
-            {
-                await HandleReceiveAsync(context);
-            }
-            catch (Exception exception)
-            {
-                var logger = AndroidServiceProviderAccessor
-                    .GetRequiredServiceProvider()
-                    .GetRequiredService<ILogger<AutomatedBackupAlarmReceiver>>();
-                logger.LogError(exception, "Nightly automated backup execution failed.");
-            }
-            finally
-            {
-                pendingResult.Finish();
-            }
-        });
+        var serviceIntent = new Intent(context, typeof(Services.AndroidAutomatedBackupForegroundService));
+        serviceIntent.SetAction(AutomatedBackupConstants.AlarmAction);
+
+        if (OperatingSystem.IsAndroidVersionAtLeast(26))
+            context.StartForegroundService(serviceIntent);
+        else
+            context.StartService(serviceIntent);
     }
 
     #region Private Helper Methods
 
-    private static async Task HandleReceiveAsync(Context context)
+    internal static async Task HandleReceiveAsync(Context context, CancellationToken cancellationToken = default)
     {
         var services = AndroidServiceProviderAccessor.GetRequiredServiceProvider();
         var automatedBackupConfigurationService = services.GetRequiredService<IAutomatedBackupConfigurationService>();
@@ -56,7 +47,7 @@ public sealed class AutomatedBackupAlarmReceiver : BroadcastReceiver
         }
 
         var nextRunLocal = TimeZoneInfo.ConvertTime(nextRunUtc.Value, timeProvider.LocalTimeZone);
-        var runResult = await automatedBackupRunService.ExecuteEnabledBackupsAsync();
+        var runResult = await automatedBackupRunService.ExecuteEnabledBackupsAsync(cancellationToken);
         if (runResult.LocalSavedLocation is not null)
             automatedBackupCompletionNotifier.NotifyCompleted(runResult.LocalSavedLocation);
 

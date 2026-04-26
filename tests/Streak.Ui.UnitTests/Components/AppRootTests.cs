@@ -13,6 +13,7 @@ public sealed class AppRootTests : TestContext
         Services.AddMudServices(options => { options.PopoverOptions.CheckForPopoverProvider = false; });
         Services.AddLogging();
         Services.AddSingleton(Mock.Of<ILogger<AppRoot>>());
+        Services.AddSingleton(Mock.Of<IExternalUrlLauncher>());
         Services.AddSingleton(CreateOneDriveAuthReturnRouteStoreMock().Object);
         Services.AddSingleton(TimeProvider.System);
         JSInterop.Mode = JSRuntimeMode.Loose;
