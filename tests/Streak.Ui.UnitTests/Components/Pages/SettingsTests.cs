@@ -47,11 +47,12 @@ public sealed class SettingsTests : TestContext
         cut.Find("input[aria-label='Daily automated backups toggle']").HasAttribute("disabled").Should().BeFalse();
         markup.Should().Contain("Manual backup");
         markup.Should().Contain("🌥️ Cloud backup");
-        markup.Should().Contain("Optional OneDrive backup using your private app folder.");
+        markup.Should().Contain("Optional OneDrive backups in your private app folder.");
         cut.Find("button[aria-label='Cloud backup details']");
         cut.Find("button[aria-label='Not connected. Connect OneDrive']").HasAttribute("disabled").Should().BeFalse();
         markup.Should().Contain("Personal Microsoft account");
-        markup.Should().Contain("Tap the red cloud icon to connect.");
+        markup.Should().Contain("Not connected");
+        markup.Should().NotContain("Tap the red cloud icon to connect.");
         cut.FindAll("input[aria-label='Daily automated cloud backup toggle']").Should().BeEmpty();
         cut.FindAll("button[aria-label='Back up to OneDrive']").Should().BeEmpty();
         markup.Should().NotContain("Manual cloud backup");
@@ -132,16 +133,18 @@ public sealed class SettingsTests : TestContext
         cut.Markup.Should().Contain("streak-demo@outlook.com");
         cut.Find("button[aria-label='Connected. Disconnect OneDrive']").HasAttribute("disabled").Should().BeFalse();
         cut.Markup.Should().Contain("OneDrive connection");
-        cut.Markup.Should().Contain("Connected and ready to upload backups to your private app folder.");
+        cut.Markup.Should().Contain("Signed in with your Microsoft account.");
         cut.Markup.Should().Contain("Manual cloud backup");
         cut.Find("button[aria-label='Manual cloud backup details']");
-        cut.Markup.Should().Contain("Upload a fresh backup archive to your private OneDrive app folder.");
+        cut.Markup.Should().Contain("Upload the latest backup to OneDrive.");
         cut.Find("button[aria-label='Back up to OneDrive']").HasAttribute("disabled").Should().BeFalse();
         cut.Markup.Should().Contain("Daily automated cloud backup");
         cut.Find("button[aria-label='Automated cloud backup details']");
         cut.Find("input[aria-label='Daily automated cloud backup toggle']").HasAttribute("disabled").Should().BeFalse();
         cut.Find("input[aria-label='Daily automated cloud backup toggle']").HasAttribute("checked").Should().BeFalse();
-        cut.Markup.Should().Contain("Connected. Tap the green cloud icon to disconnect.");
+        cut.Markup.Should().Contain("Connected");
+        cut.Markup.Should().Contain("Upload a nightly backup to OneDrive.");
+        cut.Markup.Should().NotContain("Connected. Tap the green cloud icon to disconnect.");
         cut.Markup.Should().NotContain("Storage location");
         cut.Markup.Should().NotContain("Last backup");
     }

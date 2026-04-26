@@ -234,12 +234,13 @@ Use semantic roles rather than one-off hex values.
 - When local and cloud backup areas both surface recency, prefer the same quiet **Last backup** treatment so one card does not feel more instrumented than the other.
 - Static explanatory details that are already obvious from the section context or tooltip do not need their own always-visible metadata row.
 - Connected-state toggles such as **Daily automated OneDrive backup** should usually appear as a simple inline setting row inside the same provider area, not as a separate highlighted panel or sibling card.
-- Disconnected states should show the tappable disconnected status icon plus provider identity, and should avoid rendering disabled secondary controls that are not yet actionable.
+- Cloud backup copy should stay concise: prefer one short description per subsection and one quiet metadata line rather than stacked explanatory sentences.
+- Disconnected states should show the tappable disconnected status icon plus provider identity, and should avoid rendering disabled secondary controls that are not yet actionable. Visible copy should usually stop at a short status line such as **Not connected**.
 - The leading cloud status icon should be an actual button, not decorative chrome. Its tooltip and accessible label should combine both state and action, for example **Not connected. Connect OneDrive** or **Connected. Disconnect OneDrive**.
 - When connected, the manual cloud backup trigger should appear as a separate filled icon-only button aligned with the page's other Settings action buttons rather than as a large text CTA row.
 - Do not render extra visible-text **Connect OneDrive** or **Disconnect** buttons when the provider row already uses the leading cloud icon as that interaction.
-- In the connected state, the manual cloud backup subsection should mirror the **Local backup > Manual backup** rhythm: internal heading, one short description, quiet **Last backup** metadata, then a right-aligned action row.
-- In the connected state, the automated cloud backup subsection should mirror the **Local backup > Daily automated backups** rhythm: internal heading, short description, optional tooltip, then a trailing toggle row without extra hero treatment.
+- In the connected state, the manual cloud backup subsection should mirror the **Local backup > Manual backup** rhythm: internal heading, concise one-line description, quiet **Last backup** metadata, then a right-aligned action row.
+- In the connected state, the automated cloud backup subsection should mirror the **Local backup > Daily automated backups** rhythm: internal heading, concise one-line description, optional tooltip, then a trailing toggle row without extra hero treatment.
 
 ### Dialogs
 

@@ -59,9 +59,9 @@ The page contains five vertically stacked sections presented as clean cards:
 | Element                           | Type                        | Details                                                                                                                                                                                                                                                                         |
 | --------------------------------- | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Section header                    | Text                        | **"🌥️ Cloud backup"**                                                                                                                                                                                                                                                              |
-| Section info icon                 | Glyph + tooltip             | Small info icon beside **Cloud backup**. Hover/focus/press shows: *"Optional. Signs in with a personal Microsoft account and uploads the same '.zip' archive to your private OneDrive app folder."*                                                                        |
-| Section description               | Caption                     | *"Optional OneDrive backup using your private app folder."*                                                                                                                                                                                                                    |
-| OneDrive connection subsection    | Subsection                  | First subsection in the connected cloud area. Shows the provider name (**OneDrive**), connected account, current connection state, and the leading semantic cloud status icon button.                                                                                       |
+| Section info icon                 | Glyph + tooltip             | Small info icon beside **Cloud backup**. Hover/focus/press shows: *"Optional. Sign in with a personal Microsoft account and back up to your private OneDrive app folder."*                                                                                                 |
+| Section description               | Caption                     | *"Optional OneDrive backups in your private app folder."*                                                                                                                                                                                                                     |
+| OneDrive connection subsection    | Subsection                  | First subsection in the connected cloud area. Shows the provider name (**OneDrive**), connected account, a brief connection state, and the leading semantic cloud status icon button.                                                                                      |
 | OneDrive status button            | `MudIconButton`             | The leading cloud icon is interactive. Signed out: red `CloudOff` with tooltip / accessible text such as **"Not connected. Connect OneDrive"** and tapping it starts OAuth. Connected: green `CloudDone` with tooltip / accessible text such as **"Connected. Disconnect OneDrive"** and tapping it starts the disconnect flow. |
 | Manual cloud backup subsection    | Subsection                  | Second subsection in the connected cloud area. Mirrors the local **Manual backup** subsection with a title, short description, quiet **Last backup** metadata, and a right-aligned filled icon button.                                                                      |
 | OneDrive manual backup action     | `MudIconButton`             | Visible only when connected. Uses `Backup` or `CloudUpload` and the same filled icon-button treatment as the page's other action buttons. Tooltip text is **"Back up to OneDrive"**.                                                                                       |
@@ -103,6 +103,8 @@ The page contains five vertically stacked sections presented as clean cards:
 - The manual OneDrive backup trigger should use the same compact filled icon-button treatment as the rest of the Settings action controls, with a backup-oriented icon and tooltip text such as **Back up to OneDrive**.
 - The **Manual cloud backup** subsection should visually match the local **Manual backup** subsection: one internal heading row, one short description, quiet **Last backup** metadata, then the compact action row.
 - The **Daily automated cloud backup** subsection should visually match the local **Daily automated backups** subsection: one internal heading row, one short description, optional info tooltip, then the trailing toggle row.
+- Cloud backup copy should stay terse. Prefer one short description per subsection plus quiet metadata rather than extra instructional sentences.
+- Do not repeat connect / disconnect instructions as always-visible body copy when the leading cloud icon tooltip already explains the action.
 
 ## Local Automated Backup Behavior
 
@@ -157,7 +159,7 @@ The page contains five vertically stacked sections presented as clean cards:
   ```
 
 - Tapping the disconnected red cloud icon starts the Microsoft sign-in / consent flow.
-- When connected, the Cloud backup card shows the connected account plus quiet status metadata such as the last successful backup.
+- When connected, the Cloud backup card shows the account plus quiet metadata such as the last successful backup.
 - Tapping the connected green cloud icon starts the disconnect flow.
 - Tapping the manual OneDrive backup icon uploads a fresh backup archive to `approot/Backups/Manual/`.
 - The app should keep **local backup** and **OneDrive backup** clearly separate. Manual OneDrive backup does not replace **Download data** or **Share data**.
@@ -174,8 +176,8 @@ The page contains five vertically stacked sections presented as clean cards:
 
 | Platform | Expected behavior                                                                                                                                                                                                 |
 | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Windows  | Cloud backup is unavailable. The Cloud backup card should explain that OneDrive backup is not supported on this platform in the current iteration.                                                               |
-| Android  | The user can tap the disconnected / connected cloud status icon to connect or disconnect a personal Microsoft account, manually upload the current backup archive through a compact OneDrive backup icon button, and optionally enable daily automated OneDrive backup using the same fixed 11:30 PM local schedule. |
+| Windows  | Cloud backup is unavailable in this iteration.                                                                                                                                                        |
+| Android  | The user can use the cloud icon to connect or disconnect, the backup icon to upload the current archive to OneDrive, and the toggle to enable daily automated OneDrive backup at 11:30 PM local time. |
 
 ## Local Export Behavior
 
