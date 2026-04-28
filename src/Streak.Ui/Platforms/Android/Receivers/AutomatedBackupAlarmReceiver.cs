@@ -13,19 +13,78 @@ public sealed class AutomatedBackupAlarmReceiver : BroadcastReceiver
         if (context is null)
             throw new ArgumentNullException(nameof(context));
 
+        var intentAction = intent?.Action ?? "(none)";
         var logger = AndroidLoggerResolver.GetLogger<AutomatedBackupAlarmReceiver>();
-        logger?.LogInformation("Nightly automated backup alarm received; starting foreground backup service.");
+        var launchMode = OperatingSystem.IsAndroidVersionAtLeast(26)
+            ? "StartForegroundService"
+            : "StartService";
 
-        var serviceIntent = new Intent(context, typeof(Services.AndroidAutomatedBackupForegroundService));
-        serviceIntent.SetAction(AutomatedBackupConstants.AlarmAction);
+        logger?.LogInformation(
+            "Nightly automated backup alarm received. Intent action: {IntentAction}. Launch mode: {LaunchMode}. Starting foreground backup service.",
+            intentAction,
+            launchMode);
 
-        if (OperatingSystem.IsAndroidVersionAtLeast(26))
-            context.StartForegroundService(serviceIntent);
-        else
-            context.StartService(serviceIntent);
+        try
+        {
+            var serviceIntent = new Intent(context, typeof(Services.AndroidAutomatedBackupForegroundService));
+            serviceIntent.SetAction(AutomatedBackupConstants.AlarmAction);
+
+            if (OperatingSystem.IsAndroidVersionAtLeast(26))
+                context.StartForegroundService(serviceIntent);
+            else
+                context.StartService(serviceIntent);
+
+            logger?.LogInformation(
+                "Nightly automated backup foreground service start request accepted. Intent action: {IntentAction}. Launch mode: {LaunchMode}.",
+                intentAction,
+                launchMode);
+        }
+        catch (Exception exception)
+        {
+            logger?.LogError(
+                exception,
+                "Nightly automated backup foreground service start request failed. Falling back to receiver execution. Intent action: {IntentAction}. Launch mode: {LaunchMode}.",
+                intentAction,
+                launchMode);
+
+            StartReceiverFallbackExecution(context, intentAction);
+        }
     }
 
     #region Private Helper Methods
+
+    private void StartReceiverFallbackExecution(Context context, string intentAction)
+    {
+        var pendingResult = GoAsync();
+
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                var logger = AndroidLoggerResolver.GetLogger<AutomatedBackupAlarmReceiver>();
+                logger?.LogWarning(
+                    "Nightly automated backup receiver fallback execution started after foreground service launch failure. Intent action: {IntentAction}.",
+                    intentAction);
+
+                await HandleReceiveAsync(context);
+
+                logger?.LogInformation(
+                    "Nightly automated backup receiver fallback execution completed. Intent action: {IntentAction}.",
+                    intentAction);
+            }
+            catch (Exception exception)
+            {
+                var logger = AndroidServiceProviderAccessor
+                    .GetRequiredServiceProvider()
+                    .GetRequiredService<ILogger<AutomatedBackupAlarmReceiver>>();
+                logger.LogError(exception, "Nightly automated backup receiver fallback execution failed.");
+            }
+            finally
+            {
+                pendingResult.Finish();
+            }
+        });
+    }
 
     internal static async Task HandleReceiveAsync(Context context, CancellationToken cancellationToken = default)
     {

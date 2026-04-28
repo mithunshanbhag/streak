@@ -20,53 +20,99 @@ public sealed class AndroidAutomatedBackupForegroundService : Service
 
     public override StartCommandResult OnStartCommand(Intent? intent, StartCommandFlags flags, int startId)
     {
-        AndroidBackupNotificationChannelRegistrar.EnsureCreated();
-        StartForeground(
-            BackupNotificationConstants.AutomatedBackupForegroundServiceNotificationId,
-            CreateRunningNotification());
+        var logger = AndroidLoggerResolver.GetLogger<AndroidAutomatedBackupForegroundService>();
+        var intentAction = intent?.Action ?? "(none)";
+        logger?.LogInformation(
+            "Nightly automated backup foreground service start requested. StartId: {StartId}. Intent action: {IntentAction}.",
+            startId,
+            intentAction);
 
-        _runCancellationTokenSource?.Cancel();
-        _runCancellationTokenSource?.Dispose();
-        _runCancellationTokenSource = new CancellationTokenSource(TimeSpan.FromMinutes(10));
-
-        _ = Task.Run(async () =>
+        try
         {
-            try
+            AndroidBackupNotificationChannelRegistrar.EnsureCreated();
+            StartForeground(
+                BackupNotificationConstants.AutomatedBackupForegroundServiceNotificationId,
+                CreateRunningNotification());
+
+            logger?.LogInformation(
+                "Nightly automated backup foreground service entered foreground. StartId: {StartId}.",
+                startId);
+
+            _runCancellationTokenSource?.Cancel();
+            _runCancellationTokenSource?.Dispose();
+
+            var runCancellationTokenSource = new CancellationTokenSource(TimeSpan.FromMinutes(10));
+            _runCancellationTokenSource = runCancellationTokenSource;
+
+            _ = Task.Run(async () =>
             {
-                await AutomatedBackupAlarmReceiver.HandleReceiveAsync(
-                    Application.Context,
-                    _runCancellationTokenSource.Token);
-            }
-            catch (System.OperationCanceledException exception)
-            {
-                var logger = AndroidServiceProviderAccessor
-                    .GetRequiredServiceProvider()
-                    .GetRequiredService<ILogger<AndroidAutomatedBackupForegroundService>>();
-                logger.LogWarning(exception, "Nightly automated backup foreground service timed out.");
-            }
-            catch (Exception exception)
-            {
-                var logger = AndroidServiceProviderAccessor
-                    .GetRequiredServiceProvider()
-                    .GetRequiredService<ILogger<AndroidAutomatedBackupForegroundService>>();
-                logger.LogError(exception, "Nightly automated backup foreground service failed.");
-            }
-            finally
-            {
-                StopForeground(StopForegroundFlags.Remove);
-                StopSelf(startId);
-            }
-        });
+                var backgroundLogger = AndroidLoggerResolver.GetLogger<AndroidAutomatedBackupForegroundService>();
+                backgroundLogger?.LogInformation(
+                    "Nightly automated backup foreground service began executing backup pipeline. StartId: {StartId}.",
+                    startId);
+
+                try
+                {
+                    await AutomatedBackupAlarmReceiver.HandleReceiveAsync(
+                        Application.Context,
+                        runCancellationTokenSource.Token);
+
+                    backgroundLogger?.LogInformation(
+                        "Nightly automated backup foreground service backup pipeline completed. StartId: {StartId}.",
+                        startId);
+                }
+                catch (System.OperationCanceledException exception)
+                {
+                    var resolvedLogger = ResolveLogger();
+                    resolvedLogger.LogWarning(exception, "Nightly automated backup foreground service timed out.");
+                }
+                catch (Exception exception)
+                {
+                    var resolvedLogger = ResolveLogger();
+                    resolvedLogger.LogError(exception, "Nightly automated backup foreground service failed.");
+                }
+                finally
+                {
+                    if (ReferenceEquals(_runCancellationTokenSource, runCancellationTokenSource))
+                        _runCancellationTokenSource = null;
+
+                    runCancellationTokenSource.Dispose();
+                    StopForeground(StopForegroundFlags.Remove);
+                    StopSelf(startId);
+                }
+            });
+        }
+        catch (Exception exception)
+        {
+            var resolvedLogger = ResolveLogger();
+            resolvedLogger.LogError(
+                exception,
+                "Nightly automated backup foreground service failed during startup. StartId: {StartId}. Intent action: {IntentAction}.",
+                startId,
+                intentAction);
+            throw;
+        }
 
         return StartCommandResult.NotSticky;
     }
 
     public override void OnDestroy()
     {
+        AndroidLoggerResolver.GetLogger<AndroidAutomatedBackupForegroundService>()
+            ?.LogInformation("Nightly automated backup foreground service is being destroyed.");
+
         _runCancellationTokenSource?.Cancel();
         _runCancellationTokenSource?.Dispose();
         _runCancellationTokenSource = null;
         base.OnDestroy();
+    }
+
+    private static ILogger<AndroidAutomatedBackupForegroundService> ResolveLogger()
+    {
+        return AndroidLoggerResolver.GetLogger<AndroidAutomatedBackupForegroundService>()
+               ?? AndroidServiceProviderAccessor
+                   .GetRequiredServiceProvider()
+                   .GetRequiredService<ILogger<AndroidAutomatedBackupForegroundService>>();
     }
 
     private static Notification CreateRunningNotification()
