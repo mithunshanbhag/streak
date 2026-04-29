@@ -2,9 +2,11 @@ namespace Streak.Ui.Services.Implementations;
 
 public sealed class CheckinProofService(
     ICheckinProofMediaPickerService mediaPickerService,
+    ICameraPermissionService cameraPermissionService,
     ICheckinProofFileStore checkinProofFileStore) : ICheckinProofService
 {
     private readonly ICheckinProofMediaPickerService _mediaPickerService = mediaPickerService;
+    private readonly ICameraPermissionService _cameraPermissionService = cameraPermissionService;
     private readonly ICheckinProofFileStore _checkinProofFileStore = checkinProofFileStore;
 
     public bool SupportsCameraCapture => _mediaPickerService.SupportsCameraCapture;
@@ -13,6 +15,10 @@ public sealed class CheckinProofService(
     {
         if (!SupportsCameraCapture)
             return null;
+
+        var cameraPermissionGranted = await _cameraPermissionService.RequestPermissionIfNeededAsync(cancellationToken);
+        if (!cameraPermissionGranted)
+            throw new InvalidOperationException(CameraPermissionRequiredErrorText);
 
         var fileResult = await _mediaPickerService.CapturePhotoAsync(cancellationToken);
         return await CreateSelectionAsync(fileResult, CheckinProofSource.Camera, cancellationToken);
@@ -174,4 +180,7 @@ public sealed class CheckinProofService(
     {
         return $"{fileSizeBytes / (1024d * 1024d):0.#} MB";
     }
+
+    private const string CameraPermissionRequiredErrorText =
+        "Camera permission is required to take a picture. You can continue without a photo or choose Gallery instead.";
 }

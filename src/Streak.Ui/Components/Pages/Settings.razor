@@ -1083,6 +1083,13 @@
             _operationErrorMessage = null;
             AutomatedBackupConfigurationService.SetIsCloudEnabled(isEnabled);
             _oneDriveCloudBackupEnabled = isEnabled;
+
+            if (isEnabled)
+            {
+                var notificationsEnabled = await BackupNotificationPermissionService.RequestPermissionIfNeededAsync();
+                if (!notificationsEnabled)
+                    Snackbar.Add(AutomatedBackupNotificationsPermissionText, Severity.Info);
+            }
         }
         catch (Exception)
         {

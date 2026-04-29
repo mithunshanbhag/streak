@@ -120,9 +120,14 @@ public sealed class AppRootTests : TestContext
     {
         var checkinProofServiceMock = new Mock<ICheckinProofService>();
         checkinProofServiceMock.SetupGet(x => x.SupportsCameraCapture).Returns(false);
+        var postStartupPermissionRecoveryCoordinatorMock = new Mock<IPostStartupPermissionRecoveryCoordinator>();
+        postStartupPermissionRecoveryCoordinatorMock
+            .Setup(x => x.RecoverMissingPermissionsAfterHomepageRenderAsync(It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
 
         Services.AddSingleton(checkinServiceMock.Object);
         Services.AddSingleton(checkinProofServiceMock.Object);
+        Services.AddSingleton(postStartupPermissionRecoveryCoordinatorMock.Object);
     }
 
     private void RegisterSettingsServices()

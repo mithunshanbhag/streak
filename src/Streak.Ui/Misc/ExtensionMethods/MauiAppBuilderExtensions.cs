@@ -34,6 +34,7 @@ public static class MauiAppBuilderExtensions
             builder.Services.AddSingleton<SqliteDatabaseSchemaUpgrader>();
             builder.Services.AddSingleton<IAppStartupWorkService, AppStartupWorkService>();
             builder.Services.AddSingleton<IAppInitializationService, AppInitializationService>();
+            builder.Services.AddSingleton<IPostStartupPermissionRecoveryCoordinator, PostStartupPermissionRecoveryCoordinator>();
             builder.Services.AddDbContext<StreakDbContext>(options => { options.UseSqlite(SqliteDatabaseBootstrapper.ConnectionString); });
 
             // repositories
@@ -73,6 +74,7 @@ public static class MauiAppBuilderExtensions
             builder.Services.AddSingleton<IBackupFolderOpener, WindowsBackupFolderOpener>();
             builder.Services.AddSingleton<IAutomatedBackupCompletionNotifier, NoOpAutomatedBackupCompletionNotifier>();
             builder.Services.AddSingleton<IBackupNotificationPermissionService, NoOpBackupNotificationPermissionService>();
+            builder.Services.AddSingleton<ICameraPermissionService, NoOpCameraPermissionService>();
             builder.Services.AddSingleton<IReminderNotifier, NoOpReminderNotifier>();
             builder.Services.AddSingleton<IReminderNotificationPermissionService, NoOpReminderNotificationPermissionService>();
             builder.Services.AddSingleton<IOneDriveAuthService, UnsupportedOneDriveAuthService>();
@@ -88,6 +90,7 @@ public static class MauiAppBuilderExtensions
             builder.Services.AddSingleton<IBackupFolderOpener, AndroidBackupFolderOpener>();
             builder.Services.AddSingleton<IAutomatedBackupCompletionNotifier, AndroidAutomatedBackupCompletionNotifier>();
             builder.Services.AddSingleton<IBackupNotificationPermissionService, AndroidBackupNotificationPermissionService>();
+            builder.Services.AddSingleton<ICameraPermissionService, AndroidCameraPermissionService>();
             builder.Services.AddSingleton<IReminderNotifier, AndroidReminderNotifier>();
             builder.Services.AddSingleton<IReminderNotificationPermissionService, AndroidReminderNotificationPermissionService>();
             builder.Services.AddTransient<IDatabaseImportFilePicker, AndroidDatabaseImportFilePicker>();
@@ -117,6 +120,7 @@ public static class MauiAppBuilderExtensions
             builder.Services.AddSingleton<IBackupFolderOpener, UnsupportedBackupFolderOpener>();
             builder.Services.AddSingleton<IAutomatedBackupCompletionNotifier, NoOpAutomatedBackupCompletionNotifier>();
             builder.Services.AddSingleton<IBackupNotificationPermissionService, NoOpBackupNotificationPermissionService>();
+            builder.Services.AddSingleton<ICameraPermissionService, NoOpCameraPermissionService>();
             builder.Services.AddSingleton<IReminderNotifier, NoOpReminderNotifier>();
             builder.Services.AddSingleton<IReminderNotificationPermissionService, NoOpReminderNotificationPermissionService>();
             builder.Services.AddSingleton<IOneDriveAuthService, UnsupportedOneDriveAuthService>();

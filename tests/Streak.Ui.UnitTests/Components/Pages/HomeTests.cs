@@ -55,6 +55,33 @@ public sealed class HomeTests : TestContext
     }
 
     [Fact]
+    public void Home_ShouldRequestPostStartupPermissionRecovery_AfterFirstRender()
+    {
+        var checkinServiceMock = CreateCheckinServiceMock(
+            new HabitCheckinViewModel
+            {
+                HabitId = 1,
+                HabitName = "Exercise",
+                HabitEmoji = "💪",
+                Streak = 2,
+                IsDoneForToday = false
+            });
+        var checkinProofServiceMock = CreateCheckinProofServiceMock();
+        var postStartupPermissionRecoveryCoordinatorMock = CreatePostStartupPermissionRecoveryCoordinatorMock();
+
+        RegisterServices(checkinServiceMock, checkinProofServiceMock, postStartupPermissionRecoveryCoordinatorMock);
+
+        var cut = RenderComponent<Home>();
+
+        cut.WaitForAssertion(() =>
+        {
+            postStartupPermissionRecoveryCoordinatorMock.Verify(
+                x => x.RecoverMissingPermissionsAfterHomepageRenderAsync(It.IsAny<CancellationToken>()),
+                Times.Once);
+        });
+    }
+
+    [Fact]
     public void Home_ShouldPersistOptionalNote_WhenCheckinIsConfirmed()
     {
         var checkinServiceMock = CreateCheckinServiceMock(
@@ -515,11 +542,23 @@ public sealed class HomeTests : TestContext
 
     private void RegisterServices(
         Mock<ICheckinService> checkinServiceMock,
-        Mock<ICheckinProofService> checkinProofServiceMock)
+        Mock<ICheckinProofService> checkinProofServiceMock,
+        Mock<IPostStartupPermissionRecoveryCoordinator>? postStartupPermissionRecoveryCoordinatorMock = null)
     {
+        postStartupPermissionRecoveryCoordinatorMock ??= CreatePostStartupPermissionRecoveryCoordinatorMock();
         Services.AddSingleton(checkinServiceMock.Object);
         Services.AddSingleton(checkinProofServiceMock.Object);
+        Services.AddSingleton(postStartupPermissionRecoveryCoordinatorMock.Object);
         Services.AddSingleton(TimeProvider.System);
+    }
+
+    private static Mock<IPostStartupPermissionRecoveryCoordinator> CreatePostStartupPermissionRecoveryCoordinatorMock()
+    {
+        var postStartupPermissionRecoveryCoordinatorMock = new Mock<IPostStartupPermissionRecoveryCoordinator>();
+        postStartupPermissionRecoveryCoordinatorMock
+            .Setup(x => x.RecoverMissingPermissionsAfterHomepageRenderAsync(It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        return postStartupPermissionRecoveryCoordinatorMock;
     }
 
     #endregion

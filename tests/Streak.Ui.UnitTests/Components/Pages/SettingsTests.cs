@@ -1204,6 +1204,41 @@ public sealed class SettingsTests : TestContext
     }
 
     [Fact]
+    public void Settings_ShouldRequestBackupNotificationPermission_WhenAutomatedCloudBackupIsEnabled()
+    {
+        var exportServiceMock = new Mock<IDatabaseExportService>();
+        var diagnosticsExportServiceMock = new Mock<IDiagnosticsExportService>();
+        var shareServiceMock = CreateShareServiceMock(canShare: false);
+        var backupConfigurationServiceMock = CreateBackupConfigurationServiceMock(isEnabled: false, isCloudEnabled: false);
+        var reminderConfigurationServiceMock = CreateReminderConfigurationServiceMock(isEnabled: false);
+        var oneDriveAuthServiceMock = CreateOneDriveAuthServiceMock(CreateConnectedOneDriveAuthState());
+        var backupNotificationPermissionServiceMock = new Mock<IBackupNotificationPermissionService>();
+        backupNotificationPermissionServiceMock
+            .Setup(x => x.RequestPermissionIfNeededAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+
+        RegisterSettingsServices(
+            exportServiceMock,
+            diagnosticsExportServiceMock,
+            shareServiceMock,
+            backupConfigurationServiceMock,
+            reminderConfigurationServiceMock,
+            oneDriveAuthServiceMock: oneDriveAuthServiceMock,
+            backupNotificationPermissionServiceMock: backupNotificationPermissionServiceMock);
+
+        var cut = RenderSettings();
+
+        cut.Find("input[aria-label='Daily automated cloud backup toggle']").Change(true);
+
+        cut.WaitForAssertion(() =>
+        {
+            backupNotificationPermissionServiceMock.Verify(
+                x => x.RequestPermissionIfNeededAsync(It.IsAny<CancellationToken>()),
+                Times.Once);
+        });
+    }
+
+    [Fact]
     public void Settings_ShouldShowSnackbar_WhenReminderNotificationPermissionIsDenied()
     {
         var exportServiceMock = new Mock<IDatabaseExportService>();
