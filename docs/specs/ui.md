@@ -191,6 +191,24 @@ Use semantic roles rather than one-off hex values.
   - connected `CloudDone` in a success/healthy treatment starts the disconnect flow
 - Manual OneDrive backup should use the same filled icon-only action treatment as the rest of the Settings maintenance controls, using `Backup` or `CloudUpload` with tooltip / accessible text such as **Back up to OneDrive**.
 
+### Automated backup notifications
+
+- Android automated backup notifications should use the same native backup notification channel for success and failure states so users have one predictable notification permission surface.
+- Success notifications should stay calm and confirm the saved destination, for example **Nightly backup complete** with body text that points to `Downloads/Streak/Backups/Automated`.
+- Failure notifications should use concise, destination-specific copy rather than generic error text:
+  - local failure title: **Nightly backup failed**
+  - cloud failure title: **OneDrive backup failed**
+  - combined failure title: **Nightly backups failed**
+- Failure notification body text should name the next useful action without sounding alarming:
+  - local save failure: **Streak could not save the local backup. Open Settings to check backup options.**
+  - network failure: **Streak could not reach OneDrive. It will try again tomorrow.**
+  - reconnect required: **Reconnect OneDrive to resume cloud backups.**
+  - quota exceeded: **OneDrive storage is full. Free up space to resume cloud backups.**
+  - access denied or unknown: **Open Settings to check OneDrive backup.**
+- When a nightly run has mixed results, the notification treatment should avoid collapsing the outcome into a single success message. For example, if local backup succeeds but OneDrive upload fails, show the cloud failure notification so the user knows cloud backup needs attention.
+- Tapping a failure notification should open Streak, preferably to Settings. Tapping a success notification may keep the existing behavior of opening the automated backup folder.
+- Failure notifications should be native notifications, not in-app banners, because the automated run may happen while the app is backgrounded or closed.
+
 ### Settings page cards
 
 - The Settings page should stack **Daily reminder**, **Local backup**, **Cloud backup**, **Restore**, and **Diagnostic logs** as distinct cards rather than merging low-frequency actions into one large maintenance card.

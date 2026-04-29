@@ -67,8 +67,11 @@ public sealed class AutomatedBackupRunServiceTests
 
         result.LocalEnabled.Should().BeTrue();
         result.LocalSucceeded.Should().BeFalse();
+        result.LocalFailure.Should().BeOfType<InvalidOperationException>();
         result.CloudEnabled.Should().BeTrue();
         result.CloudSucceeded.Should().BeTrue();
+        result.CloudFailure.Should().BeNull();
+        result.CloudFailureKind.Should().BeNull();
         localExecutionServiceMock.Verify(x => x.ExecuteAutomatedBackupAsync(It.IsAny<CancellationToken>()), Times.Once);
         cloudBackupServiceMock.Verify(x => x.UploadAutomatedBackupAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
@@ -98,7 +101,10 @@ public sealed class AutomatedBackupRunServiceTests
         var result = await sut.ExecuteEnabledBackupsAsync();
 
         result.LocalSucceeded.Should().BeTrue();
+        result.LocalFailure.Should().BeNull();
         result.CloudSucceeded.Should().BeFalse();
+        result.CloudFailure.Should().BeOfType<OneDriveBackupException>();
+        result.CloudFailureKind.Should().Be(OneDriveBackupFailureKind.NetworkUnavailable);
         result.HasAnySuccess.Should().BeTrue();
         result.HasAnyFailure.Should().BeTrue();
     }
@@ -108,7 +114,7 @@ public sealed class AutomatedBackupRunServiceTests
     #region Negative tests
 
     [Fact]
-    public async Task ExecuteEnabledBackupsAsync_ShouldThrow_WhenCloudOnlyBackupFails()
+    public async Task ExecuteEnabledBackupsAsync_ShouldReturnFailureResult_WhenCloudOnlyBackupFails()
     {
         var configurationServiceMock = CreateConfigurationServiceMock(isEnabled: false, isCloudEnabled: true);
         var localExecutionServiceMock = new Mock<IAutomatedBackupExecutionService>();
@@ -121,14 +127,21 @@ public sealed class AutomatedBackupRunServiceTests
 
         var sut = CreateSut(configurationServiceMock.Object, localExecutionServiceMock.Object, cloudBackupServiceMock.Object);
 
-        var act = () => sut.ExecuteEnabledBackupsAsync();
+        var result = await sut.ExecuteEnabledBackupsAsync();
 
-        await act.Should().ThrowAsync<OneDriveBackupException>()
-            .Where(exception => exception.FailureKind == OneDriveBackupFailureKind.NetworkUnavailable);
+        result.LocalEnabled.Should().BeFalse();
+        result.LocalSucceeded.Should().BeFalse();
+        result.LocalFailure.Should().BeNull();
+        result.CloudEnabled.Should().BeTrue();
+        result.CloudSucceeded.Should().BeFalse();
+        result.CloudFailure.Should().BeOfType<OneDriveBackupException>();
+        result.CloudFailureKind.Should().Be(OneDriveBackupFailureKind.NetworkUnavailable);
+        result.HasAnySuccess.Should().BeFalse();
+        result.HasAnyFailure.Should().BeTrue();
     }
 
     [Fact]
-    public async Task ExecuteEnabledBackupsAsync_ShouldThrow_WhenBothDestinationsFail()
+    public async Task ExecuteEnabledBackupsAsync_ShouldReturnFailureResult_WhenBothDestinationsFail()
     {
         var configurationServiceMock = CreateConfigurationServiceMock(isEnabled: true, isCloudEnabled: true);
         var localExecutionServiceMock = new Mock<IAutomatedBackupExecutionService>();
@@ -145,10 +158,37 @@ public sealed class AutomatedBackupRunServiceTests
 
         var sut = CreateSut(configurationServiceMock.Object, localExecutionServiceMock.Object, cloudBackupServiceMock.Object);
 
-        var act = () => sut.ExecuteEnabledBackupsAsync();
+        var result = await sut.ExecuteEnabledBackupsAsync();
 
-        await act.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage("Local save failed.");
+        result.LocalEnabled.Should().BeTrue();
+        result.LocalSucceeded.Should().BeFalse();
+        result.LocalFailure.Should().BeOfType<InvalidOperationException>();
+        result.CloudEnabled.Should().BeTrue();
+        result.CloudSucceeded.Should().BeFalse();
+        result.CloudFailure.Should().BeOfType<OneDriveBackupException>();
+        result.CloudFailureKind.Should().Be(OneDriveBackupFailureKind.NetworkUnavailable);
+        result.HasAnySuccess.Should().BeFalse();
+        result.HasAnyFailure.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task ExecuteEnabledBackupsAsync_ShouldThrow_WhenCancellationIsRequested()
+    {
+        using var cancellationTokenSource = new CancellationTokenSource();
+        await cancellationTokenSource.CancelAsync();
+
+        var configurationServiceMock = CreateConfigurationServiceMock(isEnabled: true, isCloudEnabled: false);
+        var localExecutionServiceMock = new Mock<IAutomatedBackupExecutionService>();
+        localExecutionServiceMock
+            .Setup(x => x.ExecuteAutomatedBackupAsync(It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new OperationCanceledException(cancellationTokenSource.Token));
+
+        var cloudBackupServiceMock = new Mock<IAutomatedCloudBackupService>();
+        var sut = CreateSut(configurationServiceMock.Object, localExecutionServiceMock.Object, cloudBackupServiceMock.Object);
+
+        var act = () => sut.ExecuteEnabledBackupsAsync(cancellationTokenSource.Token);
+
+        await act.Should().ThrowAsync<OperationCanceledException>();
     }
 
     #endregion

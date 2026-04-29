@@ -128,7 +128,10 @@ The page contains five vertically stacked sections presented as clean cards:
 - Automated backups should use a timestamped filename pattern such as `streak-auto-data-backup-YYYYMMdd-HHmmss.zip`.
 - On Android, a successful nightly automated backup should post a native completion notification when the app has notification permission.
 - Tapping that Android completion notification should attempt to open the shared parent folder that contains the automated backups (`Downloads/Streak/Backups/Automated`). If the platform cannot deep-link to that exact folder, falling back to the broader Downloads surface is acceptable.
-- If Android notification permission is denied, nightly backups should still run normally; only the completion notification is skipped.
+- On Android, a failed nightly local automated backup should post a native failure notification when the app has notification permission.
+- Local automated backup failure notifications should clearly say that Streak could not save the local backup and should route the user back into Streak, preferably to Settings, so the user can inspect backup settings or export manually.
+- Failure notifications should be destination-aware. If local backup succeeds but cloud backup fails, the user should still see a cloud-backup failure notification instead of treating the whole nightly run as successful.
+- If Android notification permission is denied, nightly backups should still run normally; only the completion and failure notifications are skipped.
 - There is no user-facing control yet for backup history, retention, cleanup, schedule customization, or destination customization.
 
 ### Platform-specific Automated Backup UX
@@ -168,6 +171,15 @@ The page contains five vertically stacked sections presented as clean cards:
   - enabling local automated backups does not enable daily automated OneDrive backup
 - While enabled, daily automated OneDrive backup should follow the same fixed **11:30 PM local device time** schedule as other daily backup automation.
 - Cloud backup failures should not block local-only app usage. If a daily automated OneDrive backup fails, the app should try again on the **next scheduled run** rather than performing same-day retry loops.
+- On Android, a failed daily automated OneDrive backup should post a native failure notification when the app has notification permission.
+- Automated OneDrive failure notifications should use user-actionable copy based on the failure kind:
+  - **Network unavailable:** tell the user Streak could not reach OneDrive and will try again on the next scheduled run.
+  - **Auth required:** tell the user to reconnect OneDrive.
+  - **Access denied:** tell the user OneDrive access needs attention and reconnecting may be required.
+  - **Quota exceeded:** tell the user OneDrive storage is full.
+  - **Unknown:** use a generic "OneDrive backup failed" message.
+- Tapping an automated OneDrive failure notification should open Streak, preferably directly to Settings, so the user can reconnect OneDrive, run a manual cloud backup, or review backup controls.
+- If both local and cloud automated backups fail during the same nightly run, Android may show either one combined failure notification or two destination-specific failure notifications, but the notification text must make clear that no enabled automated destination succeeded.
 - The OneDrive app folder counts against the user's own OneDrive quota.
 - Retention, cleanup, and quota-management remain outside the app for this iteration.
 - **Cloud restore is not part of this iteration.** Restore remains a local-file-based action on the Settings page.
@@ -366,8 +378,13 @@ The page contains five vertically stacked sections presented as clean cards:
 | Daily automated OneDrive backup is ON while local automated backups are OFF | Only the OneDrive upload runs on the nightly schedule.                                                                                                                           |
 | Local automated backups are ON while daily automated OneDrive backup is OFF | Only the local backup file is created on the nightly schedule.                                                                                                                     |
 | Cloud backup upload succeeds                   | The uploaded archive appears in the app's OneDrive app folder and the Cloud backup card updates the latest cloud-backup status.                                                                                       |
-| Cloud backup fails because the network is unavailable | Keep the user on Settings for manual backup, surface a clear error message, and retry daily automated OneDrive backup on the next scheduled run instead of same-day retry loops.                                 |
-| Cloud backup fails because OneDrive quota is full | Keep the user on Settings, surface a clear error message, and leave cleanup / space recovery to the user outside the app.                                                                                            |
+| Local automated backup fails                   | On Android, post a native failure notification when notification permission is available. Keep any other enabled backup destination independent, and leave manual export/share available from Settings.              |
+| Local automated backup succeeds but cloud automated backup fails | Preserve the successful local backup and post a destination-specific cloud failure notification when notification permission is available. Do not label the whole nightly run as a clean success.              |
+| Cloud backup fails because the network is unavailable | Surface a clear failure notification or Settings error, and retry daily automated OneDrive backup on the next scheduled run instead of same-day retry loops.                                                    |
+| Cloud backup fails because OneDrive auth is required | Surface a clear failure notification or Settings error asking the user to reconnect OneDrive, and retry only after the user reconnects or the next scheduled run has valid auth.                               |
+| Cloud backup fails because OneDrive access is denied | Surface a clear failure notification or Settings error indicating OneDrive access needs attention, and leave reconnect/consent as the user's next action.                                                       |
+| Cloud backup fails because OneDrive quota is full | Surface a clear failure notification or Settings error, and leave cleanup / space recovery to the user outside the app.                                                                                            |
+| Both local and cloud automated backups fail    | On Android, post a native failure notification when notification permission is available, and make the copy clear that no enabled automated backup destination succeeded.                                          |
 | User disconnects OneDrive                      | Clear the app's local auth state and disable connected cloud actions, but do not delete already uploaded OneDrive backup files automatically.                                                                          |
 | User disables reminders                        | No notifications are scheduled. The time picker is hidden.                                                                                                                                                            |
 | User changes time                              | The next reminder is rescheduled to the new time. If the new time has already passed for today, the next reminder fires tomorrow.                                                                                     |

@@ -31,6 +31,10 @@ public sealed class AutomatedBackupRunService(
             {
                 localSavedLocation = await _automatedBackupExecutionService.ExecuteAutomatedBackupAsync(cancellationToken);
             }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                throw;
+            }
             catch (Exception exception)
             {
                 localFailure = exception;
@@ -44,6 +48,10 @@ public sealed class AutomatedBackupRunService(
             {
                 await _automatedCloudBackupService.UploadAutomatedBackupAsync(cancellationToken);
                 cloudSucceeded = true;
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                throw;
             }
             catch (OneDriveBackupException exception)
             {
@@ -60,19 +68,18 @@ public sealed class AutomatedBackupRunService(
             }
         }
 
-        if (localFailure is not null && localSavedLocation is null && !cloudSucceeded)
-            throw localFailure;
-
-        if (cloudFailure is not null && localSavedLocation is null)
-            throw cloudFailure;
-
         return new AutomatedBackupRunResult
         {
             LocalEnabled = localEnabled,
             LocalSucceeded = localSavedLocation is not null,
             LocalSavedLocation = localSavedLocation,
+            LocalFailure = localFailure,
             CloudEnabled = cloudEnabled,
-            CloudSucceeded = cloudSucceeded
+            CloudSucceeded = cloudSucceeded,
+            CloudFailureKind = cloudFailure is OneDriveBackupException oneDriveBackupException
+                ? oneDriveBackupException.FailureKind
+                : cloudFailure is null ? null : OneDriveBackupFailureKind.Unknown,
+            CloudFailure = cloudFailure
         };
     }
 }

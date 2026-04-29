@@ -6,4 +6,9 @@ public sealed class NoOpAutomatedBackupCompletionNotifier : IAutomatedBackupComp
     {
         ArgumentNullException.ThrowIfNull(savedFileLocation);
     }
+
+    public void NotifyFailed(AutomatedBackupRunResult runResult)
+    {
+        ArgumentNullException.ThrowIfNull(runResult);
+    }
 }

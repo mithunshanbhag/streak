@@ -55,7 +55,8 @@ public sealed class AutomatedBackupAlarmReceiver : BroadcastReceiver
 
     private void StartReceiverFallbackExecution(Context context, string intentAction)
     {
-        var pendingResult = GoAsync();
+        var pendingResult = GoAsync()
+                            ?? throw new InvalidOperationException("Android broadcast pending result is required for automated backup fallback execution.");
 
         _ = Task.Run(async () =>
         {
@@ -107,8 +108,14 @@ public sealed class AutomatedBackupAlarmReceiver : BroadcastReceiver
 
         var nextRunLocal = TimeZoneInfo.ConvertTime(nextRunUtc.Value, timeProvider.LocalTimeZone);
         var runResult = await automatedBackupRunService.ExecuteEnabledBackupsAsync(cancellationToken);
-        if (runResult.LocalSavedLocation is not null)
+        if (runResult.HasAnyFailure)
+        {
+            automatedBackupCompletionNotifier.NotifyFailed(runResult);
+        }
+        else if (runResult.LocalSavedLocation is not null)
+        {
             automatedBackupCompletionNotifier.NotifyCompleted(runResult.LocalSavedLocation);
+        }
 
         logger.LogInformation(
             "Nightly automated backup run completed. Local enabled: {LocalEnabled}. Local succeeded: {LocalSucceeded}. Cloud enabled: {CloudEnabled}. Cloud succeeded: {CloudSucceeded}. Next trigger scheduled for {NextRunLocal}.",
