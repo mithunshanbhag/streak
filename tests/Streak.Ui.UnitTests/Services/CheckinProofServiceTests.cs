@@ -15,7 +15,10 @@ public sealed class CheckinProofServiceTests
         var pickerService = new FakeCheckinProofMediaPickerService(
             selectedPhoto: new FileResult(sourcePath),
             supportsCameraCapture: true);
-        var sut = new CheckinProofService(pickerService, CreateProofFileStore(proofDirectory.Path));
+        var sut = new CheckinProofService(
+            pickerService,
+            new FakeCameraPermissionService(),
+            CreateProofFileStore(proofDirectory.Path));
 
         var result = await sut.PickPhotoAsync();
 
@@ -32,7 +35,10 @@ public sealed class CheckinProofServiceTests
     {
         using var proofDirectory = new TemporaryDirectory();
         var pickerService = new FakeCheckinProofMediaPickerService();
-        var sut = new CheckinProofService(pickerService, CreateProofFileStore(proofDirectory.Path));
+        var sut = new CheckinProofService(
+            pickerService,
+            new FakeCameraPermissionService(),
+            CreateProofFileStore(proofDirectory.Path));
         var selection = new CheckinProofSelection
         {
             DisplayName = "proof.jpg",
@@ -69,7 +75,10 @@ public sealed class CheckinProofServiceTests
         await File.WriteAllBytesAsync(absolutePath, [1, 2, 3, 4]);
 
         var pickerService = new FakeCheckinProofMediaPickerService();
-        var sut = new CheckinProofService(pickerService, CreateProofFileStore(proofDirectory.Path));
+        var sut = new CheckinProofService(
+            pickerService,
+            new FakeCameraPermissionService(),
+            CreateProofFileStore(proofDirectory.Path));
 
         await sut.DeleteIfExistsAsync(relativePath);
 
@@ -89,12 +98,33 @@ public sealed class CheckinProofServiceTests
         await File.WriteAllBytesAsync(sourcePath, new byte[CoreConstants.CheckinProofMaxSizeBytes + 1]);
 
         var pickerService = new FakeCheckinProofMediaPickerService(selectedPhoto: new FileResult(sourcePath));
-        var sut = new CheckinProofService(pickerService, CreateProofFileStore(proofDirectory.Path));
+        var sut = new CheckinProofService(
+            pickerService,
+            new FakeCameraPermissionService(),
+            CreateProofFileStore(proofDirectory.Path));
 
         var act = () => sut.PickPhotoAsync();
 
         await act.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("Selected picture proof must be 5 MB or smaller.");
+    }
+
+    [Fact]
+    public async Task CapturePhotoAsync_ShouldThrowInvalidOperationException_WhenCameraPermissionIsDenied()
+    {
+        using var proofDirectory = new TemporaryDirectory();
+        var pickerService = new FakeCheckinProofMediaPickerService(supportsCameraCapture: true);
+        var cameraPermissionService = new FakeCameraPermissionService(isGranted: false);
+        var sut = new CheckinProofService(
+            pickerService,
+            cameraPermissionService,
+            CreateProofFileStore(proofDirectory.Path));
+
+        var act = () => sut.CapturePhotoAsync();
+
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("Camera permission is required to take a picture. You can continue without a photo or choose Gallery instead.");
+        pickerService.CapturePhotoCallCount.Should().Be(0);
     }
 
     #endregion
@@ -116,11 +146,14 @@ public sealed class CheckinProofServiceTests
         FileResult? selectedPhoto = null,
         bool supportsCameraCapture = false) : ICheckinProofMediaPickerService
     {
+        public int CapturePhotoCallCount { get; private set; }
+
         public bool SupportsCameraCapture => supportsCameraCapture;
 
         public Task<FileResult?> CapturePhotoAsync(CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
+            CapturePhotoCallCount++;
             return Task.FromResult(selectedPhoto);
         }
 
@@ -128,6 +161,15 @@ public sealed class CheckinProofServiceTests
         {
             cancellationToken.ThrowIfCancellationRequested();
             return Task.FromResult(selectedPhoto);
+        }
+    }
+
+    private sealed class FakeCameraPermissionService(bool isGranted = true) : ICameraPermissionService
+    {
+        public Task<bool> RequestPermissionIfNeededAsync(CancellationToken cancellationToken = default)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            return Task.FromResult(isGranted);
         }
     }
 

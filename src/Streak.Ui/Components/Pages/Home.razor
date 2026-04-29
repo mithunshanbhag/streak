@@ -2,6 +2,7 @@
 @inject ICheckinService CheckinService
 @inject ICheckinProofService CheckinProofService
 @inject IDialogService DialogService
+@inject IPostStartupPermissionRecoveryCoordinator PostStartupPermissionRecoveryCoordinator
 @inject TimeProvider TimeProvider
 @inject ILogger<Home> Logger
 
@@ -94,6 +95,21 @@ else
         StartupTiming.Mark("home-page-on-initialized-start");
 
         await LoadDataAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+            return;
+
+        try
+        {
+            await PostStartupPermissionRecoveryCoordinator.RecoverMissingPermissionsAfterHomepageRenderAsync();
+        }
+        catch (Exception exception)
+        {
+            Logger.LogWarning(exception, "Unable to complete post-startup permission recovery after the Homepage rendered.");
+        }
     }
 
     #endregion

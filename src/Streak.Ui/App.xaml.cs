@@ -4,18 +4,15 @@ public partial class App : Application
 {
     private readonly IAppInitializationService _appInitializationService;
     private readonly ILogger<App> _logger;
-    private readonly IReminderNotificationPermissionCoordinator _reminderNotificationPermissionCoordinator;
 
     public App(
         IAppInitializationService appInitializationService,
-        ILogger<App> logger,
-        IReminderNotificationPermissionCoordinator reminderNotificationPermissionCoordinator)
+        ILogger<App> logger)
     {
         StartupTiming.Mark("app-constructor-start");
 
         _appInitializationService = appInitializationService;
         _logger = logger;
-        _reminderNotificationPermissionCoordinator = reminderNotificationPermissionCoordinator;
 
         InitializeComponent();
 
@@ -48,14 +45,6 @@ public partial class App : Application
             return;
         }
 
-        try
-        {
-            await _reminderNotificationPermissionCoordinator.RequestPermissionIfRemindersEnabledAsync();
-            StartupTiming.Mark("app-window-created-handler-completed");
-        }
-        catch (Exception exception)
-        {
-            _logger.LogWarning(exception, "Unable to request reminder notification permission on app startup.");
-        }
+        StartupTiming.Mark("app-window-created-handler-completed");
     }
 }

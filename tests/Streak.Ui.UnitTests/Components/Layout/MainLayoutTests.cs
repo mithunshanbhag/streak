@@ -102,9 +102,14 @@ public sealed class MainLayoutTests : TestContext
 
         var checkinProofServiceMock = new Mock<ICheckinProofService>();
         checkinProofServiceMock.SetupGet(x => x.SupportsCameraCapture).Returns(false);
+        var postStartupPermissionRecoveryCoordinatorMock = new Mock<IPostStartupPermissionRecoveryCoordinator>();
+        postStartupPermissionRecoveryCoordinatorMock
+            .Setup(x => x.RecoverMissingPermissionsAfterHomepageRenderAsync(It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
 
         Services.AddSingleton(checkinServiceMock.Object);
         Services.AddSingleton(checkinProofServiceMock.Object);
+        Services.AddSingleton(postStartupPermissionRecoveryCoordinatorMock.Object);
         Services.AddSingleton(TimeProvider.System);
     }
 
@@ -172,10 +177,15 @@ public sealed class MainLayoutTests : TestContext
 
         var checkinProofServiceMock = new Mock<ICheckinProofService>();
         checkinProofServiceMock.SetupGet(x => x.SupportsCameraCapture).Returns(false);
+        var postStartupPermissionRecoveryCoordinatorMock = new Mock<IPostStartupPermissionRecoveryCoordinator>();
+        postStartupPermissionRecoveryCoordinatorMock
+            .Setup(x => x.RecoverMissingPermissionsAfterHomepageRenderAsync(It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
 
         Services.AddSingleton(habitServiceMock.Object);
         Services.AddSingleton(checkinServiceMock.Object);
         Services.AddSingleton(checkinProofServiceMock.Object);
+        Services.AddSingleton(postStartupPermissionRecoveryCoordinatorMock.Object);
         Services.AddSingleton(TimeProvider.System);
     }
 
