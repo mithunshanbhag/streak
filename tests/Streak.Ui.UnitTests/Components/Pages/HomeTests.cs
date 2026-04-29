@@ -257,7 +257,8 @@ public sealed class HomeTests : TestContext
         var existingCheckin = new Checkin
         {
             HabitId = 1,
-            CheckinDate = DateOnly.FromDateTime(DateTime.Now).ToString(CoreConstants.CheckinDateFormat, CultureInfo.InvariantCulture),
+            CheckinDate = DateOnly.FromDateTime(CreateFixedTimeProvider().GetLocalNow().DateTime)
+                .ToString(CoreConstants.CheckinDateFormat, CultureInfo.InvariantCulture),
             ProofImageUri = "Habit-1/2026/04/2026-04-21/proof.jpg"
         };
         checkinServiceMock
@@ -543,13 +544,15 @@ public sealed class HomeTests : TestContext
     private void RegisterServices(
         Mock<ICheckinService> checkinServiceMock,
         Mock<ICheckinProofService> checkinProofServiceMock,
-        Mock<IPostStartupPermissionRecoveryCoordinator>? postStartupPermissionRecoveryCoordinatorMock = null)
+        Mock<IPostStartupPermissionRecoveryCoordinator>? postStartupPermissionRecoveryCoordinatorMock = null,
+        TimeProvider? timeProvider = null)
     {
         postStartupPermissionRecoveryCoordinatorMock ??= CreatePostStartupPermissionRecoveryCoordinatorMock();
+        timeProvider ??= CreateFixedTimeProvider();
         Services.AddSingleton(checkinServiceMock.Object);
         Services.AddSingleton(checkinProofServiceMock.Object);
         Services.AddSingleton(postStartupPermissionRecoveryCoordinatorMock.Object);
-        Services.AddSingleton(TimeProvider.System);
+        Services.AddSingleton(timeProvider);
     }
 
     private static Mock<IPostStartupPermissionRecoveryCoordinator> CreatePostStartupPermissionRecoveryCoordinatorMock()
@@ -559,6 +562,34 @@ public sealed class HomeTests : TestContext
             .Setup(x => x.RecoverMissingPermissionsAfterHomepageRenderAsync(It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
         return postStartupPermissionRecoveryCoordinatorMock;
+    }
+
+    private static TimeProvider CreateFixedTimeProvider()
+    {
+        var localTimeZone = CreateFixedOffsetTimeZone(hours: 5, minutes: 30);
+        var localNow = new DateTimeOffset(2026, 4, 21, 8, 30, 12, localTimeZone.BaseUtcOffset);
+
+        return new FixedTimeProvider(localNow, localTimeZone);
+    }
+
+    private static TimeZoneInfo CreateFixedOffsetTimeZone(int hours, int minutes)
+    {
+        var offset = new TimeSpan(hours, minutes, 0);
+        return TimeZoneInfo.CreateCustomTimeZone(
+            id: $"UTC{offset:hh\\:mm}",
+            baseUtcOffset: offset,
+            displayName: $"UTC{offset:hh\\:mm}",
+            standardDisplayName: $"UTC{offset:hh\\:mm}");
+    }
+
+    private sealed class FixedTimeProvider(DateTimeOffset utcNow, TimeZoneInfo localTimeZone) : TimeProvider
+    {
+        public override DateTimeOffset GetUtcNow()
+        {
+            return utcNow.ToUniversalTime();
+        }
+
+        public override TimeZoneInfo LocalTimeZone => localTimeZone;
     }
 
     #endregion

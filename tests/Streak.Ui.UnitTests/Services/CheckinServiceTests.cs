@@ -430,7 +430,8 @@ public class CheckinServiceTests
     [Fact]
     public async Task GetCurrentStreakAsync_ShouldReturnConsecutiveDoneDays()
     {
-        var todayLocal = DateOnly.FromDateTime(DateTime.Now);
+        var timeProvider = CreateIndiaTimeProvider(new DateTimeOffset(2026, 4, 14, 1, 0, 0, new TimeSpan(5, 30, 0)));
+        var todayLocal = DateOnly.FromDateTime(timeProvider.GetLocalNow().DateTime);
         IReadOnlyList<Checkin> checkinHistory =
         [
             CreateCheckin(1, todayLocal),
@@ -438,7 +439,7 @@ public class CheckinServiceTests
             CreateCheckin(1, todayLocal.AddDays(-2))
         ];
 
-        var sut = CreateSut(out var checkinRepositoryMock, out _);
+        var sut = CreateSut(out var checkinRepositoryMock, out _, timeProvider);
         checkinRepositoryMock
             .Setup(x => x.GetByHabitNameAsync("Run", It.IsAny<CancellationToken>()))
             .ReturnsAsync(checkinHistory);
@@ -603,14 +604,15 @@ public class CheckinServiceTests
     [Fact]
     public async Task GetCurrentStreakAsync_ShouldStopAtFirstMissedDay()
     {
-        var todayLocal = DateOnly.FromDateTime(DateTime.Now);
+        var timeProvider = CreateIndiaTimeProvider(new DateTimeOffset(2026, 4, 14, 1, 0, 0, new TimeSpan(5, 30, 0)));
+        var todayLocal = DateOnly.FromDateTime(timeProvider.GetLocalNow().DateTime);
         IReadOnlyList<Checkin> checkinHistory =
         [
             CreateCheckin(1, todayLocal.AddDays(-1)),
             CreateCheckin(1, todayLocal.AddDays(-2))
         ];
 
-        var sut = CreateSut(out var checkinRepositoryMock, out _);
+        var sut = CreateSut(out var checkinRepositoryMock, out _, timeProvider);
         checkinRepositoryMock
             .Setup(x => x.GetByHabitNameAsync("Run", It.IsAny<CancellationToken>()))
             .ReturnsAsync(checkinHistory);
@@ -623,7 +625,8 @@ public class CheckinServiceTests
     [Fact]
     public async Task GetCurrentStreakAsync_ShouldStopWhenDateGapIsEncountered()
     {
-        var todayLocal = DateOnly.FromDateTime(DateTime.Now);
+        var timeProvider = CreateIndiaTimeProvider(new DateTimeOffset(2026, 4, 14, 1, 0, 0, new TimeSpan(5, 30, 0)));
+        var todayLocal = DateOnly.FromDateTime(timeProvider.GetLocalNow().DateTime);
         IReadOnlyList<Checkin> checkinHistory =
         [
             CreateCheckin(1, todayLocal),
@@ -631,7 +634,7 @@ public class CheckinServiceTests
             CreateCheckin(1, todayLocal.AddDays(-3))
         ];
 
-        var sut = CreateSut(out var checkinRepositoryMock, out _);
+        var sut = CreateSut(out var checkinRepositoryMock, out _, timeProvider);
         checkinRepositoryMock
             .Setup(x => x.GetByHabitNameAsync("Run", It.IsAny<CancellationToken>()))
             .ReturnsAsync(checkinHistory);
@@ -672,6 +675,12 @@ public class CheckinServiceTests
             baseUtcOffset: offset,
             displayName: $"UTC{offset:hh\\:mm}",
             standardDisplayName: $"UTC{offset:hh\\:mm}");
+    }
+
+    private static TimeProvider CreateIndiaTimeProvider(DateTimeOffset localNow)
+    {
+        var indiaTimeZone = CreateFixedOffsetTimeZone(hours: 5, minutes: 30);
+        return new FixedTimeProvider(localNow, indiaTimeZone);
     }
 
     private sealed class FixedTimeProvider(DateTimeOffset utcNow, TimeZoneInfo localTimeZone) : TimeProvider

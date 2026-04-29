@@ -1,6 +1,7 @@
 @page "/habits/{HabitId:int}"
 @inject IHabitService HabitService
 @inject ICheckinService CheckinService
+@inject TimeProvider TimeProvider
 @inject IDialogService DialogService
 @inject NavigationManager NavigationManager
 @inject ILogger<HabitDetails> Logger
@@ -269,7 +270,7 @@ else if (_viewModel is not null)
 
                     _historyViewModel = HabitHistoryHeatmapBuilder.Build(
                         await historyTask,
-                        DateOnly.FromDateTime(DateTime.Now));
+                        DateOnly.FromDateTime(TimeProvider.GetLocalNow().DateTime));
 
                     loadOutcome = "loaded";
                 }

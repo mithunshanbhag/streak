@@ -12,24 +12,25 @@ internal static class DataBackupArchiveUtility
 
     internal const string CheckinProofsEntryRootName = "CheckinProofs";
 
-    internal static string CreateBackupFilePath(string exportDirectoryPath)
+    internal static string CreateBackupFilePath(string exportDirectoryPath, TimeProvider timeProvider)
     {
-        return CreateBackupFilePath(exportDirectoryPath, "streak-data-backup");
+        return CreateBackupFilePath(exportDirectoryPath, "streak-data-backup", timeProvider);
     }
 
-    internal static string CreateAutomatedBackupFilePath(string exportDirectoryPath)
+    internal static string CreateAutomatedBackupFilePath(string exportDirectoryPath, TimeProvider timeProvider)
     {
-        return CreateBackupFilePath(exportDirectoryPath, "streak-auto-data-backup");
+        return CreateBackupFilePath(exportDirectoryPath, "streak-auto-data-backup", timeProvider);
     }
 
-    internal static string CreateBackupFilePath(string exportDirectoryPath, string filePrefix)
+    internal static string CreateBackupFilePath(string exportDirectoryPath, string filePrefix, TimeProvider timeProvider)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(exportDirectoryPath);
         ArgumentException.ThrowIfNullOrWhiteSpace(filePrefix);
+        ArgumentNullException.ThrowIfNull(timeProvider);
 
         Directory.CreateDirectory(exportDirectoryPath);
 
-        var timestamp = DateTime.Now.ToString("yyyyMMdd-HHmmss", CultureInfo.InvariantCulture);
+        var timestamp = timeProvider.GetLocalNow().DateTime.ToString("yyyyMMdd-HHmmss", CultureInfo.InvariantCulture);
         var fileName = $"{filePrefix}-{timestamp}.zip";
 
         return Path.Combine(exportDirectoryPath, fileName);

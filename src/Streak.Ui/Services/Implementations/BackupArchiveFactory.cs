@@ -2,23 +2,25 @@ namespace Streak.Ui.Services.Implementations;
 
 public sealed class BackupArchiveFactory(
     IAppStoragePathService appStoragePathService,
-    ICheckinProofFileStore checkinProofFileStore)
+    ICheckinProofFileStore checkinProofFileStore,
+    TimeProvider timeProvider)
     : IBackupArchiveFactory
 {
     private readonly IAppStoragePathService _appStoragePathService = appStoragePathService;
     private readonly ICheckinProofFileStore _checkinProofFileStore = checkinProofFileStore;
+    private readonly TimeProvider _timeProvider = timeProvider;
 
     public Task<BackupArchiveArtifact> CreateManualBackupAsync(CancellationToken cancellationToken = default)
     {
         return CreateBackupAsync(
-            () => DataBackupArchiveUtility.CreateBackupFilePath(_appStoragePathService.ExportDirectoryPath),
+            () => DataBackupArchiveUtility.CreateBackupFilePath(_appStoragePathService.ExportDirectoryPath, _timeProvider),
             cancellationToken);
     }
 
     public Task<BackupArchiveArtifact> CreateAutomatedBackupAsync(CancellationToken cancellationToken = default)
     {
         return CreateBackupAsync(
-            () => DataBackupArchiveUtility.CreateAutomatedBackupFilePath(_appStoragePathService.ExportDirectoryPath),
+            () => DataBackupArchiveUtility.CreateAutomatedBackupFilePath(_appStoragePathService.ExportDirectoryPath, _timeProvider),
             cancellationToken);
     }
 

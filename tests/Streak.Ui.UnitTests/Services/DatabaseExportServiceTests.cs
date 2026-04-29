@@ -243,7 +243,8 @@ public sealed class DatabaseExportServiceTests
         var loggerMock = new Mock<ILogger<DatabaseExportService>>();
         var backupArchiveFactory = new BackupArchiveFactory(
             appStoragePathServiceMock.Object,
-            new FileSystemCheckinProofFileStore(appStoragePathServiceMock.Object));
+            new FileSystemCheckinProofFileStore(appStoragePathServiceMock.Object),
+            TimeProvider.System);
 
         return new DatabaseExportService(
             backupArchiveFactory,
