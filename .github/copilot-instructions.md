@@ -8,6 +8,7 @@ My preferred framework for building apps is .NET (currently .NET 10 is the lates
 
 - Frontend: Blazor WebAssembly (with MudBlazor controls).
 - CommandLine: .NET Console App (with Spectre.Console for rich CLI).
+- Mobile / cross-platform: Blazor Hybrid (with MudBlazor controls) if the app does not need native capabilities. Else .NET MAUI (with CommunityToolkit.Maui controls).
 - Backend: Azure Function Apps.
 - Database: Azure Cosmos DB (NOSQL API, formerly known as Core SQL API).
 
