@@ -21,6 +21,7 @@ These dialogs are intentionally compact and homepage-centered. The habit card sh
 
 - Opens when the user toggles an unchecked homepage habit to **done**.
 - The originating homepage card remains visually unchanged until the dialog is successfully completed.
+- On Android, camera permission should usually already have been reconciled by the post-startup homepage permission check, because picture-proof capture is part of this dialog flow.
 
 ### Content
 
@@ -48,6 +49,8 @@ These dialogs are intentionally compact and homepage-centered. The habit card sh
   1. the image selection/capture succeeds
   2. any required proof-file processing succeeds
   3. the check-in record is persisted successfully
+- If camera permission is still missing when the user taps the camera action, the app should request it through the Android runtime permission dialog before launching capture.
+- If camera permission remains denied, keep the dialog open, leave the habit unchecked, and let the user continue without a picture or choose the gallery path instead.
 - If picture processing fails, the check-in must remain unchecked and the user should stay in the dialog with a clear error message.
 - Dismissing or cancelling the dialog leaves the underlying homepage habit unchecked.
 

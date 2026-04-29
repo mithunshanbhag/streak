@@ -6,6 +6,7 @@ This document captures cross-cutting requirements that apply across the Streak a
 
 - The app should launch and be ready for interaction within **2 seconds** on a typical supported device.
 - Homepage rendering and day-state hydration should feel immediate after launch.
+- Required Android runtime-permission recovery should happen **after** the homepage is first rendered, so permission prompting does not delay initial app visibility.
 - Checkin toggling should feel **instant**, with no visible loading spinners for the normal success path.
 - Common local-only operations such as creating a habit, editing a habit, or toggling a checkin should complete quickly enough to feel synchronous to the user.
 

@@ -319,13 +319,25 @@ The page contains five vertically stacked sections presented as clean cards:
 
 - When enabled, the app schedules a **local notification** at the configured time each day.
 - Fresh installs default reminders to **disabled** so Android notification permission is requested only after the user explicitly enables reminders.
-- If reminders are already enabled from an existing database or restored backup, the app should request Android notification permission on app launch and when the user opens Settings.
+- If reminders and/or automated backup notifications are already enabled from existing persisted state, the app should request Android notification permission after startup completes and the Homepage finishes its first render, and again from Settings when the user later re-enters a relevant flow.
 - The notification fires **only if** at least one habit has not been checked in as done for that day.
 - If all habits are already marked done before the reminder time, **no notification is sent**.
 - The notification content should include:
   - Title: *"Streak Reminder"*
   - Body: *"You have {N} habit(s) pending today."* (where N is the count of unchecked habits).
 - Tapping the notification opens the app to the [Homepage](./homepage.md).
+
+## Android Permission Recovery
+
+- After startup initialization completes and the Homepage is visible, Android should reconcile any missing runtime permissions required by currently enabled features.
+- This permission check is **post-startup**: it happens only after the initial homepage render, not before the app becomes interactive.
+- The post-startup check should request **notification permission** when any of these persisted settings are ON:
+  - daily reminders
+  - daily automated local backups
+  - daily automated OneDrive backups
+- The same post-startup check should also request **camera permission** so picture-proof capture from the check-in dialog is available without waiting for the first camera-button tap.
+- If notification permission remains denied, reminder notifications and automated-backup success/failure notifications are skipped until the user grants it later; the underlying reminder schedule and backup jobs can still remain enabled.
+- If camera permission remains denied, camera capture stays unavailable until granted later, but the rest of the check-in flow remains usable.
 
 ## Defaults
 
@@ -365,6 +377,8 @@ The page contains five vertically stacked sections presented as clean cards:
 | Scenario                                       | Behavior                                                                                                                                                                                                              |
 | ---------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | User has no habits                             | Reminder toggle is still available but no notification will fire (0 pending habits).                                                                                                                                  |
+| App opens with reminders or automated backups already enabled but Android notification permission missing | Let the Homepage render first, then show the Android notification-permission dialog. If the user still denies it, keep the settings enabled but skip posting notifications until permission is granted later. |
+| App opens with Android camera permission missing | Let the Homepage render first, then show the Android camera-permission dialog so picture-proof capture can be available from the check-in dialog. If the user still denies it, keep camera capture unavailable but leave the rest of check-in usable. |
 | User enables local automated backups before 11:30 PM | The first local automated backup should run at **11:30 PM local time today**.                                                                                                                                  |
 | User enables local automated backups after 11:30 PM  | The first local automated backup should run at **11:30 PM local time tomorrow**.                                                                                                                                 |
 | User disables local automated backups                | Future local automated backups stop; previously created backup files remain untouched.                                                                                                                           |

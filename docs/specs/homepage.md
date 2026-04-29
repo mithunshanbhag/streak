@@ -51,6 +51,15 @@ Each card shows:
 - Tapping **`+ New Habit`** opens the [Quick Add Habit dialog](./create-habit-page.md) over the homepage.
 - Hide the CTA when the user is already at the maximum habit count.
 
+## Post-startup Permission Recovery
+
+- On Android, once startup initialization has completed and the homepage content is fully visible, the app should check for any missing runtime permissions tied to enabled features or homepage-adjacent flows.
+- If one or more required permissions are missing, the app should present the corresponding Android system permission dialog(s) at that point.
+- The homepage must render first; permission prompting is a **post-startup** action, not part of the splash / initial route gate.
+- This check should cover:
+  - notification permission when daily reminders, daily automated local backups, or daily automated OneDrive backups are already enabled from persisted state
+  - camera permission for the optional picture-proof capture flow used by homepage check-ins
+
 ## Checkin Toggle Behavior
 
 - **Default state**: Empty circle (not done) at the start of each new **local** calendar day.

@@ -193,6 +193,13 @@ Windows does not currently support automated backups or OneDrive cloud backup. A
 - Backup-completion feedback is separate from reminder notifications:
   - manual **Download data** success uses an in-app confirmation with a quick folder-open action
   - Android nightly automated backups may post a native completion notification that attempts to open the backup folder when tapped
+- On **Android**, after startup initialization finishes and the Homepage has rendered, the app should reconcile any missing **runtime permissions** required by the user's currently enabled features and visible check-in flows, then present the system permission dialog if needed.
+- This post-startup permission reconciliation must **not block first render**; the Homepage should become visible first, and only then may Android permission dialogs appear.
+- Notification permission should be requested post-startup when it is still missing and any notification-driven feature is already enabled from persisted state, including:
+  - daily reminders
+  - daily automated local backups
+  - daily automated OneDrive backups
+- Camera permission should also be reconciled post-startup on Android so picture-proof capture from the Homepage check-in flow is ready without waiting for the first camera-button tap.
 
 ## Time and Timezone Behavior
 
