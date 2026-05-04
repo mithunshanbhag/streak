@@ -8,8 +8,6 @@ public sealed class AppStoragePathService : IAppStoragePathService
         FileSystem.Current.CacheDirectory,
         StreakExportStorageConstants.ExportWorkingDirectoryName);
 
-    public string DiagnosticsDirectoryPath => DiagnosticsStoragePathHelper.GetDiagnosticsDirectoryPath(FileSystem.Current.AppDataDirectory);
-
     public string CheckinProofsDirectoryPath =>
 #if WINDOWS
         Path.Combine(
@@ -27,6 +25,4 @@ public sealed class AppStoragePathService : IAppStoragePathService
             FileSystem.Current.AppDataDirectory,
             CheckinProofStorageConstants.CheckinProofsDirectoryName);
 #endif
-
-    public string DiagnosticsLogFilePath => DiagnosticsStoragePathHelper.GetDiagnosticsLogFilePath(FileSystem.Current.AppDataDirectory);
 }

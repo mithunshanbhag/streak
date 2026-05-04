@@ -185,7 +185,7 @@ Use semantic roles rather than one-off hex values.
 - Icon-only actions must still expose a clear accessible label and a visible tooltip on hover, focus, or press.
 - When a row contains multiple related icon-only actions, keep their size, shape, fill, and icon weight visually matched.
 - Visible-text buttons are still preferred when an action would otherwise appear without nearby context, but compact icon-only controls are acceptable on already-labeled Settings rows when the surrounding provider text makes the action obvious.
-- Use icon-only maintenance actions primarily for compact, already-labeled local action groups such as local backup, diagnostics export/share, restore, and manual cloud backup.
+- Use icon-only maintenance actions primarily for compact, already-labeled local action groups such as local backup, restore, and manual cloud backup.
 - On the Settings **Cloud backup** provider row, the leading semantic cloud icon may double as the connect / disconnect button:
   - disconnected `CloudOff` in a subtle danger treatment launches the OneDrive OAuth flow
   - connected `CloudDone` in a success/healthy treatment starts the disconnect flow
@@ -211,7 +211,7 @@ Use semantic roles rather than one-off hex values.
 
 ### Settings page cards
 
-- The Settings page should stack **Daily reminder**, **Local backup**, **Cloud backup**, **Restore**, and **Diagnostic logs** as distinct cards rather than merging low-frequency actions into one large maintenance card.
+- The Settings page should stack **Daily reminder**, **Local backup**, **Cloud backup**, and **Restore** as distinct cards rather than merging low-frequency actions into one large maintenance card.
 - Each Settings card should have one primary title at the normal **Section title** scale.
 - Settings cards should not use extra uppercase category eyebrows such as **Reminders**, **Backups**, **Maintenance**, or **Support** above the card title; the title itself should carry the hierarchy.
 - Related controls inside a card may use one subtle divider, but that divider should organize a single card's content rather than imply that multiple separate sections still belong to one parent card.
@@ -221,7 +221,7 @@ Use semantic roles rather than one-off hex values.
   - provider / connection status
   - manual cloud backup
   - daily automated cloud backup
-- **Restore** and **Diagnostic logs** should remain standalone cards with the same spacing and action rhythm as the other Settings cards instead of reading like rows inside a larger data container.
+- **Restore** should remain a standalone card with the same spacing and action rhythm as the other Settings cards instead of reading like a row inside a larger data container.
 - When local and cloud backup cards both surface recency, prefer the same quiet **Last backup** treatment so one card does not feel more instrumented than the other.
 
 ### Settings provider and status panels
@@ -347,7 +347,7 @@ Use semantic roles rather than one-off hex values.
   - Settings: `Settings`
   - GitHub repo: `Icons.Custom.Brands.GitHub`
 - **Homepage create CTA:** `Add` icon paired with `New Habit`.
-- **Settings local data actions:** `Download`, `Share`, and `Upload` for local backup download, local backup share, diagnostics export, diagnostics share, and restore respectively.
+- **Settings local data actions:** `Download`, `Share`, and `Upload` for local backup download, local backup share, and restore respectively.
 - **Settings cloud backup actions:**
   - provider status / connect-disconnect button: `CloudDone` when connected, `CloudOff` when disconnected
   - manual cloud backup action: `Backup` or `CloudUpload`

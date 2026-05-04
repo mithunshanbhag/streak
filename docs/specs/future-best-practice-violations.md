@@ -150,5 +150,5 @@ Either wire the registered validators into the real dialog/service flows or remo
 ## Areas that look solid
 
 - DI and composition-root registration are centralized in `src\Streak.Ui\Misc\ExtensionMethods\MauiAppBuilderExtensions.cs`.
-- Backup, restore, and diagnostics flows are generally aligned with the local-first requirements in `docs\specs\README.md`.
+- Backup and restore flows are generally aligned with the current requirements in `docs\specs\README.md`.
 - UI decomposition is reasonably healthy overall; the codebase is not broadly suffering from monolithic page components.

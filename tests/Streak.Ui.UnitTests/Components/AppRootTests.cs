@@ -180,9 +180,7 @@ public sealed class AppRootTests : TestContext
         Services.AddSingleton(automatedBackupConfigurationServiceMock.Object);
         Services.AddSingleton(reminderConfigurationServiceMock.Object);
         Services.AddSingleton(Mock.Of<IDatabaseExportService>());
-        Services.AddSingleton(Mock.Of<IDiagnosticsExportService>());
         Services.AddSingleton(Mock.Of<IDatabaseShareService>());
-        Services.AddSingleton(Mock.Of<IDiagnosticsShareService>());
         Services.AddSingleton(Mock.Of<IDatabaseImportFilePicker>());
         Services.AddSingleton(Mock.Of<IDatabaseImportService>());
         Services.AddSingleton(Mock.Of<IManualBackupCompletionNotifier>());

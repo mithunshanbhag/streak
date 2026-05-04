@@ -15,21 +15,17 @@ public sealed class SettingsTests : TestContext
     public void Settings_ShouldRenderSettingsCards_InUpdatedOrder()
     {
         var exportServiceMock = new Mock<IDatabaseExportService>();
-        var diagnosticsExportServiceMock = new Mock<IDiagnosticsExportService>();
         var shareServiceMock = CreateShareServiceMock(canShare: false);
-        var diagnosticsShareServiceMock = CreateDiagnosticsShareServiceMock(canShare: false);
         var backupConfigurationServiceMock = CreateBackupConfigurationServiceMock(isEnabled: false);
         var reminderConfigurationServiceMock = CreateReminderConfigurationServiceMock(isEnabled: true);
         var oneDriveAuthServiceMock = CreateOneDriveAuthServiceMock(CreateDisconnectedOneDriveAuthState());
         var appVersionInfoServiceMock = CreateAppVersionInfoServiceMock();
         RegisterSettingsServices(
             exportServiceMock,
-            diagnosticsExportServiceMock,
             shareServiceMock,
             backupConfigurationServiceMock,
             reminderConfigurationServiceMock,
             oneDriveAuthServiceMock: oneDriveAuthServiceMock,
-            diagnosticsShareServiceMock: diagnosticsShareServiceMock,
             appVersionInfoServiceMock: appVersionInfoServiceMock);
 
         var cut = RenderSettings();
@@ -62,11 +58,6 @@ public sealed class SettingsTests : TestContext
         cut.Find("button[aria-label='Download data']");
         cut.Find("button[aria-label='Share data']").HasAttribute("disabled").Should().BeTrue();
         markup.Should().Contain("↩️ Restore");
-        markup.Should().Contain("🕵️ Diagnostic logs");
-        markup.Should().Contain("Export or share a support bundle of recent app logs.");
-        cut.Find("button[aria-label='Diagnostic log details']");
-        cut.Find("button[aria-label='Export diagnostic logs']");
-        cut.Find("button[aria-label='Share diagnostic logs']").HasAttribute("disabled").Should().BeTrue();
         markup.Should().Contain("Restore from a local .zip backup or a legacy .db file.");
         cut.Find("button[aria-label='Restore warning']");
         cut.Find("button[aria-label='Upload data']");
@@ -74,27 +65,22 @@ public sealed class SettingsTests : TestContext
         markup.IndexOf("🔔 Daily reminder", StringComparison.Ordinal).Should().BeLessThan(markup.IndexOf("💾 Local backup", StringComparison.Ordinal));
         markup.IndexOf("💾 Local backup", StringComparison.Ordinal).Should().BeLessThan(markup.IndexOf("🌥️ Cloud backup", StringComparison.Ordinal));
         markup.IndexOf("🌥️ Cloud backup", StringComparison.Ordinal).Should().BeLessThan(markup.IndexOf("↩️ Restore", StringComparison.Ordinal));
-        markup.IndexOf("↩️ Restore", StringComparison.Ordinal).Should().BeLessThan(markup.IndexOf("🕵️ Diagnostic logs", StringComparison.Ordinal));
     }
 
     [Fact]
     public void Settings_ShouldRenderVersionAndBuildBanner_AboveReminderCard()
     {
         var exportServiceMock = new Mock<IDatabaseExportService>();
-        var diagnosticsExportServiceMock = new Mock<IDiagnosticsExportService>();
         var shareServiceMock = CreateShareServiceMock(canShare: false);
-        var diagnosticsShareServiceMock = CreateDiagnosticsShareServiceMock(canShare: false);
         var backupConfigurationServiceMock = CreateBackupConfigurationServiceMock(isEnabled: false);
         var reminderConfigurationServiceMock = CreateReminderConfigurationServiceMock(isEnabled: true);
         var appVersionInfoServiceMock = CreateAppVersionInfoServiceMock("1.2.0", "456");
 
         RegisterSettingsServices(
             exportServiceMock,
-            diagnosticsExportServiceMock,
             shareServiceMock,
             backupConfigurationServiceMock,
             reminderConfigurationServiceMock,
-            diagnosticsShareServiceMock: diagnosticsShareServiceMock,
             appVersionInfoServiceMock: appVersionInfoServiceMock);
 
         var cut = RenderSettings();
@@ -112,21 +98,17 @@ public sealed class SettingsTests : TestContext
     public void Settings_ShouldRenderConnectedOneDriveState_WhenAuthStateIsConnected()
     {
         var exportServiceMock = new Mock<IDatabaseExportService>();
-        var diagnosticsExportServiceMock = new Mock<IDiagnosticsExportService>();
         var shareServiceMock = CreateShareServiceMock(canShare: false);
-        var diagnosticsShareServiceMock = CreateDiagnosticsShareServiceMock(canShare: false);
         var backupConfigurationServiceMock = CreateBackupConfigurationServiceMock(isEnabled: false);
         var reminderConfigurationServiceMock = CreateReminderConfigurationServiceMock(isEnabled: true);
         var oneDriveAuthServiceMock = CreateOneDriveAuthServiceMock(CreateConnectedOneDriveAuthState());
 
         RegisterSettingsServices(
             exportServiceMock,
-            diagnosticsExportServiceMock,
             shareServiceMock,
             backupConfigurationServiceMock,
             reminderConfigurationServiceMock,
-            oneDriveAuthServiceMock: oneDriveAuthServiceMock,
-            diagnosticsShareServiceMock: diagnosticsShareServiceMock);
+            oneDriveAuthServiceMock: oneDriveAuthServiceMock);
 
         var cut = RenderSettings();
 
@@ -153,9 +135,7 @@ public sealed class SettingsTests : TestContext
     public void Settings_ShouldRenderManualBackupRecencyMetadata_WhenStoredStatusesExist()
     {
         var exportServiceMock = new Mock<IDatabaseExportService>();
-        var diagnosticsExportServiceMock = new Mock<IDiagnosticsExportService>();
         var shareServiceMock = CreateShareServiceMock(canShare: false);
-        var diagnosticsShareServiceMock = CreateDiagnosticsShareServiceMock(canShare: false);
         var backupConfigurationServiceMock = CreateBackupConfigurationServiceMock(isEnabled: false);
         var reminderConfigurationServiceMock = CreateReminderConfigurationServiceMock(isEnabled: true);
         var oneDriveAuthServiceMock = CreateOneDriveAuthServiceMock(CreateConnectedOneDriveAuthState());
@@ -171,12 +151,10 @@ public sealed class SettingsTests : TestContext
 
         RegisterSettingsServices(
             exportServiceMock,
-            diagnosticsExportServiceMock,
             shareServiceMock,
             backupConfigurationServiceMock,
             reminderConfigurationServiceMock,
             oneDriveAuthServiceMock: oneDriveAuthServiceMock,
-            diagnosticsShareServiceMock: diagnosticsShareServiceMock,
             manualBackupStatusStoreMock: manualBackupStatusStoreMock,
             timeProvider: new FixedTimeProvider(
                 new DateTimeOffset(2026, 04, 26, 08, 00, 00, TimeSpan.Zero),
@@ -195,8 +173,6 @@ public sealed class SettingsTests : TestContext
         var allowExportToFinish = new TaskCompletionSource();
 
         var exportServiceMock = new Mock<IDatabaseExportService>();
-        var diagnosticsExportServiceMock = new Mock<IDiagnosticsExportService>();
-        var diagnosticsShareServiceMock = CreateDiagnosticsShareServiceMock(canShare: true);
         exportServiceMock
             .Setup(x => x.ExportDatabaseAsync(It.IsAny<CancellationToken>()))
             .Returns(async () =>
@@ -211,11 +187,9 @@ public sealed class SettingsTests : TestContext
         var reminderConfigurationServiceMock = CreateReminderConfigurationServiceMock(isEnabled: true);
         RegisterSettingsServices(
             exportServiceMock,
-            diagnosticsExportServiceMock,
             shareServiceMock,
             backupConfigurationServiceMock,
-            reminderConfigurationServiceMock,
-            diagnosticsShareServiceMock: diagnosticsShareServiceMock);
+            reminderConfigurationServiceMock);
 
         var cut = RenderSettings();
 
@@ -226,8 +200,6 @@ public sealed class SettingsTests : TestContext
         {
             var button = cut.Find("button[aria-label='Download data']");
             button.HasAttribute("disabled").Should().BeTrue();
-            cut.Find("button[aria-label='Export diagnostic logs']").HasAttribute("disabled").Should().BeTrue();
-            cut.Find("button[aria-label='Share diagnostic logs']").HasAttribute("disabled").Should().BeTrue();
             cut.Markup.Should().Contain("mud-progress-circular");
         });
 
@@ -237,8 +209,6 @@ public sealed class SettingsTests : TestContext
         {
             var button = cut.Find("button[aria-label='Download data']");
             button.HasAttribute("disabled").Should().BeFalse();
-            cut.Find("button[aria-label='Export diagnostic logs']").HasAttribute("disabled").Should().BeFalse();
-            cut.Find("button[aria-label='Share diagnostic logs']").HasAttribute("disabled").Should().BeFalse();
         });
     }
 
@@ -246,14 +216,12 @@ public sealed class SettingsTests : TestContext
     public async Task Settings_ShouldEnableShareButtonAndInvokeShare_WhenSharingIsSupported()
     {
         var exportServiceMock = new Mock<IDatabaseExportService>();
-        var diagnosticsExportServiceMock = new Mock<IDiagnosticsExportService>();
         var shareServiceMock = CreateShareServiceMock(canShare: true);
         var backupConfigurationServiceMock = CreateBackupConfigurationServiceMock(isEnabled: false);
         var reminderConfigurationServiceMock = CreateReminderConfigurationServiceMock(isEnabled: true);
 
         RegisterSettingsServices(
             exportServiceMock,
-            diagnosticsExportServiceMock,
             shareServiceMock,
             backupConfigurationServiceMock,
             reminderConfigurationServiceMock);
@@ -270,39 +238,9 @@ public sealed class SettingsTests : TestContext
     }
 
     [Fact]
-    public async Task Settings_ShouldEnableDiagnosticsShareButtonAndInvokeShare_WhenSharingIsSupported()
-    {
-        var exportServiceMock = new Mock<IDatabaseExportService>();
-        var diagnosticsExportServiceMock = new Mock<IDiagnosticsExportService>();
-        var shareServiceMock = CreateShareServiceMock(canShare: false);
-        var diagnosticsShareServiceMock = CreateDiagnosticsShareServiceMock(canShare: true);
-        var backupConfigurationServiceMock = CreateBackupConfigurationServiceMock(isEnabled: false);
-        var reminderConfigurationServiceMock = CreateReminderConfigurationServiceMock(isEnabled: true);
-
-        RegisterSettingsServices(
-            exportServiceMock,
-            diagnosticsExportServiceMock,
-            shareServiceMock,
-            backupConfigurationServiceMock,
-            reminderConfigurationServiceMock,
-            diagnosticsShareServiceMock: diagnosticsShareServiceMock);
-
-        var cut = RenderSettings();
-
-        cut.Find("button[aria-label='Share diagnostic logs']").HasAttribute("disabled").Should().BeFalse();
-
-        await cut.Find("button[aria-label='Share diagnostic logs']").ClickAsync(new MouseEventArgs());
-
-        diagnosticsShareServiceMock.Verify(
-            x => x.ShareDiagnosticsAsync(It.IsAny<CancellationToken>()),
-            Times.Once);
-    }
-
-    [Fact]
     public async Task Settings_ShouldNotifyManualBackupCompletion_WhenExportSucceeds()
     {
         var exportServiceMock = new Mock<IDatabaseExportService>();
-        var diagnosticsExportServiceMock = new Mock<IDiagnosticsExportService>();
         var shareServiceMock = CreateShareServiceMock(canShare: false);
         var backupConfigurationServiceMock = CreateBackupConfigurationServiceMock(isEnabled: false);
         var manualBackupCompletionNotifierMock = new Mock<IManualBackupCompletionNotifier>();
@@ -313,7 +251,6 @@ public sealed class SettingsTests : TestContext
 
         RegisterSettingsServices(
             exportServiceMock,
-            diagnosticsExportServiceMock,
             shareServiceMock,
             backupConfigurationServiceMock,
             CreateReminderConfigurationServiceMock(isEnabled: true),
@@ -335,7 +272,6 @@ public sealed class SettingsTests : TestContext
     public async Task Settings_ShouldConnectOneDrive_WhenInteractiveSignInSucceeds()
     {
         var exportServiceMock = new Mock<IDatabaseExportService>();
-        var diagnosticsExportServiceMock = new Mock<IDiagnosticsExportService>();
         var shareServiceMock = CreateShareServiceMock(canShare: false);
         var backupConfigurationServiceMock = CreateBackupConfigurationServiceMock(isEnabled: false);
         var reminderConfigurationServiceMock = CreateReminderConfigurationServiceMock(isEnabled: true);
@@ -347,7 +283,6 @@ public sealed class SettingsTests : TestContext
 
         RegisterSettingsServices(
             exportServiceMock,
-            diagnosticsExportServiceMock,
             shareServiceMock,
             backupConfigurationServiceMock,
             reminderConfigurationServiceMock,
@@ -374,7 +309,6 @@ public sealed class SettingsTests : TestContext
     public async Task Settings_ShouldDisconnectOneDrive_WhenUserChoosesDisconnect()
     {
         var exportServiceMock = new Mock<IDatabaseExportService>();
-        var diagnosticsExportServiceMock = new Mock<IDiagnosticsExportService>();
         var shareServiceMock = CreateShareServiceMock(canShare: false);
         var backupConfigurationServiceMock = CreateBackupConfigurationServiceMock(isEnabled: false);
         var reminderConfigurationServiceMock = CreateReminderConfigurationServiceMock(isEnabled: true);
@@ -386,7 +320,6 @@ public sealed class SettingsTests : TestContext
 
         RegisterSettingsServices(
             exportServiceMock,
-            diagnosticsExportServiceMock,
             shareServiceMock,
             backupConfigurationServiceMock,
             reminderConfigurationServiceMock,
@@ -412,8 +345,6 @@ public sealed class SettingsTests : TestContext
         var allowShareToFinish = new TaskCompletionSource();
 
         var exportServiceMock = new Mock<IDatabaseExportService>();
-        var diagnosticsExportServiceMock = new Mock<IDiagnosticsExportService>();
-        var diagnosticsShareServiceMock = CreateDiagnosticsShareServiceMock(canShare: true);
         var shareServiceMock = CreateShareServiceMock(canShare: true);
         shareServiceMock
             .Setup(x => x.ShareDatabaseAsync(It.IsAny<CancellationToken>()))
@@ -427,11 +358,9 @@ public sealed class SettingsTests : TestContext
         var reminderConfigurationServiceMock = CreateReminderConfigurationServiceMock(isEnabled: true);
         RegisterSettingsServices(
             exportServiceMock,
-            diagnosticsExportServiceMock,
             shareServiceMock,
             backupConfigurationServiceMock,
-            reminderConfigurationServiceMock,
-            diagnosticsShareServiceMock: diagnosticsShareServiceMock);
+            reminderConfigurationServiceMock);
 
         var cut = RenderSettings();
 
@@ -441,8 +370,6 @@ public sealed class SettingsTests : TestContext
         cut.WaitForAssertion(() =>
         {
             cut.Find("button[aria-label='Download data']").HasAttribute("disabled").Should().BeTrue();
-            cut.Find("button[aria-label='Export diagnostic logs']").HasAttribute("disabled").Should().BeTrue();
-            cut.Find("button[aria-label='Share diagnostic logs']").HasAttribute("disabled").Should().BeTrue();
             cut.Find("button[aria-label='Share data']").HasAttribute("disabled").Should().BeTrue();
             cut.Find("button[aria-label='Upload data']").HasAttribute("disabled").Should().BeTrue();
             cut.Markup.Should().Contain("mud-progress-circular");
@@ -453,8 +380,6 @@ public sealed class SettingsTests : TestContext
         cut.WaitForAssertion(() =>
         {
             cut.Find("button[aria-label='Download data']").HasAttribute("disabled").Should().BeFalse();
-            cut.Find("button[aria-label='Export diagnostic logs']").HasAttribute("disabled").Should().BeFalse();
-            cut.Find("button[aria-label='Share diagnostic logs']").HasAttribute("disabled").Should().BeFalse();
             cut.Find("button[aria-label='Share data']").HasAttribute("disabled").Should().BeFalse();
             cut.Find("button[aria-label='Upload data']").HasAttribute("disabled").Should().BeFalse();
         });
@@ -467,7 +392,6 @@ public sealed class SettingsTests : TestContext
         DateTimeOffset? cloudBackupCompletedAt = null;
 
         var exportServiceMock = new Mock<IDatabaseExportService>();
-        var diagnosticsExportServiceMock = new Mock<IDiagnosticsExportService>();
         var shareServiceMock = CreateShareServiceMock(canShare: false);
         var backupConfigurationServiceMock = CreateBackupConfigurationServiceMock(isEnabled: false);
         var reminderConfigurationServiceMock = CreateReminderConfigurationServiceMock(isEnabled: true);
@@ -490,7 +414,6 @@ public sealed class SettingsTests : TestContext
 
         RegisterSettingsServices(
             exportServiceMock,
-            diagnosticsExportServiceMock,
             shareServiceMock,
             backupConfigurationServiceMock,
             reminderConfigurationServiceMock,
@@ -519,9 +442,7 @@ public sealed class SettingsTests : TestContext
         var allowCloudBackupToFinish = new TaskCompletionSource();
 
         var exportServiceMock = new Mock<IDatabaseExportService>();
-        var diagnosticsExportServiceMock = new Mock<IDiagnosticsExportService>();
         var shareServiceMock = CreateShareServiceMock(canShare: true);
-        var diagnosticsShareServiceMock = CreateDiagnosticsShareServiceMock(canShare: true);
         var backupConfigurationServiceMock = CreateBackupConfigurationServiceMock(isEnabled: false);
         var reminderConfigurationServiceMock = CreateReminderConfigurationServiceMock(isEnabled: true);
         var oneDriveAuthServiceMock = CreateOneDriveAuthServiceMock(CreateConnectedOneDriveAuthState());
@@ -536,12 +457,10 @@ public sealed class SettingsTests : TestContext
 
         RegisterSettingsServices(
             exportServiceMock,
-            diagnosticsExportServiceMock,
             shareServiceMock,
             backupConfigurationServiceMock,
             reminderConfigurationServiceMock,
             oneDriveAuthServiceMock: oneDriveAuthServiceMock,
-            diagnosticsShareServiceMock: diagnosticsShareServiceMock,
             manualCloudBackupServiceMock: manualCloudBackupServiceMock);
 
         var cut = RenderSettings();
@@ -553,8 +472,6 @@ public sealed class SettingsTests : TestContext
         {
             cut.Find("button[aria-label='Download data']").HasAttribute("disabled").Should().BeTrue();
             cut.Find("button[aria-label='Share data']").HasAttribute("disabled").Should().BeTrue();
-            cut.Find("button[aria-label='Export diagnostic logs']").HasAttribute("disabled").Should().BeTrue();
-            cut.Find("button[aria-label='Share diagnostic logs']").HasAttribute("disabled").Should().BeTrue();
             cut.Find("button[aria-label='Upload data']").HasAttribute("disabled").Should().BeTrue();
             cut.Find("button[aria-label='Back up to OneDrive']").HasAttribute("disabled").Should().BeTrue();
             cut.Find("button[aria-label='Connected. Disconnect OneDrive']").HasAttribute("disabled").Should().BeTrue();
@@ -567,122 +484,9 @@ public sealed class SettingsTests : TestContext
         {
             cut.Find("button[aria-label='Download data']").HasAttribute("disabled").Should().BeFalse();
             cut.Find("button[aria-label='Share data']").HasAttribute("disabled").Should().BeFalse();
-            cut.Find("button[aria-label='Export diagnostic logs']").HasAttribute("disabled").Should().BeFalse();
-            cut.Find("button[aria-label='Share diagnostic logs']").HasAttribute("disabled").Should().BeFalse();
             cut.Find("button[aria-label='Upload data']").HasAttribute("disabled").Should().BeFalse();
             cut.Find("button[aria-label='Back up to OneDrive']").HasAttribute("disabled").Should().BeFalse();
             cut.Find("button[aria-label='Connected. Disconnect OneDrive']").HasAttribute("disabled").Should().BeFalse();
-        });
-    }
-
-    [Fact]
-    public async Task Settings_ShouldDisableDataActionsWhileDiagnosticsExportIsInProgress()
-    {
-        var diagnosticsExportStarted = new TaskCompletionSource();
-        var allowDiagnosticsExportToFinish = new TaskCompletionSource();
-
-        var exportServiceMock = new Mock<IDatabaseExportService>();
-        var diagnosticsExportServiceMock = new Mock<IDiagnosticsExportService>();
-        var diagnosticsShareServiceMock = CreateDiagnosticsShareServiceMock(canShare: true);
-        diagnosticsExportServiceMock
-            .Setup(x => x.ExportDiagnosticsAsync(It.IsAny<CancellationToken>()))
-            .Returns(async () =>
-            {
-                diagnosticsExportStarted.TrySetResult();
-                await allowDiagnosticsExportToFinish.Task;
-                return DiagnosticsExportResult.Saved;
-            });
-
-        var shareServiceMock = CreateShareServiceMock(canShare: true);
-        var backupConfigurationServiceMock = CreateBackupConfigurationServiceMock(isEnabled: false);
-        var reminderConfigurationServiceMock = CreateReminderConfigurationServiceMock(isEnabled: true);
-        RegisterSettingsServices(
-            exportServiceMock,
-            diagnosticsExportServiceMock,
-            shareServiceMock,
-            backupConfigurationServiceMock,
-            reminderConfigurationServiceMock,
-            diagnosticsShareServiceMock: diagnosticsShareServiceMock);
-
-        var cut = RenderSettings();
-
-        cut.Find("button[aria-label='Export diagnostic logs']").Click();
-        await diagnosticsExportStarted.Task;
-
-        cut.WaitForAssertion(() =>
-        {
-            cut.Find("button[aria-label='Download data']").HasAttribute("disabled").Should().BeTrue();
-            cut.Find("button[aria-label='Export diagnostic logs']").HasAttribute("disabled").Should().BeTrue();
-            cut.Find("button[aria-label='Share diagnostic logs']").HasAttribute("disabled").Should().BeTrue();
-            cut.Find("button[aria-label='Share data']").HasAttribute("disabled").Should().BeTrue();
-            cut.Find("button[aria-label='Upload data']").HasAttribute("disabled").Should().BeTrue();
-            cut.Markup.Should().Contain("mud-progress-circular");
-        });
-
-        allowDiagnosticsExportToFinish.TrySetResult();
-
-        cut.WaitForAssertion(() =>
-        {
-            cut.Find("button[aria-label='Download data']").HasAttribute("disabled").Should().BeFalse();
-            cut.Find("button[aria-label='Export diagnostic logs']").HasAttribute("disabled").Should().BeFalse();
-            cut.Find("button[aria-label='Share diagnostic logs']").HasAttribute("disabled").Should().BeFalse();
-            cut.Find("button[aria-label='Share data']").HasAttribute("disabled").Should().BeFalse();
-            cut.Find("button[aria-label='Upload data']").HasAttribute("disabled").Should().BeFalse();
-        });
-    }
-
-    [Fact]
-    public async Task Settings_ShouldDisableDataActionsWhileDiagnosticsShareIsInProgress()
-    {
-        var diagnosticsShareStarted = new TaskCompletionSource();
-        var allowDiagnosticsShareToFinish = new TaskCompletionSource();
-
-        var exportServiceMock = new Mock<IDatabaseExportService>();
-        var diagnosticsExportServiceMock = new Mock<IDiagnosticsExportService>();
-        var shareServiceMock = CreateShareServiceMock(canShare: true);
-        var diagnosticsShareServiceMock = CreateDiagnosticsShareServiceMock(canShare: true);
-        diagnosticsShareServiceMock
-            .Setup(x => x.ShareDiagnosticsAsync(It.IsAny<CancellationToken>()))
-            .Returns(async () =>
-            {
-                diagnosticsShareStarted.TrySetResult();
-                await allowDiagnosticsShareToFinish.Task;
-            });
-
-        var backupConfigurationServiceMock = CreateBackupConfigurationServiceMock(isEnabled: false);
-        var reminderConfigurationServiceMock = CreateReminderConfigurationServiceMock(isEnabled: true);
-        RegisterSettingsServices(
-            exportServiceMock,
-            diagnosticsExportServiceMock,
-            shareServiceMock,
-            backupConfigurationServiceMock,
-            reminderConfigurationServiceMock,
-            diagnosticsShareServiceMock: diagnosticsShareServiceMock);
-
-        var cut = RenderSettings();
-
-        cut.Find("button[aria-label='Share diagnostic logs']").Click();
-        await diagnosticsShareStarted.Task;
-
-        cut.WaitForAssertion(() =>
-        {
-            cut.Find("button[aria-label='Download data']").HasAttribute("disabled").Should().BeTrue();
-            cut.Find("button[aria-label='Export diagnostic logs']").HasAttribute("disabled").Should().BeTrue();
-            cut.Find("button[aria-label='Share diagnostic logs']").HasAttribute("disabled").Should().BeTrue();
-            cut.Find("button[aria-label='Share data']").HasAttribute("disabled").Should().BeTrue();
-            cut.Find("button[aria-label='Upload data']").HasAttribute("disabled").Should().BeTrue();
-            cut.Markup.Should().Contain("mud-progress-circular");
-        });
-
-        allowDiagnosticsShareToFinish.TrySetResult();
-
-        cut.WaitForAssertion(() =>
-        {
-            cut.Find("button[aria-label='Download data']").HasAttribute("disabled").Should().BeFalse();
-            cut.Find("button[aria-label='Export diagnostic logs']").HasAttribute("disabled").Should().BeFalse();
-            cut.Find("button[aria-label='Share diagnostic logs']").HasAttribute("disabled").Should().BeFalse();
-            cut.Find("button[aria-label='Share data']").HasAttribute("disabled").Should().BeFalse();
-            cut.Find("button[aria-label='Upload data']").HasAttribute("disabled").Should().BeFalse();
         });
     }
 
@@ -694,7 +498,6 @@ public sealed class SettingsTests : TestContext
     public async Task Settings_ShouldNotShowError_WhenExportIsCancelled()
     {
         var exportServiceMock = new Mock<IDatabaseExportService>();
-        var diagnosticsExportServiceMock = new Mock<IDiagnosticsExportService>();
         exportServiceMock
             .Setup(x => x.ExportDatabaseAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(DatabaseExportResult.Cancelled);
@@ -704,7 +507,6 @@ public sealed class SettingsTests : TestContext
         var reminderConfigurationServiceMock = CreateReminderConfigurationServiceMock(isEnabled: true);
         RegisterSettingsServices(
             exportServiceMock,
-            diagnosticsExportServiceMock,
             shareServiceMock,
             backupConfigurationServiceMock,
             reminderConfigurationServiceMock);
@@ -722,7 +524,6 @@ public sealed class SettingsTests : TestContext
         var attemptCount = 0;
 
         var exportServiceMock = new Mock<IDatabaseExportService>();
-        var diagnosticsExportServiceMock = new Mock<IDiagnosticsExportService>();
         exportServiceMock
             .Setup(x => x.ExportDatabaseAsync(It.IsAny<CancellationToken>()))
             .Returns(() =>
@@ -739,7 +540,6 @@ public sealed class SettingsTests : TestContext
         var reminderConfigurationServiceMock = CreateReminderConfigurationServiceMock(isEnabled: true);
         RegisterSettingsServices(
             exportServiceMock,
-            diagnosticsExportServiceMock,
             shareServiceMock,
             backupConfigurationServiceMock,
             reminderConfigurationServiceMock);
@@ -761,7 +561,6 @@ public sealed class SettingsTests : TestContext
         var attemptCount = 0;
 
         var exportServiceMock = new Mock<IDatabaseExportService>();
-        var diagnosticsExportServiceMock = new Mock<IDiagnosticsExportService>();
         var shareServiceMock = CreateShareServiceMock(canShare: true);
         shareServiceMock
             .Setup(x => x.ShareDatabaseAsync(It.IsAny<CancellationToken>()))
@@ -778,7 +577,6 @@ public sealed class SettingsTests : TestContext
         var reminderConfigurationServiceMock = CreateReminderConfigurationServiceMock(isEnabled: true);
         RegisterSettingsServices(
             exportServiceMock,
-            diagnosticsExportServiceMock,
             shareServiceMock,
             backupConfigurationServiceMock,
             reminderConfigurationServiceMock);
@@ -795,116 +593,9 @@ public sealed class SettingsTests : TestContext
     }
 
     [Fact]
-    public async Task Settings_ShouldNotShowError_WhenDiagnosticsExportIsCancelled()
-    {
-        var exportServiceMock = new Mock<IDatabaseExportService>();
-        var diagnosticsExportServiceMock = new Mock<IDiagnosticsExportService>();
-        diagnosticsExportServiceMock
-            .Setup(x => x.ExportDiagnosticsAsync(It.IsAny<CancellationToken>()))
-            .ReturnsAsync(DiagnosticsExportResult.Cancelled);
-
-        var shareServiceMock = CreateShareServiceMock(canShare: false);
-        var backupConfigurationServiceMock = CreateBackupConfigurationServiceMock(isEnabled: false);
-        var reminderConfigurationServiceMock = CreateReminderConfigurationServiceMock(isEnabled: true);
-        RegisterSettingsServices(
-            exportServiceMock,
-            diagnosticsExportServiceMock,
-            shareServiceMock,
-            backupConfigurationServiceMock,
-            reminderConfigurationServiceMock);
-
-        var cut = RenderSettings();
-
-        await cut.Find("button[aria-label='Export diagnostic logs']").ClickAsync(new MouseEventArgs());
-
-        cut.WaitForAssertion(() => { cut.Markup.Should().NotContain("Unable to export your diagnostic logs right now. Please try again."); });
-    }
-
-    [Fact]
-    public async Task Settings_ShouldShowDiagnosticsExportErrorAndClearItOnRetry()
-    {
-        var attemptCount = 0;
-
-        var exportServiceMock = new Mock<IDatabaseExportService>();
-        var diagnosticsExportServiceMock = new Mock<IDiagnosticsExportService>();
-        diagnosticsExportServiceMock
-            .Setup(x => x.ExportDiagnosticsAsync(It.IsAny<CancellationToken>()))
-            .Returns(() =>
-            {
-                attemptCount++;
-                if (attemptCount == 1)
-                    throw new InvalidOperationException("Boom");
-
-                return Task.FromResult(DiagnosticsExportResult.Saved);
-            });
-
-        var shareServiceMock = CreateShareServiceMock(canShare: false);
-        var backupConfigurationServiceMock = CreateBackupConfigurationServiceMock(isEnabled: false);
-        var reminderConfigurationServiceMock = CreateReminderConfigurationServiceMock(isEnabled: true);
-        RegisterSettingsServices(
-            exportServiceMock,
-            diagnosticsExportServiceMock,
-            shareServiceMock,
-            backupConfigurationServiceMock,
-            reminderConfigurationServiceMock);
-
-        var cut = RenderSettings();
-
-        await cut.Find("button[aria-label='Export diagnostic logs']").ClickAsync(new MouseEventArgs());
-
-        cut.WaitForAssertion(() => { cut.Markup.Should().Contain("Unable to export your diagnostic logs right now. Please try again."); });
-
-        await cut.Find("button[aria-label='Export diagnostic logs']").ClickAsync(new MouseEventArgs());
-
-        cut.WaitForAssertion(() => { cut.Markup.Should().NotContain("Unable to export your diagnostic logs right now. Please try again."); });
-    }
-
-    [Fact]
-    public async Task Settings_ShouldShowDiagnosticsShareErrorAndClearItOnRetry()
-    {
-        var attemptCount = 0;
-
-        var exportServiceMock = new Mock<IDatabaseExportService>();
-        var diagnosticsExportServiceMock = new Mock<IDiagnosticsExportService>();
-        var shareServiceMock = CreateShareServiceMock(canShare: false);
-        var diagnosticsShareServiceMock = CreateDiagnosticsShareServiceMock(canShare: true);
-        diagnosticsShareServiceMock
-            .Setup(x => x.ShareDiagnosticsAsync(It.IsAny<CancellationToken>()))
-            .Returns(() =>
-            {
-                attemptCount++;
-                if (attemptCount == 1)
-                    throw new InvalidOperationException("Boom");
-
-                return Task.CompletedTask;
-            });
-
-        var backupConfigurationServiceMock = CreateBackupConfigurationServiceMock(isEnabled: false);
-        var reminderConfigurationServiceMock = CreateReminderConfigurationServiceMock(isEnabled: true);
-        RegisterSettingsServices(
-            exportServiceMock,
-            diagnosticsExportServiceMock,
-            shareServiceMock,
-            backupConfigurationServiceMock,
-            reminderConfigurationServiceMock,
-            diagnosticsShareServiceMock: diagnosticsShareServiceMock);
-
-        var cut = RenderSettings();
-
-        await cut.Find("button[aria-label='Share diagnostic logs']").ClickAsync(new MouseEventArgs());
-
-        cut.WaitForAssertion(() => { cut.Markup.Should().Contain("Unable to share your diagnostic logs right now. Please try again."); });
-
-        await cut.Find("button[aria-label='Share diagnostic logs']").ClickAsync(new MouseEventArgs());
-
-        cut.WaitForAssertion(() => { cut.Markup.Should().NotContain("Unable to share your diagnostic logs right now. Please try again."); });
-    }
-
-    [Fact]
     public async Task Settings_ShouldNotShowError_WhenOneDriveSignInIsCancelled()
     {
         var exportServiceMock = new Mock<IDatabaseExportService>();
-        var diagnosticsExportServiceMock = new Mock<IDiagnosticsExportService>();
         var shareServiceMock = CreateShareServiceMock(canShare: false);
         var backupConfigurationServiceMock = CreateBackupConfigurationServiceMock(isEnabled: false);
         var reminderConfigurationServiceMock = CreateReminderConfigurationServiceMock(isEnabled: true);
@@ -915,7 +606,6 @@ public sealed class SettingsTests : TestContext
 
         RegisterSettingsServices(
             exportServiceMock,
-            diagnosticsExportServiceMock,
             shareServiceMock,
             backupConfigurationServiceMock,
             reminderConfigurationServiceMock,
@@ -937,7 +627,6 @@ public sealed class SettingsTests : TestContext
     public async Task Settings_ShouldShowSpecificError_WhenManualCloudBackupRequiresReconnect()
     {
         var exportServiceMock = new Mock<IDatabaseExportService>();
-        var diagnosticsExportServiceMock = new Mock<IDiagnosticsExportService>();
         var shareServiceMock = CreateShareServiceMock(canShare: false);
         var backupConfigurationServiceMock = CreateBackupConfigurationServiceMock(isEnabled: false);
         var reminderConfigurationServiceMock = CreateReminderConfigurationServiceMock(isEnabled: true);
@@ -956,7 +645,6 @@ public sealed class SettingsTests : TestContext
 
         RegisterSettingsServices(
             exportServiceMock,
-            diagnosticsExportServiceMock,
             shareServiceMock,
             backupConfigurationServiceMock,
             reminderConfigurationServiceMock,
@@ -977,7 +665,6 @@ public sealed class SettingsTests : TestContext
     public async Task Settings_ShouldShowSpecificError_WhenManualCloudBackupAccessIsDenied()
     {
         var exportServiceMock = new Mock<IDatabaseExportService>();
-        var diagnosticsExportServiceMock = new Mock<IDiagnosticsExportService>();
         var shareServiceMock = CreateShareServiceMock(canShare: false);
         var backupConfigurationServiceMock = CreateBackupConfigurationServiceMock(isEnabled: false);
         var reminderConfigurationServiceMock = CreateReminderConfigurationServiceMock(isEnabled: true);
@@ -992,7 +679,6 @@ public sealed class SettingsTests : TestContext
 
         RegisterSettingsServices(
             exportServiceMock,
-            diagnosticsExportServiceMock,
             shareServiceMock,
             backupConfigurationServiceMock,
             reminderConfigurationServiceMock,
@@ -1017,14 +703,12 @@ public sealed class SettingsTests : TestContext
     public void Settings_ShouldRenderAutomatedBackupToggleAsChecked_WhenPersistedStateIsEnabled()
     {
         var exportServiceMock = new Mock<IDatabaseExportService>();
-        var diagnosticsExportServiceMock = new Mock<IDiagnosticsExportService>();
         var shareServiceMock = CreateShareServiceMock(canShare: false);
         var backupConfigurationServiceMock = CreateBackupConfigurationServiceMock(isEnabled: true);
         var reminderConfigurationServiceMock = CreateReminderConfigurationServiceMock(isEnabled: true);
 
         RegisterSettingsServices(
             exportServiceMock,
-            diagnosticsExportServiceMock,
             shareServiceMock,
             backupConfigurationServiceMock,
             reminderConfigurationServiceMock);
@@ -1038,14 +722,12 @@ public sealed class SettingsTests : TestContext
     public void Settings_ShouldHideReminderTimePicker_WhenRemindersAreDisabled()
     {
         var exportServiceMock = new Mock<IDatabaseExportService>();
-        var diagnosticsExportServiceMock = new Mock<IDiagnosticsExportService>();
         var shareServiceMock = CreateShareServiceMock(canShare: false);
         var backupConfigurationServiceMock = CreateBackupConfigurationServiceMock(isEnabled: false);
         var reminderConfigurationServiceMock = CreateReminderConfigurationServiceMock(isEnabled: false);
 
         RegisterSettingsServices(
             exportServiceMock,
-            diagnosticsExportServiceMock,
             shareServiceMock,
             backupConfigurationServiceMock,
             reminderConfigurationServiceMock);
@@ -1060,7 +742,6 @@ public sealed class SettingsTests : TestContext
     public void Settings_ShouldDisableAutomatedBackupToggle_WhenFeatureIsUnsupported()
     {
         var exportServiceMock = new Mock<IDatabaseExportService>();
-        var diagnosticsExportServiceMock = new Mock<IDiagnosticsExportService>();
         var shareServiceMock = CreateShareServiceMock(canShare: false);
         var backupConfigurationServiceMock = CreateBackupConfigurationServiceMock(
             isEnabled: true,
@@ -1069,7 +750,6 @@ public sealed class SettingsTests : TestContext
 
         RegisterSettingsServices(
             exportServiceMock,
-            diagnosticsExportServiceMock,
             shareServiceMock,
             backupConfigurationServiceMock,
             reminderConfigurationServiceMock);
@@ -1085,7 +765,6 @@ public sealed class SettingsTests : TestContext
     public void Settings_ShouldDisableConnectButton_WhenOneDriveIsUnsupported()
     {
         var exportServiceMock = new Mock<IDatabaseExportService>();
-        var diagnosticsExportServiceMock = new Mock<IDiagnosticsExportService>();
         var shareServiceMock = CreateShareServiceMock(canShare: false);
         var backupConfigurationServiceMock = CreateBackupConfigurationServiceMock(isEnabled: false);
         var reminderConfigurationServiceMock = CreateReminderConfigurationServiceMock(isEnabled: true);
@@ -1093,7 +772,6 @@ public sealed class SettingsTests : TestContext
 
         RegisterSettingsServices(
             exportServiceMock,
-            diagnosticsExportServiceMock,
             shareServiceMock,
             backupConfigurationServiceMock,
             reminderConfigurationServiceMock,
@@ -1111,7 +789,6 @@ public sealed class SettingsTests : TestContext
     public void Settings_ShouldDisableConnectButton_WhenOneDriveAuthIsNotConfigured()
     {
         var exportServiceMock = new Mock<IDatabaseExportService>();
-        var diagnosticsExportServiceMock = new Mock<IDiagnosticsExportService>();
         var shareServiceMock = CreateShareServiceMock(canShare: false);
         var backupConfigurationServiceMock = CreateBackupConfigurationServiceMock(isEnabled: false);
         var reminderConfigurationServiceMock = CreateReminderConfigurationServiceMock(isEnabled: true);
@@ -1119,7 +796,6 @@ public sealed class SettingsTests : TestContext
 
         RegisterSettingsServices(
             exportServiceMock,
-            diagnosticsExportServiceMock,
             shareServiceMock,
             backupConfigurationServiceMock,
             reminderConfigurationServiceMock,
@@ -1136,14 +812,12 @@ public sealed class SettingsTests : TestContext
     public void Settings_ShouldPersistReminderToggle_WhenUserChangesIt()
     {
         var exportServiceMock = new Mock<IDatabaseExportService>();
-        var diagnosticsExportServiceMock = new Mock<IDiagnosticsExportService>();
         var shareServiceMock = CreateShareServiceMock(canShare: false);
         var backupConfigurationServiceMock = CreateBackupConfigurationServiceMock(isEnabled: false);
         var reminderConfigurationServiceMock = CreateReminderConfigurationServiceMock(isEnabled: true);
 
         RegisterSettingsServices(
             exportServiceMock,
-            diagnosticsExportServiceMock,
             shareServiceMock,
             backupConfigurationServiceMock,
             reminderConfigurationServiceMock);
@@ -1159,14 +833,12 @@ public sealed class SettingsTests : TestContext
     public void Settings_ShouldPersistAutomatedBackupToggle_WhenUserChangesIt()
     {
         var exportServiceMock = new Mock<IDatabaseExportService>();
-        var diagnosticsExportServiceMock = new Mock<IDiagnosticsExportService>();
         var shareServiceMock = CreateShareServiceMock(canShare: false);
         var backupConfigurationServiceMock = CreateBackupConfigurationServiceMock(isEnabled: false);
         var reminderConfigurationServiceMock = CreateReminderConfigurationServiceMock(isEnabled: true);
 
         RegisterSettingsServices(
             exportServiceMock,
-            diagnosticsExportServiceMock,
             shareServiceMock,
             backupConfigurationServiceMock,
             reminderConfigurationServiceMock);
@@ -1182,7 +854,6 @@ public sealed class SettingsTests : TestContext
     public void Settings_ShouldPersistAutomatedCloudBackupToggle_WhenUserChangesIt()
     {
         var exportServiceMock = new Mock<IDatabaseExportService>();
-        var diagnosticsExportServiceMock = new Mock<IDiagnosticsExportService>();
         var shareServiceMock = CreateShareServiceMock(canShare: false);
         var backupConfigurationServiceMock = CreateBackupConfigurationServiceMock(isEnabled: false, isCloudEnabled: false);
         var reminderConfigurationServiceMock = CreateReminderConfigurationServiceMock(isEnabled: true);
@@ -1190,7 +861,6 @@ public sealed class SettingsTests : TestContext
 
         RegisterSettingsServices(
             exportServiceMock,
-            diagnosticsExportServiceMock,
             shareServiceMock,
             backupConfigurationServiceMock,
             reminderConfigurationServiceMock,
@@ -1207,7 +877,6 @@ public sealed class SettingsTests : TestContext
     public void Settings_ShouldRequestBackupNotificationPermission_WhenAutomatedCloudBackupIsEnabled()
     {
         var exportServiceMock = new Mock<IDatabaseExportService>();
-        var diagnosticsExportServiceMock = new Mock<IDiagnosticsExportService>();
         var shareServiceMock = CreateShareServiceMock(canShare: false);
         var backupConfigurationServiceMock = CreateBackupConfigurationServiceMock(isEnabled: false, isCloudEnabled: false);
         var reminderConfigurationServiceMock = CreateReminderConfigurationServiceMock(isEnabled: false);
@@ -1219,7 +888,6 @@ public sealed class SettingsTests : TestContext
 
         RegisterSettingsServices(
             exportServiceMock,
-            diagnosticsExportServiceMock,
             shareServiceMock,
             backupConfigurationServiceMock,
             reminderConfigurationServiceMock,
@@ -1242,7 +910,6 @@ public sealed class SettingsTests : TestContext
     public void Settings_ShouldShowSnackbar_WhenReminderNotificationPermissionIsDenied()
     {
         var exportServiceMock = new Mock<IDatabaseExportService>();
-        var diagnosticsExportServiceMock = new Mock<IDiagnosticsExportService>();
         var shareServiceMock = CreateShareServiceMock(canShare: false);
         var backupConfigurationServiceMock = CreateBackupConfigurationServiceMock(isEnabled: false);
         var reminderConfigurationServiceMock = CreateReminderConfigurationServiceMock(isEnabled: false);
@@ -1254,7 +921,6 @@ public sealed class SettingsTests : TestContext
 
         RegisterSettingsServices(
             exportServiceMock,
-            diagnosticsExportServiceMock,
             shareServiceMock,
             backupConfigurationServiceMock,
             reminderConfigurationServiceMock,
@@ -1283,7 +949,6 @@ public sealed class SettingsTests : TestContext
     public void Settings_ShouldRequestReminderNotificationPermission_WhenRemindersAreAlreadyEnabled()
     {
         var exportServiceMock = new Mock<IDatabaseExportService>();
-        var diagnosticsExportServiceMock = new Mock<IDiagnosticsExportService>();
         var shareServiceMock = CreateShareServiceMock(canShare: false);
         var backupConfigurationServiceMock = CreateBackupConfigurationServiceMock(isEnabled: false);
         var reminderConfigurationServiceMock = CreateReminderConfigurationServiceMock(isEnabled: true);
@@ -1294,7 +959,6 @@ public sealed class SettingsTests : TestContext
 
         RegisterSettingsServices(
             exportServiceMock,
-            diagnosticsExportServiceMock,
             shareServiceMock,
             backupConfigurationServiceMock,
             reminderConfigurationServiceMock,
@@ -1314,7 +978,6 @@ public sealed class SettingsTests : TestContext
     public void Settings_ShouldNotRequestReminderNotificationPermission_WhenRemindersAreDisabled()
     {
         var exportServiceMock = new Mock<IDatabaseExportService>();
-        var diagnosticsExportServiceMock = new Mock<IDiagnosticsExportService>();
         var shareServiceMock = CreateShareServiceMock(canShare: false);
         var backupConfigurationServiceMock = CreateBackupConfigurationServiceMock(isEnabled: false);
         var reminderConfigurationServiceMock = CreateReminderConfigurationServiceMock(isEnabled: false);
@@ -1325,7 +988,6 @@ public sealed class SettingsTests : TestContext
 
         RegisterSettingsServices(
             exportServiceMock,
-            diagnosticsExportServiceMock,
             shareServiceMock,
             backupConfigurationServiceMock,
             reminderConfigurationServiceMock,
@@ -1345,7 +1007,6 @@ public sealed class SettingsTests : TestContext
     public void Settings_ShouldShowSnackbar_WhenAutomatedBackupNotificationPermissionIsDenied()
     {
         var exportServiceMock = new Mock<IDatabaseExportService>();
-        var diagnosticsExportServiceMock = new Mock<IDiagnosticsExportService>();
         var shareServiceMock = CreateShareServiceMock(canShare: false);
         var backupConfigurationServiceMock = CreateBackupConfigurationServiceMock(isEnabled: false);
         var reminderConfigurationServiceMock = CreateReminderConfigurationServiceMock(isEnabled: true);
@@ -1357,7 +1018,6 @@ public sealed class SettingsTests : TestContext
 
         RegisterSettingsServices(
             exportServiceMock,
-            diagnosticsExportServiceMock,
             shareServiceMock,
             backupConfigurationServiceMock,
             reminderConfigurationServiceMock,
@@ -1389,13 +1049,6 @@ public sealed class SettingsTests : TestContext
     private static Mock<IDatabaseShareService> CreateShareServiceMock(bool canShare)
     {
         var shareServiceMock = new Mock<IDatabaseShareService>();
-        shareServiceMock.SetupGet(x => x.CanShare).Returns(canShare);
-        return shareServiceMock;
-    }
-
-    private static Mock<IDiagnosticsShareService> CreateDiagnosticsShareServiceMock(bool canShare)
-    {
-        var shareServiceMock = new Mock<IDiagnosticsShareService>();
         shareServiceMock.SetupGet(x => x.CanShare).Returns(canShare);
         return shareServiceMock;
     }
@@ -1525,14 +1178,12 @@ public sealed class SettingsTests : TestContext
 
     private void RegisterSettingsServices(
         Mock<IDatabaseExportService> exportServiceMock,
-        Mock<IDiagnosticsExportService> diagnosticsExportServiceMock,
         Mock<IDatabaseShareService> shareServiceMock,
         Mock<IAutomatedBackupConfigurationService> backupConfigurationServiceMock,
         Mock<IReminderConfigurationService> reminderConfigurationServiceMock,
         Mock<IOneDriveAuthService>? oneDriveAuthServiceMock = null,
         Mock<IManualCloudBackupService>? manualCloudBackupServiceMock = null,
         Mock<IManualBackupStatusStore>? manualBackupStatusStoreMock = null,
-        Mock<IDiagnosticsShareService>? diagnosticsShareServiceMock = null,
         Mock<IManualBackupCompletionNotifier>? manualBackupCompletionNotifierMock = null,
         Mock<IBackupNotificationPermissionService>? backupNotificationPermissionServiceMock = null,
         Mock<IReminderNotificationPermissionCoordinator>? reminderNotificationPermissionCoordinatorMock = null,
@@ -1546,7 +1197,6 @@ public sealed class SettingsTests : TestContext
         manualBackupCompletionNotifierMock ??= new Mock<IManualBackupCompletionNotifier>();
         manualCloudBackupServiceMock ??= CreateManualCloudBackupServiceMock();
         manualBackupStatusStoreMock ??= CreateManualBackupStatusStoreMock();
-        diagnosticsShareServiceMock ??= CreateDiagnosticsShareServiceMock(canShare: false);
         if (backupNotificationPermissionServiceMock is null)
         {
             backupNotificationPermissionServiceMock = new Mock<IBackupNotificationPermissionService>();
@@ -1576,9 +1226,7 @@ public sealed class SettingsTests : TestContext
 
         Services.AddSingleton(backupConfigurationServiceMock.Object);
         Services.AddSingleton(exportServiceMock.Object);
-        Services.AddSingleton(diagnosticsExportServiceMock.Object);
         Services.AddSingleton(shareServiceMock.Object);
-        Services.AddSingleton(diagnosticsShareServiceMock.Object);
         Services.AddSingleton(importFilePickerMock.Object);
         Services.AddSingleton(importServiceMock.Object);
         Services.AddSingleton(manualBackupCompletionNotifierMock.Object);
@@ -1620,3 +1268,6 @@ public sealed class SettingsTests : TestContext
 
     #endregion
 }
+
+
+

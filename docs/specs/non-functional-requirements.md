@@ -20,22 +20,21 @@ This document captures cross-cutting requirements that apply across the Streak a
 
 - The app should maintain a minimal battery, CPU, and storage footprint appropriate for a lightweight local utility.
 - Background activity should be limited to explicitly supported features such as reminders and Android automated backups.
-- Diagnostic log retention should be bounded so logging does not grow storage usage without limit.
+- Telemetry volume and any retained local debug output should be bounded so logging does not grow storage or network usage without limit.
 
-## Diagnostics and Supportability
+## Logging and Supportability
 
-- The app should expose enough structured diagnostic information to troubleshoot failures on real devices without requiring a debugger.
+- The app should expose enough structured logging and telemetry to troubleshoot failures on real devices without requiring a debugger.
 - Application logging should flow through the standard `.NET` `ILogger` abstraction.
-- Production diagnostics should default to a **local structured file sink** rather than a mandatory cloud telemetry dependency.
-- Persistent diagnostic files should live in app-private long-lived storage so they can be exported later if the user chooses.
-- Exported diagnostics should be easy to retrieve through a user-facing save/share flow rather than requiring manual access to app-private storage; on Android, exported support bundles should live under `Downloads/Streak/Diagnostics`.
-- Diagnostics exports should be scoped to operational troubleshooting data, not treated as a silent full-data backup mechanism.
+- Production telemetry should default to **Azure Application Insights** as the baseline operational sink.
+- Telemetry collection must stay operationally focused and must not become a silent full-data backup mechanism.
+- Temporary telemetry delivery failures must not block core app workflows or compromise offline usage.
 
 ## Privacy
 
-- The baseline product should not upload telemetry, traces, or logs to any cloud service by default.
-- Any future cloud telemetry capability must be opt-in and clearly communicated to the user.
-- Diagnostic output should avoid unnecessary capture of user-authored content and should never intentionally dump raw database contents as part of routine logging.
+- The baseline product may upload operational telemetry, traces, and logs to Azure Application Insights by default.
+- Telemetry should be clearly documented and limited to operational support needs.
+- Logging and telemetry should avoid unnecessary capture of user-authored content and should never intentionally dump raw database contents as part of routine logging.
 
 ## Platform Behavior
 

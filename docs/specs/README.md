@@ -59,7 +59,7 @@ A streak is the count of **consecutive calendar days** on which a habit was chec
 - On **Android** in this iteration, a user may optionally sign in with a **personal Microsoft account** and upload the same `.zip` backup archives into the app's private OneDrive app folder.
 - Users may manually export or share full **data backup archives** (`.zip`) that include the local database plus any uploaded picture-proof files that are still available in the app's current proof storage.
 - After a manual data-backup export succeeds, the app should show a lightweight in-app confirmation and let the user quickly open the parent folder that now contains the backup archive.
-- On **Android**, manual exports, automated backups, and diagnostics exports are organized under `Downloads/Streak` so Streak artifacts stay easy to find without cluttering the top-level Downloads folder.
+- On **Android**, manual exports and automated backups are organized under `Downloads/Streak` so Streak artifacts stay easy to find without cluttering the top-level Downloads folder.
 - On **Android**, users may also enable nightly automated local backups that save timestamped `.zip` data archives into shared device storage.
 - On **Android**, users may also enable separate nightly **OneDrive** backups that upload the same archive format into OneDrive. Enabling cloud automated backups does **not** implicitly enable local automated backups, and vice versa.
 - OneDrive cloud backup is **backup-only** in this iteration. Local restore remains available from local files, while cloud restore is deferred to a later phase.
@@ -74,10 +74,10 @@ The app uses several storage categories:
 
 | Category                 | Android                                                       | Windows                                                       | Purpose                                                                                                                                              |
 | ------------------------ | ------------------------------------------------------------- | ------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Live app data            | App-private `FileSystem.Current.AppDataDirectory`             | App-private `FileSystem.Current.AppDataDirectory`             | Live SQLite database and persistent diagnostics that users should not edit directly.                                                                  |
+| Live app data            | App-private `FileSystem.Current.AppDataDirectory`             | App-private `FileSystem.Current.AppDataDirectory`             | Live SQLite database and other private app state that users should not edit directly.                                                                 |
 | Shared proof media       | `Pictures/Streak/CheckinProofs` through Android `MediaStore`  | `Pictures\Streak\CheckinProofs`                               | New user-uploaded check-in proof pictures live outside uninstall-sensitive app storage so they survive app upgrades and uninstalls.                 |
-| Temporary working files  | App-private `FileSystem.Current.CacheDirectory/ExportWorking` | App-private `FileSystem.Current.CacheDirectory/ExportWorking` | Disposable backup, share, restore, and diagnostics-export staging files.                                                                             |
-| User-visible exports     | `Downloads/Streak/...` through Android `MediaStore.Downloads` | User-selected save location through the Windows file picker   | Files the user explicitly exports, shares, or keeps as local backups, including data-backup archives and diagnostics.                                |
+| Temporary working files  | App-private `FileSystem.Current.CacheDirectory/ExportWorking` | App-private `FileSystem.Current.CacheDirectory/ExportWorking` | Disposable backup, share, and restore staging files.                                                                                                  |
+| User-visible exports     | `Downloads/Streak/...` through Android `MediaStore.Downloads` | User-selected save location through the Windows file picker   | Files the user explicitly exports, shares, or keeps as local backups, including data-backup archives.                                                |
 | Optional cloud backups   | OneDrive app folder (`/me/drive/special/approot`)             | Not supported in this iteration                               | User-enabled backup destination for the same `.zip` archives used by local backup. This is backup-only, not live sync.                              |
 | Proof-file resilience    | Raw `.db` restore reconciles missing proof references         | Raw `.db` restore reconciles missing proof references         | Direct database restores keep check-ins but clear proof metadata whose referenced files are unavailable; `.zip` backups preserve and restore proofs. |
 
@@ -88,8 +88,6 @@ AppDataDirectory/
   streak.db
   streak.db-wal
   streak.db-shm
-  Diagnostics/
-    streak-diagnostics.log
 
 CacheDirectory/
   ExportWorking/
@@ -98,7 +96,6 @@ CacheDirectory/
     RestoreExtracted/
       streak.db
       CheckinProofs/
-    streak-diagnostics-YYYYMMdd-HHmmss.zip
 ```
 
 Android shared proof-media storage:
@@ -124,8 +121,6 @@ Downloads/
         streak-data-backup-YYYYMMdd-HHmmss.zip
       Automated/
         streak-auto-data-backup-YYYYMMdd-HHmmss.zip
-    Diagnostics/
-      streak-diagnostics-YYYYMMdd-HHmmss.zip
 ```
 
 Android OneDrive app-folder storage:
@@ -146,8 +141,6 @@ AppDataDirectory/
   streak.db
   streak.db-wal
   streak.db-shm
-  Diagnostics/
-    streak-diagnostics.log
 
 CacheDirectory/
   ExportWorking/
@@ -155,7 +148,6 @@ CacheDirectory/
     RestoreExtracted/
       streak.db
       CheckinProofs/
-    streak-diagnostics-YYYYMMdd-HHmmss.zip
 ```
 
 Windows shared proof-media storage:
@@ -176,7 +168,6 @@ Windows user-visible storage:
 ```text
 <user-selected-folder>/
   streak-data-backup-YYYYMMdd-HHmmss.zip
-  streak-diagnostics-YYYYMMdd-HHmmss.zip
 ```
 
 Windows does not currently support automated backups or OneDrive cloud backup. Android manual share uses a generated `streak-data-backup-YYYYMMdd-HHmmss.zip` archive and hands it to the native share sheet; it does not create a separate durable export unless the user chooses to save it through another app.
@@ -211,18 +202,14 @@ Windows does not currently support automated backups or OneDrive cloud backup. A
   - near timezone changes or travel, a check-in may appear under a different local day than the user expected before the device timezone changed
 - These tradeoffs are acceptable for this app because it is a local-only habit tracker centered on the user's current day-to-day experience rather than globally synchronized UTC timelines.
 
-## Diagnostics and Telemetry
+## Logging and Telemetry
 
-- The app should use the standard `.NET` `ILogger` abstraction for application logging and diagnostics.
-- Diagnostics are intentionally **local-first**: the app should not require Azure Application Insights or any other cloud telemetry service to function.
-- The primary production telemetry sink should be **local structured log files** stored in the app's persistent private storage.
-- Diagnostic log files must be stored in **persistent app data**, not in a cache-only location, so they survive routine app restarts and can be exported later.
-- The app may also emit platform-native debug logs in development builds, but local file-based diagnostics are the primary end-user support mechanism.
-- End users should not be expected to manually browse the app sandbox to retrieve logs. The product should provide an explicit **Export diagnostics** and/or **Share diagnostics** action.
-- Exported diagnostics should package recent log files into a user-portable artifact, such as a `.zip`, created in temporary storage and then saved or shared through the native platform flow.
-- Diagnostics exports may include lightweight environment metadata helpful for support, such as app version, platform, OS version, and timestamp, but must not include the full database unless the user explicitly chooses a separate backup/share action.
-- Diagnostic logging should avoid collecting unnecessary personal content. In particular, logs should not intentionally dump raw database contents or excessively verbose user-authored habit notes/descriptions.
-- Any future cloud telemetry integration must be strictly optional and explicitly user-enabled; the baseline product remains fully usable without network connectivity.
+- The app should use the standard `.NET` `ILogger` abstraction for application logging and telemetry.
+- The primary production telemetry sink should be **Azure Application Insights**.
+- Production telemetry should run automatically as baseline operational logging and should not require a user-facing Settings control.
+- Telemetry failures or temporary network unavailability must not block normal app usage; the product remains fully usable offline.
+- The app may still emit platform-native debug logs in development builds, but those are implementation details rather than a user-facing support flow.
+- Logging and telemetry should avoid collecting unnecessary personal content. In particular, they should not intentionally dump raw database contents or excessively verbose user-authored habit notes/descriptions.
 
 ## Non-Functional Requirements
 
@@ -238,7 +225,7 @@ Each major surface has its own detailed spec:
 | Check-in Dialogs | Homepage habit toggle     | [checkin-dialogs.md](./checkin-dialogs.md)       | Collect optional note / picture proof before save and confirm removal before undoing a checkin |
 | Habit Details    | `/habits/{habitId}`       | [habit-details-page.md](./habit-details-page.md) | Habit details, trends, edit dialog, and deletion                                               |
 | Quick Add Habit  | `+ New Habit` on Homepage | [create-habit-page.md](./create-habit-page.md)   | Create a new habit in a compact dialog without leaving the homepage                            |
-| Settings         | `/settings`               | [settings-page.md](./settings-page.md)           | Configure reminders and manage local backup, optional OneDrive backup, local restore, and diagnostics export/share |
+| Settings         | `/settings`               | [settings-page.md](./settings-page.md)           | Configure reminders and manage local backup, optional OneDrive backup, and local restore |
 
 ## Information Architecture Notes
 
@@ -247,7 +234,7 @@ Each major surface has its own detailed spec:
 - The **Homepage** doubles as the habit-list maintenance surface: habits are shown alphabetically and each habit opens its details on the Habit Details page.
 - The Homepage app bar keeps **Settings** plus a right-most **GitHub** repo link instead of a global create icon.
 - The **Habit Details** page contains the heatmap, edit dialog flow, and delete confirmation dialog for a single habit.
-- **Settings** groups reminder preferences plus low-frequency data actions such as **Daily automated backups**, **OneDrive backup**, **Download data**, **Share data**, **Upload data**, and diagnostics export/share.
+- **Settings** groups reminder preferences plus low-frequency data actions such as **Daily automated backups**, **OneDrive backup**, **Download data**, **Share data**, and **Upload data**.
 - **Homepage** opens directly into the habit list without instructional header copy, progress summary text, or a habit-count chip.
 - There is no dedicated habit-list routed page separate from **Homepage**.
 - There is no dedicated routed **Create Habit** page in the simplified direction.

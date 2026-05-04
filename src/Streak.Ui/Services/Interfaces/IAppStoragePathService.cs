@@ -13,17 +13,7 @@ public interface IAppStoragePathService
     string ExportDirectoryPath { get; }
 
     /// <summary>
-    ///     Gets the persistent app-private directory used for diagnostics artifacts.
-    /// </summary>
-    string DiagnosticsDirectoryPath { get; }
-
-    /// <summary>
     ///     Gets the root directory or display path used for saved check-in proof files.
     /// </summary>
     string CheckinProofsDirectoryPath { get; }
-
-    /// <summary>
-    ///     Gets the full path to the single structured diagnostics log file.
-    /// </summary>
-    string DiagnosticsLogFilePath { get; }
 }

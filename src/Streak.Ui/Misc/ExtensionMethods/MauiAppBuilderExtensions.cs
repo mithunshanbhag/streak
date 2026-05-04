@@ -1,5 +1,4 @@
 using Microsoft.Extensions.DependencyInjection;
-using Serilog;
 
 namespace Streak.Ui.Misc.ExtensionMethods;
 
@@ -67,7 +66,6 @@ public static class MauiAppBuilderExtensions
             builder.Services.AddTransient<IAutomatedCloudBackupService, UnsupportedAutomatedCloudBackupService>();
             builder.Services.AddTransient<IDatabaseImportService, DatabaseImportService>();
             builder.Services.AddTransient<IDatabaseExportService, DatabaseExportService>();
-            builder.Services.AddTransient<IDiagnosticsExportService, DiagnosticsExportService>();
 #if WINDOWS
             builder.Services.AddSingleton<IAutomatedBackupScheduler, NoOpAutomatedBackupScheduler>();
             builder.Services.AddSingleton<IReminderScheduler, NoOpReminderScheduler>();
@@ -82,9 +80,7 @@ public static class MauiAppBuilderExtensions
             builder.Services.AddTransient<IDatabaseImportFilePicker, WindowsDatabaseImportFilePicker>();
             builder.Services.AddTransient<ICheckinProofMediaPickerService, WindowsCheckinProofMediaPickerService>();
             builder.Services.AddTransient<IDatabaseExportFileSaver, WindowsDatabaseExportFileSaver>();
-            builder.Services.AddTransient<IDiagnosticsExportFileSaver, WindowsDiagnosticsExportFileSaver>();
             builder.Services.AddTransient<IDatabaseShareService, UnsupportedDatabaseShareService>();
-            builder.Services.AddTransient<IDiagnosticsShareService, UnsupportedDiagnosticsShareService>();
 #elif ANDROID
             builder.Services.AddSingleton<ICheckinProofFileStore, AndroidCheckinProofFileStore>();
             builder.Services.AddSingleton<IBackupFolderOpener, AndroidBackupFolderOpener>();
@@ -96,7 +92,6 @@ public static class MauiAppBuilderExtensions
             builder.Services.AddTransient<IDatabaseImportFilePicker, AndroidDatabaseImportFilePicker>();
             builder.Services.AddTransient<ICheckinProofMediaPickerService, AndroidCheckinProofMediaPickerService>();
             builder.Services.AddTransient<IDatabaseExportFileSaver, AndroidDatabaseExportFileSaver>();
-            builder.Services.AddTransient<IDiagnosticsExportFileSaver, AndroidDiagnosticsExportFileSaver>();
             builder.Services.AddTransient<IAutomatedBackupFileSaver, AndroidAutomatedBackupFileSaver>();
             builder.Services.AddTransient<IAutomatedBackupExecutionService, AutomatedBackupExecutionService>();
             builder.Services.AddTransient<IAutomatedBackupRunService, AutomatedBackupRunService>();
@@ -113,7 +108,6 @@ public static class MauiAppBuilderExtensions
                     client.Timeout = TimeSpan.FromMinutes(2);
                 });
             builder.Services.AddTransient<IDatabaseShareService, DatabaseShareService>();
-            builder.Services.AddTransient<IDiagnosticsShareService, DiagnosticsShareService>();
 #else
             builder.Services.AddSingleton<IAutomatedBackupScheduler, NoOpAutomatedBackupScheduler>();
             builder.Services.AddSingleton<IReminderScheduler, NoOpReminderScheduler>();
@@ -126,33 +120,11 @@ public static class MauiAppBuilderExtensions
             builder.Services.AddSingleton<IOneDriveAuthService, UnsupportedOneDriveAuthService>();
             builder.Services.AddTransient<IAutomatedCloudBackupService, UnsupportedAutomatedCloudBackupService>();
             builder.Services.AddTransient<IOneDriveBackupUploadClient, UnsupportedOneDriveBackupUploadClient>();
-            builder.Services.AddTransient<IDiagnosticsExportFileSaver, WindowsDiagnosticsExportFileSaver>();
             builder.Services.AddTransient<ICheckinProofMediaPickerService, UnsupportedCheckinProofMediaPickerService>();
             builder.Services.AddTransient<IDatabaseShareService, UnsupportedDatabaseShareService>();
-            builder.Services.AddTransient<IDiagnosticsShareService, UnsupportedDiagnosticsShareService>();
 #endif
 
             builder.Services.AddMauiBlazorWebView();
-            builder.Logging.ClearProviders();
-            builder.Services.AddSerilog((services, loggerConfiguration) =>
-            {
-                var appStoragePathService = services.GetRequiredService<IAppStoragePathService>();
-
-                loggerConfiguration
-                    .MinimumLevel.Is(GetDefaultLogLevel())
-                    .MinimumLevel.Override("Microsoft", Serilog.Events.LogEventLevel.Warning)
-                    .MinimumLevel.Override("System", Serilog.Events.LogEventLevel.Warning)
-                    .Enrich.FromLogContext()
-                    .WriteTo.Sink(
-                        new CircularFileSink(
-                            appStoragePathService.DiagnosticsLogFilePath,
-                            new Serilog.Formatting.Compact.CompactJsonFormatter(),
-                            DiagnosticsConstants.MaxStructuredLogFileSizeBytes));
-
-#if DEBUG
-                loggerConfiguration.WriteTo.Debug();
-#endif
-            });
 
 #if DEBUG
             builder.Services.AddBlazorWebViewDeveloperTools();
@@ -160,14 +132,5 @@ public static class MauiAppBuilderExtensions
 
             return builder;
         }
-    }
-
-    private static Serilog.Events.LogEventLevel GetDefaultLogLevel()
-    {
-#if DEBUG
-        return Serilog.Events.LogEventLevel.Debug;
-#else
-        return Serilog.Events.LogEventLevel.Information;
-#endif
     }
 }

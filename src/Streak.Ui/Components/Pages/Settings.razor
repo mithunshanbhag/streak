@@ -2,9 +2,7 @@
 @inject IAutomatedBackupConfigurationService AutomatedBackupConfigurationService
 @inject IReminderConfigurationService ReminderConfigurationService
 @inject IDatabaseExportService DatabaseExportService
-@inject IDiagnosticsExportService DiagnosticsExportService
 @inject IDatabaseShareService DatabaseShareService
-@inject IDiagnosticsShareService DiagnosticsShareService
 @inject IDatabaseImportFilePicker DatabaseImportFilePicker
 @inject IDatabaseImportService DatabaseImportService
 @inject IManualBackupCompletionNotifier ManualBackupCompletionNotifier
@@ -479,83 +477,6 @@
             </MudStack>
         </MudPaper>
 
-        <MudPaper Elevation="1"
-                  Class="pa-4 rounded-lg">
-            <MudStack Spacing="2">
-                <MudStack Spacing="1">
-                    <MudStack Row="true"
-                              Spacing="1"
-                              AlignItems="AlignItems.Center">
-                        <MudText Typo="Typo.h6">
-                            @DiagnosticsHeaderText
-                        </MudText>
-
-                        <MudTooltip Text="@DiagnosticsTooltipText"
-                                    Placement="Placement.Top">
-                            <MudIconButton Icon="@Icons.Material.Filled.Info"
-                                           Color="Color.Default"
-                                           Size="Size.Small"
-                                           aria-label="@DiagnosticsTooltipAriaLabel"/>
-                        </MudTooltip>
-                    </MudStack>
-
-                    <MudText Typo="Typo.caption"
-                             Class="text-secondary">
-                        @DiagnosticsDescriptionText
-                    </MudText>
-                </MudStack>
-
-                <MudStack Row="true"
-                          Justify="Justify.FlexEnd"
-                          AlignItems="AlignItems.Center"
-                          Spacing="3"
-                          Style="@SettingRowStyle">
-                    <MudTooltip Text="@DiagnosticsExportButtonTooltipText"
-                                 Placement="Placement.Top">
-                        <MudButton Color="Color.Primary"
-                                   Variant="Variant.Filled"
-                                   Disabled="@DataActionsDisabled"
-                                   aria-label="@DiagnosticsExportButtonAriaLabel"
-                                   Style="@DataActionButtonStyle"
-                                   OnClick="ExportDiagnosticsAsync">
-                            @if (_diagnosticsExportInProgress)
-                            {
-                                <MudProgressCircular Indeterminate="true"
-                                                     Color="Color.Inherit"
-                                                     Size="Size.Small"/>
-                            }
-                            else
-                            {
-                                <MudIcon Icon="@Icons.Material.Filled.Download"/>
-                            }
-                        </MudButton>
-                    </MudTooltip>
-
-                    <MudTooltip Text="@DiagnosticsShareButtonTooltipText"
-                                Placement="Placement.Top">
-                        <span class="d-inline-flex">
-                            <MudButton Color="Color.Primary"
-                                       Variant="Variant.Filled"
-                                       Disabled="@(!DiagnosticsShareService.CanShare || DataActionsDisabled)"
-                                       aria-label="@DiagnosticsShareButtonAriaLabel"
-                                       Style="@DataActionButtonStyle"
-                                       OnClick="ShareDiagnosticsAsync">
-                                @if (_diagnosticsShareInProgress)
-                                {
-                                    <MudProgressCircular Indeterminate="true"
-                                                         Color="Color.Inherit"
-                                                         Size="Size.Small"/>
-                                }
-                                else
-                                {
-                                    <MudIcon Icon="@Icons.Material.Filled.Share"/>
-                                }
-                            </MudButton>
-                        </span>
-                    </MudTooltip>
-                </MudStack>
-            </MudStack>
-        </MudPaper>
     </MudStack>
 </MudContainer>
 
@@ -569,10 +490,6 @@
     private bool _shareInProgress;
 
     private bool _importInProgress;
-
-    private bool _diagnosticsExportInProgress;
-
-    private bool _diagnosticsShareInProgress;
 
     private bool _oneDriveManualBackupInProgress;
 
@@ -614,8 +531,6 @@
         || _oneDriveCloudBackupSettingsUpdateInProgress
         || _oneDriveAuthOperationInProgress
         || _exportInProgress
-        || _diagnosticsExportInProgress
-        || _diagnosticsShareInProgress
         || _shareInProgress
         || _importInProgress
         || _oneDriveManualBackupInProgress;
@@ -625,8 +540,6 @@
 
     private bool DataActionsDisabled =>
         _exportInProgress
-        || _diagnosticsExportInProgress
-        || _diagnosticsShareInProgress
         || _shareInProgress
         || _importInProgress
         || _oneDriveManualBackupInProgress
@@ -935,47 +848,6 @@
         }
     }
 
-    private async Task ExportDiagnosticsAsync()
-    {
-        try
-        {
-            _diagnosticsExportInProgress = true;
-            _operationErrorMessage = null;
-
-            var exportResult = await DiagnosticsExportService.ExportDiagnosticsAsync();
-
-            if (exportResult == DiagnosticsExportResult.Cancelled)
-                return;
-        }
-        catch (Exception)
-        {
-            _operationErrorMessage = DiagnosticsExportFailedText;
-        }
-        finally
-        {
-            _diagnosticsExportInProgress = false;
-        }
-    }
-
-    private async Task ShareDiagnosticsAsync()
-    {
-        try
-        {
-            _diagnosticsShareInProgress = true;
-            _operationErrorMessage = null;
-
-            await DiagnosticsShareService.ShareDiagnosticsAsync();
-        }
-        catch (Exception)
-        {
-            _operationErrorMessage = DiagnosticsShareFailedText;
-        }
-        finally
-        {
-            _diagnosticsShareInProgress = false;
-        }
-    }
-
     private async Task ShareDatabaseAsync()
     {
         try
@@ -1262,22 +1134,6 @@
 
     private const string ShareButtonAriaLabel = "Share data";
 
-    private const string DiagnosticsHeaderText = "🕵️ Diagnostic logs";
-
-    private const string DiagnosticsDescriptionText = "Export or share a support bundle of recent app logs.";
-
-    private const string DiagnosticsTooltipText = "Exports recent app logs and basic support metadata. Does not include your full database.";
-
-    private const string DiagnosticsTooltipAriaLabel = "Diagnostic log details";
-
-    private const string DiagnosticsExportButtonTooltipText = "Export logs";
-
-    private const string DiagnosticsExportButtonAriaLabel = "Export diagnostic logs";
-
-    private const string DiagnosticsShareButtonTooltipText = "Share logs";
-
-    private const string DiagnosticsShareButtonAriaLabel = "Share diagnostic logs";
-
     private const string RestoreHeaderText = "↩️ Restore";
 
     private const string RestoreDescriptionText = "Restore from a local .zip backup or a legacy .db file.";
@@ -1295,10 +1151,6 @@
     private const string ExportFailedText = "Unable to export your data right now. Please try again.";
 
     private const string ShareFailedText = "Unable to share your data right now. Please try again.";
-
-    private const string DiagnosticsExportFailedText = "Unable to export your diagnostic logs right now. Please try again.";
-
-    private const string DiagnosticsShareFailedText = "Unable to share your diagnostic logs right now. Please try again.";
 
     private const string ImportValidationFailedText = "That file is not a valid Streak backup or database. Your current data was not changed.";
 

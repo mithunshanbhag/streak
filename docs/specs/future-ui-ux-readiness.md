@@ -81,7 +81,7 @@ The implementation generally follows the spec, but there are several signs of dr
 
 ### 3. Settings Relies Too Heavily On Icon-Only Actions And Tooltips
 
-The Settings data actions are icon-only buttons whose meaning depends on tooltips. That can work on desktop, but tooltips are weak on mobile and less reliable for accessibility. These actions are also high-risk because backup, restore, share, and diagnostics affect user trust.
+The Settings data actions are icon-only buttons whose meaning depends on tooltips. That can work on desktop, but tooltips are weak on mobile and less reliable for accessibility. These actions are also high-risk because backup, restore, share, and cloud-backup actions affect user trust.
 
 **Recommended actions**
 
@@ -89,7 +89,6 @@ The Settings data actions are icon-only buttons whose meaning depends on tooltip
 - Prefer compact action rows with visible text for destructive or trust-critical operations:
   - `Download data`
   - `Share data`
-  - `Export logs`
   - `Upload data`
 - If icon-only buttons remain, add visible subsection-level labels, disabled-state explanations, and touch-friendly affordances.
 - Make disabled platform-specific actions explain why they are disabled without requiring hover.
@@ -98,7 +97,7 @@ The Settings data actions are icon-only buttons whose meaning depends on tooltip
 
 - A touch-only Android user can understand every Settings action without hover.
 - Screen reader output makes action purpose, disabled state, and risk clear.
-- Restore remains visibly more serious than backup/export without using excessive warning chrome.
+- Restore remains visibly more serious than backup/share actions without using excessive warning chrome.
 
 ### 4. Accessibility Needs A Dedicated Pass
 
@@ -151,7 +150,7 @@ Examples:
   - permission denied
   - disabled by platform
 - Replace raw exception messages with friendly, actionable copy.
-- Add success feedback for check-in, restore, diagnostics export, and reminder/backup preference changes where useful.
+- Add success feedback for check-in, restore, and reminder/backup preference changes where useful.
 - Add retry guidance when actions fail.
 
 **Acceptance criteria**

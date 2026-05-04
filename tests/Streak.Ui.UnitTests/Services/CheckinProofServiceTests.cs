@@ -136,8 +136,6 @@ public sealed class CheckinProofServiceTests
         var appStoragePathServiceMock = new Mock<IAppStoragePathService>();
         appStoragePathServiceMock.SetupGet(x => x.CheckinProofsDirectoryPath).Returns(proofDirectoryPath);
         appStoragePathServiceMock.SetupGet(x => x.DatabasePath).Returns(Path.Combine(proofDirectoryPath, "streak.db"));
-        appStoragePathServiceMock.SetupGet(x => x.DiagnosticsDirectoryPath).Returns(Path.Combine(proofDirectoryPath, "Diagnostics"));
-        appStoragePathServiceMock.SetupGet(x => x.DiagnosticsLogFilePath).Returns(Path.Combine(proofDirectoryPath, "Diagnostics", "log.txt"));
         appStoragePathServiceMock.SetupGet(x => x.ExportDirectoryPath).Returns(Path.Combine(proofDirectoryPath, "ExportWorking"));
         return new FileSystemCheckinProofFileStore(appStoragePathServiceMock.Object);
     }

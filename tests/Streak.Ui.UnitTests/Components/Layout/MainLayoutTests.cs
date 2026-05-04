@@ -116,7 +116,6 @@ public sealed class MainLayoutTests : TestContext
     private void RegisterSettingsServices()
     {
         var exportServiceMock = new Mock<IDatabaseExportService>();
-        var diagnosticsExportServiceMock = new Mock<IDiagnosticsExportService>();
         var shareServiceMock = new Mock<IDatabaseShareService>();
         shareServiceMock.SetupGet(x => x.CanShare).Returns(false);
 
@@ -140,7 +139,6 @@ public sealed class MainLayoutTests : TestContext
             });
 
         Services.AddSingleton(exportServiceMock.Object);
-        Services.AddSingleton(diagnosticsExportServiceMock.Object);
         Services.AddSingleton(shareServiceMock.Object);
         Services.AddSingleton(backupConfigurationServiceMock.Object);
         Services.AddSingleton(reminderConfigurationServiceMock.Object);
