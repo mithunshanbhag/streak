@@ -12,7 +12,8 @@ public sealed class OneDriveAuthStateStoreTests
             getLastKnownAccountUsername: () => storedAccountUsername,
             setLastKnownAccountUsername: value => storedAccountUsername = value,
             clearLastKnownAccountUsername: () => storedAccountUsername = null);
-        var store = new OneDriveAuthStateStore(preferencesMock.Object);
+        var loggerMock = new Mock<ILogger<OneDriveAuthStateStore>>();
+        var store = new OneDriveAuthStateStore(preferencesMock.Object, loggerMock.Object);
 
         store.SetLastKnownAccountUsername("streak-demo@outlook.com");
 
@@ -27,7 +28,8 @@ public sealed class OneDriveAuthStateStoreTests
             getLastKnownAccountUsername: () => storedAccountUsername,
             setLastKnownAccountUsername: value => storedAccountUsername = value,
             clearLastKnownAccountUsername: () => storedAccountUsername = null);
-        var store = new OneDriveAuthStateStore(preferencesMock.Object);
+        var loggerMock = new Mock<ILogger<OneDriveAuthStateStore>>();
+        var store = new OneDriveAuthStateStore(preferencesMock.Object, loggerMock.Object);
 
         store.Clear();
 
@@ -45,7 +47,8 @@ public sealed class OneDriveAuthStateStoreTests
             getLastKnownAccountUsername: () => null,
             setLastKnownAccountUsername: _ => { },
             clearLastKnownAccountUsername: () => { });
-        var store = new OneDriveAuthStateStore(preferencesMock.Object);
+        var loggerMock = new Mock<ILogger<OneDriveAuthStateStore>>();
+        var store = new OneDriveAuthStateStore(preferencesMock.Object, loggerMock.Object);
 
         store.GetLastKnownAccountUsername().Should().BeNull();
     }
@@ -58,7 +61,8 @@ public sealed class OneDriveAuthStateStoreTests
             getLastKnownAccountUsername: () => storedAccountUsername,
             setLastKnownAccountUsername: value => storedAccountUsername = value,
             clearLastKnownAccountUsername: () => storedAccountUsername = null);
-        var store = new OneDriveAuthStateStore(preferencesMock.Object);
+        var loggerMock = new Mock<ILogger<OneDriveAuthStateStore>>();
+        var store = new OneDriveAuthStateStore(preferencesMock.Object, loggerMock.Object);
 
         store.SetLastKnownAccountUsername("   ");
 

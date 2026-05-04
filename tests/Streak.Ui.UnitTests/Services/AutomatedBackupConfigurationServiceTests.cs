@@ -186,10 +186,12 @@ public sealed class AutomatedBackupConfigurationServiceTests
     {
         var appStoragePathServiceMock = new Mock<IAppStoragePathService>();
         appStoragePathServiceMock.SetupGet(x => x.DatabasePath).Returns(databasePath);
+        var loggerMock = new Mock<ILogger<AutomatedBackupConfigurationService>>();
 
         return new AutomatedBackupConfigurationService(
             appStoragePathServiceMock.Object,
-            automatedBackupScheduler);
+            automatedBackupScheduler,
+            loggerMock.Object);
     }
 
     private static void CreateDatabase(string databasePath, bool isEnabled, bool isCloudEnabled = false)

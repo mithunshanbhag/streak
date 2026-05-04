@@ -147,10 +147,12 @@ public sealed class ReminderConfigurationServiceTests
     {
         var appStoragePathServiceMock = new Mock<IAppStoragePathService>();
         appStoragePathServiceMock.SetupGet(x => x.DatabasePath).Returns(databasePath);
+        var loggerMock = new Mock<ILogger<ReminderConfigurationService>>();
 
         return new ReminderConfigurationService(
             appStoragePathServiceMock.Object,
-            reminderScheduler);
+            reminderScheduler,
+            loggerMock.Object);
     }
 
     private static void CreateDatabase(string databasePath, bool isEnabled, TimeOnly timeLocal)

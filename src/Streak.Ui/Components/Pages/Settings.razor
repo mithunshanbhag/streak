@@ -678,6 +678,7 @@
         {
             _reminderSettingsUpdateInProgress = true;
             _operationErrorMessage = null;
+            Logger.LogInformation("Settings updating reminders enabled state to {RemindersEnabled}.", isEnabled);
             ReminderConfigurationService.SetIsEnabled(isEnabled);
             _remindersEnabled = isEnabled;
 
@@ -685,9 +686,12 @@
             {
                 await RequestReminderNotificationPermissionIfEnabledAsync();
             }
+
+            Logger.LogInformation("Settings updated reminders enabled state to {RemindersEnabled}.", _remindersEnabled);
         }
-        catch (Exception)
+        catch (Exception exception)
         {
+            Logger.LogError(exception, "Settings failed to update reminders enabled state to {RemindersEnabled}.", isEnabled);
             _operationErrorMessage = ReminderUpdateFailedText;
             _remindersEnabled = ReminderConfigurationService.GetIsEnabled();
             _reminderTimeLocal = ReminderConfigurationService.GetTimeLocal().ToTimeSpan();
@@ -709,6 +713,7 @@
         {
             _automatedBackupSettingsUpdateInProgress = true;
             _operationErrorMessage = null;
+            Logger.LogInformation("Settings updating automated local backup enabled state to {AutomatedBackupsEnabled}.", isEnabled);
             AutomatedBackupConfigurationService.SetIsEnabled(isEnabled);
             _automatedBackupsEnabled = isEnabled;
 
@@ -716,11 +721,23 @@
             {
                 var notificationsEnabled = await BackupNotificationPermissionService.RequestPermissionIfNeededAsync();
                 if (!notificationsEnabled)
+                {
+                    Logger.LogInformation(
+                        "Settings automated local backup notification permission request completed with notifications disabled.");
                     Snackbar.Add(AutomatedBackupNotificationsPermissionText, Severity.Info);
+                }
             }
+
+            Logger.LogInformation(
+                "Settings updated automated local backup enabled state to {AutomatedBackupsEnabled}.",
+                _automatedBackupsEnabled);
         }
-        catch (Exception)
+        catch (Exception exception)
         {
+            Logger.LogError(
+                exception,
+                "Settings failed to update automated local backup enabled state to {AutomatedBackupsEnabled}.",
+                isEnabled);
             _operationErrorMessage = AutomatedBackupsUpdateFailedText;
             _automatedBackupsEnabled = _automatedBackupsSupported && AutomatedBackupConfigurationService.GetIsEnabled();
         }
@@ -741,17 +758,25 @@
         {
             _exportInProgress = true;
             _operationErrorMessage = null;
+            Logger.LogInformation("Settings started manual local backup export.");
 
             var exportResult = await DatabaseExportService.ExportDatabaseAsync();
 
             if (exportResult.Status == DatabaseExportStatus.Cancelled)
+            {
+                Logger.LogInformation("Settings manual local backup export was cancelled.");
                 return;
+            }
 
             ManualBackupCompletionNotifier.NotifyCompleted(exportResult);
             RefreshManualBackupStatusMetadata();
+            Logger.LogInformation(
+                "Settings completed manual local backup export. Saved file path available: {SavedFilePathAvailable}.",
+                !string.IsNullOrWhiteSpace(exportResult.SavedFileLocation?.SavedFilePath));
         }
-        catch (Exception)
+        catch (Exception exception)
         {
+            Logger.LogError(exception, "Settings failed during manual local backup export.");
             _operationErrorMessage = ExportFailedText;
         }
         finally
@@ -798,12 +823,19 @@
         {
             _oneDriveAuthOperationInProgress = true;
             _operationErrorMessage = null;
+            Logger.LogInformation("Settings started OneDrive disconnect flow.");
 
             await OneDriveAuthService.DisconnectAsync();
             await RefreshOneDriveAuthStateAsync();
+            Logger.LogInformation(
+                "Settings completed OneDrive disconnect flow. Connected: {OneDriveConnected}.",
+                _oneDriveAuthState.IsConnected);
         }
-        catch (Exception)
+        catch (Exception exception)
         {
+            Logger.LogError(
+                exception,
+                "Settings OneDrive disconnect flow failed; refreshing auth state.");
             _operationErrorMessage = OneDriveDisconnectFailedText;
             await RefreshOneDriveAuthStateAsync();
         }
@@ -826,20 +858,27 @@
         {
             _oneDriveManualBackupInProgress = true;
             _operationErrorMessage = null;
+            Logger.LogInformation("Settings started manual OneDrive backup upload.");
 
             await ManualCloudBackupService.UploadManualBackupAsync();
             RefreshManualBackupStatusMetadata();
             Snackbar.Add(OneDriveManualBackupCompletedText, Severity.Success);
+            Logger.LogInformation("Settings completed manual OneDrive backup upload.");
         }
         catch (OneDriveBackupException exception)
         {
+            Logger.LogWarning(
+                exception,
+                "Settings manual OneDrive backup upload failed with failure kind {FailureKind}.",
+                exception.FailureKind);
             if (exception.FailureKind == OneDriveBackupFailureKind.AuthRequired)
                 await RefreshOneDriveAuthStateAsync();
 
             _operationErrorMessage = GetOneDriveManualBackupFailureText(exception.FailureKind);
         }
-        catch (Exception)
+        catch (Exception exception)
         {
+            Logger.LogError(exception, "Settings manual OneDrive backup upload failed unexpectedly.");
             _operationErrorMessage = OneDriveManualBackupFailedText;
         }
         finally
@@ -854,11 +893,14 @@
         {
             _shareInProgress = true;
             _operationErrorMessage = null;
+            Logger.LogInformation("Settings started database share.");
 
             await DatabaseShareService.ShareDatabaseAsync();
+            Logger.LogInformation("Settings completed database share.");
         }
-        catch (Exception)
+        catch (Exception exception)
         {
+            Logger.LogError(exception, "Settings database share failed.");
             _operationErrorMessage = ShareFailedText;
         }
         finally
@@ -872,29 +914,40 @@
         try
         {
             _operationErrorMessage = null;
+            Logger.LogInformation("Settings started database restore file selection.");
 
             var selectedBackup = await DatabaseImportFilePicker.PickBackupAsync();
             if (selectedBackup is null)
+            {
+                Logger.LogInformation("Settings database restore file selection was cancelled.");
                 return;
+            }
 
             var dialog = await DialogService.ShowAsync<RestoreDatabaseDialog>(RestoreDialogTitleText);
             var result = await dialog.Result;
 
             if (result is null || result.Canceled)
+            {
+                Logger.LogInformation("Settings database restore confirmation was cancelled.");
                 return;
+            }
 
             _importInProgress = true;
+            Logger.LogInformation("Settings started database restore.");
 
             await DatabaseImportService.ImportDatabaseAsync(selectedBackup);
 
+            Logger.LogInformation("Settings completed database restore and is navigating home.");
             NavigationManager.NavigateTo(RouteConstants.Home, true);
         }
-        catch (InvalidDataException)
+        catch (InvalidDataException exception)
         {
+            Logger.LogWarning(exception, "Settings database restore validation failed.");
             _operationErrorMessage = ImportValidationFailedText;
         }
-        catch (Exception)
+        catch (Exception exception)
         {
+            Logger.LogError(exception, "Settings database restore failed.");
             _operationErrorMessage = ImportFailedText;
         }
         finally
@@ -916,11 +969,14 @@
         {
             _reminderSettingsUpdateInProgress = true;
             _operationErrorMessage = null;
+            Logger.LogInformation("Settings updating reminder time to {ReminderTimeLocal}.", reminderTimeLocal.Value);
             ReminderConfigurationService.SetTimeLocal(TimeOnly.FromTimeSpan(reminderTimeLocal.Value));
             _reminderTimeLocal = reminderTimeLocal;
+            Logger.LogInformation("Settings updated reminder time to {ReminderTimeLocal}.", reminderTimeLocal.Value);
         }
-        catch (Exception)
+        catch (Exception exception)
         {
+            Logger.LogError(exception, "Settings failed to update reminder time to {ReminderTimeLocal}.", reminderTimeLocal.Value);
             _operationErrorMessage = ReminderUpdateFailedText;
             _remindersEnabled = ReminderConfigurationService.GetIsEnabled();
             _reminderTimeLocal = ReminderConfigurationService.GetTimeLocal().ToTimeSpan();
@@ -939,12 +995,24 @@
 
         var notificationsEnabled = await ReminderNotificationPermissionCoordinator.RequestPermissionIfRemindersEnabledAsync();
         if (!notificationsEnabled)
+        {
+            Logger.LogInformation(
+                "Settings reminder notification permission request completed with notifications disabled while reminders remain enabled.");
             Snackbar.Add(ReminderNotificationsPermissionText, Severity.Info);
+            return;
+        }
+
+        Logger.LogInformation("Settings reminder notification permission is enabled.");
     }
 
     private async Task RefreshOneDriveAuthStateAsync()
     {
         _oneDriveAuthState = await OneDriveAuthService.GetAuthStateAsync();
+        Logger.LogInformation(
+            "Settings refreshed OneDrive auth state. Supported: {OneDriveSupported}. Configured: {OneDriveConfigured}. Connected: {OneDriveConnected}.",
+            _oneDriveAuthState.IsPlatformSupported,
+            _oneDriveAuthState.IsConfigured,
+            _oneDriveAuthState.IsConnected);
     }
 
     private async Task OneDriveCloudBackupEnabledChangedInternalAsync(bool isEnabled)
@@ -953,6 +1021,7 @@
         {
             _oneDriveCloudBackupSettingsUpdateInProgress = true;
             _operationErrorMessage = null;
+            Logger.LogInformation("Settings updating automated OneDrive backup enabled state to {AutomatedCloudBackupsEnabled}.", isEnabled);
             AutomatedBackupConfigurationService.SetIsCloudEnabled(isEnabled);
             _oneDriveCloudBackupEnabled = isEnabled;
 
@@ -960,11 +1029,23 @@
             {
                 var notificationsEnabled = await BackupNotificationPermissionService.RequestPermissionIfNeededAsync();
                 if (!notificationsEnabled)
+                {
+                    Logger.LogInformation(
+                        "Settings automated OneDrive backup notification permission request completed with notifications disabled.");
                     Snackbar.Add(AutomatedBackupNotificationsPermissionText, Severity.Info);
+                }
             }
+
+            Logger.LogInformation(
+                "Settings updated automated OneDrive backup enabled state to {AutomatedCloudBackupsEnabled}.",
+                _oneDriveCloudBackupEnabled);
         }
-        catch (Exception)
+        catch (Exception exception)
         {
+            Logger.LogError(
+                exception,
+                "Settings failed to update automated OneDrive backup enabled state to {AutomatedCloudBackupsEnabled}.",
+                isEnabled);
             _operationErrorMessage = OneDriveCloudAutomatedBackupUpdateFailedText;
             _oneDriveCloudBackupEnabled = _automatedBackupsSupported && AutomatedBackupConfigurationService.GetIsCloudEnabled();
         }

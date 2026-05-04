@@ -86,7 +86,9 @@ public sealed class ManualBackupStatusStoreTests
             .Setup(x => x.Remove(It.IsAny<string>(), null))
             .Callback<string, string?>((key, _) => storedPreferenceValues.Remove(key));
 
-        return new ManualBackupStatusStore(preferencesMock.Object);
+        var loggerMock = new Mock<ILogger<ManualBackupStatusStore>>();
+
+        return new ManualBackupStatusStore(preferencesMock.Object, loggerMock.Object);
     }
 
     #endregion
