@@ -118,11 +118,13 @@ public sealed class AutomatedBackupAlarmReceiver : BroadcastReceiver
         }
 
         logger.LogInformation(
-            "Nightly automated backup run completed. Local enabled: {LocalEnabled}. Local succeeded: {LocalSucceeded}. Cloud enabled: {CloudEnabled}. Cloud succeeded: {CloudSucceeded}. Next trigger scheduled for {NextRunLocal}.",
+            "Nightly automated backup run completed. Local enabled: {LocalEnabled}. Local succeeded: {LocalSucceeded}. Local saved path: {LocalSavedPath}. Cloud enabled: {CloudEnabled}. Cloud succeeded: {CloudSucceeded}. Cloud failure kind: {CloudFailureKind}. Next trigger scheduled for {NextRunLocal}.",
             runResult.LocalEnabled,
             runResult.LocalSucceeded,
+            runResult.LocalSavedLocation?.SavedFileDisplayPath,
             runResult.CloudEnabled,
             runResult.CloudSucceeded,
+            runResult.CloudFailureKind,
             nextRunLocal);
     }
 

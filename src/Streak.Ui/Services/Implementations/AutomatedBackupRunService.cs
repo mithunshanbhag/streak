@@ -20,6 +20,11 @@ public sealed class AutomatedBackupRunService(
         if (!localEnabled && !cloudEnabled)
             return new AutomatedBackupRunResult();
 
+        _logger.LogInformation(
+            "Nightly automated backup run starting. Local enabled: {LocalEnabled}. Cloud enabled: {CloudEnabled}.",
+            localEnabled,
+            cloudEnabled);
+
         SavedFileLocation? localSavedLocation = null;
         Exception? localFailure = null;
         Exception? cloudFailure = null;
@@ -38,7 +43,11 @@ public sealed class AutomatedBackupRunService(
             catch (Exception exception)
             {
                 localFailure = exception;
-                _logger.LogWarning(exception, "Nightly local automated backup failed.");
+                _logger.LogWarning(
+                    exception,
+                    "Nightly local automated backup failed. Failure type: {FailureType}. Message: {FailureMessage}.",
+                    exception.GetType().FullName,
+                    exception.Message);
             }
         }
 
@@ -58,17 +67,22 @@ public sealed class AutomatedBackupRunService(
                 cloudFailure = exception;
                 _logger.LogWarning(
                     exception,
-                    "Nightly automated OneDrive backup failed with failure kind {FailureKind}.",
-                    exception.FailureKind);
+                    "Nightly automated OneDrive backup failed with failure kind {FailureKind}. Message: {FailureMessage}.",
+                    exception.FailureKind,
+                    exception.Message);
             }
             catch (Exception exception)
             {
                 cloudFailure = exception;
-                _logger.LogError(exception, "Nightly automated OneDrive backup failed unexpectedly.");
+                _logger.LogError(
+                    exception,
+                    "Nightly automated OneDrive backup failed unexpectedly. Failure type: {FailureType}. Message: {FailureMessage}.",
+                    exception.GetType().FullName,
+                    exception.Message);
             }
         }
 
-        return new AutomatedBackupRunResult
+        var runResult = new AutomatedBackupRunResult
         {
             LocalEnabled = localEnabled,
             LocalSucceeded = localSavedLocation is not null,
@@ -81,5 +95,29 @@ public sealed class AutomatedBackupRunService(
                 : cloudFailure is null ? null : OneDriveBackupFailureKind.Unknown,
             CloudFailure = cloudFailure
         };
+
+        if (runResult.HasAnyFailure)
+        {
+            _logger.LogWarning(
+                "Nightly automated backup run finished with failures. Local enabled: {LocalEnabled}. Local succeeded: {LocalSucceeded}. Local saved path: {LocalSavedPath}. Cloud enabled: {CloudEnabled}. Cloud succeeded: {CloudSucceeded}. Cloud failure kind: {CloudFailureKind}.",
+                runResult.LocalEnabled,
+                runResult.LocalSucceeded,
+                runResult.LocalSavedLocation?.SavedFileDisplayPath,
+                runResult.CloudEnabled,
+                runResult.CloudSucceeded,
+                runResult.CloudFailureKind);
+        }
+        else
+        {
+            _logger.LogInformation(
+                "Nightly automated backup run finished successfully. Local enabled: {LocalEnabled}. Local succeeded: {LocalSucceeded}. Local saved path: {LocalSavedPath}. Cloud enabled: {CloudEnabled}. Cloud succeeded: {CloudSucceeded}.",
+                runResult.LocalEnabled,
+                runResult.LocalSucceeded,
+                runResult.LocalSavedLocation?.SavedFileDisplayPath,
+                runResult.CloudEnabled,
+                runResult.CloudSucceeded);
+        }
+
+        return runResult;
     }
 }

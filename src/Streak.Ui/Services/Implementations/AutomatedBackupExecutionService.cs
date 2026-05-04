@@ -24,9 +24,16 @@ public sealed class AutomatedBackupExecutionService(
                     backupArchive.UnavailableReferencedProofPaths);
             }
 
-            return await _automatedBackupFileSaver.SaveBackupAsync(
+            var savedFileLocation = await _automatedBackupFileSaver.SaveBackupAsync(
                 backupArchive.WorkingFilePath,
                 cancellationToken);
+
+            _logger.LogInformation(
+                "Automated backup saved to {SavedFileDisplayPath}. Parent folder: {ParentFolderDisplayPath}.",
+                savedFileLocation.SavedFileDisplayPath,
+                savedFileLocation.ParentFolderDisplayPath);
+
+            return savedFileLocation;
         }
         catch (Exception exception)
         {
