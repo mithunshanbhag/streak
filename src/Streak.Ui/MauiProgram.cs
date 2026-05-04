@@ -7,6 +7,7 @@ public static class MauiProgram
         StartupTiming.Mark("maui-program-create-maui-app-start");
 
         var builder = MauiApp.CreateBuilder()
+            .ConfigureConfiguration()
             .ConfigureApp()
             .ConfigureServices();
 

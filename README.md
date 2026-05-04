@@ -134,6 +134,11 @@ Restore everything:
 dotnet restore .\Streak.slnx
 ```
 
+Telemetry configuration:
+
+- `src\Streak.Ui\appsettings.json` is the source of truth for the Application Insights connection string used by the app.
+- MAUI loads that file from the packaged app assets during startup, so the same committed configuration flows into local runs and packaged builds.
+
 Build the repository:
 
 ```powershell

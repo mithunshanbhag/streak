@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Streak.Ui.Misc.ExtensionMethods;
@@ -6,6 +7,13 @@ public static class MauiAppBuilderExtensions
 {
     extension(MauiAppBuilder builder)
     {
+        public MauiAppBuilder ConfigureConfiguration()
+        {
+            ApplicationInsightsConfigurationUtility.AddAppSettings(builder.Configuration);
+
+            return builder;
+        }
+
         public MauiAppBuilder ConfigureApp()
         {
             builder
@@ -17,6 +25,12 @@ public static class MauiAppBuilderExtensions
 
         public MauiAppBuilder ConfigureServices()
         {
+#if DEBUG
+            ApplicationInsightsLoggingUtility.Configure(builder.Logging, builder.Configuration, isDebugBuild: true);
+#else
+            ApplicationInsightsLoggingUtility.Configure(builder.Logging, builder.Configuration, isDebugBuild: false);
+#endif
+
             // named http clients
 
             // mudblazor

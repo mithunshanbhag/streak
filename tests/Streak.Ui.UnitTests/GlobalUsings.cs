@@ -5,6 +5,7 @@ global using Microsoft.AspNetCore.Components.Web;
 global using Microsoft.Maui.ApplicationModel;
 global using Microsoft.Maui.ApplicationModel.DataTransfer;
 global using Microsoft.Maui.Storage;
+global using Microsoft.Extensions.Configuration;
 global using Microsoft.Data.Sqlite;
 global using Microsoft.Extensions.DependencyInjection;
 global using Microsoft.EntityFrameworkCore;

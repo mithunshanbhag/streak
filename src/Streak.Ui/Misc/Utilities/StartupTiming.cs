@@ -20,7 +20,7 @@ public static class StartupTiming
         }
     }
 
-    public static void LogSnapshot(ILogger logger, string checkpoint)
+    public static void LogSnapshot<T>(ILogger<T> logger, string checkpoint)
     {
         ArgumentNullException.ThrowIfNull(logger);
 
