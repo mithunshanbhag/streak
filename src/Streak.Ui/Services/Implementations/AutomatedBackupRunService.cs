@@ -65,6 +65,9 @@ public sealed class AutomatedBackupRunService(
             catch (OneDriveBackupException exception)
             {
                 cloudFailure = exception;
+                if (exception.FailureKind == OneDriveBackupFailureKind.AuthRequired)
+                    DisableAutomatedCloudBackupsAfterReconnectRequiredFailure();
+
                 _logger.LogWarning(
                     exception,
                     "Nightly automated OneDrive backup failed with failure kind {FailureKind}. Message: {FailureMessage}.",
@@ -120,4 +123,24 @@ public sealed class AutomatedBackupRunService(
 
         return runResult;
     }
+
+    #region Private Helper Methods
+
+    private void DisableAutomatedCloudBackupsAfterReconnectRequiredFailure()
+    {
+        try
+        {
+            _automatedBackupConfigurationService.SetIsCloudEnabled(false);
+            _logger.LogInformation(
+                "Disabled nightly automated OneDrive backups after a reconnect-required auth failure so the app does not repeat the same cloud backup failure until the user reconnects OneDrive.");
+        }
+        catch (Exception exception)
+        {
+            _logger.LogError(
+                exception,
+                "Unable to disable nightly automated OneDrive backups after a reconnect-required auth failure.");
+        }
+    }
+
+    #endregion
 }

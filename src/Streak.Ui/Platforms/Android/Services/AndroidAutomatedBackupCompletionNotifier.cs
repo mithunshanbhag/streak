@@ -59,6 +59,16 @@ public sealed class AndroidAutomatedBackupCompletionNotifier(
         AndroidBackupNotificationChannelRegistrar.EnsureCreated();
 
         var (title, body) = GetFailureNotificationText(runResult);
+        _logger.LogWarning(
+            "Posting automated backup failure notification. Local enabled: {LocalEnabled}. Local succeeded: {LocalSucceeded}. Cloud enabled: {CloudEnabled}. Cloud succeeded: {CloudSucceeded}. Cloud failure kind: {CloudFailureKind}. Notification title: {NotificationTitle}. Notification body: {NotificationBody}.",
+            runResult.LocalEnabled,
+            runResult.LocalSucceeded,
+            runResult.CloudEnabled,
+            runResult.CloudSucceeded,
+            runResult.CloudFailureKind,
+            title,
+            body);
+
         var context = GetApplicationContext();
         var notificationBuilder = new NotificationCompat.Builder(context, BackupNotificationConstants.AndroidChannelId);
         var bigTextStyle = new NotificationCompat.BigTextStyle();

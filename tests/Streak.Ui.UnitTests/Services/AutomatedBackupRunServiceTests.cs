@@ -107,6 +107,29 @@ public sealed class AutomatedBackupRunServiceTests
         result.CloudFailureKind.Should().Be(OneDriveBackupFailureKind.NetworkUnavailable);
         result.HasAnySuccess.Should().BeTrue();
         result.HasAnyFailure.Should().BeTrue();
+        configurationServiceMock.Verify(x => x.SetIsCloudEnabled(It.IsAny<bool>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task ExecuteEnabledBackupsAsync_ShouldDisableCloudBackup_WhenCloudBackupRequiresReconnect()
+    {
+        var configurationServiceMock = CreateConfigurationServiceMock(isEnabled: false, isCloudEnabled: true);
+        var localExecutionServiceMock = new Mock<IAutomatedBackupExecutionService>();
+        var cloudBackupServiceMock = new Mock<IAutomatedCloudBackupService>();
+        cloudBackupServiceMock
+            .Setup(x => x.UploadAutomatedBackupAsync(It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new OneDriveBackupException(
+                OneDriveBackupFailureKind.AuthRequired,
+                "OneDrive needs you to reconnect before backing up again."));
+
+        var sut = CreateSut(configurationServiceMock.Object, localExecutionServiceMock.Object, cloudBackupServiceMock.Object);
+
+        var result = await sut.ExecuteEnabledBackupsAsync();
+
+        result.CloudEnabled.Should().BeTrue();
+        result.CloudSucceeded.Should().BeFalse();
+        result.CloudFailureKind.Should().Be(OneDriveBackupFailureKind.AuthRequired);
+        configurationServiceMock.Verify(x => x.SetIsCloudEnabled(false), Times.Once);
     }
 
     #endregion
@@ -138,6 +161,7 @@ public sealed class AutomatedBackupRunServiceTests
         result.CloudFailureKind.Should().Be(OneDriveBackupFailureKind.NetworkUnavailable);
         result.HasAnySuccess.Should().BeFalse();
         result.HasAnyFailure.Should().BeTrue();
+        configurationServiceMock.Verify(x => x.SetIsCloudEnabled(It.IsAny<bool>()), Times.Never);
     }
 
     [Fact]
@@ -169,6 +193,7 @@ public sealed class AutomatedBackupRunServiceTests
         result.CloudFailureKind.Should().Be(OneDriveBackupFailureKind.NetworkUnavailable);
         result.HasAnySuccess.Should().BeFalse();
         result.HasAnyFailure.Should().BeTrue();
+        configurationServiceMock.Verify(x => x.SetIsCloudEnabled(It.IsAny<bool>()), Times.Never);
     }
 
     [Fact]
