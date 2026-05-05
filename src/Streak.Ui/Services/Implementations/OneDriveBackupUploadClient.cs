@@ -10,6 +10,7 @@ namespace Streak.Ui.Services.Implementations;
 public sealed class OneDriveBackupUploadClient(
     HttpClient httpClient,
     IOneDriveAuthService oneDriveAuthService,
+    IConnectivity connectivity,
     ILogger<OneDriveBackupUploadClient> logger)
     : IOneDriveBackupUploadClient
 {
@@ -17,6 +18,7 @@ public sealed class OneDriveBackupUploadClient(
 
     private readonly HttpClient _httpClient = httpClient;
     private readonly IOneDriveAuthService _oneDriveAuthService = oneDriveAuthService;
+    private readonly IConnectivity _connectivity = connectivity;
     private readonly ILogger<OneDriveBackupUploadClient> _logger = logger;
 
     public async Task UploadManualBackupAsync(
@@ -63,29 +65,44 @@ public sealed class OneDriveBackupUploadClient(
 
         var fileInfo = new FileInfo(localFilePath);
         _logger.LogInformation(
-            "{BackupKind} OneDrive backup upload starting. File name: {FileName}. File size bytes: {FileSizeBytes}. Target folder: {TargetFolder}.",
+            "{BackupKind} OneDrive backup upload starting. File name: {FileName}. File size bytes: {FileSizeBytes}. Target folder: {TargetFolder}. Network access: {NetworkAccess}. Connection profiles: {ConnectionProfiles}.",
             backupKindLabel,
             destinationFileName,
             fileInfo.Length,
-            OneDriveAuthConstants.StorageLocationDisplayName);
+            OneDriveAuthConstants.StorageLocationDisplayName,
+            _connectivity.NetworkAccess,
+            GetConnectionProfilesDisplay());
 
+        var uploadStage = "AccessTokenAcquisition";
         try
         {
+            _logger.LogInformation(
+                "{BackupKind} OneDrive access token acquisition starting. File name: {FileName}.",
+                backupKindLabel,
+                destinationFileName);
             var accessToken = await _oneDriveAuthService.GetAccessTokenAsync(cancellationToken);
+            _logger.LogInformation(
+                "{BackupKind} OneDrive access token acquisition completed. File name: {FileName}.",
+                backupKindLabel,
+                destinationFileName);
 
+            uploadStage = "EnsureAppFolderAccessible";
             await EnsureAppFolderAccessibleAsync(accessToken, cancellationToken);
+            uploadStage = "EnsureOneDriveBackupsFolder";
             await EnsureFolderExistsAsync(
                 accessToken,
                 parentPath: null,
                 folderName: StreakExportStorageConstants.BackupsDirectoryName,
                 operationName: "EnsureOneDriveBackupsFolder",
                 cancellationToken);
+            uploadStage = ensureFolderOperationName;
             await EnsureFolderExistsAsync(
                 accessToken,
                 parentPath: StreakExportStorageConstants.BackupsDirectoryName,
                 folderName: targetDirectoryName,
                 operationName: ensureFolderOperationName,
                 cancellationToken);
+            uploadStage = uploadOperationName;
             await UploadFileAsync(
                 accessToken,
                 localFilePath,
@@ -107,6 +124,12 @@ public sealed class OneDriveBackupUploadClient(
         }
         catch (OneDriveAuthenticationRequiredException exception)
         {
+            _logger.LogInformation(
+                exception,
+                "{BackupKind} OneDrive backup requires reconnect during {UploadStage}. File name: {FileName}.",
+                backupKindLabel,
+                uploadStage,
+                destinationFileName);
             throw new OneDriveBackupException(
                 OneDriveBackupFailureKind.AuthRequired,
                 "OneDrive needs you to reconnect before backing up again.",
@@ -114,6 +137,15 @@ public sealed class OneDriveBackupUploadClient(
         }
         catch (HttpRequestException exception)
         {
+            _logger.LogWarning(
+                exception,
+                "{BackupKind} OneDrive backup network failure during {UploadStage}. File name: {FileName}. Network access: {NetworkAccess}. Connection profiles: {ConnectionProfiles}. Failure message: {FailureMessage}.",
+                backupKindLabel,
+                uploadStage,
+                destinationFileName,
+                _connectivity.NetworkAccess,
+                GetConnectionProfilesDisplay(),
+                exception.Message);
             throw new OneDriveBackupException(
                 OneDriveBackupFailureKind.NetworkUnavailable,
                 "Unable to reach OneDrive right now.",
@@ -121,6 +153,14 @@ public sealed class OneDriveBackupUploadClient(
         }
         catch (TaskCanceledException exception) when (!cancellationToken.IsCancellationRequested)
         {
+            _logger.LogWarning(
+                exception,
+                "{BackupKind} OneDrive backup timed out during {UploadStage}. File name: {FileName}. Network access: {NetworkAccess}. Connection profiles: {ConnectionProfiles}.",
+                backupKindLabel,
+                uploadStage,
+                destinationFileName,
+                _connectivity.NetworkAccess,
+                GetConnectionProfilesDisplay());
             throw new OneDriveBackupException(
                 OneDriveBackupFailureKind.NetworkUnavailable,
                 "The OneDrive upload timed out before it completed.",
@@ -358,6 +398,18 @@ public sealed class OneDriveBackupUploadClient(
         return response.Headers.TryGetValues(headerName, out var values)
             ? values.FirstOrDefault()
             : null;
+    }
+
+    private string GetConnectionProfilesDisplay()
+    {
+        var connectionProfiles = _connectivity.ConnectionProfiles
+            .Select(profile => profile.ToString())
+            .OrderBy(profile => profile, StringComparer.Ordinal)
+            .ToArray();
+
+        return connectionProfiles.Length == 0
+            ? "(none)"
+            : string.Join(", ", connectionProfiles);
     }
 
     private sealed class CreateFolderRequest

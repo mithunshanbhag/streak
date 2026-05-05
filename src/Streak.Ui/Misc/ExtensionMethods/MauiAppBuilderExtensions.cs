@@ -57,6 +57,7 @@ public static class MauiAppBuilderExtensions
             // services
             builder.Services.AddSingleton(TimeProvider.System);
             builder.Services.AddSingleton<IAppInfo>(_ => AppInfo.Current);
+            builder.Services.AddSingleton<IConnectivity>(_ => Connectivity.Current);
             builder.Services.AddSingleton<IPreferences>(_ => Preferences.Default);
             builder.Services.AddSingleton<IAppVersionInfoService, AppVersionInfoService>();
             builder.Services.AddSingleton<IOneDriveAuthConfigurationProvider, OneDriveAuthConfigurationProvider>();

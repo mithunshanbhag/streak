@@ -4,6 +4,7 @@ global using Microsoft.AspNetCore.Components.Authorization;
 global using Microsoft.AspNetCore.Components.Web;
 global using Microsoft.Maui.ApplicationModel;
 global using Microsoft.Maui.ApplicationModel.DataTransfer;
+global using Microsoft.Maui.Networking;
 global using Microsoft.Maui.Storage;
 global using Microsoft.Extensions.Configuration;
 global using Microsoft.Data.Sqlite;

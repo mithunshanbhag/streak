@@ -31,6 +31,7 @@ public sealed class AndroidOneDriveBackupUploadClientTests
         var sut = new OneDriveBackupUploadClient(
             httpClient,
             authServiceMock.Object,
+            CreateConnectivityMock().Object,
             new Mock<ILogger<OneDriveBackupUploadClient>>().Object);
 
         await sut.UploadManualBackupAsync(archivePath, Path.GetFileName(archivePath));
@@ -73,6 +74,7 @@ public sealed class AndroidOneDriveBackupUploadClientTests
         var sut = new OneDriveBackupUploadClient(
             httpClient,
             authServiceMock.Object,
+            CreateConnectivityMock().Object,
             new Mock<ILogger<OneDriveBackupUploadClient>>().Object);
 
         await sut.UploadAutomatedBackupAsync(archivePath, Path.GetFileName(archivePath));
@@ -118,6 +120,7 @@ public sealed class AndroidOneDriveBackupUploadClientTests
         var sut = new OneDriveBackupUploadClient(
             httpClient,
             CreateOneDriveAuthServiceMock("test-access-token").Object,
+            CreateConnectivityMock().Object,
             new Mock<ILogger<OneDriveBackupUploadClient>>().Object);
 
         Func<Task> act = () => sut.UploadManualBackupAsync(archivePath, Path.GetFileName(archivePath));
@@ -145,6 +148,7 @@ public sealed class AndroidOneDriveBackupUploadClientTests
         var sut = new OneDriveBackupUploadClient(
             httpClient,
             CreateOneDriveAuthServiceMock("test-access-token").Object,
+            CreateConnectivityMock().Object,
             new Mock<ILogger<OneDriveBackupUploadClient>>().Object);
 
         Func<Task> act = () => sut.UploadManualBackupAsync(archivePath, Path.GetFileName(archivePath));
@@ -175,6 +179,7 @@ public sealed class AndroidOneDriveBackupUploadClientTests
         var sut = new OneDriveBackupUploadClient(
             httpClient,
             authServiceMock.Object,
+            CreateConnectivityMock().Object,
             new Mock<ILogger<OneDriveBackupUploadClient>>().Object);
 
         Func<Task> act = () => sut.UploadManualBackupAsync(archivePath, Path.GetFileName(archivePath));
@@ -204,12 +209,46 @@ public sealed class AndroidOneDriveBackupUploadClientTests
         var sut = new OneDriveBackupUploadClient(
             httpClient,
             CreateOneDriveAuthServiceMock("test-access-token").Object,
+            CreateConnectivityMock().Object,
             new Mock<ILogger<OneDriveBackupUploadClient>>().Object);
 
         Func<Task> act = () => sut.UploadManualBackupAsync(archivePath, Path.GetFileName(archivePath));
 
         await act.Should().ThrowAsync<OneDriveBackupException>()
             .Where(exception => exception.FailureKind == OneDriveBackupFailureKind.NetworkUnavailable);
+    }
+
+    [Fact]
+    public async Task UploadManualBackupAsync_ShouldThrowNetworkUnavailable_WhenAccessTokenAcquisitionFailsWithHttpRequestException()
+    {
+        using var temporaryDirectory = new TemporaryDirectory();
+
+        var archivePath = Path.Combine(temporaryDirectory.Path, "streak-data-backup-20260426-040550.zip");
+        await File.WriteAllTextAsync(archivePath, "backup");
+
+        var handler = new SequenceHttpMessageHandler([]);
+        using var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://graph.microsoft.com/v1.0/")
+        };
+
+        var authServiceMock = new Mock<IOneDriveAuthService>();
+        authServiceMock
+            .Setup(x => x.GetAccessTokenAsync(It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new HttpRequestException("DNS lookup failed."));
+
+        var sut = new OneDriveBackupUploadClient(
+            httpClient,
+            authServiceMock.Object,
+            CreateConnectivityMock(Microsoft.Maui.Networking.NetworkAccess.None).Object,
+            new Mock<ILogger<OneDriveBackupUploadClient>>().Object);
+
+        Func<Task> act = () => sut.UploadManualBackupAsync(archivePath, Path.GetFileName(archivePath));
+
+        await act.Should().ThrowAsync<OneDriveBackupException>()
+            .Where(exception => exception.FailureKind == OneDriveBackupFailureKind.NetworkUnavailable);
+
+        handler.Requests.Should().BeEmpty();
     }
 
     #endregion
@@ -223,6 +262,18 @@ public sealed class AndroidOneDriveBackupUploadClientTests
             .Setup(x => x.GetAccessTokenAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(accessToken ?? string.Empty);
         return authServiceMock;
+    }
+
+    private static Mock<IConnectivity> CreateConnectivityMock(
+        Microsoft.Maui.Networking.NetworkAccess networkAccess = Microsoft.Maui.Networking.NetworkAccess.Internet,
+        params ConnectionProfile[] connectionProfiles)
+    {
+        var connectivityMock = new Mock<IConnectivity>();
+        connectivityMock.SetupGet(x => x.NetworkAccess).Returns(networkAccess);
+        connectivityMock
+            .SetupGet(x => x.ConnectionProfiles)
+            .Returns(connectionProfiles);
+        return connectivityMock;
     }
 
     private static HttpResponseMessage CreateJsonResponse(HttpStatusCode statusCode, string json)

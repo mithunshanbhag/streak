@@ -11,6 +11,8 @@ public static class AutomatedBackupConstants
     public const int AlarmRequestCode = 1130;
 
     public const string AlarmAction = "com.companyname.streak.ui.action.AUTOMATED_BACKUP_TRIGGER";
+    public const string ReceiverExecutionMode = "receiver";
+    public const string ForegroundServiceExecutionMode = "foreground-service";
 
     public const string SettingsTableName = "AutomatedBackupSettings";
 

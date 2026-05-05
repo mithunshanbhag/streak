@@ -46,6 +46,12 @@ public sealed class AutomatedBackupAlarmReceiver : BroadcastReceiver
                 "Nightly automated backup foreground service start request failed. Falling back to receiver execution. Intent action: {IntentAction}. Launch mode: {LaunchMode}.",
                 intentAction,
                 launchMode);
+            logger?.LogWarning(
+                "Nightly automated backup foreground service start was denied. Failure type: {FailureType}. Failure message: {FailureMessage}. Intent action: {IntentAction}. Launch mode: {LaunchMode}. Receiver fallback will continue without foreground-service protections.",
+                exception.GetType().FullName,
+                exception.Message,
+                intentAction,
+                launchMode);
 
             StartReceiverFallbackExecution(context, intentAction);
         }
@@ -87,7 +93,10 @@ public sealed class AutomatedBackupAlarmReceiver : BroadcastReceiver
         });
     }
 
-    internal static async Task HandleReceiveAsync(Context context, CancellationToken cancellationToken = default)
+    internal static async Task HandleReceiveAsync(
+        Context context,
+        CancellationToken cancellationToken = default,
+        string executionMode = AutomatedBackupConstants.ReceiverExecutionMode)
     {
         var services = AndroidServiceProviderAccessor.GetRequiredServiceProvider();
         var automatedBackupConfigurationService = services.GetRequiredService<IAutomatedBackupConfigurationService>();
@@ -102,7 +111,8 @@ public sealed class AutomatedBackupAlarmReceiver : BroadcastReceiver
         if (nextRunUtc is null)
         {
             logger.LogInformation(
-                "Nightly automated backup trigger fired, but automated backups are disabled. Future triggers were cancelled.");
+                "Nightly automated backup trigger fired via {ExecutionMode}, but automated backups are disabled. Future triggers were cancelled.",
+                executionMode);
             return;
         }
 
@@ -118,7 +128,8 @@ public sealed class AutomatedBackupAlarmReceiver : BroadcastReceiver
         }
 
         logger.LogInformation(
-            "Nightly automated backup run completed. Local enabled: {LocalEnabled}. Local succeeded: {LocalSucceeded}. Local saved path: {LocalSavedPath}. Cloud enabled: {CloudEnabled}. Cloud succeeded: {CloudSucceeded}. Cloud failure kind: {CloudFailureKind}. Next trigger scheduled for {NextRunLocal}.",
+            "Nightly automated backup run completed via {ExecutionMode}. Local enabled: {LocalEnabled}. Local succeeded: {LocalSucceeded}. Local saved path: {LocalSavedPath}. Cloud enabled: {CloudEnabled}. Cloud succeeded: {CloudSucceeded}. Cloud failure kind: {CloudFailureKind}. Next trigger scheduled for {NextRunLocal}.",
+            executionMode,
             runResult.LocalEnabled,
             runResult.LocalSucceeded,
             runResult.LocalSavedLocation?.SavedFileDisplayPath,

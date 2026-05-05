@@ -14,6 +14,7 @@ global using Microsoft.EntityFrameworkCore;
 global using Microsoft.Extensions.Logging;
 global using Microsoft.Maui.ApplicationModel;
 global using Microsoft.Maui.ApplicationModel.DataTransfer;
+global using Microsoft.Maui.Networking;
 global using Microsoft.Maui.Storage;
 global using MudBlazor;
 global using MudBlazor.Services;

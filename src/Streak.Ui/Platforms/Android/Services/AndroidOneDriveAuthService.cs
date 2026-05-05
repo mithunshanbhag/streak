@@ -203,6 +203,11 @@ public sealed class AndroidOneDriveAuthService(
                 throw new OneDriveAuthenticationRequiredException("OneDrive needs you to reconnect before backing up again.");
             }
 
+            _logger.LogInformation(
+                "OneDrive silent token acquisition starting. Scope count: {ScopeCount}. Signed-in account present: {SignedInAccountPresent}.",
+                configuration.Scopes.Count,
+                true);
+
             var authenticationResult = await publicClientApplication
                 .AcquireTokenSilent(configuration.Scopes, account)
                 .ExecuteAsync(cancellationToken);
@@ -229,6 +234,16 @@ public sealed class AndroidOneDriveAuthService(
                 "OneDrive silent token acquisition failed after {ElapsedMilliseconds} ms. MSAL error code: {MsalErrorCode}.",
                 stopwatch.ElapsedMilliseconds,
                 exception.ErrorCode);
+            throw;
+        }
+        catch (Exception exception)
+        {
+            _logger.LogWarning(
+                exception,
+                "OneDrive silent token acquisition failed unexpectedly after {ElapsedMilliseconds} ms. Exception type: {ExceptionType}. Message: {ExceptionMessage}.",
+                stopwatch.ElapsedMilliseconds,
+                exception.GetType().FullName,
+                exception.Message);
             throw;
         }
     }

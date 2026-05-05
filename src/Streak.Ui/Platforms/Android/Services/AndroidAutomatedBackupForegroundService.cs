@@ -55,7 +55,8 @@ public sealed class AndroidAutomatedBackupForegroundService : Service
                 {
                     await AutomatedBackupAlarmReceiver.HandleReceiveAsync(
                         Application.Context,
-                        runCancellationTokenSource.Token);
+                        runCancellationTokenSource.Token,
+                        AutomatedBackupConstants.ForegroundServiceExecutionMode);
 
                     backgroundLogger?.LogInformation(
                         "Nightly automated backup foreground service backup pipeline completed. StartId: {StartId}.",
