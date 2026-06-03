@@ -1,7 +1,7 @@
 name: streak-deploy
 
 concurrency:
-  group: 'comicskew-deploy'
+  group: 'streak-deploy'
   cancel-in-progress: false
   queue: max
 
