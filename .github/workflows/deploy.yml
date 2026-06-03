@@ -25,5 +25,5 @@ jobs:
     uses: ./.github/workflows/deploy-template.yml
     secrets: inherit
     with:
-      environmentName: ${{ github.event_name == 'push' && 'test' || inputs.environmentName }}
-      runProvisioning: ${{ github.event_name == 'push' && false || inputs.runProvisioning }}
+      environmentName: ${{ inputs.environmentName || 'test' }}
+      runProvisioning: ${{ inputs.runProvisioning || false }}
