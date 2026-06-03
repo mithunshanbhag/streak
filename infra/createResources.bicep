@@ -7,7 +7,7 @@ targetScope = 'resourceGroup'
 @allowed([
   'test'
 ])
-@description('A unique environment name (max 6 characters, alphanumeric only).')
+@description('Environment for deployment')
 param envName string
 
 @description('Commit SHA that triggered this deployment.')
@@ -26,30 +26,14 @@ param prefix string = 'streak'
 // variables
 ////////////////////////////////////////////////////////////////////////////////
 
-var minTlsVersionForApps = '1.2'
-var minTlsVersionForStorage = 'TLS1_2'
-
 var suffix = toLower(envName)
-
-// key vault
-var keyVaultName = '${prefix}-kv-${suffix}'
-var cosmosDbConnectionStringSecretName = 'CosmosDbConnectionString'
-var cosmosDbNameSecretName = 'CosmosDbName'
-var functionAppHostKeySecretName = 'FunctionAppHostKey'
-var functionAppUrlSecretName = 'FunctionAppUrl'
-
-// cosmos db
-var cosmosAccountName = '${prefix}-cosmos-${suffix}'
-var cosmosDbName = '${prefix}-db'
 
 // log analytics & app insights
 var logAnalyticsWSName = '${prefix}-law-${suffix}'
 var appInsightsName = '${prefix}-ai-${suffix}'
 
-// function app
-var functionAppName = '${prefix}-api-${suffix}'
-var functionAppStorageAccountName = '${prefix}${suffix}'
-var functionAppServicePlanName = '${prefix}-appsvcplan-${suffix}'
+// query packs
+var incidentManagementQueryPackName = '${prefix}-incident-management-${suffix}'
 
 // tags
 var resourceTags = {
@@ -64,198 +48,10 @@ var resourceTags = {
 ////////////////////////////////////////////////////////////////////////////////
 
 //
-// key vault
-//
-
-resource resKeyVault 'Microsoft.KeyVault/vaults@2022-07-01' = {
-  name: keyVaultName
-  location: resourceLocation
-  tags: resourceTags
-  properties: {
-    sku: {
-      family: 'A'
-      name: 'standard'
-    }
-    accessPolicies: [
-      {
-        tenantId: subscription().tenantId
-        objectId: resFunctionApp.identity.principalId
-        permissions: {
-          secrets: [
-            'get'
-            'list'
-          ]
-        }
-      }
-    ]
-    tenantId: subscription().tenantId
-    softDeleteRetentionInDays: 7
-  }
-
-  resource resFunctionAppUrlSecret 'secrets' = {
-    name: functionAppUrlSecretName
-    tags: resourceTags
-    properties: {
-      value: 'https://${resFunctionApp.properties.defaultHostName}/api'
-    }
-  }
-
-  resource resFunctionAppHostKeySecret 'secrets' = {
-    name: functionAppHostKeySecretName
-    tags: resourceTags
-    properties: {
-      // See: https://stackoverflow.com/a/79467680
-      // See: https://github.com/Azure/azure-quickstart-templates/blob/76cd6e062a55d3db8fb854e04812de9711fc6a82/quickstarts/microsoft.web/function-http-trigger/main.bicep#L160
-      value: listKeys('${resFunctionApp.id}/host/default', resFunctionApp.apiVersion).functionKeys.default
-    }
-  }
-
-  resource resKeyVaultCosmosDbConnectionSecret 'secrets' = {
-    name: cosmosDbConnectionStringSecretName
-    tags: resourceTags
-    properties: {
-      value: resCosmosAccount.listConnectionStrings().connectionStrings[0].connectionString
-    }
-  }
-
-  resource resKeyVaultCosmosDbNameSecret 'secrets' = {
-    name: cosmosDbNameSecretName
-    tags: resourceTags
-    properties: {
-      value: cosmosDbName
-    }
-  }
-}
-
-//
-// Cosmos DB (for Cloud API, Metrics API)
-//
-
-resource resCosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2023-04-15' = {
-  name: cosmosAccountName
-  location: resourceLocation
-  tags: resourceTags
-  properties: {
-    enableFreeTier: true
-    databaseAccountOfferType: 'Standard'
-    locations: [
-      {
-        locationName: resourceLocation
-      }
-    ]
-    capabilities: [
-      {
-        name: 'EnableServerless'
-      }
-    ]
-  }
-
-  resource resCosmosDb 'sqlDatabases@2023-04-15' = {
-    tags: resourceTags
-    location: resourceLocation
-    name: cosmosDbName
-    properties: {
-      resource: {
-        id: cosmosDbName
-      }
-    }
-  }
-}
-
-//
-// function app
-//
-
-// storage account
-resource resFunctionAppStorageAccount 'Microsoft.Storage/storageAccounts@2024-01-01' = {
-  name: functionAppStorageAccountName
-  location: resourceLocation
-  tags: resourceTags
-  kind: 'StorageV2'
-  sku: {
-    name: 'Standard_LRS'
-  }
-  properties: {
-    allowBlobPublicAccess: false
-    minimumTlsVersion: minTlsVersionForStorage
-  }
-}
-
-// app service plan (consumption plan)
-resource resFunctionAppServicePlan 'Microsoft.Web/serverfarms@2021-03-01' = {
-  name: functionAppServicePlanName
-  location: resourceLocation
-  tags: resourceTags
-  kind: 'linux'
-  properties: {
-    reserved: true
-  }
-  sku: {
-    name: 'Y1'
-    tier: 'Dynamic'
-  }
-}
-
-// function app
-resource resFunctionApp 'Microsoft.Web/sites@2024-11-01' = {
-  name: functionAppName
-  location: resourceLocation
-  tags: resourceTags
-  kind: 'functionapp'
-  identity: {
-    type: 'SystemAssigned'
-  }
-  properties: {
-    httpsOnly: true
-    serverFarmId: resFunctionAppServicePlan.id
-    siteConfig: {
-      minTlsVersion: minTlsVersionForApps
-      linuxFxVersion: 'DOTNET-ISOLATED|9.0'
-      functionAppScaleLimit: 1
-      appSettings: [
-        // app settings required by Azure functions
-        {
-          name: 'FUNCTIONS_WORKER_RUNTIME'
-          value: 'dotnet-isolated'
-        }
-        {
-          name: 'FUNCTIONS_EXTENSION_VERSION'
-          value: '~4'
-        }
-        {
-          name: 'AzureWebJobsStorage'
-          value: 'DefaultEndpointsProtocol=https;AccountName=${resFunctionAppStorageAccount.name};EndpointSuffix=${environment().suffixes.storage};AccountKey=${resFunctionAppStorageAccount.listKeys().keys[0].value}'
-          // Commented out below lines because KV references don't work well with the "Azure/functions-action" github action. 
-          // More details: https://github.com/Azure/functions-action/discussions/140
-          // value: '@Microsoft.KeyVault(VaultName=${keyVaultName};SecretName=${e2eTesterApiStorageAccountConnectionStringSecretName})'
-        }
-        {
-          name: 'APPINSIGHTS_INSTRUMENTATIONKEY'
-          value: resAppInsights.properties.InstrumentationKey
-        }
-        {
-          name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
-          value: resAppInsights.properties.ConnectionString
-        }
-        // key vault references to cosmos db secrets
-        {
-          name: cosmosDbConnectionStringSecretName
-          value: '@Microsoft.KeyVault(VaultName=${keyVaultName};SecretName=${cosmosDbConnectionStringSecretName})'
-        }
-        {
-          name: cosmosDbNameSecretName
-          value: '@Microsoft.KeyVault(VaultName=${keyVaultName};SecretName=${cosmosDbNameSecretName})'
-        }
-      ]
-    }
-  }
-}
-
-
-//
 // log analytics & app insights
 //
 
+// log analytics workspace
 resource resLogAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2022-10-01' = {
   name: logAnalyticsWSName
   location: resourceLocation
@@ -282,5 +78,197 @@ resource resAppInsights 'Microsoft.Insights/components@2020-02-02' = {
   properties: {
     Application_Type: 'web'
     WorkspaceResourceId: resLogAnalyticsWorkspace.id
+  }
+}
+
+// query pack for incident management KQL queries
+resource resIncidentManagementQueryPack 'Microsoft.OperationalInsights/querypacks@2019-09-01' = {
+  name: incidentManagementQueryPackName
+  location: resourceLocation
+  tags: resourceTags
+  properties: {}
+
+  // exceptions in last 24 hours
+  resource resQueryExceptionsLast24Hours 'queries@2019-09-01' = {
+    name: 'a1b2c3d4-e5f6-4789-abcd-123456789abc'
+    properties: {
+      displayName: 'Exceptions in Last 24 Hours'
+      description: 'Lists all exceptions with timestamp ordering in the last 24 hours'
+      body: 'exceptions\n| where timestamp > ago(24h)\n| order by timestamp desc'
+      related: {
+        categories: [
+          'applications'
+        ]
+        resourceTypes: [
+          'microsoft.insights/components'
+        ]
+      }
+      tags: {
+        labels: [
+          'incident-management'
+        ]
+      }
+    }
+  }
+
+  // failed requests in last 24 hours
+  resource resQueryFailedRequestsLast24Hours 'queries@2019-09-01' = {
+    name: 'b2c3d4e5-f6a7-4890-bcde-234567890bcd'
+    properties: {
+      displayName: 'Failed Requests in Last 24 Hours'
+      description: 'Shows failed HTTP requests (success == false) in the last 24 hours'
+      body: 'requests\n| where timestamp > ago(24h) and success == false\n| order by timestamp desc'
+      related: {
+        categories: [
+          'applications'
+        ]
+        resourceTypes: [
+          'microsoft.insights/components'
+        ]
+      }
+      tags: {
+        labels: [
+          'incident-management'
+        ]
+      }
+    }
+  }
+
+  // errors in last 24 hours
+  resource resQueryErrorsLast24Hours 'queries@2019-09-01' = {
+    name: 'c3d4e5f6-a7b8-4901-cdef-345678901cde'
+    properties: {
+      displayName: 'Errors in Last 24 Hours'
+      description: 'Displays traces with severity level 3 (errors) in the last 24 hours'
+      body: 'traces\n| where timestamp > ago(24h) and severityLevel == 3\n| order by timestamp desc'
+      related: {
+        categories: [
+          'applications'
+        ]
+        resourceTypes: [
+          'microsoft.insights/components'
+        ]
+      }
+      tags: {
+        labels: [
+          'incident-management'
+        ]
+      }
+    }
+  }
+
+  // warnings in last 24 hours
+  resource resQueryWarningsLast24Hours 'queries@2019-09-01' = {
+    name: 'd4e5f6a7-b8c9-4012-defa-456789012def'
+    properties: {
+      displayName: 'Warnings in Last 24 Hours'
+      description: 'Shows traces with severity level 2 (warnings) in the last 24 hours'
+      body: 'traces\n| where timestamp > ago(24h) and severityLevel == 2\n| order by timestamp desc'
+      related: {
+        categories: [
+          'applications'
+        ]
+        resourceTypes: [
+          'microsoft.insights/components'
+        ]
+      }
+      tags: {
+        labels: [
+          'incident-management'
+        ]
+      }
+    }
+  }
+
+  // failed requests count by cloud role
+  resource resQueryFailedRequestsByRole 'queries@2019-09-01' = {
+    name: 'e5f6a7b8-c9da-4123-efab-567890123efa'
+    properties: {
+      displayName: 'Failed Requests Count by Cloud Role'
+      description: 'Summarizes failed request counts grouped by cloud_RoleName in the last 24 hours'
+      body: 'requests\n| where timestamp > ago(24h) and success == false\n| summarize Count = count() by cloud_RoleName\n| order by Count desc'
+      related: {
+        categories: [
+          'applications'
+        ]
+        resourceTypes: [
+          'microsoft.insights/components'
+        ]
+      }
+      tags: {
+        labels: [
+          'incident-management'
+        ]
+      }
+    }
+  }
+
+  // exceptions count by cloud role
+  resource resQueryExceptionsByRole 'queries@2019-09-01' = {
+    name: 'f6a7b8c9-daeb-4234-fabc-678901234fab'
+    properties: {
+      displayName: 'Exceptions Count by Cloud Role'
+      description: 'Aggregates exception counts by service role in the last 24 hours'
+      body: 'exceptions\n| where timestamp > ago(24h)\n| summarize Count = count() by cloud_RoleName\n| order by Count desc'
+      related: {
+        categories: [
+          'applications'
+        ]
+        resourceTypes: [
+          'microsoft.insights/components'
+        ]
+      }
+      tags: {
+        labels: [
+          'incident-management'
+        ]
+      }
+    }
+  }
+
+  // errors count by cloud role
+  resource resQueryErrorsByRole 'queries@2019-09-01' = {
+    name: 'a7b8c9da-ebfc-4345-abcd-789012345abc'
+    properties: {
+      displayName: 'Errors Count by Cloud Role'
+      description: 'Groups error traces by cloud role name in the last 24 hours'
+      body: 'traces\n| where timestamp > ago(24h) and severityLevel == 3\n| summarize Count = count() by cloud_RoleName\n| order by Count desc'
+      related: {
+        categories: [
+          'applications'
+        ]
+        resourceTypes: [
+          'microsoft.insights/components'
+        ]
+      }
+      tags: {
+        labels: [
+          'incident-management'
+        ]
+      }
+    }
+  }
+
+  // warnings count by cloud role
+  resource resQueryWarningsByRole 'queries@2019-09-01' = {
+    name: 'b8c9daeb-fcad-4456-bcde-890123456bcd'
+    properties: {
+      displayName: 'Warnings Count by Cloud Role'
+      description: 'Summarizes warning counts per service role in the last 24 hours'
+      body: 'traces\n| where timestamp > ago(24h) and severityLevel == 2\n| summarize Count = count() by cloud_RoleName\n| order by Count desc'
+      related: {
+        categories: [
+          'applications'
+        ]
+        resourceTypes: [
+          'microsoft.insights/components'
+        ]
+      }
+      tags: {
+        labels: [
+          'incident-management'
+        ]
+      }
+    }
   }
 }
