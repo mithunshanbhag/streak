@@ -18,6 +18,7 @@ on:
       runProvisioning:
         type: boolean
         default: false
+        required: true
         description: Run bicep template provisioning?
 
 jobs:
@@ -26,4 +27,4 @@ jobs:
     secrets: inherit
     with:
       environmentName: ${{ inputs.environmentName || 'test' }}
-      runProvisioning: ${{ inputs.runProvisioning || false }}
+      runProvisioning: ${{ inputs.runProvisioning || true }}
