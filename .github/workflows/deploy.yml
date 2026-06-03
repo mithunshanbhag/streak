@@ -1,5 +1,10 @@
 name: streak-deploy
 
+concurrency:
+  group: 'comicskew-deploy'
+  cancel-in-progress: false
+  queue: max
+
 on:
   push:
     branches:
