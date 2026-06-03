@@ -19,7 +19,7 @@ env:
   # metadata will be stored, and not where the resource groups will be deployed.
   # You can specify any location for `SUB_DEPLOYMENT_REGION`. It's the region where 
   # the deployment metadata will be stored, and not where the resource groups will be deployed.
-  SUB_DEPLOYMENT_REGION: southindia
+  SUB_DEPLOYMENT_REGION: centralindia
   WINDOWS_TARGET_FRAMEWORK: "net10.0-windows10.0.19041.0"
 
 jobs:
