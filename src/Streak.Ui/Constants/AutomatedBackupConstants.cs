@@ -12,7 +12,11 @@ public static class AutomatedBackupConstants
 
     public const string AlarmAction = "com.companyname.streak.ui.action.AUTOMATED_BACKUP_TRIGGER";
     public const string ReceiverExecutionMode = "receiver";
-    public const string ForegroundServiceExecutionMode = "foreground-service";
+    public const string LocalWorkerExecutionMode = "work-manager-local";
+    public const string CloudWorkerExecutionMode = "work-manager-cloud";
+    public const string LocalWorkerUniqueWorkName = "streak-nightly-local-backup";
+    public const string CloudWorkerUniqueWorkName = "streak-nightly-cloud-backup";
+    public const int CloudRetryBackoffMinutes = 15;
 
     public const string SettingsTableName = "AutomatedBackupSettings";
 

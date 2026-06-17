@@ -33,6 +33,32 @@ public sealed class AutomatedBackupRunServiceTests
     }
 
     [Fact]
+    public async Task ExecuteEnabledLocalBackupAsync_ShouldRunLocalOnly_WhenLocalBackupIsEnabled()
+    {
+        var configurationServiceMock = CreateConfigurationServiceMock(isEnabled: true, isCloudEnabled: true);
+        var localExecutionServiceMock = new Mock<IAutomatedBackupExecutionService>();
+        var expectedLocation = new SavedFileLocation
+        {
+            SavedFileDisplayPath = "Downloads/Streak/Backups/Automated/streak-auto-data-backup-20260426-040000.zip",
+            ParentFolderDisplayPath = "Downloads/Streak/Backups/Automated"
+        };
+        localExecutionServiceMock
+            .Setup(x => x.ExecuteAutomatedBackupAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(expectedLocation);
+
+        var cloudBackupServiceMock = new Mock<IAutomatedCloudBackupService>();
+        var sut = CreateSut(configurationServiceMock.Object, localExecutionServiceMock.Object, cloudBackupServiceMock.Object);
+
+        var result = await sut.ExecuteEnabledLocalBackupAsync();
+
+        result.LocalEnabled.Should().BeTrue();
+        result.LocalSucceeded.Should().BeTrue();
+        result.LocalSavedLocation.Should().BeEquivalentTo(expectedLocation);
+        result.CloudEnabled.Should().BeFalse();
+        cloudBackupServiceMock.Verify(x => x.UploadAutomatedBackupAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
     public async Task ExecuteEnabledBackupsAsync_ShouldRunCloudOnly_WhenOnlyCloudBackupIsEnabled()
     {
         var configurationServiceMock = CreateConfigurationServiceMock(isEnabled: false, isCloudEnabled: true);
@@ -45,6 +71,23 @@ public sealed class AutomatedBackupRunServiceTests
         result.LocalEnabled.Should().BeFalse();
         result.LocalSucceeded.Should().BeFalse();
         result.LocalSavedLocation.Should().BeNull();
+        result.CloudEnabled.Should().BeTrue();
+        result.CloudSucceeded.Should().BeTrue();
+        localExecutionServiceMock.Verify(x => x.ExecuteAutomatedBackupAsync(It.IsAny<CancellationToken>()), Times.Never);
+        cloudBackupServiceMock.Verify(x => x.UploadAutomatedBackupAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task ExecuteEnabledCloudBackupAsync_ShouldRunCloudOnly_WhenCloudBackupIsEnabled()
+    {
+        var configurationServiceMock = CreateConfigurationServiceMock(isEnabled: true, isCloudEnabled: true);
+        var localExecutionServiceMock = new Mock<IAutomatedBackupExecutionService>();
+        var cloudBackupServiceMock = new Mock<IAutomatedCloudBackupService>();
+        var sut = CreateSut(configurationServiceMock.Object, localExecutionServiceMock.Object, cloudBackupServiceMock.Object);
+
+        var result = await sut.ExecuteEnabledCloudBackupAsync();
+
+        result.LocalEnabled.Should().BeFalse();
         result.CloudEnabled.Should().BeTrue();
         result.CloudSucceeded.Should().BeTrue();
         localExecutionServiceMock.Verify(x => x.ExecuteAutomatedBackupAsync(It.IsAny<CancellationToken>()), Times.Never);
@@ -130,6 +173,29 @@ public sealed class AutomatedBackupRunServiceTests
         result.CloudSucceeded.Should().BeFalse();
         result.CloudFailureKind.Should().Be(OneDriveBackupFailureKind.AuthRequired);
         configurationServiceMock.Verify(x => x.SetIsCloudEnabled(false), Times.Once);
+    }
+
+    [Fact]
+    public async Task ExecuteEnabledCloudBackupAsync_ShouldDisableCloudBackup_WhenCloudBackupRequiresReconnect()
+    {
+        var configurationServiceMock = CreateConfigurationServiceMock(isEnabled: true, isCloudEnabled: true);
+        var localExecutionServiceMock = new Mock<IAutomatedBackupExecutionService>();
+        var cloudBackupServiceMock = new Mock<IAutomatedCloudBackupService>();
+        cloudBackupServiceMock
+            .Setup(x => x.UploadAutomatedBackupAsync(It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new OneDriveBackupException(
+                OneDriveBackupFailureKind.AuthRequired,
+                "OneDrive needs you to reconnect before backing up again."));
+
+        var sut = CreateSut(configurationServiceMock.Object, localExecutionServiceMock.Object, cloudBackupServiceMock.Object);
+
+        var result = await sut.ExecuteEnabledCloudBackupAsync();
+
+        result.CloudEnabled.Should().BeTrue();
+        result.CloudSucceeded.Should().BeFalse();
+        result.CloudFailureKind.Should().Be(OneDriveBackupFailureKind.AuthRequired);
+        configurationServiceMock.Verify(x => x.SetIsCloudEnabled(false), Times.Once);
+        localExecutionServiceMock.Verify(x => x.ExecuteAutomatedBackupAsync(It.IsAny<CancellationToken>()), Times.Never);
     }
 
     #endregion
@@ -229,6 +295,22 @@ public sealed class AutomatedBackupRunServiceTests
         var sut = CreateSut(configurationServiceMock.Object, localExecutionServiceMock.Object, cloudBackupServiceMock.Object);
 
         var result = await sut.ExecuteEnabledBackupsAsync();
+
+        result.HasAnySuccess.Should().BeFalse();
+        result.HasAnyFailure.Should().BeFalse();
+        localExecutionServiceMock.Verify(x => x.ExecuteAutomatedBackupAsync(It.IsAny<CancellationToken>()), Times.Never);
+        cloudBackupServiceMock.Verify(x => x.UploadAutomatedBackupAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task ExecuteEnabledCloudBackupAsync_ShouldReturnEmptyResult_WhenCloudBackupIsDisabled()
+    {
+        var configurationServiceMock = CreateConfigurationServiceMock(isEnabled: true, isCloudEnabled: false);
+        var localExecutionServiceMock = new Mock<IAutomatedBackupExecutionService>();
+        var cloudBackupServiceMock = new Mock<IAutomatedCloudBackupService>();
+        var sut = CreateSut(configurationServiceMock.Object, localExecutionServiceMock.Object, cloudBackupServiceMock.Object);
+
+        var result = await sut.ExecuteEnabledCloudBackupAsync();
 
         result.HasAnySuccess.Should().BeFalse();
         result.HasAnyFailure.Should().BeFalse();
