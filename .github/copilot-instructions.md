@@ -51,16 +51,12 @@ I prefer to host my apps and related infra on Azure using serverless/PaaS. This 
 9. Along with your actual output, please also provide a brief summary of the MCP servers utilized, skills utilized, hooks invoked, LSPs invoked. Use the following format:
 
   ```
-  MCP Servers Utilized
-  - MCP Server 1
-  - MCP Server 2
-  Skills Utilized
-  - Skill 1
-  - Skill 2
-  Hooks Invoked
-  - Hook 1
-  LSPs Invoked
-  - LSP 1
+  - MCP Servers Utilized: MCP Server 1, MCP Server 2
+  - Skills Utilized: Skill 1, Skill 2
+  - Hooks Invoked: Hook 1
+  - LSPs Invoked: LSP 1
+  - Token Usage: Total input tokens, total output tokens, total tokens
+  - Cost: Total cost of tokens used
   ```
 
 ## UI MOCKUP GUIDELINES
