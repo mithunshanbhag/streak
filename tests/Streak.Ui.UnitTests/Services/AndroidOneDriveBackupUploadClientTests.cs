@@ -17,10 +17,10 @@ public sealed class AndroidOneDriveBackupUploadClientTests
         await File.WriteAllTextAsync(archivePath, "backup");
 
         var handler = new SequenceHttpMessageHandler([
-            _ => CreateJsonResponse(HttpStatusCode.OK, "{}"),
-            _ => CreateJsonResponse(HttpStatusCode.Created, "{}"),
-            _ => CreateJsonResponse(HttpStatusCode.Created, "{}"),
-            _ => CreateJsonResponse(HttpStatusCode.Created, "{}")
+            _ => CreateJsonResponse(HttpStatusCode.OK, "{\"id\":\"root\",\"folder\":{}}"),
+            _ => CreateJsonResponse(HttpStatusCode.OK, "{\"id\":\"folder\",\"folder\":{}}"),
+            _ => CreateJsonResponse(HttpStatusCode.OK, "{\"id\":\"folder\",\"folder\":{}}"),
+            _ => CreateJsonResponse(HttpStatusCode.OK, "{\"id\":\"folder\",\"folder\":{}}")
         ]);
         using var httpClient = new HttpClient(handler)
         {
@@ -39,12 +39,12 @@ public sealed class AndroidOneDriveBackupUploadClientTests
         handler.Requests.Should().HaveCount(4);
         handler.Requests[0].Method.Should().Be(HttpMethod.Get);
         handler.Requests[0].RequestUri!.ToString().Should().Be("https://graph.microsoft.com/v1.0/me/drive/special/approot");
-        handler.Requests[1].Method.Should().Be(HttpMethod.Post);
-        handler.Requests[1].RequestUri!.ToString().Should().Be("https://graph.microsoft.com/v1.0/me/drive/special/approot/children");
-        handler.Requests[2].Method.Should().Be(HttpMethod.Post);
-        handler.Requests[2].RequestUri!.ToString().Should().Be("https://graph.microsoft.com/v1.0/me/drive/special/approot:/Backups:/children");
+        handler.Requests[1].Method.Should().Be(HttpMethod.Get);
+        handler.Requests[1].RequestUri!.ToString().Should().Be("https://graph.microsoft.com/v1.0/me/drive/items/root:/Backups");
+        handler.Requests[2].Method.Should().Be(HttpMethod.Get);
+        handler.Requests[2].RequestUri!.ToString().Should().Be("https://graph.microsoft.com/v1.0/me/drive/items/folder:/Manual");
         handler.Requests[3].Method.Should().Be(HttpMethod.Put);
-        handler.Requests[3].RequestUri!.ToString().Should().Be($"https://graph.microsoft.com/v1.0/me/drive/special/approot:/Backups/Manual/{Path.GetFileName(archivePath)}:/content");
+        handler.Requests[3].RequestUri!.ToString().Should().Be($"https://graph.microsoft.com/v1.0/me/drive/items/folder:/{Path.GetFileName(archivePath)}:/content");
         handler.Requests.Should().OnlyContain(request =>
             request.Headers.Authorization != null
             && request.Headers.Authorization.Scheme == "Bearer"
@@ -60,10 +60,10 @@ public sealed class AndroidOneDriveBackupUploadClientTests
         await File.WriteAllTextAsync(archivePath, "backup");
 
         var handler = new SequenceHttpMessageHandler([
-            _ => CreateJsonResponse(HttpStatusCode.OK, "{}"),
-            _ => CreateJsonResponse(HttpStatusCode.Created, "{}"),
-            _ => CreateJsonResponse(HttpStatusCode.Created, "{}"),
-            _ => CreateJsonResponse(HttpStatusCode.Created, "{}")
+            _ => CreateJsonResponse(HttpStatusCode.OK, "{\"id\":\"root\",\"folder\":{}}"),
+            _ => CreateJsonResponse(HttpStatusCode.OK, "{\"id\":\"folder\",\"folder\":{}}"),
+            _ => CreateJsonResponse(HttpStatusCode.OK, "{\"id\":\"folder\",\"folder\":{}}"),
+            _ => CreateJsonResponse(HttpStatusCode.OK, "{\"id\":\"folder\",\"folder\":{}}")
         ]);
         using var httpClient = new HttpClient(handler)
         {
@@ -82,12 +82,12 @@ public sealed class AndroidOneDriveBackupUploadClientTests
         handler.Requests.Should().HaveCount(4);
         handler.Requests[0].Method.Should().Be(HttpMethod.Get);
         handler.Requests[0].RequestUri!.ToString().Should().Be("https://graph.microsoft.com/v1.0/me/drive/special/approot");
-        handler.Requests[1].Method.Should().Be(HttpMethod.Post);
-        handler.Requests[1].RequestUri!.ToString().Should().Be("https://graph.microsoft.com/v1.0/me/drive/special/approot/children");
-        handler.Requests[2].Method.Should().Be(HttpMethod.Post);
-        handler.Requests[2].RequestUri!.ToString().Should().Be("https://graph.microsoft.com/v1.0/me/drive/special/approot:/Backups:/children");
+        handler.Requests[1].Method.Should().Be(HttpMethod.Get);
+        handler.Requests[1].RequestUri!.ToString().Should().Be("https://graph.microsoft.com/v1.0/me/drive/items/root:/Backups");
+        handler.Requests[2].Method.Should().Be(HttpMethod.Get);
+        handler.Requests[2].RequestUri!.ToString().Should().Be("https://graph.microsoft.com/v1.0/me/drive/items/folder:/Automated");
         handler.Requests[3].Method.Should().Be(HttpMethod.Put);
-        handler.Requests[3].RequestUri!.ToString().Should().Be($"https://graph.microsoft.com/v1.0/me/drive/special/approot:/Backups/Automated/{Path.GetFileName(archivePath)}:/content");
+        handler.Requests[3].RequestUri!.ToString().Should().Be($"https://graph.microsoft.com/v1.0/me/drive/items/folder:/{Path.GetFileName(archivePath)}:/content");
         handler.Requests.Should().OnlyContain(request =>
             request.Headers.Authorization != null
             && request.Headers.Authorization.Scheme == "Bearer"
@@ -98,6 +98,146 @@ public sealed class AndroidOneDriveBackupUploadClientTests
 
     #region Negative tests
 
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public async Task Upload_ShouldCreateMissingFoldersAndResolveConflicts(bool automated, bool conflict)
+    {
+        using var directory = new TemporaryDirectory();
+        var path = Path.Combine(directory.Path, "backup.zip");
+        await File.WriteAllTextAsync(path, "backup");
+        var responses = new List<Func<HttpRequestMessage, HttpResponseMessage>>
+        {
+            _ => CreateJsonResponse(HttpStatusCode.OK, "{\"id\":\"root\",\"folder\":{}}"),
+            _ => CreateJsonResponse(HttpStatusCode.NotFound, "{}"),
+            request =>
+            {
+                request.Method.Should().Be(HttpMethod.Post);
+                request.RequestUri!.AbsolutePath.Should().EndWith("/items/root/children");
+                var body = request.Content!.ReadAsStringAsync().GetAwaiter().GetResult();
+                using var json = System.Text.Json.JsonDocument.Parse(body);
+                json.RootElement.GetProperty("name").GetString().Should().Be("Backups");
+                json.RootElement.GetProperty("folder").ValueKind.Should().Be(System.Text.Json.JsonValueKind.Object);
+                json.RootElement.GetProperty("@microsoft.graph.conflictBehavior").GetString().Should().Be("fail");
+                return CreateJsonResponse(conflict ? HttpStatusCode.Conflict : HttpStatusCode.Created,
+                    "{\"id\":\"backups\",\"folder\":{}}");
+            }
+        };
+        if (conflict)
+            responses.Add(_ => CreateJsonResponse(HttpStatusCode.OK, "{\"id\":\"backups\",\"folder\":{}}"));
+        responses.Add(request =>
+        {
+            request.RequestUri!.AbsolutePath.Should().EndWith(automated ? "/items/backups:/Automated" : "/items/backups:/Manual");
+            return CreateJsonResponse(HttpStatusCode.NotFound, "{}");
+        });
+        responses.Add(request =>
+        {
+            request.RequestUri!.AbsolutePath.Should().EndWith("/items/backups/children");
+            return CreateJsonResponse(HttpStatusCode.Created, "{\"id\":\"destination\",\"folder\":{}}");
+        });
+        responses.Add(request =>
+        {
+            request.Method.Should().Be(HttpMethod.Put);
+            request.RequestUri!.AbsolutePath.Should().EndWith("/items/destination:/backup.zip:/content");
+            return CreateJsonResponse(HttpStatusCode.Created, "{}");
+        });
+        var handler = new SequenceHttpMessageHandler(responses);
+        using var client = new HttpClient(handler) { BaseAddress = new Uri("https://graph.microsoft.com/v1.0/") };
+        var sut = new OneDriveBackupUploadClient(client, CreateOneDriveAuthServiceMock("token").Object,
+            CreateConnectivityMock().Object, new Mock<ILogger<OneDriveBackupUploadClient>>().Object);
+        if (automated)
+            await sut.UploadAutomatedBackupAsync(path, "backup.zip");
+        else
+            await sut.UploadManualBackupAsync(path, "backup.zip");
+        handler.Requests.Should().HaveCount(conflict ? 7 : 6);
+    }
+
+    [Theory]
+    [InlineData(400, OneDriveBackupFailureKind.Unknown)]
+    [InlineData(403, OneDriveBackupFailureKind.AccessDenied)]
+    [InlineData(429, OneDriveBackupFailureKind.NetworkUnavailable)]
+    [InlineData(503, OneDriveBackupFailureKind.NetworkUnavailable)]
+    public async Task Upload_ShouldStopOnFolderCreationFailure(int status, OneDriveBackupFailureKind kind)
+    {
+        using var directory = new TemporaryDirectory();
+        var path = Path.Combine(directory.Path, "backup.zip");
+        await File.WriteAllTextAsync(path, "backup");
+        var handler = new SequenceHttpMessageHandler([
+            _ => CreateJsonResponse(HttpStatusCode.OK, "{\"id\":\"root\",\"folder\":{}}"),
+            _ => CreateJsonResponse(HttpStatusCode.NotFound, "{}"),
+            _ => CreateJsonResponse((HttpStatusCode)status, "{\"error\":{\"code\":\"invalidRequest\",\"message\":\"Rejected\"}}")]);
+        using var client = new HttpClient(handler) { BaseAddress = new Uri("https://graph.microsoft.com/v1.0/") };
+        var sut = new OneDriveBackupUploadClient(client, CreateOneDriveAuthServiceMock("token").Object,
+            CreateConnectivityMock().Object, new Mock<ILogger<OneDriveBackupUploadClient>>().Object);
+        Func<Task> act = () => sut.UploadAutomatedBackupAsync(path, "backup.zip");
+        await act.Should().ThrowAsync<OneDriveBackupException>().Where(e => e.FailureKind == kind);
+        handler.Requests.Should().HaveCount(3);
+    }
+
+    [Theory]
+    [InlineData("{}")]
+    [InlineData("{\"id\":\"file\",\"file\":{}}")]
+    [InlineData("{\"id\":\"\",\"folder\":{}}")]
+    [InlineData("not json")]
+    public async Task Upload_ShouldRejectInvalidFolder(string body)
+    {
+        using var directory = new TemporaryDirectory();
+        var path = Path.Combine(directory.Path, "backup.zip");
+        await File.WriteAllTextAsync(path, "backup");
+        var handler = new SequenceHttpMessageHandler([_ => CreateJsonResponse(HttpStatusCode.OK, body)]);
+        using var client = new HttpClient(handler) { BaseAddress = new Uri("https://graph.microsoft.com/v1.0/") };
+        var sut = new OneDriveBackupUploadClient(client, CreateOneDriveAuthServiceMock("token").Object,
+            CreateConnectivityMock().Object, new Mock<ILogger<OneDriveBackupUploadClient>>().Object);
+        Func<Task> act = () => sut.UploadAutomatedBackupAsync(path, "backup.zip");
+        await act.Should().ThrowAsync<OneDriveBackupException>();
+        handler.Requests.Should().HaveCount(1);
+    }
+
+    [Fact]
+    public async Task Upload_ShouldPropagateCancellation()
+    {
+        using var directory = new TemporaryDirectory();
+        var path = Path.Combine(directory.Path, "backup.zip");
+        await File.WriteAllTextAsync(path, "backup");
+        using var cancellation = new CancellationTokenSource();
+        var handler = new SequenceHttpMessageHandler([_ =>
+        {
+            cancellation.Cancel();
+            throw new TaskCanceledException();
+        }]);
+        using var client = new HttpClient(handler) { BaseAddress = new Uri("https://graph.microsoft.com/v1.0/") };
+        var sut = new OneDriveBackupUploadClient(client, CreateOneDriveAuthServiceMock("token").Object,
+            CreateConnectivityMock().Object, new Mock<ILogger<OneDriveBackupUploadClient>>().Object);
+        Func<Task> act = () => sut.UploadAutomatedBackupAsync(path, "backup.zip", cancellation.Token);
+        await act.Should().ThrowAsync<OperationCanceledException>();
+    }
+
+    [Theory]
+    [InlineData(200, "{\"id\":\"file\",\"file\":{}}")]
+    [InlineData(200, "{}")]
+    [InlineData(404, "{}")]
+    [InlineData(403, "{}")]
+    public async Task Upload_ShouldNotAcceptConflictWithoutValidFolder(int status, string body)
+    {
+        using var directory = new TemporaryDirectory();
+        var path = Path.Combine(directory.Path, "backup.zip");
+        await File.WriteAllTextAsync(path, "backup");
+        var handler = new SequenceHttpMessageHandler([
+            _ => CreateJsonResponse(HttpStatusCode.OK, "{\"id\":\"root\",\"folder\":{}}"),
+            _ => CreateJsonResponse(HttpStatusCode.NotFound, "{}"),
+            _ => CreateJsonResponse(HttpStatusCode.Conflict, "{}"),
+            _ => CreateJsonResponse((HttpStatusCode)status, body)]);
+        using var client = new HttpClient(handler) { BaseAddress = new Uri("https://graph.microsoft.com/v1.0/") };
+        var sut = new OneDriveBackupUploadClient(client, CreateOneDriveAuthServiceMock("token").Object,
+            CreateConnectivityMock().Object, new Mock<ILogger<OneDriveBackupUploadClient>>().Object);
+        Func<Task> act = () => sut.UploadAutomatedBackupAsync(path, "backup.zip");
+        await act.Should().ThrowAsync<OneDriveBackupException>();
+        handler.Requests.Should().HaveCount(4);
+        handler.Requests.Last().Method.Should().Be(HttpMethod.Get);
+    }
+
     [Fact]
     public async Task UploadManualBackupAsync_ShouldThrowQuotaExceeded_WhenGraphReturnsQuotaFailure()
     {
@@ -107,9 +247,9 @@ public sealed class AndroidOneDriveBackupUploadClientTests
         await File.WriteAllTextAsync(archivePath, "backup");
 
         var handler = new SequenceHttpMessageHandler([
-            _ => CreateJsonResponse(HttpStatusCode.OK, "{}"),
-            _ => CreateJsonResponse(HttpStatusCode.Created, "{}"),
-            _ => CreateJsonResponse(HttpStatusCode.Created, "{}"),
+            _ => CreateJsonResponse(HttpStatusCode.OK, "{\"id\":\"root\",\"folder\":{}}"),
+            _ => CreateJsonResponse(HttpStatusCode.OK, "{\"id\":\"folder\",\"folder\":{}}"),
+            _ => CreateJsonResponse(HttpStatusCode.OK, "{\"id\":\"folder\",\"folder\":{}}"),
             _ => CreateJsonResponse(HttpStatusCode.InsufficientStorage, "{\"error\":{\"code\":\"quotaLimitReached\",\"message\":\"Quota full.\"}}")
         ]);
         using var httpClient = new HttpClient(handler)

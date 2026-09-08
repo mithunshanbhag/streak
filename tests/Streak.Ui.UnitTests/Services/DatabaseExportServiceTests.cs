@@ -49,7 +49,7 @@ public sealed class DatabaseExportServiceTests
         exportResult.SavedFileLocation.Should().NotBeNull();
         exportResult.SavedFileLocation!.ParentFolderDisplayPath.Should().Be(StreakExportStorageConstants.ManualBackupsDisplayDirectoryPath);
         savedBackupPath.Should().NotBeNull();
-        Path.GetFileName(savedBackupPath!).Should().MatchRegex("^streak-data-backup-[0-9]{8}-[0-9]{6}\\.zip$");
+        Path.GetFileName(savedBackupPath!).Should().MatchRegex("^streak-data-backup-[0-9]{8}-[0-9]{6}-[0-9a-f]{32}\\.zip$");
         File.Exists(savedBackupPath!).Should().BeFalse();
         File.Exists(inspectedBackupPath!).Should().BeTrue();
 

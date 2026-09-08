@@ -45,11 +45,11 @@ public sealed class AutomatedBackupExecutionServiceTests
 
         var savedLocation = await sut.ExecuteAutomatedBackupAsync();
 
-        savedLocation.SavedFileDisplayPath.Should().MatchRegex("^Downloads/Streak/Backups/Automated/streak-auto-data-backup-[0-9]{8}-[0-9]{6}\\.zip$");
+        savedLocation.SavedFileDisplayPath.Should().MatchRegex("^Downloads/Streak/Backups/Automated/streak-auto-data-backup-[0-9]{8}-[0-9]{6}-[0-9a-f]{32}\\.zip$");
         savedLocation.ParentFolderDisplayPath.Should().Be(StreakExportStorageConstants.AutomatedBackupsDisplayDirectoryPath);
         savedBackupPath.Should().NotBeNull();
         inspectedBackupPath.Should().NotBeNull();
-        Path.GetFileName(savedBackupPath!).Should().MatchRegex("^streak-auto-data-backup-[0-9]{8}-[0-9]{6}\\.zip$");
+        Path.GetFileName(savedBackupPath!).Should().MatchRegex("^streak-auto-data-backup-[0-9]{8}-[0-9]{6}-[0-9a-f]{32}\\.zip$");
         File.Exists(savedBackupPath!).Should().BeFalse();
         File.Exists(inspectedBackupPath!).Should().BeTrue();
 

@@ -1,5 +1,8 @@
 # Learnings
 
+- OneDrive backup folder resolution now looks up children before creating them through parent item IDs. HTTP 409 is only accepted after a validated folder lookup; successful folder responses must include an ID and folder facet. Live Android verification remains necessary for the observed Graph 400 failures.
+- Concurrent local/cloud archive generation must use unique filenames, not second-resolution timestamps alone. Per-invocation GUID suffixes isolate ZIPs and SQLite snapshots; cleanup must only remove owned files, including on cancellation. Sharing must not blanket-delete other backup ZIPs.
+
 - Product specs require habits to appear in alphabetical order by name. Persisted manual ordering is not part of the accepted UX, so `DisplayOrder` and reorder flows should not be reintroduced unless the specs change.
 - Checkin records are presence-only: a `Checkins` row should exist only for completed days, and same-day uncheck should delete the row rather than persist a false state.
 - Habit deletion is confirmed through a `MudDialog` on the Habit Details page, while the page itself owns the `IHabitService.DeleteAsync(...)` call, redirects to home on success, and relies on SQLite cascade delete to remove related `Checkins`.

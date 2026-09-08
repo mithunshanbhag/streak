@@ -31,7 +31,7 @@ internal static class DataBackupArchiveUtility
         Directory.CreateDirectory(exportDirectoryPath);
 
         var timestamp = timeProvider.GetLocalNow().DateTime.ToString("yyyyMMdd-HHmmss", CultureInfo.InvariantCulture);
-        var fileName = $"{filePrefix}-{timestamp}.zip";
+        var fileName = $"{filePrefix}-{timestamp}-{Guid.NewGuid():N}.zip";
 
         return Path.Combine(exportDirectoryPath, fileName);
     }
@@ -68,9 +68,17 @@ internal static class DataBackupArchiveUtility
 
             return unavailableReferencedProofPaths;
         }
+        catch
+        {
+            DeleteBackupIfExists(backupFilePath);
+            throw;
+        }
         finally
         {
             DeleteBackupIfExists(workingDatabasePath);
+            DeleteBackupIfExists(workingDatabasePath + "-wal");
+            DeleteBackupIfExists(workingDatabasePath + "-shm");
+            DeleteBackupIfExists(workingDatabasePath + "-journal");
         }
     }
 

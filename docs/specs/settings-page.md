@@ -113,7 +113,7 @@ The page contains four vertically stacked sections presented as clean cards:
 - Newly saved proof pictures should live outside uninstall-sensitive app storage:
   - on **Android**, under **Pictures/Streak/CheckinProofs**
   - on **Windows**, under **Pictures\Streak\CheckinProofs**
-- Automated backups should use a timestamped filename pattern such as `streak-auto-data-backup-YYYYMMdd-HHmmss.zip`.
+- Automated backups should use a timestamped filename pattern such as `streak-auto-data-backup-YYYYMMdd-HHmmss-<guid>.zip`.
 - On Android, a successful nightly automated backup should post a native completion notification when the app has notification permission.
 - Tapping that Android completion notification should attempt to open the shared parent folder that contains the automated backups (`Downloads/Streak/Backups/Automated`). If the platform cannot deep-link to that exact folder, falling back to the broader Downloads surface is acceptable.
 - On Android, a failed nightly local automated backup should post a native failure notification when the app has notification permission.
@@ -136,17 +136,17 @@ The page contains four vertically stacked sections presented as clean cards:
 - The user signs in with a **personal Microsoft account**.
 - OneDrive backup uses the app-specific OneDrive folder at **`/me/drive/special/approot`**.
 - The app uploads the **same `.zip` data-backup archive format** used by local backup:
-  - manual OneDrive backup uses `streak-data-backup-YYYYMMdd-HHmmss.zip`
-  - daily automated OneDrive backup uses `streak-auto-data-backup-YYYYMMdd-HHmmss.zip`
+  - manual OneDrive backup uses `streak-data-backup-YYYYMMdd-HHmmss-<guid>.zip`
+  - daily automated OneDrive backup uses `streak-auto-data-backup-YYYYMMdd-HHmmss-<guid>.zip`
 - The remote folder structure should mirror the local naming pattern:
 
   ```text
   approot/
     Backups/
       Manual/
-        streak-data-backup-YYYYMMdd-HHmmss.zip
+        streak-data-backup-YYYYMMdd-HHmmss-<guid>.zip
       Automated/
-        streak-auto-data-backup-YYYYMMdd-HHmmss.zip
+        streak-auto-data-backup-YYYYMMdd-HHmmss-<guid>.zip
   ```
 
 - Tapping the disconnected red cloud icon starts the Microsoft sign-in / consent flow.
@@ -190,7 +190,7 @@ The page contains four vertically stacked sections presented as clean cards:
   - the user's habit data plus saved reminder and backup preferences stored in the local database
   - uploaded picture-proof files referenced by the backup's check-ins and still available in current proof storage
 - Export is considered a low-frequency maintenance / safety action, so it lives in **Settings** rather than in the Homepage app bar.
-- The exported filename should use a timestamped pattern such as `streak-data-backup-YYYYMMdd-HHmmss.zip`.
+- The exported filename should use a timestamped pattern such as `streak-data-backup-YYYYMMdd-HHmmss-<guid>.zip`.
 - The platform-specific save note is exposed from the **Backup** info tooltip rather than as persistent inline helper text.
 - After a successful manual export, the page should show an in-app success confirmation with an **Open folder** affordance so the user can jump straight to the saved backup location.
 - If some check-ins still point to proof files that are no longer available in current app storage, export should still succeed and skip only those unavailable proof files.
@@ -212,7 +212,7 @@ The page contains four vertically stacked sections presented as clean cards:
 - Share is a **manual** action; it does not run automatically or on a schedule.
 - Share does **not** create cloud sync, account linkage, or periodic uploads. It is strictly a one-time user-initiated handoff.
 - The shared backup should include the same database contents and uploaded picture-proof files as the normal export flow, including the same skip behavior for any unavailable proof files.
-- The shared backup should use the same timestamped filename pattern as export, such as `streak-data-backup-YYYYMMdd-HHmmss.zip`.
+- The shared backup should use the same timestamped filename pattern as export, such as `streak-data-backup-YYYYMMdd-HHmmss-<guid>.zip`.
 - Share is considered a low-frequency maintenance / portability action, so it lives in **Settings** beside **Download data**.
 
 ### Platform-specific Share UX

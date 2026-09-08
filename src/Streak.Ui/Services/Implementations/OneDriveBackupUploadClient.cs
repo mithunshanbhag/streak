@@ -64,6 +64,7 @@ public sealed class OneDriveBackupUploadClient(
             throw new FileNotFoundException("The local backup archive could not be found.", localFilePath);
 
         var fileInfo = new FileInfo(localFilePath);
+        using var scope = _logger.BeginScope(new Dictionary<string, object> { ["FileName"] = destinationFileName });
         _logger.LogInformation(
             "{BackupKind} OneDrive backup upload starting. File name: {FileName}. File size bytes: {FileSizeBytes}. Target folder: {TargetFolder}. Network access: {NetworkAccess}. Connection profiles: {ConnectionProfiles}.",
             backupKindLabel,
@@ -87,18 +88,18 @@ public sealed class OneDriveBackupUploadClient(
                 destinationFileName);
 
             uploadStage = "EnsureAppFolderAccessible";
-            await EnsureAppFolderAccessibleAsync(accessToken, cancellationToken);
+            var rootId = await EnsureAppFolderAccessibleAsync(accessToken, cancellationToken);
             uploadStage = "EnsureOneDriveBackupsFolder";
-            await EnsureFolderExistsAsync(
+            var backupsId = await EnsureFolderExistsAsync(
                 accessToken,
-                parentPath: null,
+                parentId: rootId,
                 folderName: StreakExportStorageConstants.BackupsDirectoryName,
                 operationName: "EnsureOneDriveBackupsFolder",
                 cancellationToken);
             uploadStage = ensureFolderOperationName;
-            await EnsureFolderExistsAsync(
+            var destinationId = await EnsureFolderExistsAsync(
                 accessToken,
-                parentPath: StreakExportStorageConstants.BackupsDirectoryName,
+                parentId: backupsId,
                 folderName: targetDirectoryName,
                 operationName: ensureFolderOperationName,
                 cancellationToken);
@@ -107,7 +108,7 @@ public sealed class OneDriveBackupUploadClient(
                 accessToken,
                 localFilePath,
                 destinationFileName,
-                targetDirectoryName,
+                destinationId,
                 uploadOperationName,
                 cancellationToken);
 
@@ -118,8 +119,10 @@ public sealed class OneDriveBackupUploadClient(
                 fileInfo.Length,
                 OneDriveAuthConstants.StorageLocationDisplayName);
         }
-        catch (OneDriveBackupException)
+        catch (OneDriveBackupException exception)
         {
+            _logger.LogWarning("{BackupKind} OneDrive backup failed during {UploadStage}. File name: {FileName}. Failure kind: {FailureKind}. Message: {FailureMessage}.",
+                backupKindLabel, uploadStage, destinationFileName, exception.FailureKind, exception.Message);
             throw;
         }
         catch (OneDriveAuthenticationRequiredException exception)
@@ -168,7 +171,7 @@ public sealed class OneDriveBackupUploadClient(
         }
     }
 
-    private async Task EnsureAppFolderAccessibleAsync(
+    private async Task<string> EnsureAppFolderAccessibleAsync(
         string accessToken,
         CancellationToken cancellationToken)
     {
@@ -186,21 +189,27 @@ public sealed class OneDriveBackupUploadClient(
         LogGraphResponse(operationName, response, stopwatch.ElapsedMilliseconds);
 
         if (response.IsSuccessStatusCode)
-            return;
+            return await ReadFolderIdAsync(response, cancellationToken);
 
         await ThrowForGraphFailureAsync(response, operationName, cancellationToken);
+        throw new InvalidOperationException("Graph failure handler returned unexpectedly.");
     }
 
-    private async Task EnsureFolderExistsAsync(
+    private async Task<string> EnsureFolderExistsAsync(
         string accessToken,
-        string? parentPath,
+        string parentId,
         string folderName,
         string operationName,
         CancellationToken cancellationToken)
     {
+        var lookupUri = $"me/drive/items/{Uri.EscapeDataString(parentId)}:/{Uri.EscapeDataString(folderName)}";
+        var existingId = await LookupFolderAsync(accessToken, lookupUri, operationName + "Lookup", true, cancellationToken);
+        if (existingId is not null)
+            return existingId;
+
         using var request = CreateAuthorizedRequest(
             HttpMethod.Post,
-            BuildChildrenEndpoint(parentPath),
+            $"me/drive/items/{Uri.EscapeDataString(parentId)}/children",
             accessToken);
         request.Content = JsonContent.Create(new CreateFolderRequest
         {
@@ -218,10 +227,49 @@ public sealed class OneDriveBackupUploadClient(
         using var response = await _httpClient.SendAsync(request, cancellationToken);
         LogGraphResponse(operationName, response, stopwatch.ElapsedMilliseconds);
 
-        if (response.IsSuccessStatusCode || response.StatusCode == HttpStatusCode.Conflict)
-            return;
+        if (response.IsSuccessStatusCode)
+            return await ReadFolderIdAsync(response, cancellationToken);
+
+        if (response.StatusCode == HttpStatusCode.Conflict)
+            return (await LookupFolderAsync(accessToken, lookupUri, operationName + "ConflictLookup", false, cancellationToken))!;
 
         await ThrowForGraphFailureAsync(response, operationName, cancellationToken);
+        throw new InvalidOperationException("Graph failure handler returned unexpectedly.");
+    }
+
+    private async Task<string?> LookupFolderAsync(string accessToken, string uri, string operationName, bool allowMissing, CancellationToken cancellationToken)
+    {
+        using var request = CreateAuthorizedRequest(HttpMethod.Get, uri, accessToken);
+        var stopwatch = Stopwatch.StartNew();
+        _logger.LogInformation("OneDrive folder lookup starting. Operation: {GraphOperation}.", operationName);
+        using var response = await _httpClient.SendAsync(request, cancellationToken);
+        LogGraphResponse(operationName, response, stopwatch.ElapsedMilliseconds);
+        if (response.IsSuccessStatusCode)
+            return await ReadFolderIdAsync(response, cancellationToken);
+        if (allowMissing && response.StatusCode == HttpStatusCode.NotFound)
+            return null;
+        await ThrowForGraphFailureAsync(response, operationName, cancellationToken);
+        throw new InvalidOperationException("Graph failure handler returned unexpectedly.");
+    }
+
+    private static async Task<string> ReadFolderIdAsync(HttpResponseMessage response, CancellationToken cancellationToken)
+    {
+        try
+        {
+            using var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync(cancellationToken));
+            var item = document.RootElement;
+            if (item.ValueKind == JsonValueKind.Object
+                && item.TryGetProperty("id", out var id) && id.ValueKind == JsonValueKind.String
+                && !string.IsNullOrWhiteSpace(id.GetString())
+                && item.TryGetProperty("folder", out var folder) && folder.ValueKind == JsonValueKind.Object)
+                return id.GetString()!;
+        }
+        catch (JsonException)
+        {
+            // Convert malformed successful responses into an actionable backup failure.
+        }
+        throw new OneDriveBackupException(OneDriveBackupFailureKind.Unknown,
+            "OneDrive returned an invalid folder or a file where a backup folder was expected.");
     }
 
     private async Task UploadFileAsync(
@@ -267,12 +315,12 @@ public sealed class OneDriveBackupUploadClient(
         var failureKind = ClassifyFailure(response.StatusCode, graphError?.Code);
 
         _logger.LogWarning(
-            "OneDrive Graph request failed. Operation: {GraphOperation}. Status code: {StatusCode}. Graph error code: {GraphErrorCode}. Failure kind: {FailureKind}. Request id: {GraphRequestId}.",
+            "OneDrive Graph request failed. Operation: {GraphOperation}. Status code: {StatusCode}. Graph error code: {GraphErrorCode}. Failure kind: {FailureKind}. Request id: {GraphRequestId}. Message: {GraphErrorMessage}.",
             operationName,
             (int)response.StatusCode,
             graphError?.Code,
             failureKind,
-            GetHeaderValue(response, "request-id"));
+            GetHeaderValue(response, "request-id"), graphError?.Message);
 
         throw new OneDriveBackupException(
             failureKind,
@@ -366,31 +414,7 @@ public sealed class OneDriveBackupUploadClient(
 
     private static string BuildUploadEndpoint(string targetDirectoryName, string destinationFileName)
     {
-        var remotePath = string.Join(
-            '/',
-            [
-                StreakExportStorageConstants.BackupsDirectoryName,
-                targetDirectoryName,
-                destinationFileName
-            ]);
-
-        return $"{GraphAppRoot}:/{EncodePath(remotePath)}:/content";
-    }
-
-    private static string BuildChildrenEndpoint(string? parentPath)
-    {
-        if (string.IsNullOrWhiteSpace(parentPath))
-            return $"{GraphAppRoot}/children";
-
-        return $"{GraphAppRoot}:/{EncodePath(parentPath)}:/children";
-    }
-
-    private static string EncodePath(string path)
-    {
-        return string.Join(
-            '/',
-            path.Split('/', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-                .Select(Uri.EscapeDataString));
+        return $"me/drive/items/{Uri.EscapeDataString(targetDirectoryName)}:/{Uri.EscapeDataString(destinationFileName)}:/content";
     }
 
     private static string? GetHeaderValue(HttpResponseMessage response, string headerName)

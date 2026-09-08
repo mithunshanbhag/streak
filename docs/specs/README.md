@@ -54,6 +54,10 @@ A streak is the count of **consecutive calendar days** on which a habit was chec
 
 ## Data Storage
 
+- New backup filenames append a random 32-character lowercase hexadecimal GUID to the local timestamp. Each invocation owns its archive and temporary database, allowing local and cloud backups to overlap safely; existing archives remain restorable.
+- OneDrive backups resolve the app root and existing child folders by item ID, creating only missing folders. Creation conflicts require a successful folder lookup before upload proceeds. The folder layout remains `Backups/Manual` and `Backups/Automated`.
+- Sharing preserves other working backup archives, including active uploads; shared files remain available for external consumers.
+
 - Live habit data is stored **locally on the device**. Streak does **not** do live cloud sync of the in-use database.
 - Cloud backup is **strictly optional**. The app must remain fully usable offline without any Microsoft account.
 - On **Android** in this iteration, a user may optionally sign in with a **personal Microsoft account** and upload the same `.zip` backup archives into the app's private OneDrive app folder.
@@ -91,8 +95,8 @@ AppDataDirectory/
 
 CacheDirectory/
   ExportWorking/
-    streak-data-backup-YYYYMMdd-HHmmss.zip
-    streak-auto-data-backup-YYYYMMdd-HHmmss.zip
+    streak-data-backup-YYYYMMdd-HHmmss-<guid>.zip
+    streak-auto-data-backup-YYYYMMdd-HHmmss-<guid>.zip
     RestoreExtracted/
       streak.db
       CheckinProofs/
@@ -118,9 +122,9 @@ Downloads/
   Streak/
     Backups/
       Manual/
-        streak-data-backup-YYYYMMdd-HHmmss.zip
+        streak-data-backup-YYYYMMdd-HHmmss-<guid>.zip
       Automated/
-        streak-auto-data-backup-YYYYMMdd-HHmmss.zip
+        streak-auto-data-backup-YYYYMMdd-HHmmss-<guid>.zip
 ```
 
 Android OneDrive app-folder storage:
@@ -129,9 +133,9 @@ Android OneDrive app-folder storage:
 approot/
   Backups/
     Manual/
-      streak-data-backup-YYYYMMdd-HHmmss.zip
+      streak-data-backup-YYYYMMdd-HHmmss-<guid>.zip
     Automated/
-      streak-auto-data-backup-YYYYMMdd-HHmmss.zip
+      streak-auto-data-backup-YYYYMMdd-HHmmss-<guid>.zip
 ```
 
 Windows app-private storage:
@@ -144,7 +148,7 @@ AppDataDirectory/
 
 CacheDirectory/
   ExportWorking/
-    streak-data-backup-YYYYMMdd-HHmmss.zip
+    streak-data-backup-YYYYMMdd-HHmmss-<guid>.zip
     RestoreExtracted/
       streak.db
       CheckinProofs/
@@ -167,10 +171,10 @@ Windows user-visible storage:
 
 ```text
 <user-selected-folder>/
-  streak-data-backup-YYYYMMdd-HHmmss.zip
+  streak-data-backup-YYYYMMdd-HHmmss-<guid>.zip
 ```
 
-Windows does not currently support automated backups or OneDrive cloud backup. Android manual share uses a generated `streak-data-backup-YYYYMMdd-HHmmss.zip` archive and hands it to the native share sheet; it does not create a separate durable export unless the user chooses to save it through another app.
+Windows does not currently support automated backups or OneDrive cloud backup. Android manual share uses a generated `streak-data-backup-YYYYMMdd-HHmmss-<guid>.zip` archive and hands it to the native share sheet; it does not create a separate durable export unless the user chooses to save it through another app.
 
 ## Notifications and Reminders
 

@@ -18,7 +18,6 @@ public sealed class DatabaseShareService(
 
     public async Task ShareDatabaseAsync(CancellationToken cancellationToken = default)
     {
-        DataBackupArchiveUtility.DeleteCachedBackups(_appStoragePathService.ExportDirectoryPath);
         var backupArchive = await _backupArchiveFactory.CreateManualBackupAsync(cancellationToken);
 
         try

@@ -49,7 +49,7 @@ public sealed class DatabaseShareServiceTests
         var actualInspectedBackupPath = inspectedBackupPath!;
 
         actualShareRequest.Title.Should().Be("Share data");
-        actualShareRequest.File.FullPath.Should().MatchRegex("^.+streak-data-backup-[0-9]{8}-[0-9]{6}\\.zip$");
+        actualShareRequest.File.FullPath.Should().MatchRegex("^.+streak-data-backup-[0-9]{8}-[0-9]{6}-[0-9a-f]{32}\\.zip$");
         File.Exists(actualShareRequest.File.FullPath).Should().BeTrue();
         File.Exists(actualInspectedBackupPath).Should().BeTrue();
 
@@ -75,7 +75,7 @@ public sealed class DatabaseShareServiceTests
     }
 
     [Fact]
-    public async Task ShareDatabaseAsync_ShouldDeleteOlderCachedBackupsBeforeCreatingANewOne()
+    public async Task ShareDatabaseAsync_ShouldPreserveOtherBackupsWhenCreatingANewOne()
     {
         using var sourceDirectory = new TemporaryDirectory();
         using var proofDirectory = new TemporaryDirectory();
@@ -100,8 +100,8 @@ public sealed class DatabaseShareServiceTests
 
         await sut.ShareDatabaseAsync();
 
-        File.Exists(staleBackupPath).Should().BeFalse();
-        Directory.GetFiles(exportDirectory.Path, "streak-data-backup-*.zip").Should().HaveCount(1);
+        File.ReadAllText(staleBackupPath).Should().Be("stale");
+        Directory.GetFiles(exportDirectory.Path, "streak-data-backup-*.zip").Should().HaveCount(2);
     }
 
     [Fact]
